@@ -199,7 +199,8 @@ Color LayoutThemeMac::platformInactiveListBoxSelectionBackgroundColor() const {
 }
 
 static FontWeight toFontWeight(NSInteger appKitFontWeight) {
-  ASSERT(appKitFontWeight > 0 && appKitFontWeight < 15);
+  DCHECK_GT(appKitFontWeight, 0);
+  DCHECK_LT(appKitFontWeight, 15);
   if (appKitFontWeight > 14)
     appKitFontWeight = 14;
   else if (appKitFontWeight < 1)

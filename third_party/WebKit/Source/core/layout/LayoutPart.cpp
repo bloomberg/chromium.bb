@@ -44,7 +44,7 @@ LayoutPart::LayoutPart(Element* element)
       // while inside the FrameViewBase code, which might not be able to handle
       // that.
       m_refCount(1) {
-  ASSERT(element);
+  DCHECK(element);
   frameView()->addPart(this);
   setInline(false);
 }
@@ -85,7 +85,7 @@ void LayoutPart::destroy() {
 }
 
 LayoutPart::~LayoutPart() {
-  ASSERT(m_refCount <= 0);
+  DCHECK_LE(m_refCount, 0);
 }
 
 FrameViewBase* LayoutPart::frameViewBase() const {
@@ -172,7 +172,8 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
                                         accumulatedOffset, action);
   }
 
-  ASSERT(document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
+  DCHECK_GE(document().lifecycle().state(),
+            DocumentLifecycle::CompositingClean);
 
   if (action == HitTestForeground) {
     FrameView* childFrameView = toFrameView(frameViewBase());
@@ -255,7 +256,7 @@ void LayoutPart::styleDidChange(StyleDifference diff,
 }
 
 void LayoutPart::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   clearNeedsLayout();
 }

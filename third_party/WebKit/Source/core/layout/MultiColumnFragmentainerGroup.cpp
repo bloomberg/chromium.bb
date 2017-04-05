@@ -301,7 +301,7 @@ unsigned MultiColumnFragmentainerGroup::actualColumnCount() const {
   // flowThreadPortionHeight may be saturated, so detect the remainder manually.
   if (count * m_columnHeight < flowThreadPortionHeight)
     count++;
-  ASSERT(count >= 1);
+  DCHECK_GE(count, 1u);
   return count;
 }
 
@@ -369,9 +369,9 @@ LayoutUnit MultiColumnFragmentainerGroup::rebalanceColumnHeightIfNeeded()
   // by the lowest amount of space.
   LayoutUnit minSpaceShortage = shortageFinder.minimumSpaceShortage();
 
-  ASSERT(minSpaceShortage > 0);  // We should never _shrink_ the height!
-  ASSERT(minSpaceShortage !=
-         LayoutUnit::max());  // If this happens, we probably have a bug.
+  DCHECK_GT(minSpaceShortage, 0);  // We should never _shrink_ the height!
+  DCHECK_NE(minSpaceShortage,
+            LayoutUnit::max());  // If this happens, we probably have a bug.
   if (minSpaceShortage == LayoutUnit::max())
     return m_columnHeight;  // So bail out rather than looping infinitely.
 
@@ -578,7 +578,7 @@ void MultiColumnFragmentainerGroup::columnIntervalForVisualRect(
       lastColumn = columnIndexAtVisualPoint(rect.minXMaxYCorner());
     }
   }
-  ASSERT(firstColumn <= lastColumn);
+  DCHECK_LE(firstColumn, lastColumn);
 }
 
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(

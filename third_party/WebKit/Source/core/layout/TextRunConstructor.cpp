@@ -96,7 +96,7 @@ TextRun constructTextRun(const Font& font,
                          unsigned length,
                          const ComputedStyle& style,
                          TextDirection direction) {
-  ASSERT(offset + length <= text->textLength());
+  DCHECK_LE(offset + length, text->textLength());
   if (text->hasEmptyText())
     return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
                                     style, direction);

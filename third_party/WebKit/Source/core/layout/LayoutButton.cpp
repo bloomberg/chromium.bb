@@ -32,7 +32,7 @@ LayoutButton::~LayoutButton() {}
 void LayoutButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
   if (!m_inner) {
     // Create an anonymous block.
-    ASSERT(!firstChild());
+    DCHECK(!firstChild());
     m_inner = createAnonymousBlock(style()->display());
     LayoutFlexibleBox::addChild(m_inner);
   }
@@ -57,7 +57,7 @@ void LayoutButton::removeChild(LayoutObject* oldChild) {
 
 void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child,
                                              ComputedStyle& childStyle) const {
-  ASSERT(!m_inner || &child == m_inner);
+  DCHECK(!m_inner || &child == m_inner);
 
   childStyle.setFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
@@ -87,7 +87,7 @@ int LayoutButton::baselinePosition(FontBaseline baseline,
                                    bool firstLine,
                                    LineDirectionMode direction,
                                    LinePositionMode linePositionMode) const {
-  ASSERT(linePositionMode == PositionOnContainingLine);
+  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
   // We want to call the LayoutBlock version of firstLineBoxBaseline to
   // avoid LayoutFlexibleBox synthesizing a baseline that we don't want.
   // We use this check as a proxy for "are there any line boxes in this button"

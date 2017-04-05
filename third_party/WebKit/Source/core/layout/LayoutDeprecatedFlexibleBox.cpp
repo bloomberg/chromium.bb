@@ -179,7 +179,7 @@ static int getHeightForLineCount(const LayoutBlockFlow* blockFlow,
 }
 
 static RootInlineBox* lineAtIndex(const LayoutBlockFlow* blockFlow, int i) {
-  ASSERT(i >= 0);
+  DCHECK_GE(i, 0);
 
   if (blockFlow->style()->visibility() != EVisibility::kVisible)
     return nullptr;
@@ -264,7 +264,7 @@ static void clearTruncation(LayoutBlockFlow* blockFlow) {
 
 LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
     : LayoutBlock(&element) {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   m_stretchingChildren = false;
   if (!isAnonymous()) {
     const KURL& url = document().url();
@@ -359,7 +359,7 @@ void LayoutDeprecatedFlexibleBox::computeIntrinsicLogicalWidths(
 }
 
 void LayoutDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren) {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   if (!relayoutChildren && simplifiedLayout())
     return;

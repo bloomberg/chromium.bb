@@ -56,7 +56,7 @@ class HitTestRequest {
 
   HitTestRequest(HitTestRequestType requestType) : m_requestType(requestType) {
     // Penetrating lists should also be list-based.
-    ASSERT(!(requestType & PenetratingList) || (requestType & ListBased));
+    DCHECK(!(requestType & PenetratingList) || (requestType & ListBased));
   }
 
   bool readOnly() const { return m_requestType & ReadOnly; }

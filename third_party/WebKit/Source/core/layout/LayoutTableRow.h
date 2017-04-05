@@ -93,8 +93,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   bool rowIndexWasSet() const { return m_rowIndex != unsetRowIndex; }
   unsigned rowIndex() const {
-    ASSERT(rowIndexWasSet());
-    ASSERT(
+    DCHECK(rowIndexWasSet());
+    DCHECK(
         !section() ||
         !section()
              ->needsCellRecalc());  // index may be bogus if cells need recalc.

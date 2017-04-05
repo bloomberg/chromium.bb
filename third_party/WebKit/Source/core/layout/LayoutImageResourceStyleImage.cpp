@@ -36,11 +36,11 @@ namespace blink {
 LayoutImageResourceStyleImage::LayoutImageResourceStyleImage(
     StyleImage* styleImage)
     : m_styleImage(styleImage) {
-  ASSERT(m_styleImage);
+  DCHECK(m_styleImage);
 }
 
 LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage() {
-  ASSERT(!m_cachedImage);
+  DCHECK(!m_cachedImage);
 }
 
 void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject) {
@@ -53,7 +53,7 @@ void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject) {
 }
 
 void LayoutImageResourceStyleImage::shutdown() {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
   m_styleImage->removeClient(m_layoutObject);
   m_cachedImage = nullptr;
 }

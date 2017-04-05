@@ -104,7 +104,7 @@ static bool isPotentialClusterRoot(const LayoutObject* layoutObject) {
 }
 
 static bool isIndependentDescendant(const LayoutBlock* layoutObject) {
-  ASSERT(isPotentialClusterRoot(layoutObject));
+  DCHECK(isPotentialClusterRoot(layoutObject));
 
   LayoutBlock* containingBlock = layoutObject->containingBlock();
   return layoutObject->isLayoutView() || layoutObject->isFloating() ||
@@ -244,7 +244,9 @@ void TextAutosizer::record(LayoutBlock* block) {
   if (!m_pageInfo.m_settingEnabled)
     return;
 
-  ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
+#if DCHECK_IS_ON()
+  DCHECK(!m_blocksThatHaveBegunLayout.contains(block));
+#endif
   if (!classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH)) {
     // !everHadLayout() means the object hasn't layout yet
     // which means this object is new added.
@@ -275,7 +277,9 @@ void TextAutosizer::destroy(LayoutBlock* block) {
   if (!m_pageInfo.m_settingEnabled && !m_fingerprintMapper.hasFingerprints())
     return;
 
-  ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
+#if DCHECK_IS_ON()
+  DCHECK(!m_blocksThatHaveBegunLayout.contains(block));
+#endif
 
   if (m_fingerprintMapper.remove(block) && m_firstBlockToBeginLayout) {
     // LayoutBlock with a fingerprint was destroyed during layout.
@@ -323,7 +327,7 @@ void TextAutosizer::prepareClusterStack(LayoutObject* layoutObject) {
 
 void TextAutosizer::beginLayout(LayoutBlock* block,
                                 SubtreeLayoutScope* layouter) {
-  ASSERT(shouldHandleLayout());
+  DCHECK(shouldHandleLayout());
 
   if (prepareForLayout(block) == StopLayout)
     return;
@@ -332,12 +336,12 @@ void TextAutosizer::beginLayout(LayoutBlock* block,
   if (block->isRubyRun() || block->isRubyBase() || block->isRubyText())
     return;
 
-  ASSERT(!m_clusterStack.isEmpty() || block->isLayoutView());
+  DCHECK(!m_clusterStack.isEmpty() || block->isLayoutView());
 
   if (Cluster* cluster = maybeCreateCluster(block))
     m_clusterStack.push_back(WTF::wrapUnique(cluster));
 
-  ASSERT(!m_clusterStack.isEmpty());
+  DCHECK(!m_clusterStack.isEmpty());
 
   // Cells in auto-layout tables are handled separately by inflateAutoTable.
   bool isAutoTableCell =
@@ -348,9 +352,9 @@ void TextAutosizer::beginLayout(LayoutBlock* block,
 }
 
 void TextAutosizer::inflateAutoTable(LayoutTable* table) {
-  ASSERT(table);
-  ASSERT(!table->style()->isFixedTableLayout());
-  ASSERT(table->containingBlock());
+  DCHECK(table);
+  DCHECK(!table->style()->isFixedTableLayout());
+  DCHECK(table->containingBlock());
 
   Cluster* cluster = currentCluster();
   if (cluster->m_root != table)
@@ -378,7 +382,7 @@ void TextAutosizer::inflateAutoTable(LayoutTable* table) {
 }
 
 void TextAutosizer::endLayout(LayoutBlock* block) {
-  ASSERT(shouldHandleLayout());
+  DCHECK(shouldHandleLayout());
 
   if (block == m_firstBlockToBeginLayout) {
     m_firstBlockToBeginLayout = nullptr;
@@ -524,7 +528,7 @@ void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
 }
 
 void TextAutosizer::updatePageInfoInAllFrames() {
-  ASSERT(!m_document->frame() || m_document->frame()->isMainFrame());
+  DCHECK(!m_document->frame() || m_document->frame()->isMainFrame());
 
   for (Frame* frame = m_document->frame(); frame;
        frame = frame->tree().traverseNext()) {
@@ -621,7 +625,7 @@ void TextAutosizer::updatePageInfo() {
 
 IntSize TextAutosizer::windowSize() const {
   Page* page = m_document->page();
-  ASSERT(page);
+  DCHECK(page);
   return page->visualViewport().size();
 }
 
@@ -799,7 +803,7 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(LayoutBlock* block) {
 
   Cluster* parentCluster =
       m_clusterStack.isEmpty() ? nullptr : currentCluster();
-  ASSERT(parentCluster || block->isLayoutView());
+  DCHECK(parentCluster || block->isLayoutView());
 
   // If a non-independent block would not alter the SUPPRESSING flag, it doesn't
   // need to be a cluster.
@@ -863,7 +867,7 @@ float TextAutosizer::clusterMultiplier(Cluster* cluster) {
       cluster->m_supercluster->m_inheritParentMultiplier = InheritMultiplier;
   }
 
-  ASSERT(cluster->m_multiplier);
+  DCHECK(cluster->m_multiplier);
   return cluster->m_multiplier;
 }
 
@@ -897,7 +901,7 @@ float TextAutosizer::superclusterMultiplier(Cluster* cluster) {
             ? multiplierFromBlock(widthProvider)
             : 1.0f;
   }
-  ASSERT(supercluster->m_multiplier);
+  DCHECK(supercluster->m_multiplier);
   return supercluster->m_multiplier;
 }
 
@@ -974,8 +978,9 @@ float TextAutosizer::multiplierFromBlock(const LayoutBlock* block) {
   // m_blocksThatHaveBegunLayout. This can happen during layout of a positioned
   // object if the cluster's DBCAT is deeper than the positioned object's
   // containing block, and wasn't marked as needing layout.
-  ASSERT(m_blocksThatHaveBegunLayout.contains(block) || !block->needsLayout());
-
+#if DCHECK_IS_ON()
+  DCHECK(m_blocksThatHaveBegunLayout.contains(block) || !block->needsLayout());
+#endif
   // Block width, in CSS pixels.
   float blockWidth = widthFromBlock(block);
   float layoutWidth =
@@ -1006,7 +1011,7 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(
 
   size_t lastDepth = 0;
   const LayoutObject* lastTextLeaf = findTextLeaf(root, lastDepth, Last);
-  ASSERT(lastTextLeaf);
+  DCHECK(lastTextLeaf);
 
   // Equalize the depths if necessary. Only one of the while loops below will
   // get executed.
@@ -1040,7 +1045,7 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(
   if (!containingBlock)
     return root;
 
-  ASSERT(containingBlock->isDescendantOf(root));
+  DCHECK(containingBlock->isDescendantOf(root));
   return containingBlock;
 }
 
@@ -1078,7 +1083,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
                                     float multiplier,
                                     SubtreeLayoutScope* layouter,
                                     RelayoutBehavior relayoutBehavior) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
   if (!currentStyle.getTextSizeAdjust().isAuto()) {
     // The accessibility font scale factor is applied by the autosizer so we
@@ -1138,9 +1143,11 @@ bool TextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster) {
 
   const LayoutBlock* parentDeepestBlockContainingAllText =
       deepestBlockContainingAllText(cluster->m_parent);
-  ASSERT(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
-  ASSERT(m_blocksThatHaveBegunLayout.contains(
+#if DCHECK_IS_ON()
+  DCHECK(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
+  DCHECK(m_blocksThatHaveBegunLayout.contains(
       parentDeepestBlockContainingAllText));
+#endif
 
   float contentWidth = cluster->m_root->contentLogicalWidth().toFloat();
   float clusterTextWidth =
@@ -1193,7 +1200,7 @@ void TextAutosizer::FingerprintMapper::assertMapsAreConsistent() {
     for (BlockSet::iterator blockIt = blocks->begin(); blockIt != blocks->end();
          ++blockIt) {
       const LayoutBlock* block = (*blockIt);
-      ASSERT(m_fingerprints.at(block) == fingerprint);
+      DCHECK_EQ(m_fingerprints.at(block), fingerprint);
     }
   }
 }
@@ -1285,7 +1292,7 @@ TextAutosizer::LayoutScope::~LayoutScope() {
 TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutTable* table)
     : LayoutScope(table) {
   if (m_textAutosizer) {
-    ASSERT(m_textAutosizer->shouldHandleLayout());
+    DCHECK(m_textAutosizer->shouldHandleLayout());
     m_textAutosizer->inflateAutoTable(table);
   }
 }
@@ -1293,14 +1300,14 @@ TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutTable* table)
 TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
     : m_mainFrame(page->deprecatedLocalMainFrame()) {
   if (TextAutosizer* textAutosizer = m_mainFrame->document()->textAutosizer()) {
-    ASSERT(!textAutosizer->m_updatePageInfoDeferred);
+    DCHECK(!textAutosizer->m_updatePageInfoDeferred);
     textAutosizer->m_updatePageInfoDeferred = true;
   }
 }
 
 TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {
   if (TextAutosizer* textAutosizer = m_mainFrame->document()->textAutosizer()) {
-    ASSERT(textAutosizer->m_updatePageInfoDeferred);
+    DCHECK(textAutosizer->m_updatePageInfoDeferred);
     textAutosizer->m_updatePageInfoDeferred = false;
     textAutosizer->updatePageInfoInAllFrames();
   }

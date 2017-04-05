@@ -109,18 +109,18 @@ void LayoutBlock::removeFromGlobalMaps() {
   if (hasPositionedObjects()) {
     std::unique_ptr<TrackedLayoutBoxListHashSet> descendants =
         gPositionedDescendantsMap->take(this);
-    ASSERT(!descendants->isEmpty());
+    DCHECK(!descendants->isEmpty());
     for (LayoutBox* descendant : *descendants) {
-      ASSERT(gPositionedContainerMap->at(descendant) == this);
+      DCHECK_EQ(gPositionedContainerMap->at(descendant), this);
       gPositionedContainerMap->erase(descendant);
     }
   }
   if (hasPercentHeightDescendants()) {
     std::unique_ptr<TrackedLayoutBoxListHashSet> descendants =
         gPercentHeightDescendantsMap->take(this);
-    ASSERT(!descendants->isEmpty());
+    DCHECK(!descendants->isEmpty());
     for (LayoutBox* descendant : *descendants) {
-      ASSERT(descendant->percentHeightContainer() == this);
+      DCHECK_EQ(descendant->percentHeightContainer(), this);
       descendant->setPercentHeightContainer(nullptr);
     }
   }
@@ -290,11 +290,11 @@ bool LayoutBlock::allowsOverflowClip() const {
 
 void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild,
                                            LayoutObject* beforeDescendant) {
-  ASSERT(beforeDescendant->parent() != this);
+  DCHECK_NE(beforeDescendant->parent(), this);
   LayoutObject* beforeDescendantContainer = beforeDescendant->parent();
   while (beforeDescendantContainer->parent() != this)
     beforeDescendantContainer = beforeDescendantContainer->parent();
-  ASSERT(beforeDescendantContainer);
+  DCHECK(beforeDescendantContainer);
 
   // We really can't go on if what we have found isn't anonymous. We're not
   // supposed to use some random non-anonymous object and put the child there.
@@ -318,7 +318,7 @@ void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild,
     return;
   }
 
-  ASSERT(beforeDescendantContainer->isTable());
+  DCHECK(beforeDescendantContainer->isTable());
   if (newChild->isTablePart()) {
     // Insert into the anonymous table.
     beforeDescendantContainer->addChild(newChild, beforeDescendant);
@@ -327,7 +327,7 @@ void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild,
 
   LayoutObject* beforeChild = splitAnonymousBoxesAroundChild(beforeDescendant);
 
-  ASSERT(beforeChild->parent() == this);
+  DCHECK_EQ(beforeChild->parent(), this);
   if (beforeChild->parent() != this) {
     // We should never reach here. If we do, we need to use the
     // safe fallback to use the topmost beforeChild container.
@@ -345,7 +345,7 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
 
   // Only LayoutBlockFlow should have inline children, and then we shouldn't be
   // here.
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
 
   if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned()) {
     // If we're inserting an inline child but all of our children are blocks,
@@ -373,9 +373,9 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
 }
 
 void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child) {
-  ASSERT(child->isAnonymousBlock());
-  ASSERT(!child->childrenInline());
-  ASSERT(child->parent() == this);
+  DCHECK(child->isAnonymousBlock());
+  DCHECK(!child->childrenInline());
+  DCHECK_EQ(child->parent(), this);
 
   if (child->continuation())
     return;
@@ -936,14 +936,15 @@ TrackedLayoutBoxListHashSet* LayoutBlock::positionedObjectsInternal() const {
 }
 
 void LayoutBlock::insertPositionedObject(LayoutBox* o) {
-  ASSERT(!isAnonymousBlock());
-  ASSERT(o->containingBlock() == this);
+  DCHECK(!isAnonymousBlock());
+  DCHECK_EQ(o->containingBlock(), this);
 
   if (gPositionedContainerMap) {
     auto containerMapIt = gPositionedContainerMap->find(o);
     if (containerMapIt != gPositionedContainerMap->end()) {
       if (containerMapIt->value == this) {
-        ASSERT(hasPositionedObjects() && positionedObjects()->contains(o));
+        DCHECK(hasPositionedObjects());
+        DCHECK(positionedObjects()->contains(o));
         return;
       }
       removePositionedObject(o);
@@ -976,7 +977,8 @@ void LayoutBlock::removePositionedObject(LayoutBox* o) {
 
   TrackedLayoutBoxListHashSet* positionedDescendants =
       gPositionedDescendantsMap->at(container);
-  ASSERT(positionedDescendants && positionedDescendants->contains(o));
+  DCHECK(positionedDescendants);
+  DCHECK(positionedDescendants->contains(o));
   positionedDescendants->erase(o);
   if (positionedDescendants->isEmpty()) {
     gPositionedDescendantsMap->erase(container);
@@ -1042,7 +1044,7 @@ void LayoutBlock::removePositionedObjects(
   }
 
   for (auto object : deadObjects) {
-    ASSERT(gPositionedContainerMap->at(object) == this);
+    DCHECK_EQ(gPositionedContainerMap->at(object), this);
     positionedDescendants->erase(object);
     gPositionedContainerMap->erase(object);
   }
@@ -1055,7 +1057,7 @@ void LayoutBlock::removePositionedObjects(
 void LayoutBlock::addPercentHeightDescendant(LayoutBox* descendant) {
   if (descendant->percentHeightContainer()) {
     if (descendant->percentHeightContainer() == this) {
-      ASSERT(hasPercentHeightDescendant(descendant));
+      DCHECK(hasPercentHeightDescendant(descendant));
       return;
     }
     descendant->removeFromPercentHeightContainer();
@@ -1099,13 +1101,13 @@ void LayoutBlock::dirtyForLayoutFromPercentageHeightDescendants(
     return;
 
   for (auto* box : *descendants) {
-    ASSERT(box->isDescendantOf(this));
+    DCHECK(box->isDescendantOf(this));
     while (box != this) {
       if (box->normalChildNeedsLayout())
         break;
       layoutScope.setChildNeedsLayout(box);
       box = box->containingBlock();
-      ASSERT(box);
+      DCHECK(box);
       if (!box)
         break;
     }
@@ -1152,7 +1154,7 @@ bool LayoutBlock::hitTestChildren(HitTestResult& result,
                                   const HitTestLocation& locationInContainer,
                                   const LayoutPoint& accumulatedOffset,
                                   HitTestAction hitTestAction) {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   LayoutPoint scrolledOffset(hasOverflowClip()
                                  ? accumulatedOffset - scrolledContentOffset()
                                  : accumulatedOffset);
@@ -1198,8 +1200,9 @@ Position LayoutBlock::positionForBox(InlineBox* box, bool start) const {
 
 static inline bool isEditingBoundary(LayoutObject* ancestor,
                                      LineLayoutBox child) {
-  ASSERT(!ancestor || ancestor->nonPseudoNode());
-  ASSERT(child && child.nonPseudoNode());
+  DCHECK(!ancestor || ancestor->nonPseudoNode());
+  DCHECK(child);
+  DCHECK(child.nonPseudoNode());
   return !ancestor || !ancestor->parent() ||
          (ancestor->hasLayer() && ancestor->parent()->isLayoutView()) ||
          hasEditableStyle(*ancestor->nonPseudoNode()) ==
@@ -1252,7 +1255,7 @@ PositionWithAffinity LayoutBlock::positionForPointRespectingEditingBoundaries(
 
 PositionWithAffinity LayoutBlock::positionForPointIfOutsideAtomicInlineLevel(
     const LayoutPoint& point) {
-  ASSERT(isAtomicInlineLevel());
+  DCHECK(isAtomicInlineLevel());
   // FIXME: This seems wrong when the object's writing-mode doesn't match the
   // line's writing-mode.
   LayoutUnit pointLogicalLeft =
@@ -1294,7 +1297,7 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point) {
   if (!isHorizontalWritingMode())
     pointInLogicalContents = pointInLogicalContents.transposedPoint();
 
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
 
   LayoutBox* lastCandidateBox = lastChildBox();
   while (lastCandidateBox && !isChildHitTestCandidate(lastCandidateBox))
@@ -1390,7 +1393,7 @@ void LayoutBlock::computeIntrinsicLogicalWidths(
 
 DISABLE_CFI_PERF
 void LayoutBlock::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
 
   m_minPreferredLogicalWidth = LayoutUnit();
   m_maxPreferredLogicalWidth = LayoutUnit();
@@ -1671,7 +1674,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType,
   // If we're not replaced, we'll only get called with
   // PositionOfInteriorLineBoxes.
   // Note that inline-block counts as replaced here.
-  ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
+  DCHECK_EQ(linePositionMode, PositionOfInteriorLineBoxes);
 
   const SimpleFontData* fontData = style(firstLine)->font().primaryFont();
   DCHECK(fontData);
@@ -1706,7 +1709,7 @@ LayoutUnit LayoutBlock::minLineHeightForReplacedObject(
 // those two layout modes, though.
 
 int LayoutBlock::firstLineBoxBaseline() const {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   if (isWritingModeRoot() && !isRubyRun())
     return -1;
 
@@ -1722,7 +1725,7 @@ int LayoutBlock::firstLineBoxBaseline() const {
 }
 
 int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   if ((!style()->isOverflowVisible() &&
        !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) ||
       style()->containsSize()) {
@@ -1982,12 +1985,12 @@ bool LayoutBlock::recalcNormalFlowChildOverflowIfNeeded(
       !layoutObject->needsOverflowRecalcAfterStyleChange())
     return false;
 
-  ASSERT(layoutObject->isLayoutBlock());
+  DCHECK(layoutObject->isLayoutBlock());
   return toLayoutBlock(layoutObject)->recalcOverflowAfterStyleChange();
 }
 
 bool LayoutBlock::recalcChildOverflowAfterStyleChange() {
-  ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+  DCHECK(childNeedsOverflowRecalcAfterStyleChange());
   clearChildNeedsOverflowRecalcAfterStyleChange();
 
   bool childrenOverflowChanged = false;
@@ -2028,7 +2031,7 @@ bool LayoutBlock::recalcPositionedDescendantsOverflowAfterStyleChange() {
 }
 
 bool LayoutBlock::recalcOverflowAfterStyleChange() {
-  ASSERT(needsOverflowRecalcAfterStyleChange());
+  DCHECK(needsOverflowRecalcAfterStyleChange());
 
   bool childrenOverflowChanged = false;
   if (childNeedsOverflowRecalcAfterStyleChange())
@@ -2103,7 +2106,7 @@ void LayoutBlock::checkPositionedObjectsNeedLayout() {
              positionedDescendantSet->begin();
          it != end; ++it) {
       LayoutBox* currBox = *it;
-      ASSERT(!currBox->needsLayout());
+      DCHECK(!currBox->needsLayout());
     }
   }
 }

@@ -63,7 +63,7 @@ LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item) {
 }
 
 LayoutSize LayoutListMarker::imageBulletSize() const {
-  ASSERT(isImage());
+  DCHECK(isImage());
   const SimpleFontData* fontData = style()->font().primaryFont();
   DCHECK(fontData);
   if (!fontData)
@@ -135,7 +135,7 @@ void LayoutListMarker::paint(const PaintInfo& paintInfo,
 }
 
 void LayoutListMarker::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutUnit blockOffset;
@@ -237,7 +237,7 @@ LayoutUnit LayoutListMarker::getWidthOfTextWithSuffix() const {
 }
 
 void LayoutListMarker::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
   updateContent();
 
   if (isImage()) {
@@ -358,7 +358,7 @@ int LayoutListMarker::baselinePosition(
     bool firstLine,
     LineDirectionMode direction,
     LinePositionMode linePositionMode) const {
-  ASSERT(linePositionMode == PositionOnContainingLine);
+  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
   if (!isImage())
     return m_listItem->baselinePosition(baselineType, firstLine, direction,
                                         PositionOfInteriorLineBoxes);

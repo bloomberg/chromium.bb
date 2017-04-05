@@ -22,7 +22,7 @@ inline const ComputedStyle* LayoutObject::firstLineStyle() const {
 
 inline const ComputedStyle& LayoutObject::firstLineStyleRef() const {
   const ComputedStyle* style = firstLineStyle();
-  ASSERT(style);
+  DCHECK(style);
   return *style;
 }
 
@@ -32,7 +32,7 @@ inline const ComputedStyle* LayoutObject::style(bool firstLine) const {
 
 inline const ComputedStyle& LayoutObject::styleRef(bool firstLine) const {
   const ComputedStyle* style = this->style(firstLine);
-  ASSERT(style);
+  DCHECK(style);
   return *style;
 }
 

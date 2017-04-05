@@ -333,7 +333,7 @@ void TableLayoutAlgorithmFixed::layout() {
       calcWidth[nEffCols - 1] += remainingWidth;
   }
 
-  ASSERT(m_table->effectiveColumnPositions().size() == nEffCols + 1);
+  DCHECK_EQ(m_table->effectiveColumnPositions().size(), nEffCols + 1);
   int pos = 0;
   for (unsigned i = 0; i < nEffCols; i++) {
     m_table->setEffectiveColumnPosition(i, pos);

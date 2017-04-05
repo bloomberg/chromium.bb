@@ -106,7 +106,7 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::maxPreferredLogicalWidth()
 }
 
 void LayoutMultiColumnSpannerPlaceholder::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   // The placeholder, like any other block level object, has its logical top
   // calculated and set before layout. Copy this to the actual column-span:all

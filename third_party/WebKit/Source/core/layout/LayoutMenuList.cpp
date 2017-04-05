@@ -47,7 +47,7 @@ LayoutMenuList::LayoutMenuList(Element* element)
       m_innerBlockHeight(LayoutUnit()),
       m_optionsWidth(0),
       m_lastActiveIndex(-1) {
-  ASSERT(isHTMLSelectElement(element));
+  DCHECK(isHTMLSelectElement(element));
 }
 
 LayoutMenuList::~LayoutMenuList() {}
@@ -61,13 +61,13 @@ bool LayoutMenuList::isChildAllowed(LayoutObject* object,
 
 void LayoutMenuList::createInnerBlock() {
   if (m_innerBlock) {
-    ASSERT(firstChild() == m_innerBlock);
-    ASSERT(!m_innerBlock->nextSibling());
+    DCHECK_EQ(firstChild(), m_innerBlock);
+    DCHECK(!m_innerBlock->nextSibling());
     return;
   }
 
   // Create an anonymous block.
-  ASSERT(!firstChild());
+  DCHECK(!firstChild());
   m_innerBlock = createAnonymousBlock();
 
   m_buttonText = LayoutText::createEmptyAnonymous(document());
@@ -133,7 +133,7 @@ HTMLSelectElement* LayoutMenuList::selectElement() const {
 void LayoutMenuList::addChild(LayoutObject* newChild,
                               LayoutObject* beforeChild) {
   m_innerBlock->addChild(newChild, beforeChild);
-  ASSERT(m_innerBlock == firstChild());
+  DCHECK_EQ(m_innerBlock, firstChild());
 
   if (AXObjectCache* cache = document().existingAXObjectCache())
     cache->childrenChanged(this);
@@ -208,7 +208,7 @@ void LayoutMenuList::updateFromElement() {
           locale.convertToLocalizedNumber(String::number(selectedCount));
       text = locale.queryString(WebLocalizedString::SelectMenuListText,
                                 localizedNumberString);
-      ASSERT(!m_optionStyle);
+      DCHECK(!m_optionStyle);
     }
   } else {
     if (option) {

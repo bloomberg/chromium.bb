@@ -40,13 +40,13 @@ LayoutImageResource::LayoutImageResource()
 LayoutImageResource::~LayoutImageResource() {}
 
 void LayoutImageResource::initialize(LayoutObject* layoutObject) {
-  ASSERT(!m_layoutObject);
-  ASSERT(layoutObject);
+  DCHECK(!m_layoutObject);
+  DCHECK(layoutObject);
   m_layoutObject = layoutObject;
 }
 
 void LayoutImageResource::shutdown() {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
 
   if (!m_cachedImage)
     return;
@@ -54,7 +54,7 @@ void LayoutImageResource::shutdown() {
 }
 
 void LayoutImageResource::setImageResource(ImageResourceContent* newImage) {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
 
   if (m_cachedImage == newImage)
     return;
@@ -73,7 +73,7 @@ void LayoutImageResource::setImageResource(ImageResourceContent* newImage) {
 }
 
 void LayoutImageResource::resetAnimation() {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
 
   if (!m_cachedImage)
     return;

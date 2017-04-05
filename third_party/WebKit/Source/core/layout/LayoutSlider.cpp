@@ -34,7 +34,7 @@ const int LayoutSlider::defaultTrackLength = 129;
 LayoutSlider::LayoutSlider(HTMLInputElement* element)
     : LayoutFlexibleBox(element) {
   // We assume LayoutSlider works only with <input type=range>.
-  ASSERT(element->type() == InputTypeNames::range);
+  DCHECK_EQ(element->type(), InputTypeNames::range);
 }
 
 LayoutSlider::~LayoutSlider() {}
@@ -43,7 +43,7 @@ int LayoutSlider::baselinePosition(FontBaseline,
                                    bool /*firstLine*/,
                                    LineDirectionMode,
                                    LinePositionMode linePositionMode) const {
-  ASSERT(linePositionMode == PositionOnContainingLine);
+  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
   // FIXME: Patch this function for writing-mode.
   return (size().height() + marginTop()).toInt();
 }

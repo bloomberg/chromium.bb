@@ -121,7 +121,7 @@ LayoutRect LayoutTableCol::localVisualRect() const {
 
   // The correctness of this method depends on the fact that LayoutTableCol's
   // location is always zero.
-  ASSERT(this->location() == LayoutPoint());
+  DCHECK(this->location() == LayoutPoint());
 
   return table->localVisualRect();
 }
@@ -145,8 +145,8 @@ LayoutTableCol* LayoutTableCol::enclosingColumnGroup() const {
     return nullptr;
 
   LayoutTableCol* parentColumnGroup = toLayoutTableCol(parent());
-  ASSERT(parentColumnGroup->isTableColumnGroup());
-  ASSERT(isTableColumn());
+  DCHECK(parentColumnGroup->isTableColumnGroup());
+  DCHECK(isTableColumn());
   return parentColumnGroup;
 }
 

@@ -145,7 +145,7 @@ int CounterNode::computeCountInParent() const {
   int increment = actsAsReset() ? 0 : m_value;
   if (m_previousSibling)
     return m_previousSibling->m_countInParent + increment;
-  ASSERT(m_parent->m_firstChild == this);
+  DCHECK_EQ(m_parent->m_firstChild, this);
   return m_parent->m_value + increment;
 }
 
@@ -158,7 +158,7 @@ void CounterNode::addLayoutObject(LayoutCounter* value) {
     NOTREACHED();
     value->m_counterNode->removeLayoutObject(value);
   }
-  ASSERT(!value->m_nextForSameCounter);
+  DCHECK(!value->m_nextForSameCounter);
   for (LayoutCounter* iterator = m_rootLayoutObject; iterator;
        iterator = iterator->m_nextForSameCounter) {
     if (iterator == value) {
@@ -233,10 +233,10 @@ void CounterNode::recount() {
 void CounterNode::insertAfter(CounterNode* newChild,
                               CounterNode* refChild,
                               const AtomicString& identifier) {
-  ASSERT(newChild);
-  ASSERT(!newChild->m_parent);
-  ASSERT(!newChild->m_previousSibling);
-  ASSERT(!newChild->m_nextSibling);
+  DCHECK(newChild);
+  DCHECK(!newChild->m_parent);
+  DCHECK(!newChild->m_previousSibling);
+  DCHECK(!newChild->m_nextSibling);
   // If the refChild is not our child we can not complete the request. This
   // hardens against bugs in LayoutCounter.
   // When layoutObjects are reparented it may request that we insert counter
@@ -263,11 +263,11 @@ void CounterNode::insertAfter(CounterNode* newChild,
   newChild->m_previousSibling = refChild;
 
   if (next) {
-    ASSERT(next->m_previousSibling == refChild);
+    DCHECK_EQ(next->m_previousSibling, refChild);
     next->m_previousSibling = newChild;
     newChild->m_nextSibling = next;
   } else {
-    ASSERT(m_lastChild == refChild);
+    DCHECK_EQ(m_lastChild, refChild);
     m_lastChild = newChild;
   }
 
@@ -285,7 +285,7 @@ void CounterNode::insertAfter(CounterNode* newChild,
   CounterNode* first = newChild->m_firstChild;
 
   if (first) {
-    ASSERT(last);
+    DCHECK(last);
     newChild->m_nextSibling = first;
     if (m_lastChild == newChild)
       m_lastChild = last;
@@ -305,7 +305,7 @@ void CounterNode::insertAfter(CounterNode* newChild,
     // to layoutObjects that were already in the document's layout tree.
     last->m_nextSibling = next;
     if (next) {
-      ASSERT(next->m_previousSibling == newChild);
+      DCHECK_EQ(next->m_previousSibling, newChild);
       next->m_previousSibling = last;
     } else {
       m_lastChild = last;
@@ -324,9 +324,9 @@ void CounterNode::insertAfter(CounterNode* newChild,
 }
 
 void CounterNode::removeChild(CounterNode* oldChild) {
-  ASSERT(oldChild);
-  ASSERT(!oldChild->m_firstChild);
-  ASSERT(!oldChild->m_lastChild);
+  DCHECK(oldChild);
+  DCHECK(!oldChild->m_firstChild);
+  DCHECK(!oldChild->m_lastChild);
 
   CounterNode* next = oldChild->m_nextSibling;
   CounterNode* previous = oldChild->m_previousSibling;
@@ -338,14 +338,14 @@ void CounterNode::removeChild(CounterNode* oldChild) {
   if (previous) {
     previous->m_nextSibling = next;
   } else {
-    ASSERT(m_firstChild == oldChild);
+    DCHECK_EQ(m_firstChild, oldChild);
     m_firstChild = next;
   }
 
   if (next) {
     next->m_previousSibling = previous;
   } else {
-    ASSERT(m_lastChild == oldChild);
+    DCHECK_EQ(m_lastChild, oldChild);
     m_lastChild = previous;
   }
 

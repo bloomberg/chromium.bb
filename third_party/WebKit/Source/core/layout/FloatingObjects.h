@@ -68,43 +68,43 @@ class FloatingObject {
   void setIsPlaced(bool placed = true) { m_isPlaced = placed; }
 
   LayoutUnit x() const {
-    ASSERT(isPlaced());
+    DCHECK(isPlaced());
     return m_frameRect.x();
   }
   LayoutUnit maxX() const {
-    ASSERT(isPlaced());
+    DCHECK(isPlaced());
     return m_frameRect.maxX();
   }
   LayoutUnit y() const {
-    ASSERT(isPlaced());
+    DCHECK(isPlaced());
     return m_frameRect.y();
   }
   LayoutUnit maxY() const {
-    ASSERT(isPlaced());
+    DCHECK(isPlaced());
     return m_frameRect.maxY();
   }
   LayoutUnit width() const { return m_frameRect.width(); }
   LayoutUnit height() const { return m_frameRect.height(); }
 
   void setX(LayoutUnit x) {
-    ASSERT(!isInPlacedTree());
+    DCHECK(!isInPlacedTree());
     m_frameRect.setX(x);
   }
   void setY(LayoutUnit y) {
-    ASSERT(!isInPlacedTree());
+    DCHECK(!isInPlacedTree());
     m_frameRect.setY(y);
   }
   void setWidth(LayoutUnit width) {
-    ASSERT(!isInPlacedTree());
+    DCHECK(!isInPlacedTree());
     m_frameRect.setWidth(width);
   }
   void setHeight(LayoutUnit height) {
-    ASSERT(!isInPlacedTree());
+    DCHECK(!isInPlacedTree());
     m_frameRect.setHeight(height);
   }
 
   const LayoutRect& frameRect() const {
-    ASSERT(isPlaced());
+    DCHECK(isPlaced());
     return m_frameRect;
   }
 

@@ -39,7 +39,8 @@ static String toRoman(int number, bool upper) {
   // FIXME: CSS3 describes how to make this work for much larger numbers,
   // using overbars and special characters. It also specifies the characters
   // in the range U+2160 to U+217F instead of standard ASCII ones.
-  ASSERT(number >= 1 && number <= 3999);
+  DCHECK_GE(number, 1);
+  DCHECK_LE(number, 3999);
 
   // Big enough to store largest roman number less than 3999 which
   // is 3888 (MMMDCCCLXXXVIII)
@@ -66,7 +67,7 @@ static String toRoman(int number, bool upper) {
     d += 2;
   } while (number);
 
-  ASSERT(length <= lettersSize);
+  DCHECK_LE(length, lettersSize);
   return String(&letters[lettersSize - length], length);
 }
 
@@ -80,7 +81,7 @@ static inline String toAlphabeticOrNumeric(numberType number,
                                            const CharacterType* sequence,
                                            unsigned sequenceSize,
                                            SequenceType type) {
-  ASSERT(sequenceSize >= 2);
+  DCHECK_GE(sequenceSize, 2u);
 
   // Binary is the worst case; requires one character per bit plus a minus sign.
   const int lettersSize = sizeof(numberType) * 8 + 1;
@@ -90,7 +91,7 @@ static inline String toAlphabeticOrNumeric(numberType number,
   bool isNegativeNumber = false;
   unsigned numberShadow = number;
   if (type == AlphabeticSequence) {
-    ASSERT(number > 0);
+    DCHECK_GT(number, 0);
     --numberShadow;
   } else if (number < 0) {
     numberShadow = -number;
@@ -111,7 +112,7 @@ static inline String toAlphabeticOrNumeric(numberType number,
   if (isNegativeNumber)
     letters[lettersSize - ++length] = hyphenMinusCharacter;
 
-  ASSERT(length <= lettersSize);
+  DCHECK_LE(length, lettersSize);
   return String(&letters[lettersSize - length], length);
 }
 
@@ -119,8 +120,8 @@ template <typename CharacterType>
 static String toSymbolic(int number,
                          const CharacterType* symbols,
                          unsigned symbolsSize) {
-  ASSERT(number > 0);
-  ASSERT(symbolsSize >= 1);
+  DCHECK_GT(number, 0);
+  DCHECK_GE(symbolsSize, 1u);
   unsigned numberShadow = number;
   --numberShadow;
 
@@ -171,7 +172,8 @@ static void toHebrewUnder1000(int number, Vector<UChar>& letters) {
   // FIXME: CSS3 mentions various refinements not implemented here.
   // FIXME: Should take a look at Mozilla's HebrewToText function (in
   // nsBulletFrame).
-  ASSERT(number >= 0 && number < 1000);
+  DCHECK_GE(number, 0);
+  DCHECK_LT(number, 1000);
   int fourHundreds = number / 400;
   for (int i = 0; i < fourHundreds; i++)
     letters.push_front(1511 + 3);
@@ -195,7 +197,8 @@ static void toHebrewUnder1000(int number, Vector<UChar>& letters) {
 
 static String toHebrew(int number) {
   // FIXME: CSS3 mentions ways to make this work for much larger numbers.
-  ASSERT(number >= 0 && number <= 999999);
+  DCHECK_GE(number, 0);
+  DCHECK_LE(number, 999999);
 
   if (number == 0) {
     static const UChar hebrewZero[3] = {0x05E1, 0x05E4, 0x05D0};
@@ -216,7 +219,8 @@ static int toArmenianUnder10000(int number,
                                 bool upper,
                                 bool addCircumflex,
                                 UChar letters[9]) {
-  ASSERT(number >= 0 && number < 10000);
+  DCHECK_GE(number, 0);
+  DCHECK_LT(number, 10000);
   int length = 0;
 
   int lowerOffset = upper ? 0 : 0x0030;
@@ -255,7 +259,8 @@ static int toArmenianUnder10000(int number,
 }
 
 static String toArmenian(int number, bool upper) {
-  ASSERT(number >= 1 && number <= 99999999);
+  DCHECK_GE(number, 1);
+  DCHECK_LE(number, 99999999);
 
   const int lettersSize = 18;  // twice what toArmenianUnder10000 needs
   UChar letters[lettersSize];
@@ -264,12 +269,13 @@ static String toArmenian(int number, bool upper) {
   length +=
       toArmenianUnder10000(number % 10000, upper, false, letters + length);
 
-  ASSERT(length <= lettersSize);
+  DCHECK_LE(length, lettersSize);
   return String(letters, length);
 }
 
 static String toGeorgian(int number) {
-  ASSERT(number >= 1 && number <= 19999);
+  DCHECK_GE(number, 1);
+  DCHECK_LE(number, 19999);
 
   const int lettersSize = 5;
   UChar letters[lettersSize];
@@ -303,7 +309,7 @@ static String toGeorgian(int number) {
     letters[length++] = georgianOnes[ones - 1];
   }
 
-  ASSERT(length <= lettersSize);
+  DCHECK_LE(length, lettersSize);
   return String(letters, length);
 }
 
@@ -417,7 +423,7 @@ static String toCJKIdeographic(int number,
     // Remove the tens digit, but leave the marker, for any group that has
     // a value of less than 20.
     if (table[Lang] == Chinese && cjkStyle == Informal && groupValue < 20) {
-      ASSERT(group[4] == NoChar || group[4] == Digit0 || group[4] == Digit1);
+      DCHECK(group[4] == NoChar || group[4] == Digit0 || group[4] == Digit1);
       group[4] = NoChar;
     }
 

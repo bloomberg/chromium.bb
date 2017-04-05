@@ -43,8 +43,9 @@ LayoutQuote::LayoutQuote(PseudoElement& pseudo, QuoteType quote)
 }
 
 LayoutQuote::~LayoutQuote() {
-  ASSERT(!m_attached);
-  ASSERT(!m_next && !m_previous);
+  DCHECK(!m_attached);
+  DCHECK(!m_next);
+  DCHECK(!m_previous);
 }
 
 void LayoutQuote::willBeDestroyed() {
@@ -309,10 +310,11 @@ const QuotesData* LayoutQuote::quotesData() const {
 }
 
 void LayoutQuote::attachQuote() {
-  ASSERT(view());
-  ASSERT(!m_attached);
-  ASSERT(!m_next && !m_previous);
-  ASSERT(isRooted());
+  DCHECK(view());
+  DCHECK(!m_attached);
+  DCHECK(!m_next);
+  DCHECK(!m_previous);
+  DCHECK(isRooted());
 
   if (!view()->layoutQuoteHead()) {
     view()->setLayoutQuoteHead(this);
@@ -345,15 +347,15 @@ void LayoutQuote::attachQuote() {
   for (LayoutQuote* quote = this; quote; quote = quote->m_next)
     quote->updateDepth();
 
-  ASSERT(!m_next || m_next->m_attached);
-  ASSERT(!m_next || m_next->m_previous == this);
-  ASSERT(!m_previous || m_previous->m_attached);
-  ASSERT(!m_previous || m_previous->m_next == this);
+  DCHECK(!m_next || m_next->m_attached);
+  DCHECK(!m_next || m_next->m_previous == this);
+  DCHECK(!m_previous || m_previous->m_attached);
+  DCHECK(!m_previous || m_previous->m_next == this);
 }
 
 void LayoutQuote::detachQuote() {
-  ASSERT(!m_next || m_next->m_attached);
-  ASSERT(!m_previous || m_previous->m_attached);
+  DCHECK(!m_next || m_next->m_attached);
+  DCHECK(!m_previous || m_previous->m_attached);
   if (!m_attached)
     return;
 
@@ -378,7 +380,7 @@ void LayoutQuote::detachQuote() {
 }
 
 void LayoutQuote::updateDepth() {
-  ASSERT(m_attached);
+  DCHECK(m_attached);
   int oldDepth = m_depth;
   m_depth = 0;
   if (m_previous) {

@@ -50,7 +50,7 @@ class ScrollAnchorTest
   }
 
   ScrollAnchor& scrollAnchor(ScrollableArea* scroller) {
-    ASSERT(scroller->isFrameView() || scroller->isPaintLayerScrollableArea());
+    DCHECK(scroller->isFrameView() || scroller->isPaintLayerScrollableArea());
     return *(scroller->scrollAnchor());
   }
 

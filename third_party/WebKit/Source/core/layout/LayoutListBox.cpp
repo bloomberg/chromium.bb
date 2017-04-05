@@ -46,9 +46,9 @@ const int defaultSize = 4;
 const int defaultPaddingBottom = 1;
 
 LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
-  ASSERT(element);
-  ASSERT(element->isHTMLElement());
-  ASSERT(isHTMLSelectElement(element));
+  DCHECK(element);
+  DCHECK(element->isHTMLElement());
+  DCHECK(isHTMLSelectElement(element));
 }
 
 LayoutListBox::~LayoutListBox() {}
@@ -128,8 +128,8 @@ void LayoutListBox::computeIntrinsicLogicalWidths(
 
 void LayoutListBox::scrollToRect(const LayoutRect& rect) {
   if (hasOverflowClip()) {
-    ASSERT(layer());
-    ASSERT(layer()->getScrollableArea());
+    DCHECK(layer());
+    DCHECK(layer()->getScrollableArea());
     layer()->getScrollableArea()->scrollIntoView(
         rect, ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);

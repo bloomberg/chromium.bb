@@ -143,8 +143,8 @@ static LayoutListItem* nextListItem(const Node* listNode,
     return nullptr;
 
   const Node* current = item ? item->node() : listNode;
-  ASSERT(current);
-  ASSERT(!current->document().childNeedsDistributionRecalc());
+  DCHECK(current);
+  DCHECK(!current->document().childNeedsDistributionRecalc());
   current = LayoutTreeBuilderTraversal::next(*current, listNode);
 
   while (current) {
@@ -171,8 +171,8 @@ static LayoutListItem* nextListItem(const Node* listNode,
 static LayoutListItem* previousListItem(const Node* listNode,
                                         const LayoutListItem* item) {
   Node* current = item->node();
-  ASSERT(current);
-  ASSERT(!current->document().childNeedsDistributionRecalc());
+  DCHECK(current);
+  DCHECK(!current->document().childNeedsDistributionRecalc());
   for (current = LayoutTreeBuilderTraversal::previous(*current, listNode);
        current && current != listNode;
        current = LayoutTreeBuilderTraversal::previous(*current, listNode)) {
@@ -195,7 +195,7 @@ static LayoutListItem* previousListItem(const Node* listNode,
 
 void LayoutListItem::updateItemValuesForOrderedList(
     const HTMLOListElement* listNode) {
-  ASSERT(listNode);
+  DCHECK(listNode);
 
   for (LayoutListItem* listItem = nextListItem(listNode); listItem;
        listItem = nextListItem(listNode, listItem))
@@ -204,7 +204,7 @@ void LayoutListItem::updateItemValuesForOrderedList(
 
 unsigned LayoutListItem::itemCountForOrderedList(
     const HTMLOListElement* listNode) {
-  ASSERT(listNode);
+  DCHECK(listNode);
 
   unsigned itemCount = 0;
   for (LayoutListItem* listItem = nextListItem(listNode); listItem;
@@ -305,7 +305,7 @@ static LayoutObject* firstNonMarkerChild(LayoutObject* parent) {
 }
 
 bool LayoutListItem::updateMarkerLocation() {
-  ASSERT(m_marker);
+  DCHECK(m_marker);
 
   LayoutObject* markerParent = m_marker->parent();
   // list-style-position:inside makes the ::marker pseudo an ordinary
@@ -482,7 +482,7 @@ void LayoutListItem::explicitValueChanged() {
 }
 
 void LayoutListItem::setExplicitValue(int value) {
-  ASSERT(node());
+  DCHECK(node());
 
   if (m_hasExplicitValue && m_explicitValue == value)
     return;
@@ -493,7 +493,7 @@ void LayoutListItem::setExplicitValue(int value) {
 }
 
 void LayoutListItem::clearExplicitValue() {
-  ASSERT(node());
+  DCHECK(node());
 
   if (!m_hasExplicitValue)
     return;
@@ -520,7 +520,7 @@ void LayoutListItem::updateListMarkerNumbers() {
     return;
 
   Node* listNode = enclosingList(this);
-  ASSERT(listNode);
+  DCHECK(listNode);
 
   bool isListReversed = false;
   HTMLOListElement* oListElement =

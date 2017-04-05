@@ -48,7 +48,7 @@ static unsigned gMinTableSizeToUseFastPaintPathWithOverflowingCell = 75 * 75;
 
 static inline void setRowLogicalHeightToRowStyleLogicalHeight(
     LayoutTableSection::RowStruct& row) {
-  ASSERT(row.rowLayoutObject);
+  DCHECK(row.rowLayoutObject);
   row.logicalHeight = row.rowLayoutObject->style()->logicalHeight();
 }
 
@@ -207,7 +207,7 @@ void LayoutTableSection::addChild(LayoutObject* child,
   if (beforeChild && beforeChild->parent() != this)
     beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
 
-  ASSERT(!beforeChild || beforeChild->isTableRow());
+  DCHECK(!beforeChild || beforeChild->isTableRow());
   LayoutTableBoxComponent::addChild(child, beforeChild);
 }
 
@@ -215,23 +215,23 @@ static inline void checkThatVectorIsDOMOrdered(
     const Vector<LayoutTableCell*, 1>& cells) {
 #ifndef NDEBUG
   // This function should be called on a non-empty vector.
-  ASSERT(cells.size() > 0);
+  DCHECK_GT(cells.size(), 0u);
 
   const LayoutTableCell* previousCell = cells[0];
   for (size_t i = 1; i < cells.size(); ++i) {
     const LayoutTableCell* currentCell = cells[i];
     // The check assumes that all cells belong to the same row group.
-    ASSERT(previousCell->section() == currentCell->section());
+    DCHECK_EQ(previousCell->section(), currentCell->section());
 
     // 2 overlapping cells can't be on the same row.
-    ASSERT(currentCell->row() != previousCell->row());
+    DCHECK_NE(currentCell->row(), previousCell->row());
 
     // Look backwards in the tree for the previousCell's row. If we are
     // DOM ordered, we should find it.
     const LayoutTableRow* row = currentCell->row();
     for (; row && row != previousCell->row(); row = row->previousRow()) {
     }
-    ASSERT(row == previousCell->row());
+    DCHECK_EQ(row, previousCell->row());
 
     previousCell = currentCell;
   }
@@ -290,7 +290,7 @@ void LayoutTableSection::addCell(LayoutTableCell* cell, LayoutTableRow* row) {
     for (unsigned r = 0; r < rSpan; r++) {
       ensureCols(insertionRow + r, m_cCol + 1);
       CellStruct& c = cellAt(insertionRow + r, m_cCol);
-      ASSERT(cell);
+      DCHECK(cell);
       c.cells.push_back(cell);
       checkThatVectorIsDOMOrdered(c.cells);
       // If cells overlap then we take the slow path for painting.
@@ -544,7 +544,7 @@ unsigned LayoutTableSection::calcRowHeightHavingOnlySpanningCells(
     unsigned rowToApplyExtraHeight,
     unsigned& extraTableHeightToPropgate,
     Vector<int>& rowsCountWithOnlySpanningCells) {
-  ASSERT(rowHasOnlySpanningCells(row));
+  DCHECK(rowHasOnlySpanningCells(row));
 
   unsigned totalCols = m_grid[row].row.size();
 
@@ -606,7 +606,7 @@ void LayoutTableSection::updateRowsHeightHavingOnlySpanningCells(
     struct SpanningRowsHeight& spanningRowsHeight,
     unsigned& extraHeightToPropagate,
     Vector<int>& rowsCountWithOnlySpanningCells) {
-  ASSERT(spanningRowsHeight.rowHeight.size());
+  DCHECK(spanningRowsHeight.rowHeight.size());
 
   int accumulatedPositionIncrease = 0;
   const unsigned rowSpan = cell->rowSpan();
@@ -634,7 +634,7 @@ void LayoutTableSection::updateRowsHeightHavingOnlySpanningCells(
 // height of rows in rowSpan cell.
 void LayoutTableSection::distributeRowSpanHeightToRows(
     SpanningLayoutTableCells& rowSpanCells) {
-  ASSERT(rowSpanCells.size());
+  DCHECK(rowSpanCells.size());
 
   // 'rowSpanCells' list is already sorted based on the cells rowIndex in
   // ascending order
@@ -773,7 +773,7 @@ void LayoutTableSection::distributeRowSpanHeightToRows(
           spanningRowsHeight.rowHeight);
     }
 
-    ASSERT(!extraRowSpanningHeight);
+    DCHECK(!extraRowSpanningHeight);
 
     // Getting total changed height in the table
     extraHeightToPropagate =
@@ -826,7 +826,7 @@ int LayoutTableSection::calcRowLogicalHeight() {
   SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   LayoutTableCell* cell;
 
@@ -936,16 +936,16 @@ int LayoutTableSection::calcRowLogicalHeight() {
   if (!rowSpanCells.isEmpty())
     distributeRowSpanHeightToRows(rowSpanCells);
 
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   return m_rowPos[m_grid.size()];
 }
 
 void LayoutTableSection::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   CHECK(!needsCellRecalc());
-  ASSERT(!table()->needsSectionRecalc());
+  DCHECK(!table()->needsSectionRecalc());
 
   // addChild may over-grow m_grid but we don't want to throw away the memory
   // too early as addChild can be called in a loop (e.g during parsing). Doing
@@ -973,7 +973,7 @@ void LayoutTableSection::layout() {
       unsigned endCol = startColumn;
       unsigned cspan = cell->colSpan();
       while (cspan && endCol < cols) {
-        ASSERT(endCol < table()->effectiveColumns().size());
+        DCHECK_LT(endCol, table()->effectiveColumns().size());
         cspan -= table()->effectiveColumns()[endCol].span;
         endCol++;
       }
@@ -1024,7 +1024,7 @@ void LayoutTableSection::distributeExtraLogicalHeightToPercentRows(
       extraLogicalHeight -= toAdd;
       totalPercent -= m_grid[r].logicalHeight.percent();
     }
-    ASSERT(totalRows >= 1);
+    DCHECK_GE(totalRows, 1u);
     if (r < totalRows - 1)
       rowHeight = m_rowPos[r + 2] - m_rowPos[r + 1];
     m_rowPos[r + 1] += totalLogicalHeightAdded;
@@ -1120,7 +1120,7 @@ void LayoutTableSection::layoutRows() {
   SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   LayoutAnalyzer::Scope analyzer(*this);
 
@@ -1213,7 +1213,7 @@ void LayoutTableSection::layoutRows() {
       rowLayoutObject->computeOverflow();
   }
 
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   setLogicalHeight(LayoutUnit(m_rowPos[totalRows]));
 
@@ -1297,11 +1297,13 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
     }
   }
 
-  ASSERT(hasOverflowingCell == this->hasOverflowingCell());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(hasOverflowingCell, this->hasOverflowingCell());
+#endif
 }
 
 bool LayoutTableSection::recalcChildOverflowAfterStyleChange() {
-  ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+  DCHECK(childNeedsOverflowRecalcAfterStyleChange());
   clearChildNeedsOverflowRecalcAfterStyleChange();
   unsigned totalRows = m_grid.size();
   bool childrenOverflowChanged = false;
@@ -1667,7 +1669,7 @@ CellSpan LayoutTableSection::spannedEffectiveColumns(
 }
 
 void LayoutTableSection::recalcCells() {
-  ASSERT(m_needsCellRecalc);
+  DCHECK(m_needsCellRecalc);
   // We reset the flag here to ensure that |addCell| works. This is safe to do
   // as fillRowsWithDefaultStartingAtPosition makes sure we match the table's
   // columns representation.
@@ -1733,14 +1735,18 @@ unsigned LayoutTableSection::numEffectiveColumns() const {
 
 const BorderValue& LayoutTableSection::borderAdjoiningStartCell(
     const LayoutTableCell* cell) const {
-  ASSERT(cell->isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+  DCHECK(cell->isFirstOrLastCellInRow());
+#endif
   return hasSameDirectionAs(cell) ? style()->borderStart()
                                   : style()->borderEnd();
 }
 
 const BorderValue& LayoutTableSection::borderAdjoiningEndCell(
     const LayoutTableCell* cell) const {
-  ASSERT(cell->isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+  DCHECK(cell->isFirstOrLastCellInRow());
+#endif
   return hasSameDirectionAs(cell) ? style()->borderEnd()
                                   : style()->borderStart();
 }
@@ -1776,14 +1782,14 @@ LayoutTableCell* LayoutTableSection::originatingCellAt(
 }
 
 void LayoutTableSection::appendEffectiveColumn(unsigned pos) {
-  ASSERT(!m_needsCellRecalc);
+  DCHECK(!m_needsCellRecalc);
 
   for (unsigned row = 0; row < m_grid.size(); ++row)
     m_grid[row].row.resize(pos + 1);
 }
 
 void LayoutTableSection::splitEffectiveColumn(unsigned pos, unsigned first) {
-  ASSERT(!m_needsCellRecalc);
+  DCHECK(!m_needsCellRecalc);
 
   if (m_cCol > pos)
     m_cCol++;
@@ -1794,8 +1800,8 @@ void LayoutTableSection::splitEffectiveColumn(unsigned pos, unsigned first) {
     if (r[pos].hasCells()) {
       r[pos + 1].cells.appendVector(r[pos].cells);
       LayoutTableCell* cell = r[pos].primaryCell();
-      ASSERT(cell);
-      ASSERT(cell->colSpan() >= (r[pos].inColSpan ? 1u : 0));
+      DCHECK(cell);
+      DCHECK_GE(cell->colSpan(), (r[pos].inColSpan ? 1u : 0));
       unsigned colleft = cell->colSpan() - r[pos].inColSpan;
       if (first > colleft)
         r[pos + 1].inColSpan = 0;
@@ -1983,7 +1989,7 @@ void LayoutTableSection::relayoutCellIfFlexed(LayoutTableCell& cell,
 int LayoutTableSection::logicalHeightForRow(
     const LayoutTableRow& rowObject) const {
   unsigned rowIndex = rowObject.rowIndex();
-  DCHECK(rowIndex < m_grid.size());
+  DCHECK_LT(rowIndex, m_grid.size());
   int logicalHeight = 0;
   const Row& row = m_grid[rowIndex].row;
   unsigned cols = row.size();

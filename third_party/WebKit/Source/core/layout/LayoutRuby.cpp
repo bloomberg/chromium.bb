@@ -39,7 +39,7 @@ namespace blink {
 
 static LayoutRubyRun* lastRubyRun(const LayoutObject* ruby) {
   LayoutObject* child = ruby->slowLastChild();
-  ASSERT(!child || child->isRubyRun());
+  DCHECK(!child || child->isRubyRun());
   return toLayoutRubyRun(child);
 }
 
@@ -80,7 +80,7 @@ void LayoutRubyAsInline::addChild(LayoutObject* child,
     if (run) {
       if (beforeChild == run)
         beforeChild = toLayoutRubyRun(beforeChild)->firstChild();
-      ASSERT(!beforeChild || beforeChild->isDescendantOf(run));
+      DCHECK(!beforeChild || beforeChild->isDescendantOf(run));
       run->addChild(child, beforeChild);
       return;
     }
@@ -103,14 +103,14 @@ void LayoutRubyAsInline::removeChild(LayoutObject* child) {
   // If the child's parent is *this (must be a ruby run), just use the normal
   // remove method.
   if (child->parent() == this) {
-    ASSERT(child->isRubyRun());
+    DCHECK(child->isRubyRun());
     LayoutInline::removeChild(child);
     return;
   }
 
   // Otherwise find the containing run and remove it from there.
   LayoutRubyRun* run = findRubyRunParent(child);
-  ASSERT(run);
+  DCHECK(run);
   run->removeChild(child);
 }
 
@@ -145,7 +145,7 @@ void LayoutRubyAsBlock::addChild(LayoutObject* child,
     if (run) {
       if (beforeChild == run)
         beforeChild = toLayoutRubyRun(beforeChild)->firstChild();
-      ASSERT(!beforeChild || beforeChild->isDescendantOf(run));
+      DCHECK(!beforeChild || beforeChild->isDescendantOf(run));
       run->addChild(child, beforeChild);
       return;
     }
@@ -168,14 +168,14 @@ void LayoutRubyAsBlock::removeChild(LayoutObject* child) {
   // If the child's parent is *this (must be a ruby run), just use the normal
   // remove method.
   if (child->parent() == this) {
-    ASSERT(child->isRubyRun());
+    DCHECK(child->isRubyRun());
     LayoutBlockFlow::removeChild(child);
     return;
   }
 
   // Otherwise find the containing run and remove it from there.
   LayoutRubyRun* run = findRubyRunParent(child);
-  ASSERT(run);
+  DCHECK(run);
   run->removeChild(child);
 }
 

@@ -839,7 +839,7 @@ String externalRepresentation(LocalFrame* frame,
 
 String externalRepresentation(Element* element, LayoutAsTextBehavior behavior) {
   // Doesn't support printing mode.
-  ASSERT(!(behavior & LayoutAsTextPrintingMode));
+  DCHECK(!(behavior & LayoutAsTextPrintingMode));
   if (!(behavior & LayoutAsTextDontUpdateLayout))
     element->document().updateStyleAndLayout();
 

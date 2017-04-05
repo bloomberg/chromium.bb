@@ -61,7 +61,7 @@ LayoutRubyText* LayoutRubyRun::rubyText() const {
   LayoutObject* child = firstChild();
   // If in future it becomes necessary to support floating or positioned ruby
   // text, layout will have to be changed to handle them properly.
-  ASSERT(!child || !child->isRubyText() ||
+  DCHECK(!child || !child->isRubyText() ||
          !child->isFloatingOrOutOfFlowPositioned());
   return child && child->isRubyText() ? static_cast<LayoutRubyText*>(child) : 0;
 }
@@ -86,21 +86,21 @@ bool LayoutRubyRun::isChildAllowed(LayoutObject* child,
 }
 
 void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild) {
-  ASSERT(child);
+  DCHECK(child);
 
   if (child->isRubyText()) {
     if (!beforeChild) {
       // LayoutRuby has already ascertained that we can add the child here.
-      ASSERT(!hasRubyText());
+      DCHECK(!hasRubyText());
       // prepend ruby texts as first child
       LayoutBlockFlow::addChild(child, firstChild());
     } else if (beforeChild->isRubyText()) {
       // New text is inserted just before another.
       // In this case the new text takes the place of the old one, and
       // the old text goes into a new run that is inserted as next sibling.
-      ASSERT(beforeChild->parent() == this);
+      DCHECK_EQ(beforeChild->parent(), this);
       LayoutObject* ruby = parent();
-      ASSERT(ruby->isRuby());
+      DCHECK(ruby->isRuby());
       LayoutBlock* newRun = staticCreateRubyRun(ruby);
       ruby->addChild(newRun, nextSibling());
       // Add the new ruby text and move the old one to the new run
@@ -133,7 +133,7 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild) {
       beforeChild = base->firstChild();
     if (beforeChild && beforeChild->isRubyText())
       beforeChild = 0;
-    ASSERT(!beforeChild || beforeChild->isDescendantOf(base));
+    DCHECK(!beforeChild || beforeChild->isDescendantOf(base));
     base->addChild(child, beforeChild);
   }
 }
@@ -154,7 +154,7 @@ void LayoutRubyRun::removeChild(LayoutObject* child) {
         moveChildTo(rightRun, base);
         rightRun->moveChildTo(this, rightBase);
         // The now empty ruby base will be removed below.
-        ASSERT(!rubyBase()->firstChild());
+        DCHECK(!rubyBase()->firstChild());
       }
     }
   }
@@ -190,7 +190,8 @@ LayoutRubyBase* LayoutRubyRun::createRubyBase() const {
 
 LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(
     const LayoutObject* parentRuby) {
-  ASSERT(parentRuby && parentRuby->isRuby());
+  DCHECK(parentRuby);
+  DCHECK(parentRuby->isRuby());
   LayoutRubyRun* rr = new LayoutRubyRun();
   rr->setDocumentForAnonymous(&parentRuby->document());
   RefPtr<ComputedStyle> newStyle =
@@ -265,7 +266,7 @@ void LayoutRubyRun::getOverhang(bool firstLine,
                                 LayoutObject* endLayoutObject,
                                 int& startOverhang,
                                 int& endOverhang) const {
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   startOverhang = 0;
   endOverhang = 0;

@@ -37,7 +37,7 @@ bool DepthOrderedLayoutObjectList::isEmpty() const {
 }
 
 void DepthOrderedLayoutObjectList::add(LayoutObject& object) {
-  ASSERT(!object.frameView()->isInPerformLayout());
+  DCHECK(!object.frameView()->isInPerformLayout());
   m_data->m_objects.insert(&object);
   m_data->m_orderedObjects.clear();
 }
@@ -46,7 +46,7 @@ void DepthOrderedLayoutObjectList::remove(LayoutObject& object) {
   auto it = m_data->m_objects.find(&object);
   if (it == m_data->m_objects.end())
     return;
-  ASSERT(!object.frameView()->isInPerformLayout());
+  DCHECK(!object.frameView()->isInPerformLayout());
   m_data->m_objects.erase(it);
   m_data->m_orderedObjects.clear();
 }

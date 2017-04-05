@@ -56,7 +56,7 @@ struct ContentAlignmentData {
 
 LayoutGrid::LayoutGrid(Element* element)
     : LayoutBlock(element), m_grid(this), m_trackSizingAlgorithm(this, m_grid) {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   if (!isAnonymous())
     UseCounter::count(document(), UseCounter::CSSGridLayout);
 }
@@ -210,7 +210,7 @@ void LayoutGrid::repeatTracksSizingIfNeeded(LayoutUnit availableSpaceForColumns,
 }
 
 void LayoutGrid::layoutBlock(bool relayoutChildren) {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   // We cannot perform a simplifiedLayout() on a dirty grid that
   // has positioned items to be laid out.
@@ -739,8 +739,8 @@ void LayoutGrid::placeItemsOnGrid(Grid& grid,
       continue;
 
     GridArea area = grid.gridItemArea(*child);
-    ASSERT(area.rows.isTranslatedDefinite() &&
-           area.columns.isTranslatedDefinite());
+    DCHECK(area.rows.isTranslatedDefinite());
+    DCHECK(area.columns.isTranslatedDefinite());
   }
 #endif
 }
@@ -842,7 +842,7 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
   for (const auto& autoGridItem : autoGridItems) {
     GridSpan majorAxisPositions =
         grid.gridItemSpan(*autoGridItem, autoPlacementMajorAxisDirection());
-    ASSERT(majorAxisPositions.isTranslatedDefinite());
+    DCHECK(majorAxisPositions.isTranslatedDefinite());
     DCHECK(!grid.gridItemSpan(*autoGridItem, autoPlacementMinorAxisDirection())
                 .isTranslatedDefinite());
     size_t minorAxisSpanSize = GridPositionsResolver::spanSizeForAutoPlacedItem(
@@ -1136,10 +1136,10 @@ void LayoutGrid::layoutGridItems() {
 
     const GridArea& area = m_grid.gridItemArea(*child);
 #if DCHECK_IS_ON()
-    DCHECK(area.columns.startLine() <
-           m_trackSizingAlgorithm.tracks(ForColumns).size());
-    DCHECK(area.rows.startLine() <
-           m_trackSizingAlgorithm.tracks(ForRows).size());
+    DCHECK_LT(area.columns.startLine(),
+              m_trackSizingAlgorithm.tracks(ForColumns).size());
+    DCHECK_LT(area.rows.startLine(),
+              m_trackSizingAlgorithm.tracks(ForRows).size());
 #endif
     child->setLogicalLocation(findChildLogicalPosition(*child));
 
@@ -1161,7 +1161,7 @@ void LayoutGrid::layoutGridItems() {
 }
 
 void LayoutGrid::prepareChildForPositionedLayout(LayoutBox& child) {
-  ASSERT(child.isOutOfFlowPositioned());
+  DCHECK(child.isOutOfFlowPositioned());
   child.containingBlock()->insertPositionedObject(&child);
 
   PaintLayer* childLayer = child.layer();
@@ -1210,7 +1210,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(
     GridTrackSizingDirection direction,
     LayoutUnit& offset,
     LayoutUnit& breadth) {
-  ASSERT(!isOrthogonalChild(child));
+  DCHECK(!isOrthogonalChild(child));
   bool isForColumns = direction == ForColumns;
 
   GridSpan positions = GridPositionsResolver::resolveGridPositionsFromStyle(
@@ -1553,7 +1553,7 @@ bool LayoutGrid::hasAutoMarginsInRowAxis(const LayoutBox& child) const {
 // moved to LayoutBox.
 DISABLE_CFI_PERF
 void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child) {
-  ASSERT(!child.isOutOfFlowPositioned());
+  DCHECK(!child.isOutOfFlowPositioned());
 
   LayoutUnit availableAlignmentSpace =
       child.overrideContainingBlockContentLogicalWidth() -
@@ -1577,7 +1577,7 @@ void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child) {
 // moved to LayoutBox.
 DISABLE_CFI_PERF
 void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
-  ASSERT(!child.isOutOfFlowPositioned());
+  DCHECK(!child.isOutOfFlowPositioned());
 
   LayoutUnit availableAlignmentSpace =
       child.overrideContainingBlockContentLogicalHeight() -
@@ -2258,7 +2258,7 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(
 }
 
 LayoutUnit LayoutGrid::translateRTLCoordinate(LayoutUnit coordinate) const {
-  ASSERT(!styleRef().isLeftToRightDirection());
+  DCHECK(!styleRef().isLeftToRightDirection());
 
   LayoutUnit alignmentOffset = m_columnPositions[0];
   LayoutUnit rightGridEdgePosition =

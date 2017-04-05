@@ -124,7 +124,7 @@ PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
 }
 
 void LayoutEmbeddedObject::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   updateLogicalWidth();

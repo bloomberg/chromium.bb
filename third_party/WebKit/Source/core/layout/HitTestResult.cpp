@@ -192,7 +192,7 @@ void HitTestResult::setToShadowHostIfInRestrictedShadowRoot() {
 }
 
 HTMLAreaElement* HitTestResult::imageAreaForImage() const {
-  ASSERT(m_innerNode);
+  DCHECK(m_innerNode);
   HTMLImageElement* imageElement = nullptr;
   if (isHTMLImageElement(m_innerNode)) {
     imageElement = toHTMLImageElement(m_innerNode);
@@ -444,7 +444,7 @@ ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(
 }
 
 void HitTestResult::append(const HitTestResult& other) {
-  ASSERT(hitTestRequest().listBased());
+  DCHECK(hitTestRequest().listBased());
 
   if (!m_scrollbar && other.scrollbar()) {
     setScrollbar(other.scrollbar());
@@ -484,8 +484,8 @@ HitTestResult::NodeSet& HitTestResult::mutableListBasedTestResult() {
 void HitTestResult::resolveRectBasedTest(
     Node* resolvedInnerNode,
     const LayoutPoint& resolvedPointInMainFrame) {
-  ASSERT(isRectBasedTest());
-  ASSERT(m_hitTestLocation.containsPoint(FloatPoint(resolvedPointInMainFrame)));
+  DCHECK(isRectBasedTest());
+  DCHECK(m_hitTestLocation.containsPoint(FloatPoint(resolvedPointInMainFrame)));
   m_hitTestLocation = HitTestLocation(resolvedPointInMainFrame);
   m_pointInInnerNodeFrame = resolvedPointInMainFrame;
   m_innerNode = nullptr;
@@ -497,7 +497,7 @@ void HitTestResult::resolveRectBasedTest(
   // Note that we don't know the local point after a rect-based hit-test, but we
   // never use it so shouldn't bother with the cost of computing it.
   resolvedInnerNode->layoutObject()->updateHitTestResult(*this, LayoutPoint());
-  ASSERT(!isRectBasedTest());
+  DCHECK(!isRectBasedTest());
 }
 
 Element* HitTestResult::innerElement() const {

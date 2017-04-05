@@ -500,8 +500,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
           allocatedMinLogicalWidth += columnMinLogicalWidth;
           allocatedMaxLogicalWidth += columnMaxLogicalWidth;
         }
-        ASSERT(allocatedMinLogicalWidth <= cellMinLogicalWidth);
-        ASSERT(allocatedMaxLogicalWidth <= cellMaxLogicalWidth);
+        DCHECK_LE(allocatedMinLogicalWidth, cellMinLogicalWidth);
+        DCHECK_LE(allocatedMaxLogicalWidth, cellMaxLogicalWidth);
         cellMinLogicalWidth -= allocatedMinLogicalWidth;
         cellMaxLogicalWidth -= allocatedMaxLogicalWidth;
       } else {
@@ -768,7 +768,7 @@ void TableLayoutAlgorithmAuto::layout() {
   if (available < 0)
     shrinkColumnWidth(Percent, available);
 
-  ASSERT(m_table->effectiveColumnPositions().size() == nEffCols + 1);
+  DCHECK_EQ(m_table->effectiveColumnPositions().size(), nEffCols + 1);
   int pos = 0;
   for (size_t i = 0; i < nEffCols; ++i) {
     m_table->setEffectiveColumnPosition(i, pos);

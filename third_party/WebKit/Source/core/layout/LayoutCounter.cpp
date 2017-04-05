@@ -73,7 +73,7 @@ Element* ancestorStyleContainmentObject(const Element& element) {
 static LayoutObject* previousInPreOrderRespectingContainment(
     const LayoutObject& object) {
   Element* self = toElement(object.node());
-  ASSERT(self);
+  DCHECK(self);
   Element* previous = ElementTraversal::previousIncludingPseudo(*self);
   Element* styleContainAncestor = ancestorStyleContainmentObject(*self);
 
@@ -98,7 +98,7 @@ static LayoutObject* previousInPreOrderRespectingContainment(
 static LayoutObject* previousSiblingOrParentRespectingContainment(
     const LayoutObject& object) {
   Element* self = toElement(object.node());
-  ASSERT(self);
+  DCHECK(self);
   Element* previous = ElementTraversal::pseudoAwarePreviousSibling(*self);
   while (previous && !previous->layoutObject())
     previous = ElementTraversal::pseudoAwarePreviousSibling(*previous);
@@ -126,7 +126,7 @@ static LayoutObject* nextInPreOrder(const LayoutObject& object,
                                     const Element* stayWithin,
                                     bool skipDescendants = false) {
   Element* self = toElement(object.node());
-  ASSERT(self);
+  DCHECK(self);
   Element* next =
       skipDescendants
           ? ElementTraversal::nextIncludingPseudoSkippingChildren(*self,
@@ -440,7 +440,7 @@ LayoutCounter::~LayoutCounter() {}
 void LayoutCounter::willBeDestroyed() {
   if (m_counterNode) {
     m_counterNode->removeLayoutObject(this);
-    ASSERT(!m_counterNode);
+    DCHECK(!m_counterNode);
   }
   if (view())
     view()->removeLayoutCounter();
@@ -465,7 +465,7 @@ PassRefPtr<StringImpl> LayoutCounter::originalText() const {
     }
     makeCounterNodeIfNeeded(*beforeAfterContainer, m_counter.identifier(), true)
         ->addLayoutObject(const_cast<LayoutCounter*>(this));
-    ASSERT(m_counterNode);
+    DCHECK(m_counterNode);
   }
   CounterNode* child = m_counterNode;
   int value = child->actsAsReset() ? child->value() : child->countInParent();
@@ -492,7 +492,7 @@ void LayoutCounter::updateCounter() {
 
 void LayoutCounter::invalidate() {
   m_counterNode->removeLayoutObject(this);
-  ASSERT(!m_counterNode);
+  DCHECK(!m_counterNode);
   if (documentBeingDestroyed())
     return;
   setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
@@ -506,7 +506,7 @@ static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,
        child && child != node; child = previous) {
     previous = child->previousInPreOrder();
     child->parent()->removeChild(child.get());
-    ASSERT(counterMaps().at(&child->owner())->at(identifier) == child);
+    DCHECK(counterMaps().at(&child->owner())->at(identifier) == child);
     counterMaps().at(&child->owner())->erase(identifier);
   }
   if (CounterNode* parent = node->parent())
@@ -552,7 +552,7 @@ void LayoutCounter::destroyCounterNode(LayoutObject& owner,
 
 void LayoutCounter::layoutObjectSubtreeWillBeDetached(
     LayoutObject* layoutObject) {
-  ASSERT(layoutObject->view());
+  DCHECK(layoutObject->view());
   // View should never be non-zero. crbug.com/546939
   if (!layoutObject->view() || !layoutObject->view()->hasLayoutCounters())
     return;
@@ -569,7 +569,7 @@ void LayoutCounter::layoutObjectSubtreeWillBeDetached(
 }
 
 static void updateCounters(LayoutObject& layoutObject) {
-  ASSERT(layoutObject.style());
+  DCHECK(layoutObject.style());
   const CounterDirectiveMap* directiveMap =
       layoutObject.style()->counterDirectives();
   if (!directiveMap)
@@ -582,7 +582,7 @@ static void updateCounters(LayoutObject& layoutObject) {
     return;
   }
   CounterMap* counterMap = counterMaps().at(&layoutObject);
-  ASSERT(counterMap);
+  DCHECK(counterMap);
   for (CounterDirectiveMap::const_iterator it = directiveMap->begin();
        it != end; ++it) {
     RefPtr<CounterNode> node = counterMap->at(it->key);
@@ -608,7 +608,7 @@ static void updateCounters(LayoutObject& layoutObject) {
 }
 
 void LayoutCounter::layoutObjectSubtreeAttached(LayoutObject* layoutObject) {
-  ASSERT(layoutObject->view());
+  DCHECK(layoutObject->view());
   if (!layoutObject->view()->hasLayoutCounters())
     return;
   Node* node = layoutObject->node();

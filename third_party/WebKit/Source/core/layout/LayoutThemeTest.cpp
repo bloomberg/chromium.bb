@@ -32,7 +32,7 @@ class LayoutThemeTest : public ::testing::Test {
 void LayoutThemeTest::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
   m_document = &m_dummyPageHolder->document();
-  ASSERT(m_document);
+  DCHECK(m_document);
 }
 
 void LayoutThemeTest::setHtmlInnerHTML(const char* htmlContent) {

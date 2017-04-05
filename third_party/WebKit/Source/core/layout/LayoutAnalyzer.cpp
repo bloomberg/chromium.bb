@@ -91,7 +91,7 @@ void LayoutAnalyzer::push(const LayoutObject& o) {
 }
 
 void LayoutAnalyzer::pop(const LayoutObject& o) {
-  ASSERT(m_depth > 0);
+  DCHECK_GT(m_depth, 0u);
   --m_depth;
 }
 

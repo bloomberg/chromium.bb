@@ -21,7 +21,7 @@ ColumnBalancer::ColumnBalancer(const LayoutMultiColumnSet& columnSet,
 
 void ColumnBalancer::traverse() {
   traverseSubtree(*columnSet().flowThread());
-  ASSERT(!flowThreadOffset());
+  DCHECK(!flowThreadOffset());
 }
 
 void ColumnBalancer::traverseSubtree(const LayoutBox& box) {
@@ -243,7 +243,7 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line) {
     minimumLogialHeight += lineTopInFlowThread;
   m_tallestUnbreakableLogicalHeight =
       std::max(m_tallestUnbreakableLogicalHeight, minimumLogialHeight);
-  ASSERT(
+  DCHECK(
       isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut() ||
       !isLogicalTopWithinBounds(lineTopInFlowThread - line.paginationStrut()));
   if (isFirstAfterBreak(lineTopInFlowThread) &&
@@ -257,7 +257,7 @@ void InitialColumnHeightFinder::recordStrutBeforeOffset(
     LayoutUnit offsetInFlowThread,
     LayoutUnit strut) {
   unsigned columnCount = columnSet().usedColumnCount();
-  ASSERT(m_shortestStruts.size() == columnCount);
+  DCHECK_EQ(m_shortestStruts.size(), columnCount);
   unsigned index = groupAtOffset(offsetInFlowThread)
                        .columnIndexAtOffset(offsetInFlowThread - strut,
                                             LayoutBox::AssociateWithFormerPage);
@@ -274,7 +274,7 @@ LayoutUnit InitialColumnHeightFinder::spaceUsedByStrutsAt(
                                LayoutBox::AssociateWithLatterPage) +
       1;
   stopBeforeColumn = std::min(stopBeforeColumn, columnSet().usedColumnCount());
-  ASSERT(stopBeforeColumn <= m_shortestStruts.size());
+  DCHECK_LE(stopBeforeColumn, m_shortestStruts.size());
   LayoutUnit totalStrutSpace;
   for (unsigned i = 0; i < stopBeforeColumn; i++) {
     if (m_shortestStruts[i] != LayoutUnit::max())
@@ -308,7 +308,7 @@ unsigned InitialColumnHeightFinder::contentRunIndexWithTallestColumns() const {
   LayoutUnit largestHeight;
   LayoutUnit previousOffset = logicalTopInFlowThread();
   size_t runCount = m_contentRuns.size();
-  ASSERT(runCount);
+  DCHECK(runCount);
   for (size_t i = firstContentRunIndexInLastRow(); i < runCount; i++) {
     const ContentRun& run = m_contentRuns[i];
     LayoutUnit height = run.columnLogicalHeight(previousOffset);
@@ -473,7 +473,7 @@ void MinimumSpaceShortageFinder::examineLine(const RootInlineBox& line) {
     m_pendingStrut = LayoutUnit::min();
     return;
   }
-  ASSERT(
+  DCHECK(
       isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut() ||
       !isLogicalTopWithinBounds(lineTopInFlowThread - line.paginationStrut()));
   if (isFirstAfterBreak(lineTopInFlowThread))

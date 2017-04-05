@@ -67,7 +67,7 @@ LayoutTable::LayoutTable(Element* element)
       m_vSpacing(0),
       m_borderStart(0),
       m_borderEnd(0) {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   m_effectiveColumnPositions.fill(0, 1);
 }
 
@@ -215,13 +215,13 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild) {
 }
 
 void LayoutTable::addCaption(const LayoutTableCaption* caption) {
-  ASSERT(m_captions.find(caption) == kNotFound);
+  DCHECK_EQ(m_captions.find(caption), kNotFound);
   m_captions.push_back(const_cast<LayoutTableCaption*>(caption));
 }
 
 void LayoutTable::removeCaption(const LayoutTableCaption* oldCaption) {
   size_t index = m_captions.find(oldCaption);
-  ASSERT(index != kNotFound);
+  DCHECK_NE(index, kNotFound);
   if (index == kNotFound)
     return;
 
@@ -354,7 +354,7 @@ void LayoutTable::updateLogicalWidth() {
   // nor what authors expect.
   // FIXME: When we convert to sub-pixel layout for tables we can remove the int
   // conversion. http://crbug.com/241198
-  ASSERT(logicalWidth().floor() >= minPreferredLogicalWidth().floor());
+  DCHECK_GE(logicalWidth().floor(), minPreferredLogicalWidth().floor());
 }
 
 // This method takes a ComputedStyle's logical width, min-width, or max-width
@@ -509,7 +509,7 @@ void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
   // all the extra space has been distributed.
   // However our current distribution algorithm does not round properly and thus
   // we can have some remaining height.
-  // ASSERT(!topSection() || !extraLogicalHeight);
+  // DCHECK(!topSection() || !extraLogicalHeight);
 }
 
 void LayoutTable::simplifiedNormalFlowLayout() {
@@ -530,7 +530,7 @@ void LayoutTable::simplifiedNormalFlowLayout() {
 }
 
 bool LayoutTable::recalcChildOverflowAfterStyleChange() {
-  ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+  DCHECK(childNeedsOverflowRecalcAfterStyleChange());
   clearChildNeedsOverflowRecalcAfterStyleChange();
 
   // If the table sections we keep pointers to have gone away then the table
@@ -551,7 +551,7 @@ bool LayoutTable::recalcChildOverflowAfterStyleChange() {
 }
 
 void LayoutTable::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   if (simplifiedLayout())
@@ -789,7 +789,7 @@ void LayoutTable::recalcCollapsedBordersIfNeeded() {
          row = row->nextRow()) {
       for (LayoutTableCell* cell = row->firstCell(); cell;
            cell = cell->nextCell()) {
-        ASSERT(cell->table() == this);
+        DCHECK_EQ(cell->table(), this);
         cell->collectBorderValues(m_collapsedBorders);
       }
     }
@@ -896,7 +896,7 @@ void LayoutTable::computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
 }
 
 void LayoutTable::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
 
   computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth,
                                 m_maxPreferredLogicalWidth);
@@ -953,7 +953,7 @@ LayoutTableSection* LayoutTable::topNonEmptySection() const {
 
 void LayoutTable::splitEffectiveColumn(unsigned index, unsigned firstSpan) {
   // We split the column at |index|, taking |firstSpan| cells from the span.
-  ASSERT(m_effectiveColumns[index].span > firstSpan);
+  DCHECK_GT(m_effectiveColumns[index].span, firstSpan);
   m_effectiveColumns.insert(index, firstSpan);
   m_effectiveColumns[index + 1].span -= firstSpan;
 
@@ -1015,9 +1015,9 @@ LayoutTableCol* LayoutTable::firstColumn() const {
 }
 
 void LayoutTable::updateColumnCache() const {
-  ASSERT(m_hasColElements);
-  ASSERT(m_columnLayoutObjects.isEmpty());
-  ASSERT(!m_columnLayoutObjectsValid);
+  DCHECK(m_hasColElements);
+  DCHECK(m_columnLayoutObjects.isEmpty());
+  DCHECK(!m_columnLayoutObjectsValid);
 
   for (LayoutTableCol* columnLayoutObject = firstColumn(); columnLayoutObject;
        columnLayoutObject = columnLayoutObject->nextColumn()) {
@@ -1030,7 +1030,7 @@ void LayoutTable::updateColumnCache() const {
 
 LayoutTable::ColAndColGroup LayoutTable::slowColElementAtAbsoluteColumn(
     unsigned absoluteColumnIndex) const {
-  ASSERT(m_hasColElements);
+  DCHECK(m_hasColElements);
 
   if (!m_columnLayoutObjectsValid)
     updateColumnCache();
@@ -1038,10 +1038,10 @@ LayoutTable::ColAndColGroup LayoutTable::slowColElementAtAbsoluteColumn(
   unsigned columnCount = 0;
   for (unsigned i = 0; i < m_columnLayoutObjects.size(); i++) {
     LayoutTableCol* columnLayoutObject = m_columnLayoutObjects[i];
-    ASSERT(!columnLayoutObject->isTableColumnGroupWithColumnChildren());
+    DCHECK(!columnLayoutObject->isTableColumnGroupWithColumnChildren());
     unsigned span = columnLayoutObject->span();
     unsigned startCol = columnCount;
-    ASSERT(span >= 1);
+    DCHECK_GE(span, 1u);
     unsigned endCol = columnCount + span - 1;
     columnCount += span;
     if (columnCount > absoluteColumnIndex) {
@@ -1069,7 +1069,7 @@ LayoutTable::ColAndColGroup LayoutTable::slowColElementAtAbsoluteColumn(
 }
 
 void LayoutTable::recalcSections() const {
-  ASSERT(m_needsSectionRecalc);
+  DCHECK(m_needsSectionRecalc);
 
   m_head = nullptr;
   m_foot = nullptr;
@@ -1135,7 +1135,7 @@ void LayoutTable::recalcSections() const {
   m_effectiveColumnPositions.resize(maxCols + 1);
   m_noCellColspanAtLeast = calcNoCellColspanAtLeast();
 
-  ASSERT(selfNeedsLayout());
+  DCHECK(selfNeedsLayout());
 
   m_needsSectionRecalc = false;
 }
@@ -1461,7 +1461,7 @@ LayoutTableCell* LayoutTable::cellAbove(const LayoutTableCell* cell) const {
   } else {
     section = sectionAbove(cell->section(), SkipEmptySections);
     if (section) {
-      ASSERT(section->numRows());
+      DCHECK(section->numRows());
       rAbove = section->numRows() - 1;
     }
   }
@@ -1526,7 +1526,7 @@ int LayoutTable::baselinePosition(FontBaseline baselineType,
                                   bool firstLine,
                                   LineDirectionMode direction,
                                   LinePositionMode linePositionMode) const {
-  ASSERT(linePositionMode == PositionOnContainingLine);
+  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
   int baseline = firstLineBoxBaseline();
   if (baseline != -1) {
     if (isInline())
@@ -1654,7 +1654,9 @@ LayoutTable* LayoutTable::createAnonymousWithParent(
 
 const BorderValue& LayoutTable::tableStartBorderAdjoiningCell(
     const LayoutTableCell* cell) const {
-  ASSERT(cell->isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+  DCHECK(cell->isFirstOrLastCellInRow());
+#endif
   if (hasSameDirectionAs(cell->row()))
     return style()->borderStart();
 
@@ -1663,7 +1665,9 @@ const BorderValue& LayoutTable::tableStartBorderAdjoiningCell(
 
 const BorderValue& LayoutTable::tableEndBorderAdjoiningCell(
     const LayoutTableCell* cell) const {
-  ASSERT(cell->isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+  DCHECK(cell->isFirstOrLastCellInRow());
+#endif
   if (hasSameDirectionAs(cell->row()))
     return style()->borderEnd();
 

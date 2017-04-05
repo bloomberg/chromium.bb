@@ -178,7 +178,7 @@ void LayoutInline::styleDidChange(StyleDifference diff,
   }
 
   if (continuation && oldStyle) {
-    ASSERT(endOfContinuation);
+    DCHECK(endOfContinuation);
     LayoutObject* block = containingBlock()->nextSibling();
     // If an inline's in-flow positioning has changed then any descendant blocks
     // will need to change their styles accordingly.
@@ -394,7 +394,7 @@ void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock,
                                 LayoutBlockFlow* middleBlock,
                                 LayoutObject* beforeChild,
                                 LayoutBoxModelObject* oldCont) {
-  ASSERT(isDescendantOf(fromBlock));
+  DCHECK(isDescendantOf(fromBlock));
 
   // If we're splitting the inline containing the fullscreened element,
   // |beforeChild| may be the layoutObject for the fullscreened element.
@@ -470,7 +470,7 @@ void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock,
 
   // The last inline to clone is |this|, and the current |cloneInline| is cloned
   // from |this|.
-  ASSERT(this == inlinesToClone.front());
+  DCHECK_EQ(this, inlinesToClone.front());
 
   // Hook |cloneInline| up as the continuation of the middle block.
   cloneInline->setContinuation(oldCont);
@@ -558,7 +558,7 @@ void LayoutInline::addChildToContinuation(LayoutObject* newChild,
   // A continuation always consists of two potential candidates: an inline or an
   // anonymous block box holding block children.
   LayoutBoxModelObject* flow = continuationBefore(beforeChild);
-  ASSERT(!beforeChild || beforeChild->parent()->isAnonymousBlock() ||
+  DCHECK(!beforeChild || beforeChild->parent()->isAnonymousBlock() ||
          beforeChild->parent()->isLayoutInline());
   LayoutBoxModelObject* beforeChildParent = nullptr;
   if (beforeChild) {
@@ -621,7 +621,8 @@ static inline void computeItemTopHeight(const LayoutInline* container,
       rootBox.getLineLayoutItem().style(firstLine)->font().primaryFont();
   const SimpleFontData* containerFontData =
       container->style(firstLine)->font().primaryFont();
-  DCHECK(fontData && containerFontData);
+  DCHECK(fontData);
+  DCHECK(containerFontData);
   if (!fontData || !containerFontData) {
     *top = LayoutUnit();
     *height = LayoutUnit();
@@ -900,7 +901,7 @@ bool LayoutInline::hitTestCulledInline(
     HitTestResult& result,
     const HitTestLocation& locationInContainer,
     const LayoutPoint& accumulatedOffset) {
-  ASSERT(!alwaysCreateLineBoxes());
+  DCHECK(!alwaysCreateLineBoxes());
   if (!visibleToHitTestRequest(result.hitTestRequest()))
     return false;
 
@@ -958,7 +959,7 @@ class LinesBoundingBoxGeneratorContext {
 
 LayoutRect LayoutInline::linesBoundingBox() const {
   if (!alwaysCreateLineBoxes()) {
-    ASSERT(!firstLineBox());
+    DCHECK(!firstLineBox());
     FloatRect floatResult;
     LinesBoundingBoxGeneratorContext context(floatResult);
     generateCulledLineBoxRects(context, this);
@@ -973,8 +974,8 @@ LayoutRect LayoutInline::linesBoundingBox() const {
   // this is happening).  The assert will hopefully catch the problem in debug
   // builds and help us someday figure out why.  We also put in a redundant
   // check of lastLineBox() to avoid the crash for now.
-  ASSERT(!firstLineBox() ==
-         !lastLineBox());  // Either both are null or both exist.
+  DCHECK_EQ(!firstLineBox(),
+            !lastLineBox());  // Either both are null or both exist.
   if (firstLineBox() && lastLineBox()) {
     // Return the width of the minimal left side and the maximal right side.
     LayoutUnit logicalLeftSide;
@@ -1207,7 +1208,7 @@ bool LayoutInline::mapToVisualRectInAncestorSpaceInternal(
     return true;
 
   LayoutObject* container = this->container();
-  ASSERT(container == parent());
+  DCHECK_EQ(container, parent());
   if (!container)
     return true;
 
@@ -1246,7 +1247,7 @@ bool LayoutInline::mapToVisualRectInAncestorSpaceInternal(
 
 LayoutSize LayoutInline::offsetFromContainer(
     const LayoutObject* container) const {
-  ASSERT(container == this->container());
+  DCHECK_EQ(container, this->container());
 
   LayoutSize offset;
   if (isInFlowPositioned())
@@ -1363,7 +1364,7 @@ int LayoutInline::baselinePosition(FontBaseline baselineType,
                                    bool firstLine,
                                    LineDirectionMode direction,
                                    LinePositionMode linePositionMode) const {
-  ASSERT(linePositionMode == PositionOnContainingLine);
+  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
   const SimpleFontData* fontData = style(firstLine)->font().primaryFont();
   DCHECK(fontData);
   if (!fontData)
@@ -1380,7 +1381,7 @@ LayoutSize LayoutInline::offsetForInFlowPositionedInline(
     const LayoutBox& child) const {
   // FIXME: This function isn't right with mixed writing modes.
 
-  ASSERT(isInFlowPositioned());
+  DCHECK(isInFlowPositioned());
   if (!isInFlowPositioned())
     return LayoutSize();
 

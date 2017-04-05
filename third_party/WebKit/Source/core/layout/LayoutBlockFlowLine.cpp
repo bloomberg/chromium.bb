@@ -125,7 +125,7 @@ static inline InlineBox* createInlineBoxForLayoutObject(
     bool isRootLineBox,
     bool isOnlyRun = false) {
   // Callers should handle text themselves.
-  ASSERT(!lineLayoutItem.isText());
+  DCHECK(!lineLayoutItem.isText());
 
   if (isRootLineBox)
     return LineLayoutBlockFlow(lineLayoutItem).createAndAppendRootInlineBox();
@@ -138,7 +138,7 @@ static inline InlineBox* createInlineBoxForLayoutObject(
 
 static inline InlineTextBox* createInlineBoxForText(BidiRun& run,
                                                     bool isOnlyRun) {
-  ASSERT(run.m_lineLayoutItem.isText());
+  DCHECK(run.m_lineLayoutItem.isText());
   LineLayoutText text = LineLayoutText(run.m_lineLayoutItem);
   InlineTextBox* textBox =
       text.createInlineTextBox(run.m_start, run.m_stop - run.m_start);
@@ -272,7 +272,7 @@ static bool reachedEndOfTextRun(const BidiRunList<BidiRun>& bidiRuns) {
 
 RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
                                               const LineInfo& lineInfo) {
-  ASSERT(bidiRuns.firstRun());
+  DCHECK(bidiRuns.firstRun());
 
   bool rootHasSelectedChildren = false;
   InlineFlowBox* parentBox = nullptr;
@@ -296,7 +296,7 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
           createInlineBoxForLayoutObject(r->m_lineLayoutItem, false, isOnlyRun);
     r->m_box = box;
 
-    ASSERT(box);
+    DCHECK(box);
     if (!box)
       continue;
 
@@ -328,7 +328,8 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
 
   // We should have a root inline box.  It should be unconstructed and
   // be the last continuation of our line list.
-  ASSERT(lastLineBox() && !lastLineBox()->isConstructed());
+  DCHECK(lastLineBox());
+  DCHECK(!lastLineBox()->isConstructed());
 
   // Set the m_selectedChildren flag on the root inline box if one of the leaf
   // inline box from the bidi runs walk above has a selection state.
@@ -652,19 +653,19 @@ static inline void setLogicalWidthForTextRun(
 
   run->m_box->setLogicalWidth(LayoutUnit(measuredWidth) + hyphenWidth);
   if (!fallbackFonts.isEmpty()) {
-    ASSERT(run->m_box->isText());
+    DCHECK(run->m_box->isText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         textBoxDataMap
             .insert(toInlineTextBox(run->m_box),
                     std::make_pair(Vector<const SimpleFontData*>(),
                                    GlyphOverflow()))
             .storedValue;
-    ASSERT(it->value.first.isEmpty());
+    DCHECK(it->value.first.isEmpty());
     copyToVector(fallbackFonts, it->value.first);
     run->m_box->parent()->clearDescendantsHaveSameLineHeightAndBaseline();
   }
   if (!glyphOverflow.isApproximatelyZero()) {
-    ASSERT(run->m_box->isText());
+    DCHECK(run->m_box->isText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         textBoxDataMap
             .insert(toInlineTextBox(run->m_box),
@@ -906,7 +907,7 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(
 
   // Now make sure we place replaced layout objects correctly.
   for (BidiRun* r = firstRun; r; r = r->next()) {
-    ASSERT(r->m_box);
+    DCHECK(r->m_box);
     if (!r->m_box)
       continue;  // Skip runs with no line boxes.
 
@@ -928,7 +929,7 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(
 
 void LayoutBlockFlow::appendFloatingObjectToLastLine(
     FloatingObject& floatingObject) {
-  ASSERT(!floatingObject.originatingLine());
+  DCHECK(!floatingObject.originatingLine());
   floatingObject.setOriginatingLine(lastRootBox());
   lastRootBox()->appendFloat(floatingObject.layoutObject());
 }
@@ -976,7 +977,7 @@ RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(
   // contains reversed text or not. If we wouldn't do that editing and thus
   // text selection in RTL boxes would not work as expected.
   if (isSVGRootInlineBox) {
-    ASSERT(isSVGText());
+    DCHECK(isSVGText());
     toSVGRootInlineBox(lineBox)->computePerCharacterLayoutInformation();
   }
 
@@ -1052,7 +1053,7 @@ void LayoutBlockFlow::appendFloatsToLastLine(
   if (layoutState.lastFloat()) {
     FloatingObjectSetIterator lastFloatIterator =
         floatingObjectSet.find(layoutState.lastFloat());
-    ASSERT(lastFloatIterator != end);
+    DCHECK(lastFloatIterator != end);
     ++lastFloatIterator;
     it = lastFloatIterator;
   }
@@ -1073,8 +1074,8 @@ void LayoutBlockFlow::appendFloatsToLastLine(
       }
     }
     appendFloatingObjectToLastLine(floatingObject);
-    ASSERT(floatingObject.layoutObject() ==
-           layoutState.floats()[layoutState.floatIndex()].object);
+    DCHECK_EQ(floatingObject.layoutObject(),
+              layoutState.floats()[layoutState.floatIndex()].object);
     // If a float's geometry has changed, give up on syncing with clean lines.
     if (layoutState.floats()[layoutState.floatIndex()].rect !=
         floatingObject.frameRect()) {
@@ -1115,7 +1116,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
 
   while (!endOfLine.atEnd()) {
     // The runs from the previous line should have been cleaned up.
-    ASSERT(!resolver.runs().runCount());
+    DCHECK(!resolver.runs().runCount());
 
     // FIXME: Is this check necessary before the first iteration or can it be
     // moved to the end?
@@ -1156,12 +1157,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       break;
     }
 
-    ASSERT(endOfLine != resolver.position());
+    DCHECK(endOfLine != resolver.position());
     RootInlineBox* lineBox = nullptr;
 
     // This is a short-cut for empty lines.
     if (layoutState.lineInfo().isEmpty()) {
-      ASSERT(!paginationStrutFromDeletedLine);
+      DCHECK(!paginationStrutFromDeletedLine);
       if (lastRootBox())
         lastRootBox()->setLineBreakInfo(endOfLine.getLineLayoutItem(),
                                         endOfLine.offset(), resolver.status());
@@ -1196,7 +1197,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       constructBidiRunsForLine(
           resolver, bidiRuns, endOfLine, override,
           layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
-      ASSERT(resolver.position() == endOfLine);
+      DCHECK(resolver.position() == endOfLine);
 
       BidiRun* trailingSpaceRun = resolver.trailingSpaceRun();
 
@@ -1220,7 +1221,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
 
       // If we decided to re-create the line due to pagination, we better have a
       // new line now.
-      ASSERT(lineBox || !paginationStrutFromDeletedLine);
+      DCHECK(lineBox || !paginationStrutFromDeletedLine);
 
       if (lineBox) {
         lineBox->setLineBreakInfo(endOfLine.getLineLayoutItem(),
@@ -1254,10 +1255,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                 // so that we can re-apply it when the new line has been
                 // created.
                 paginationStrutFromDeletedLine = lineBox->paginationStrut();
-                ASSERT(paginationStrutFromDeletedLine);
+                DCHECK(paginationStrutFromDeletedLine);
                 // We're also going to assume that we're right after a page
                 // break when re-creating this line, so it better be so.
-                ASSERT(lineBox->isFirstAfterPageBreak());
+                DCHECK(lineBox->isFirstAfterPageBreak());
                 lineBox->deleteLine();
                 endOfLine = restartLayoutRunsAndFloatsInRange(
                     oldLogicalHeight, oldLogicalHeight + adjustment,
@@ -1307,7 +1308,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
   }
 
   // The resolver runs should have been cleared, otherwise they're leaking.
-  ASSERT(!resolver.runs().runCount());
+  DCHECK(!resolver.runs().runCount());
 
   // In case we already adjusted the line positions during this layout to avoid
   // widows then we need to ignore the possibility of having a new widows
@@ -1398,7 +1399,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
         if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
           for (auto* box : *cleanLineFloats) {
             FloatingObject* floatingObject = insertFloatingObject(*box);
-            ASSERT(!floatingObject->originatingLine());
+            DCHECK(!floatingObject->originatingLine());
             floatingObject->setOriginatingLine(line);
             LayoutUnit logicalTop =
                 logicalTopForChild(*box) - marginBeforeForChild(*box) + delta;
@@ -2087,7 +2088,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
 
     deleteLineBoxTree();
     curr = nullptr;
-    ASSERT(!firstLineBox() && !lastLineBox());
+    DCHECK(!firstLineBox());
+    DCHECK(!lastLineBox());
   } else {
     if (firstLineBoxWithBreakAndClearance)
       curr = firstLineBoxWithBreakAndClearance;
@@ -2124,12 +2126,12 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
       if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
         for (auto* box : *cleanLineFloats) {
           FloatingObject* floatingObject = insertFloatingObject(*box);
-          ASSERT(!floatingObject->originatingLine());
+          DCHECK(!floatingObject->originatingLine());
           floatingObject->setOriginatingLine(line);
           LayoutUnit logicalTop =
               logicalTopForChild(*box) - marginBeforeForChild(*box);
           placeNewFloats(logicalTop);
-          ASSERT(layoutState.floats()[numCleanFloats].object == box);
+          DCHECK_EQ(layoutState.floats()[numCleanFloats].object, box);
           numCleanFloats++;
         }
       }
@@ -2182,7 +2184,7 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState,
                                            RootInlineBox* startLine,
                                            InlineIterator& cleanLineStart,
                                            BidiStatus& cleanLineBidiStatus) {
-  ASSERT(!layoutState.endLine());
+  DCHECK(!layoutState.endLine());
   RootInlineBox* last = nullptr;
   for (RootInlineBox* curr = startLine->nextRootBox(); curr;
        curr = curr->nextRootBox()) {
@@ -2307,7 +2309,7 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState,
 bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
 
 {
-  ASSERT(inlineObj->parent() == this);
+  DCHECK_EQ(inlineObj->parent(), this);
 
   InlineIterator it(LineLayoutBlockFlow(this), LineLayoutItem(inlineObj), 0);
   // FIXME: We should pass correct value for WhitespacePosition.
@@ -2416,7 +2418,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : 0;
 
   if (!ellipsisWidth) {
-    ASSERT(font.primaryFont());
+    DCHECK(font.primaryFont());
     if (font.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
       ellipsisWidth =
           font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1,
@@ -2614,7 +2616,7 @@ LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(
 }
 
 void LayoutBlockFlow::setShouldDoFullPaintInvalidationForFirstLine() {
-  ASSERT(childrenInline());
+  DCHECK(childrenInline());
   if (RootInlineBox* firstRootBox = this->firstRootBox())
     firstRootBox->setShouldDoFullPaintInvalidationRecursively();
 }

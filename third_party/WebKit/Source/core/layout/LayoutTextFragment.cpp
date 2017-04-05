@@ -48,7 +48,7 @@ LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
     : LayoutTextFragment(node, str, 0, str ? str->length() : 0) {}
 
 LayoutTextFragment::~LayoutTextFragment() {
-  ASSERT(!m_firstLetterPseudoElement);
+  DCHECK(!m_firstLetterPseudoElement);
 }
 
 LayoutTextFragment* LayoutTextFragment::createAnonymous(PseudoElement& pseudo,
@@ -102,7 +102,7 @@ void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force) {
   // first letter pseudo element to reattach itself so it can re-calculate the
   // correct first-letter settings.
   if (isRemainingTextLayoutObject()) {
-    ASSERT(firstLetterPseudoElement());
+    DCHECK(firstLetterPseudoElement());
     firstLetterPseudoElement()->updateTextFragments();
   }
 }

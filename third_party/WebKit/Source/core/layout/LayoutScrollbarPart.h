@@ -50,23 +50,23 @@ class LayoutScrollbarPart final : public LayoutBlock {
 
   // Scrollbar parts needs to be rendered at device pixel boundaries.
   LayoutRectOutsets marginBoxOutsets() const override {
-    ASSERT(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
+    DCHECK(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
     return LayoutBlock::marginBoxOutsets();
   }
   LayoutUnit marginTop() const override {
-    ASSERT(isIntegerValue(LayoutBlock::marginTop()));
+    DCHECK(isIntegerValue(LayoutBlock::marginTop()));
     return LayoutBlock::marginTop();
   }
   LayoutUnit marginBottom() const override {
-    ASSERT(isIntegerValue(LayoutBlock::marginBottom()));
+    DCHECK(isIntegerValue(LayoutBlock::marginBottom()));
     return LayoutBlock::marginBottom();
   }
   LayoutUnit marginLeft() const override {
-    ASSERT(isIntegerValue(LayoutBlock::marginLeft()));
+    DCHECK(isIntegerValue(LayoutBlock::marginLeft()));
     return LayoutBlock::marginLeft();
   }
   LayoutUnit marginRight() const override {
-    ASSERT(isIntegerValue(LayoutBlock::marginRight()));
+    DCHECK(isIntegerValue(LayoutBlock::marginRight()));
     return LayoutBlock::marginRight();
   }
 

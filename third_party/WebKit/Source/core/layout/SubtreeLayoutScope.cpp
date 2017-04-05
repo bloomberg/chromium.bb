@@ -51,12 +51,12 @@ SubtreeLayoutScope::~SubtreeLayoutScope() {
 void SubtreeLayoutScope::setNeedsLayout(
     LayoutObject* descendant,
     LayoutInvalidationReasonForTracing reason) {
-  ASSERT(descendant->isDescendantOf(&m_root));
+  DCHECK(descendant->isDescendantOf(&m_root));
   descendant->setNeedsLayout(reason, MarkContainerChain, this);
 }
 
 void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant) {
-  ASSERT(descendant->isDescendantOf(&m_root));
+  DCHECK(descendant->isDescendantOf(&m_root));
   descendant->setChildNeedsLayout(MarkContainerChain, this);
 }
 

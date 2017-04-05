@@ -41,7 +41,7 @@ LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollableArea,
       m_scrollableArea(scrollableArea),
       m_scrollbar(scrollbar),
       m_part(part) {
-  ASSERT(m_scrollableArea);
+  DCHECK(m_scrollableArea);
 }
 
 LayoutScrollbarPart::~LayoutScrollbarPart() {
@@ -207,7 +207,7 @@ void LayoutScrollbarPart::styleDidChange(StyleDifference diff,
                                          const ComputedStyle* oldStyle) {
   LayoutBlock::styleDidChange(diff, oldStyle);
   // See adjustStyleBeforeSet() above.
-  ASSERT(!isOrthogonalWritingModeRoot());
+  DCHECK(!isOrthogonalWritingModeRoot());
   setInline(false);
   clearPositionedState();
   setFloating(false);
@@ -232,7 +232,7 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation() {
   }
 
   // This LayoutScrollbarPart is a scroll corner or a resizer.
-  ASSERT(m_part == NoPart);
+  DCHECK_EQ(m_part, NoPart);
   if (FrameView* frameView = view()->frameView()) {
     if (frameView->isFrameViewScrollCorner(this)) {
       frameView->setScrollCornerNeedsPaintInvalidation();

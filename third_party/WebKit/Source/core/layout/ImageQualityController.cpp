@@ -93,7 +93,7 @@ InterpolationQuality ImageQualityController::chooseInterpolationQuality(
 ImageQualityController::~ImageQualityController() {
   // This will catch users of ImageQualityController that forget to call
   // cleanUp.
-  ASSERT(!gImageQualityController || gImageQualityController->isEmpty());
+  DCHECK(!gImageQualityController || gImageQualityController->isEmpty());
 }
 
 ImageQualityController::ImageQualityController()

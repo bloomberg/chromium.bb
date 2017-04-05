@@ -60,7 +60,7 @@ LayoutImage* LayoutImage::createAnonymous(PseudoElement& pseudo) {
 LayoutImage::~LayoutImage() {}
 
 void LayoutImage::willBeDestroyed() {
-  ASSERT(m_imageResource);
+  DCHECK(m_imageResource);
   m_imageResource->shutdown();
   LayoutReplaced::willBeDestroyed();
 }
@@ -77,14 +77,14 @@ void LayoutImage::styleDidChange(StyleDifference diff,
 }
 
 void LayoutImage::setImageResource(LayoutImageResource* imageResource) {
-  ASSERT(!m_imageResource);
+  DCHECK(!m_imageResource);
   m_imageResource = imageResource;
   m_imageResource->initialize(this);
 }
 
 void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect) {
-  ASSERT(view());
-  ASSERT(view()->frameView());
+  DCHECK(view());
+  DCHECK(view()->frameView());
   if (documentBeingDestroyed())
     return;
 
@@ -206,7 +206,7 @@ void LayoutImage::paint(const PaintInfo& paintInfo,
 }
 
 void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement) {
-  ASSERT(areaElement->imageElement() == node());
+  DCHECK_EQ(areaElement->imageElement(), node());
 
   if (areaElement->getPath(this).isEmpty())
     return;

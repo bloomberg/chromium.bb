@@ -136,19 +136,19 @@ static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
 bool LayoutObject::s_affectsParentBlock = false;
 
 void* LayoutObject::operator new(size_t sz) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   return PartitionAlloc(WTF::Partitions::layoutPartition(), sz,
                         WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
 }
 
 void LayoutObject::operator delete(void* ptr) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   WTF::PartitionFree(ptr);
 }
 
 LayoutObject* LayoutObject::createObject(Element* element,
                                          const ComputedStyle& style) {
-  ASSERT(isAllowedToModifyLayoutTreeStructure(element->document()));
+  DCHECK(isAllowedToModifyLayoutTreeStructure(element->document()));
 
   // Minimal support for content properties replacing an entire element.
   // Works only if we have exactly one piece of content and it's a URL.
@@ -269,7 +269,7 @@ void LayoutObject::setIsInsideFlowThreadIncludingDescendants(
       continue;
     }
     next = object->nextInPreOrder(this);
-    ASSERT(insideFlowThread != object->isInsideFlowThread());
+    DCHECK_NE(insideFlowThread, object->isInsideFlowThread());
     object->setIsInsideFlowThread(insideFlowThread);
   }
 }
@@ -298,10 +298,10 @@ bool LayoutObject::requiresAnonymousTableWrappers(
 
 DISABLE_CFI_PERF
 void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
-  ASSERT(isAllowedToModifyLayoutTreeStructure(document()));
+  DCHECK(isAllowedToModifyLayoutTreeStructure(document()));
 
   LayoutObjectChildList* children = virtualChildren();
-  ASSERT(children);
+  DCHECK(children);
   if (!children)
     return;
 
@@ -348,10 +348,10 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
 }
 
 void LayoutObject::removeChild(LayoutObject* oldChild) {
-  ASSERT(isAllowedToModifyLayoutTreeStructure(document()));
+  DCHECK(isAllowedToModifyLayoutTreeStructure(document()));
 
   LayoutObjectChildList* children = virtualChildren();
-  ASSERT(children);
+  DCHECK(children);
   if (!children)
     return;
 
@@ -359,9 +359,9 @@ void LayoutObject::removeChild(LayoutObject* oldChild) {
 }
 
 void LayoutObject::setDangerousOneWayParent(LayoutObject* parent) {
-  ASSERT(!previousSibling());
-  ASSERT(!nextSibling());
-  ASSERT(!parent || !m_parent);
+  DCHECK(!previousSibling());
+  DCHECK(!nextSibling());
+  DCHECK(!parent || !m_parent);
   setParent(parent);
 }
 
@@ -402,8 +402,8 @@ void LayoutObject::notifyOfSubtreeChange() {
 }
 
 void LayoutObject::handleSubtreeModifications() {
-  ASSERT(wasNotifiedOfSubtreeChange());
-  ASSERT(document().lifecycle().stateAllowsLayoutTreeNotifications());
+  DCHECK(wasNotifiedOfSubtreeChange());
+  DCHECK(document().lifecycle().stateAllowsLayoutTreeNotifications());
 
   if (consumesSubtreeChangeNotification())
     subtreeDidChange();
@@ -556,7 +556,7 @@ void LayoutObject::moveLayers(PaintLayer* oldParent, PaintLayer* newParent) {
 
   if (hasLayer()) {
     PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
-    ASSERT(oldParent == layer->parent());
+    DCHECK_EQ(oldParent, layer->parent());
     if (oldParent)
       oldParent->removeChild(layer);
     newParent->addChild(layer);
@@ -693,7 +693,7 @@ LayoutBox* LayoutObject::enclosingScrollableBox() const {
 }
 
 LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const {
-  ASSERT(isInsideFlowThread());
+  DCHECK(isInsideFlowThread());
 
   // See if we have the thread cached because we're in the middle of layout.
   if (LayoutState* layoutState = view()->layoutState()) {
@@ -772,7 +772,7 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout,
 #if DCHECK_IS_ON()
   DCHECK(!isSetNeedsLayoutForbidden());
 #endif
-  ASSERT(!layouter || this != layouter->root());
+  DCHECK(!layouter || this != layouter->root());
   // When we're in layout, we're marking a descendant as needing layout with
   // the intention of visiting it during this layout. We shouldn't be
   // scheduling it to be laid out later. Also, scheduleRelayout() must not be
@@ -833,7 +833,7 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout,
 
 #if DCHECK_IS_ON()
 void LayoutObject::checkBlockPositionedObjectsNeedLayout() {
-  ASSERT(!needsLayout());
+  DCHECK(!needsLayout());
 
   if (isLayoutBlock())
     toLayoutBlock(this)->checkPositionedObjectsNeedLayout();
@@ -897,7 +897,7 @@ LayoutBlock* LayoutObject::containerForFixedPosition(
       skipInfo->update(*object);
   }
 
-  ASSERT(!object || !object->isAnonymousBlock());
+  DCHECK(!object || !object->isAnonymousBlock());
   return toLayoutBlock(object);
 }
 
@@ -1192,7 +1192,7 @@ LayoutRect LayoutObject::selectionRectInViewCoordinates() const {
 
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  DCHECK(&paintInvalidationState.currentObject() == this);
+  DCHECK_EQ(&paintInvalidationState.currentObject(), this);
 
   if (styleRef().hasOutline()) {
     PaintLayer& layer = paintInvalidationState.paintingLayer();
@@ -1564,7 +1564,7 @@ StyleDifference LayoutObject::adjustStyleDifference(
 }
 
 void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle) {
-  ASSERT(pseudoStyle->styleType() == PseudoIdBefore ||
+  DCHECK(pseudoStyle->styleType() == PseudoIdBefore ||
          pseudoStyle->styleType() == PseudoIdAfter ||
          pseudoStyle->styleType() == PseudoIdFirstLetter);
 
@@ -1644,13 +1644,15 @@ void LayoutObject::setNeedsOverflowRecalcAfterStyleChange() {
 
 DISABLE_CFI_PERF
 void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
-  ASSERT(style);
+  DCHECK(style);
 
   if (m_style == style) {
     // We need to run through adjustStyleDifference() for iframes, plugins, and
     // canvas so style sharing is disabled for them. That should ensure that we
     // never hit this code path.
-    ASSERT(!isLayoutIFrame() && !isEmbeddedObject() && !isCanvas());
+    DCHECK(!isLayoutIFrame());
+    DCHECK(!isEmbeddedObject());
+    DCHECK(!isCanvas());
     return;
   }
 
@@ -1851,7 +1853,7 @@ void LayoutObject::clearBaseComputedStyle() {
 
 static bool areNonIdenticalCursorListsEqual(const ComputedStyle* a,
                                             const ComputedStyle* b) {
-  ASSERT(a->cursors() != b->cursors());
+  DCHECK_NE(a->cursors(), b->cursors());
   return a->cursors() && b->cursors() && *a->cursors() == *b->cursors();
 }
 
@@ -2300,7 +2302,7 @@ void LayoutObject::getTransformFromContainer(
   if (containerObject && containerObject->hasLayer() &&
       containerObject->style()->hasPerspective()) {
     // Perpsective on the container affects us, so we have to factor it in here.
-    ASSERT(containerObject->hasLayer());
+    DCHECK(containerObject->hasLayer());
     FloatPoint perspectiveOrigin =
         toLayoutBoxModelObject(containerObject)->layer()->perspectiveOrigin();
 
@@ -2389,7 +2391,7 @@ TransformationMatrix LayoutObject::localToAncestorTransform(
 }
 
 LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o) const {
-  ASSERT(o == container());
+  DCHECK_EQ(o, container());
   return o->hasOverflowClip()
              ? LayoutSize(-toLayoutBox(o)->scrolledContentOffset())
              : LayoutSize();
@@ -2409,7 +2411,7 @@ LayoutSize LayoutObject::offsetFromAncestorContainer(
     DCHECK(nextContainer);
     if (!nextContainer)
       break;
-    ASSERT(!currContainer->hasTransformRelatedProperty());
+    DCHECK(!currContainer->hasTransformRelatedProperty());
     LayoutSize currentOffset =
         currContainer->offsetFromContainer(nextContainer);
     offset += currentOffset;
@@ -2459,8 +2461,8 @@ void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects,
                                         const PaintLayer* currentLayer,
                                         const LayoutPoint& layerOffset,
                                         const LayoutRect& containerRect) const {
-  ASSERT(currentLayer);
-  ASSERT(currentLayer == this->enclosingLayer());
+  DCHECK(currentLayer);
+  DCHECK_EQ(currentLayer, this->enclosingLayer());
 
   // Compute the rects for this layoutObject only and add them to the results.
   // Note that we could avoid passing the offset and instead adjust each result,
@@ -2695,7 +2697,7 @@ void LayoutObject::willBeDestroyed() {
 
 DISABLE_CFI_PERF
 void LayoutObject::insertedIntoTree() {
-  // FIXME: We should ASSERT(isRooted()) here but generated content makes some
+  // FIXME: We should DCHECK(isRooted()) here but generated content makes some
   // out-of-order insertion.
 
   // Keep our layer hierarchy updated. Optimize for the common case where we
@@ -2762,7 +2764,7 @@ static bool findReferencingScrollAnchors(
 }
 
 void LayoutObject::willBeRemovedFromTree() {
-  // FIXME: We should ASSERT(isRooted()) but we have some out-of-order removals
+  // FIXME: We should DCHECK(isRooted()) but we have some out-of-order removals
   // which would need to be fixed first.
 
   // If we remove a visible child from an invisible parent, we don't know the
@@ -3064,13 +3066,13 @@ PassRefPtr<ComputedStyle> LayoutObject::uncachedFirstLineStyle() const {
   if (!document().styleEngine().usesFirstLineRules())
     return nullptr;
 
-  ASSERT(!isText());
+  DCHECK(!isText());
 
   return firstLineStyleForCachedUncachedType(Uncached, this, m_style.get());
 }
 
 ComputedStyle* LayoutObject::cachedFirstLineStyle() const {
-  ASSERT(document().styleEngine().usesFirstLineRules());
+  DCHECK(document().styleEngine().usesFirstLineRules());
 
   if (RefPtr<ComputedStyle> style = firstLineStyleForCachedUncachedType(
           Cached, isText() ? parent() : this, m_style.get()))
@@ -3204,13 +3206,13 @@ bool LayoutObject::isInert() const {
 
 void LayoutObject::imageChanged(ImageResourceContent* image,
                                 const IntRect* rect) {
-  ASSERT(m_node);
+  DCHECK(m_node);
 
   // Image change notifications should not be received during paint because
   // the resulting invalidations will be cleared following paint. This can also
   // lead to modifying the tree out from under paint(), see: crbug.com/616700.
-  DCHECK(document().lifecycle().state() !=
-         DocumentLifecycle::LifecycleState::InPaint);
+  DCHECK_NE(document().lifecycle().state(),
+            DocumentLifecycle::LifecycleState::InPaint);
 
   imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
@@ -3333,7 +3335,7 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(
   if (position.isNotNull())
     return PositionWithAffinity(position);
 
-  ASSERT(!node());
+  DCHECK(!node());
   return createPositionWithAffinity(0);
 }
 
@@ -3543,7 +3545,7 @@ void LayoutObject::
 
 void LayoutObject::setIsBackgroundAttachmentFixedObject(
     bool isBackgroundAttachmentFixedObject) {
-  ASSERT(frameView());
+  DCHECK(frameView());
   if (m_bitfields.isBackgroundAttachmentFixedObject() ==
       isBackgroundAttachmentFixedObject)
     return;

@@ -68,7 +68,7 @@ class LayoutTextCombine final : public LayoutText {
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, isCombineText());
 
 inline LayoutUnit LayoutTextCombine::inlineWidthForLayout() const {
-  ASSERT(!m_needsFontUpdate);
+  DCHECK(!m_needsFontUpdate);
   return LayoutUnit::fromFloatCeil(m_combinedTextWidth);
 }
 

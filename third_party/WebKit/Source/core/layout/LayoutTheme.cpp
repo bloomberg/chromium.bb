@@ -77,7 +77,7 @@ LayoutTheme::LayoutTheme(Theme* platformTheme)
     : m_hasCustomFocusRingColor(false), m_platformTheme(platformTheme) {}
 
 void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
-  ASSERT(style.hasAppearance());
+  DCHECK(style.hasAppearance());
 
   // Force inline and table display styles to be inline-block (except for table-
   // which is block)

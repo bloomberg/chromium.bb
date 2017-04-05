@@ -47,7 +47,7 @@ LayoutFileUploadControl::~LayoutFileUploadControl() {}
 
 void LayoutFileUploadControl::updateFromElement() {
   HTMLInputElement* input = toHTMLInputElement(node());
-  ASSERT(input->type() == InputTypeNames::file);
+  DCHECK_EQ(input->type(), InputTypeNames::file);
 
   if (HTMLInputElement* button = uploadButton()) {
     bool newCanReceiveDroppedFilesState = input->canReceiveDroppedFiles();
@@ -60,7 +60,7 @@ void LayoutFileUploadControl::updateFromElement() {
   // This only supports clearing out the files, but that's OK because for
   // security reasons that's the only change the DOM is allowed to make.
   FileList* files = input->files();
-  ASSERT(files);
+  DCHECK(files);
   if (files && files->isEmpty())
     setShouldDoFullPaintInvalidation();
 }
@@ -109,7 +109,7 @@ void LayoutFileUploadControl::computeIntrinsicLogicalWidths(
 }
 
 void LayoutFileUploadControl::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
 
   m_minPreferredLogicalWidth = LayoutUnit();
   m_maxPreferredLogicalWidth = LayoutUnit();
@@ -174,7 +174,7 @@ String LayoutFileUploadControl::buttonValue() {
 
 String LayoutFileUploadControl::fileTextValue() const {
   HTMLInputElement* input = toHTMLInputElement(node());
-  ASSERT(input->files());
+  DCHECK(input->files());
   return LayoutTheme::theme().fileListNameForWidth(
       input->locale(), input->files(), style()->font(), maxFilenameWidth());
 }

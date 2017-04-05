@@ -55,7 +55,7 @@ struct LayoutGeometryMapStep {
         m_offsetForFixedPosition(o.m_offsetForFixedPosition),
         m_offsetForStickyPosition(o.m_offsetForStickyPosition),
         m_flags(o.m_flags) {
-    ASSERT(!o.m_transform);
+    DCHECK(!o.m_transform);
   }
   LayoutGeometryMapStep(const LayoutObject* layoutObject,
                         GeometryInfoFlags flags)

@@ -31,7 +31,7 @@ namespace blink {
 LayoutTextControlMultiLine::LayoutTextControlMultiLine(
     HTMLTextAreaElement* element)
     : LayoutTextControl(element) {
-  ASSERT(element);
+  DCHECK(element);
 }
 
 LayoutTextControlMultiLine::~LayoutTextControlMultiLine() {}

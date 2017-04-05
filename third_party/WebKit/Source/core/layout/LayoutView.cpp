@@ -129,7 +129,7 @@ bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result) {
   TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
   m_hitTestCount++;
 
-  ASSERT(!result.hitTestLocation().isRectBasedTest() ||
+  DCHECK(!result.hitTestLocation().isRectBasedTest() ||
          result.hitTestRequest().listBased());
 
   commitPendingSelection();
@@ -216,7 +216,7 @@ bool LayoutView::canHaveChildren() const {
 }
 
 void LayoutView::layoutContent() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   LayoutBlockFlow::layout();
 
@@ -227,7 +227,7 @@ void LayoutView::layoutContent() {
 
 #if DCHECK_IS_ON()
 void LayoutView::checkLayoutState() {
-  ASSERT(!m_layoutState->next());
+  DCHECK(!m_layoutState->next());
 }
 #endif
 
@@ -303,7 +303,7 @@ void LayoutView::layout() {
           .invalidateSVGRootsWithRelativeLengthDescendents(&layoutScope);
   }
 
-  ASSERT(!m_layoutState);
+  DCHECK(!m_layoutState);
   if (!needsLayout())
     return;
 
@@ -582,8 +582,8 @@ LayoutSize LayoutView::offsetForFixedPosition(bool includePendingScroll) const {
     // FIXME: Paint invalidation should happen after scroll updates, so there
     // should be no pending scroll delta.
     // However, we still have paint invalidation during layout, so we can't
-    // ASSERT for now. crbug.com/434950.
-    // ASSERT(m_frameView->pendingScrollDelta().isZero());
+    // DCHECK for now. crbug.com/434950.
+    // DCHECK(m_frameView->pendingScrollDelta().isZero());
     // If we have a pending scroll, invalidate the previous scroll position.
     if (includePendingScroll && !m_frameView->pendingScrollDelta().isZero())
       adjustment -= m_frameView->pendingScrollDelta();

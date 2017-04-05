@@ -55,8 +55,8 @@ void LayoutObjectChildList::destroyLeftoverChildren() {
 LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
                                                      LayoutObject* oldChild,
                                                      bool notifyLayoutObject) {
-  ASSERT(oldChild->parent() == owner);
-  ASSERT(this == owner->virtualChildren());
+  DCHECK_EQ(oldChild->parent(), owner);
+  DCHECK_EQ(this, owner->virtualChildren());
 
   if (oldChild->isFloatingOrOutOfFlowPositioned())
     toLayoutBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
@@ -129,9 +129,9 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
                                             LayoutObject* newChild,
                                             LayoutObject* beforeChild,
                                             bool notifyLayoutObject) {
-  ASSERT(!newChild->parent());
-  ASSERT(this == owner->virtualChildren());
-  ASSERT(!owner->isLayoutBlockFlow() ||
+  DCHECK(!newChild->parent());
+  DCHECK_EQ(this, owner->virtualChildren());
+  DCHECK(!owner->isLayoutBlockFlow() ||
          (!newChild->isTableSection() && !newChild->isTableRow() &&
           !newChild->isTableCell()));
 

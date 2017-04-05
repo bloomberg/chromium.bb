@@ -42,7 +42,7 @@ LayoutFlowThread::LayoutFlowThread()
 LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
     const LayoutObject& descendant,
     AncestorSearchConstraint constraint) {
-  ASSERT(descendant.isInsideFlowThread());
+  DCHECK(descendant.isInsideFlowThread());
   LayoutObject* curr = const_cast<LayoutObject*>(&descendant);
   while (curr) {
     if (curr->isSVGChild())
@@ -76,7 +76,7 @@ LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
 
 void LayoutFlowThread::removeColumnSetFromThread(
     LayoutMultiColumnSet* columnSet) {
-  ASSERT(columnSet);
+  DCHECK(columnSet);
   m_multiColumnSetList.erase(columnSet);
   invalidateColumnSets();
   // Clear the interval tree right away, instead of leaving it around with dead
@@ -100,7 +100,7 @@ bool LayoutFlowThread::mapToVisualRectInAncestorSpaceInternal(
     TransformState& transformState,
     VisualRectFlags visualRectFlags) const {
   // A flow thread should never be an invalidation container.
-  DCHECK(ancestor != this);
+  DCHECK_NE(ancestor, this);
   transformState.flatten();
   LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
   rect = fragmentsBoundingBox(rect);
@@ -212,7 +212,7 @@ LayoutUnit LayoutFlowThread::nextLogicalTopForUnbreakableContent(
 
 LayoutRect LayoutFlowThread::fragmentsBoundingBox(
     const LayoutRect& layerBoundingBox) const {
-  ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled() ||
+  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled() ||
          !m_columnSetsInvalidated);
 
   LayoutRect result;

@@ -88,7 +88,7 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
   }
 
   int gridLen = axis.m_sizes.size();
-  ASSERT(gridLen);
+  DCHECK(gridLen);
 
   int totalRelative = 0;
   int totalFixed = 0;
@@ -354,7 +354,7 @@ FrameEdgeInfo LayoutFrameSet::edgeInfo() const {
 }
 
 void LayoutFrameSet::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
 
   if (!parent()->isFrameSet() && !document().printing()) {
     setWidth(LayoutUnit(view()->viewWidth()));

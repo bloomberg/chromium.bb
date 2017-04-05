@@ -55,7 +55,7 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase,
   // and appends them to toBase.
   DCHECK(toBase);
   // Callers should have handled the percent height descendant map.
-  ASSERT(!hasPercentHeightDescendants());
+  DCHECK(!hasPercentHeightDescendants());
 
   if (beforeChild && beforeChild->parent() != this)
     beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
@@ -73,7 +73,7 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase,
 
 void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase,
                                         LayoutObject* beforeChild) {
-  ASSERT(childrenInline());
+  DCHECK(childrenInline());
   DCHECK(toBase);
 
   if (!firstChild())
@@ -101,7 +101,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase,
 
 void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
                                        LayoutObject* beforeChild) {
-  ASSERT(!childrenInline());
+  DCHECK(!childrenInline());
   DCHECK(toBase);
 
   if (!firstChild())

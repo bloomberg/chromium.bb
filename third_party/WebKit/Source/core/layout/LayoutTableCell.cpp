@@ -121,7 +121,7 @@ void LayoutTableCell::willBeRemovedFromTree() {
 }
 
 unsigned LayoutTableCell::parseColSpanFromDOM() const {
-  ASSERT(node());
+  DCHECK(node());
   // TODO(dgrogan): HTMLTableCellElement::colSpan() already clamps to something
   // smaller than maxColumnIndex; can we just DCHECK here?
   if (isHTMLTableCellElement(*node()))
@@ -131,7 +131,7 @@ unsigned LayoutTableCell::parseColSpanFromDOM() const {
 }
 
 unsigned LayoutTableCell::parseRowSpanFromDOM() const {
-  ASSERT(node());
+  DCHECK(node());
   if (isHTMLTableCellElement(*node()))
     return std::min<unsigned>(toHTMLTableCellElement(*node()).rowSpan(),
                               maxRowIndex);
@@ -146,8 +146,8 @@ void LayoutTableCell::updateColAndRowSpanFlags() {
 }
 
 void LayoutTableCell::colSpanOrRowSpanChanged() {
-  ASSERT(node());
-  ASSERT(isHTMLTableCellElement(*node()));
+  DCHECK(node());
+  DCHECK(isHTMLTableCellElement(*node()));
 
   updateColAndRowSpanFlags();
 
@@ -160,11 +160,11 @@ void LayoutTableCell::colSpanOrRowSpanChanged() {
 Length LayoutTableCell::logicalWidthFromColumns(
     LayoutTableCol* firstColForThisCell,
     Length widthFromStyle) const {
-  ASSERT(firstColForThisCell &&
-         firstColForThisCell ==
-             table()
-                 ->colElementAtAbsoluteColumn(absoluteColumnIndex())
-                 .innermostColOrColGroup());
+  DCHECK(firstColForThisCell);
+  DCHECK_EQ(firstColForThisCell,
+            table()
+                ->colElementAtAbsoluteColumn(absoluteColumnIndex())
+                .innermostColOrColGroup());
   LayoutTableCol* tableCol = firstColForThisCell;
 
   unsigned colSpanCount = colSpan();
@@ -299,7 +299,7 @@ void LayoutTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth,
 }
 
 void LayoutTableCell::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   int oldCellBaseline = cellBaselinePosition();
@@ -395,7 +395,7 @@ void LayoutTableCell::setOverrideLogicalContentHeightFromRowHeight(
 }
 
 LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o) const {
-  ASSERT(o == container());
+  DCHECK_EQ(o, container());
 
   LayoutSize offset = LayoutBlockFlow::offsetFromContainer(o);
   if (parent())

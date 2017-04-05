@@ -433,7 +433,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void paintMask(const PaintInfo&, const LayoutPoint&) const final;
 
   const CollapsedBorderValues& collapsedBorders() const {
-    ASSERT(m_collapsedBordersValid);
+    DCHECK(m_collapsedBordersValid);
     return m_collapsedBorders;
   }
 
@@ -607,7 +607,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 };
 
 inline LayoutTableSection* LayoutTable::topSection() const {
-  ASSERT(!needsSectionRecalc());
+  DCHECK(!needsSectionRecalc());
   if (m_head)
     return m_head;
   if (m_firstBody)

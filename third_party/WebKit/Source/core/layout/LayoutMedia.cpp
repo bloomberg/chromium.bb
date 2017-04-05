@@ -64,7 +64,7 @@ void LayoutMedia::layout() {
        child = child->previousSibling()) {
 #if DCHECK_IS_ON()
     if (child->node()->isMediaControls())
-      ASSERT(!seenTextTrackContainer);
+      DCHECK(!seenTextTrackContainer);
     else if (child->node()->isTextTrackContainer())
       seenTextTrackContainer = true;
     else
@@ -99,7 +99,7 @@ bool LayoutMedia::isChildAllowed(LayoutObject* child,
                                  const ComputedStyle& style) const {
   // Two types of child layout objects are allowed: media controls
   // and the text track container. Filter children by node type.
-  ASSERT(child->node());
+  DCHECK(child->node());
 
   // Out-of-flow positioned or floating child breaks layout hierarchy.
   // This check can be removed if ::-webkit-media-controls is made internal.

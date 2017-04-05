@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
     : LayoutTextControlSingleLine(element) {
-  ASSERT(element->type() == InputTypeNames::search);
+  DCHECK_EQ(element->type(), InputTypeNames::search);
 }
 
 LayoutSearchField::~LayoutSearchField() {}

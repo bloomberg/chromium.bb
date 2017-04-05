@@ -77,7 +77,7 @@ void LayoutReplaced::styleDidChange(StyleDifference diff,
 }
 
 void LayoutReplaced::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutRect oldContentRect = replacedContentRect();
@@ -137,7 +137,7 @@ bool LayoutReplaced::needsPreferredWidthsRecalculation() const {
 
 static inline bool layoutObjectHasAspectRatio(
     const LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   return layoutObject->isImage() || layoutObject->isCanvas() ||
          layoutObject->isVideo();
 }
@@ -285,7 +285,7 @@ void LayoutReplaced::computePositionedLogicalWidth(
 
   if (marginLogicalLeft.isAuto() && marginLogicalRight.isAuto()) {
     // 'left' and 'right' cannot be 'auto' due to step 3
-    ASSERT(!(logicalLeft.isAuto() && logicalRight.isAuto()));
+    DCHECK(!(logicalLeft.isAuto() && logicalRight.isAuto()));
 
     logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
     logicalRightValue = valueForLength(logicalRight, containerLogicalWidth);
@@ -485,7 +485,7 @@ void LayoutReplaced::computePositionedLogicalHeight(
 
   if (marginBefore.isAuto() && marginAfter.isAuto()) {
     // 'top' and 'bottom' cannot be 'auto' due to step 2 and 3 combined.
-    ASSERT(!(logicalTop.isAuto() || logicalBottom.isAuto()));
+    DCHECK(!(logicalTop.isAuto() || logicalBottom.isAuto()));
 
     logicalTopValue = valueForLength(logicalTop, containerLogicalHeight);
     logicalBottomValue = valueForLength(logicalBottom, containerLogicalHeight);
@@ -624,7 +624,7 @@ void LayoutReplaced::computeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsicSizingInfo) const {
   // If there's an embeddedReplacedContent() of a remote, referenced document
   // available, this code-path should never be used.
-  ASSERT(!embeddedReplacedContent());
+  DCHECK(!embeddedReplacedContent());
   intrinsicSizingInfo.size = FloatSize(intrinsicLogicalWidth().toFloat(),
                                        intrinsicLogicalHeight().toFloat());
 
@@ -816,7 +816,7 @@ void LayoutReplaced::computeIntrinsicLogicalWidths(
 }
 
 void LayoutReplaced::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
 
   // We cannot resolve some logical width here (i.e. percent, fill-available or
   // fit-content) as the available logical width may not be set on our

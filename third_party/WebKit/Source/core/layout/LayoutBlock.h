@@ -108,11 +108,11 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  public:
   LayoutObject* firstChild() const {
-    ASSERT(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->firstChild();
   }
   LayoutObject* lastChild() const {
-    ASSERT(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->lastChild();
   }
 
@@ -165,7 +165,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     return hasPositionedObjects() ? positionedObjectsInternal() : nullptr;
   }
   bool hasPositionedObjects() const {
-    ASSERT(m_hasPositionedObjects ? (positionedObjectsInternal() &&
+    DCHECK(m_hasPositionedObjects ? (positionedObjectsInternal() &&
                                      !positionedObjectsInternal()->isEmpty())
                                   : !positionedObjectsInternal());
     return m_hasPositionedObjects;
@@ -183,7 +183,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                                          : nullptr;
   }
   bool hasPercentHeightDescendants() const {
-    ASSERT(m_hasPercentHeightDescendants
+    DCHECK(m_hasPercentHeightDescendants
                ? (percentHeightDescendantsInternal() &&
                   !percentHeightDescendantsInternal()->isEmpty())
                : !percentHeightDescendantsInternal());

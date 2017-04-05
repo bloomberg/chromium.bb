@@ -96,7 +96,7 @@ class FloatStateForStyleChange {
   }
 
   static bool wasFloating(LayoutBoxModelObject* boxModelObject) {
-    ASSERT(boxModelObject == s_boxModelObject);
+    DCHECK_EQ(boxModelObject, s_boxModelObject);
     return s_wasFloating;
   }
 
@@ -234,15 +234,15 @@ BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation(
 
 LayoutBoxModelObject::~LayoutBoxModelObject() {
   // Our layer should have been destroyed and cleared by now
-  ASSERT(!hasLayer());
-  ASSERT(!m_layer);
+  DCHECK(!hasLayer());
+  DCHECK(!m_layer);
 }
 
 void LayoutBoxModelObject::willBeDestroyed() {
   ImageQualityController::remove(*this);
 
   // A continuation of this LayoutObject should be destroyed at subclasses.
-  ASSERT(!continuation());
+  DCHECK(!continuation());
 
   if (isPositioned()) {
     // Don't use this->view() because the document's layoutView has been set to
@@ -500,7 +500,7 @@ void LayoutBoxModelObject::invalidateStickyConstraints() {
 }
 
 void LayoutBoxModelObject::createLayer() {
-  ASSERT(!m_layer);
+  DCHECK(!m_layer);
   m_layer = WTF::makeUnique<PaintLayer>(*this);
   setHasLayer(true);
   m_layer->insertOnlyThisLayerAfterStyleChange();
@@ -667,7 +667,7 @@ bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const {
         if (!layoutInline.linesBoundingBox().isEmpty())
           return true;
       } else {
-        ASSERT(object->isText());
+        DCHECK(object->isText());
       }
     }
   }
@@ -1222,7 +1222,7 @@ LayoutBoxModelObject* LayoutBoxModelObject::continuation() const {
 
 void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation) {
   if (continuation) {
-    ASSERT(continuation->isLayoutInline() || continuation->isLayoutBlockFlow());
+    DCHECK(continuation->isLayoutInline() || continuation->isLayoutBlockFlow());
     if (!continuationMap)
       continuationMap = new ContinuationMap;
     continuationMap->set(this, continuation);
@@ -1327,7 +1327,7 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(
 const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
     const LayoutBoxModelObject* ancestorToStopAt,
     LayoutGeometryMap& geometryMap) const {
-  ASSERT(ancestorToStopAt != this);
+  DCHECK_NE(ancestorToStopAt, this);
 
   AncestorSkipInfo skipInfo(ancestorToStopAt);
   LayoutObject* container = this->container(&skipInfo);
@@ -1389,11 +1389,11 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject,
   // We assume that callers have cleared their positioned objects list for child
   // moves (!fullRemoveInsert) so the positioned layoutObject maps don't become
   // stale. It would be too slow to do the map lookup on each call.
-  ASSERT(!fullRemoveInsert || !isLayoutBlock() ||
+  DCHECK(!fullRemoveInsert || !isLayoutBlock() ||
          !toLayoutBlock(this)->hasPositionedObjects());
 
-  ASSERT(this == child->parent());
-  ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
+  DCHECK_EQ(this, child->parent());
+  DCHECK(!beforeChild || toBoxModelObject == beforeChild->parent());
 
   // If a child is moving from a block-flow to an inline-flow parent then any
   // floats currently intruding into the child can no longer do so. This can
@@ -1404,7 +1404,7 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject,
   if (child->isLayoutBlockFlow() && toBoxModelObject->childrenInline() &&
       !childrenInline()) {
     toLayoutBlockFlow(child)->removeFloatingObjectsFromDescendants();
-    ASSERT(!toLayoutBlockFlow(child)->containsFloats());
+    DCHECK(!toLayoutBlockFlow(child)->containsFloats());
   }
 
   if (fullRemoveInsert && isLayoutBlock() && child->isBox())
@@ -1441,7 +1441,7 @@ void LayoutBoxModelObject::moveChildrenTo(
       toLayoutBlockFlow(block)->removeFloatingObjects();
   }
 
-  ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
+  DCHECK(!beforeChild || toBoxModelObject == beforeChild->parent());
   for (LayoutObject* child = startChild; child && child != endChild;) {
     // Save our next sibling as moveChildTo will clear it.
     LayoutObject* nextSibling = child->nextSibling();

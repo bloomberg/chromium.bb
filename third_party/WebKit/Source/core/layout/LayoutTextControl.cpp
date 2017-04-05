@@ -31,7 +31,7 @@ namespace blink {
 
 LayoutTextControl::LayoutTextControl(TextControlElement* element)
     : LayoutBlockFlow(element) {
-  ASSERT(element);
+  DCHECK(element);
 }
 
 LayoutTextControl::~LayoutTextControl() {}
@@ -88,7 +88,7 @@ int LayoutTextControl::textBlockLogicalHeight() const {
 
 int LayoutTextControl::textBlockLogicalWidth() const {
   Element* innerEditor = innerEditorElement();
-  ASSERT(innerEditor);
+  DCHECK(innerEditor);
 
   LayoutUnit unitWidth = logicalWidth() - borderAndPaddingLogicalWidth();
   if (innerEditor->layoutObject())
@@ -116,7 +116,7 @@ void LayoutTextControl::computeLogicalHeight(
     LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const {
   HTMLElement* innerEditor = innerEditorElement();
-  ASSERT(innerEditor);
+  DCHECK(innerEditor);
   if (LayoutBox* innerEditorBox = innerEditor->layoutBox()) {
     LayoutUnit nonContentHeight = innerEditorBox->borderAndPaddingHeight() +
                                   innerEditorBox->marginHeight();
@@ -270,7 +270,7 @@ void LayoutTextControl::computeIntrinsicLogicalWidths(
 }
 
 void LayoutTextControl::computePreferredLogicalWidths() {
-  ASSERT(preferredLogicalWidthsDirty());
+  DCHECK(preferredLogicalWidthsDirty());
 
   m_minPreferredLogicalWidth = LayoutUnit();
   m_maxPreferredLogicalWidth = LayoutUnit();

@@ -114,7 +114,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   }
 
   unsigned absoluteColumnIndex() const {
-    ASSERT(hasSetAbsoluteColumnIndex());
+    DCHECK(hasSetAbsoluteColumnIndex());
     return m_absoluteColumnIndex;
   }
 
@@ -131,7 +131,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   unsigned rowIndex() const {
     // This function shouldn't be called on a detached cell.
-    ASSERT(row());
+    DCHECK(row());
     return row()->rowIndex();
   }
 
@@ -251,7 +251,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   const ComputedStyle& styleForCellFlow() const { return row()->styleRef(); }
 
   const BorderValue& borderAdjoiningTableStart() const {
-    ASSERT(isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+    DCHECK(isFirstOrLastCellInRow());
+#endif
     if (section()->hasSameDirectionAs(table()))
       return style()->borderStart();
 
@@ -259,7 +261,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   }
 
   const BorderValue& borderAdjoiningTableEnd() const {
-    ASSERT(isFirstOrLastCellInRow());
+#if DCHECK_IS_ON()
+    DCHECK(isFirstOrLastCellInRow());
+#endif
     if (section()->hasSameDirectionAs(table()))
       return style()->borderEnd();
 

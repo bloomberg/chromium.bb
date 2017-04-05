@@ -52,7 +52,7 @@ inline static Decimal sliderPosition(HTMLInputElement* element) {
 }
 
 inline static bool hasVerticalAppearance(HTMLInputElement* input) {
-  ASSERT(input->layoutObject());
+  DCHECK(input->layoutObject());
   const ComputedStyle& sliderStyle = input->layoutObject()->styleRef();
 
   return sliderStyle.appearance() == SliderVerticalPart;

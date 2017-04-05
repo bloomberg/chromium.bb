@@ -88,7 +88,9 @@ void LayoutGeometryMap::mapToAncestor(
     else if (currentStep.m_flags & IsFixedPosition)
       inFixed = true;
 
-    ASSERT(!i == isTopmostLayoutView(currentStep.m_layoutObject));
+#if DCHECK_IS_ON()
+    DCHECK_EQ(!i, isTopmostLayoutView(currentStep.m_layoutObject));
+#endif
 
     if (!i) {
       // A null container indicates mapping through the root LayoutView, so
@@ -109,12 +111,14 @@ void LayoutGeometryMap::mapToAncestor(
     }
 
     if (inFixed && !currentStep.m_offsetForFixedPosition.isZero()) {
-      ASSERT(currentStep.m_layoutObject->isLayoutView());
+      DCHECK(currentStep.m_layoutObject->isLayoutView());
       transformState.move(currentStep.m_offsetForFixedPosition);
     }
   }
 
-  ASSERT(foundAncestor);
+#if DCHECK_IS_ON()
+  DCHECK(foundAncestor);
+#endif
   transformState.flatten();
 }
 
@@ -165,7 +169,7 @@ FloatQuad LayoutGeometryMap::mapToAncestor(
     // Inspector creates layoutObjects with negative width
     // <https://bugs.webkit.org/show_bug.cgi?id=87194>.
     // Taking FloatQuad bounds avoids spurious assertions because of that.
-    ASSERT(enclosingIntRect(layoutObjectMappedResult) ==
+    DCHECK(enclosingIntRect(layoutObjectMappedResult) ==
                enclosingIntRect(result.boundingBox()) ||
            layoutObjectMappedResult.mayNotHaveExactIntRectRepresentation() ||
            result.boundingBox().mayNotHaveExactIntRectRepresentation());
@@ -186,8 +190,10 @@ void LayoutGeometryMap::pushMappingsToAncestor(
         layoutObject->pushMappingToContainer(ancestorLayoutObject, *this);
   } while (layoutObject && layoutObject != ancestorLayoutObject);
 
-  ASSERT(m_mapping.isEmpty() ||
+#if DCHECK_IS_ON()
+  DCHECK(m_mapping.isEmpty() ||
          isTopmostLayoutView(m_mapping[0].m_layoutObject));
+#endif
 }
 
 static bool canMapBetweenLayoutObjects(const LayoutObject& layoutObject,
@@ -222,7 +228,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(
   bool crossDocument =
       ancestorLayer &&
       layoutObject.frame() != ancestorLayer->layoutObject().frame();
-  ASSERT(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
+  DCHECK(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
 
   // We have to visit all the layoutObjects to detect flipped blocks. This might
   // defeat the gains from mapping via layers.
@@ -268,10 +274,10 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject,
                           layoutObject, offsetFromContainer.width().toInt(),
                           offsetFromContainer.height().toInt(), isNonUniform);
 
-  ASSERT(m_insertionPosition != kNotFound);
-  ASSERT(!layoutObject->isLayoutView() || !m_insertionPosition ||
+  DCHECK_NE(m_insertionPosition, kNotFound);
+  DCHECK(!layoutObject->isLayoutView() || !m_insertionPosition ||
          m_mapCoordinatesFlags & TraverseDocumentBoundaries);
-  ASSERT(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
+  DCHECK(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
 
   m_mapping.insert(m_insertionPosition,
                    LayoutGeometryMapStep(layoutObject, flags));
@@ -287,10 +293,10 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject,
                              const TransformationMatrix& t,
                              GeometryInfoFlags flags,
                              LayoutSize offsetForFixedPosition) {
-  ASSERT(m_insertionPosition != kNotFound);
-  ASSERT(!layoutObject->isLayoutView() || !m_insertionPosition ||
+  DCHECK_NE(m_insertionPosition, kNotFound);
+  DCHECK(!layoutObject->isLayoutView() || !m_insertionPosition ||
          m_mapCoordinatesFlags & TraverseDocumentBoundaries);
-  ASSERT(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
+  DCHECK(offsetForFixedPosition.isZero() || layoutObject->isLayoutView());
 
   m_mapping.insert(m_insertionPosition,
                    LayoutGeometryMapStep(layoutObject, flags));
@@ -308,7 +314,7 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject,
 
 void LayoutGeometryMap::popMappingsToAncestor(
     const LayoutBoxModelObject* ancestorLayoutObject) {
-  ASSERT(m_mapping.size());
+  DCHECK(m_mapping.size());
 
   bool mightBeSaturated = false;
   while (m_mapping.size() &&
@@ -350,17 +356,17 @@ void LayoutGeometryMap::stepRemoved(const LayoutGeometryMapStep& step) {
   m_accumulatedOffset -= step.m_offset;
 
   if (step.m_flags & IsNonUniform) {
-    ASSERT(m_nonUniformStepsCount);
+    DCHECK(m_nonUniformStepsCount);
     --m_nonUniformStepsCount;
   }
 
   if (step.m_transform) {
-    ASSERT(m_transformedStepsCount);
+    DCHECK(m_transformedStepsCount);
     --m_transformedStepsCount;
   }
 
   if (step.m_flags & IsFixedPosition) {
-    ASSERT(m_fixedStepsCount);
+    DCHECK(m_fixedStepsCount);
     --m_fixedStepsCount;
   }
 }

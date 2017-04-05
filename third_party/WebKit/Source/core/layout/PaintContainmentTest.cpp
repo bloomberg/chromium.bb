@@ -26,7 +26,7 @@ static void checkIsClippingStackingContextAndContainer(
 
   // TODO(leviw): Ideally, we wouldn't require a paint layer to handle the
   // clipping and stacking performed by paint containment.
-  ASSERT(obj.layer());
+  DCHECK(obj.layer());
   PaintLayer* layer = obj.layer();
   EXPECT_TRUE(layer->stackingNode() &&
               layer->stackingNode()->isStackingContext());
@@ -35,9 +35,10 @@ static void checkIsClippingStackingContextAndContainer(
 TEST_F(PaintContainmentTest, BlockPaintContainment) {
   setBodyInnerHTML("<div id='div' style='contain: paint'></div>");
   Element* div = document().getElementById(AtomicString("div"));
-  ASSERT(div);
+  DCHECK(div);
   LayoutObject* obj = div->layoutObject();
-  ASSERT(obj && obj->isLayoutBlock());
+  DCHECK(obj);
+  DCHECK(obj->isLayoutBlock());
   LayoutBlock& block = toLayoutBlock(*obj);
   EXPECT_TRUE(block.createsNewFormattingContext());
   EXPECT_FALSE(block.canBeScrolledAndHasScrollableArea());
@@ -48,10 +49,11 @@ TEST_F(PaintContainmentTest, InlinePaintContainment) {
   setBodyInnerHTML(
       "<div><span id='test' style='contain: paint'>Foo</span></div>");
   Element* span = document().getElementById(AtomicString("test"));
-  ASSERT(span);
+  DCHECK(span);
   // The inline should have been coerced into a block in StyleAdjuster.
   LayoutObject* obj = span->layoutObject();
-  ASSERT(obj && obj->isLayoutBlock());
+  DCHECK(obj);
+  DCHECK(obj->isLayoutBlock());
   LayoutBlock& layoutBlock = toLayoutBlock(*obj);
   checkIsClippingStackingContextAndContainer(layoutBlock);
 }

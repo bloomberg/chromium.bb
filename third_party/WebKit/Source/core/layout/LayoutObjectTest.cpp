@@ -21,9 +21,9 @@ class LayoutObjectTest : public RenderingTest {
 TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   setBodyInnerHTML("<div id='div' style='position: fixed'>test</div>");
   Element* div = document().getElementById(AtomicString("div"));
-  ASSERT(div);
+  DCHECK(div);
   LayoutObject* obj = div->layoutObject();
-  ASSERT(obj);
+  DCHECK(obj);
   EXPECT_STREQ("LayoutBlockFlow (positioned)",
                obj->decoratedName().ascii().data());
 }

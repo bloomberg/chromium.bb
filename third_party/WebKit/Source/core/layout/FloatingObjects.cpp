@@ -248,8 +248,8 @@ inline void FindNextFloatLogicalBottomAdapter::collectIfNeeded(
     return;
 
   // All the objects returned from the tree should be already placed.
-  ASSERT(floatingObject.isPlaced());
-  ASSERT(rangesIntersect(m_layoutObject.logicalTopForFloat(floatingObject),
+  DCHECK(floatingObject.isPlaced());
+  DCHECK(rangesIntersect(m_layoutObject.logicalTopForFloat(floatingObject),
                          m_layoutObject.logicalBottomForFloat(floatingObject),
                          m_belowLogicalHeight, m_aboveLogicalHeight));
 
@@ -299,7 +299,7 @@ void FloatingObjects::clearLineBoxTreePointers() {
   // Clear references to originating lines, since the lines are being deleted
   FloatingObjectSetIterator end = m_set.end();
   for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it) {
-    ASSERT(
+    DCHECK(
         !((*it)->originatingLine()) ||
         (*it)->originatingLine()->getLineLayoutItem().isEqual(m_layoutObject));
     (*it)->setOriginatingLine(nullptr);
@@ -399,9 +399,9 @@ bool FloatingObjects::hasLowestFloatLogicalBottomCached(
     bool isHorizontal,
     FloatingObject::Type type) const {
   int floatIndex = static_cast<int>(type) - 1;
-  ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) /
-                                       sizeof(FloatBottomCachedValue)));
-  ASSERT(floatIndex >= 0);
+  DCHECK_LT(floatIndex, static_cast<int>(sizeof(m_lowestFloatBottomCache) /
+                                         sizeof(FloatBottomCachedValue)));
+  DCHECK_GE(floatIndex, 0);
   return (m_cachedHorizontalWritingMode == isHorizontal &&
           !m_lowestFloatBottomCache[floatIndex].dirty);
 }
@@ -409,9 +409,9 @@ bool FloatingObjects::hasLowestFloatLogicalBottomCached(
 LayoutUnit FloatingObjects::getCachedlowestFloatLogicalBottom(
     FloatingObject::Type type) const {
   int floatIndex = static_cast<int>(type) - 1;
-  ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) /
-                                       sizeof(FloatBottomCachedValue)));
-  ASSERT(floatIndex >= 0);
+  DCHECK_LT(floatIndex, static_cast<int>(sizeof(m_lowestFloatBottomCache) /
+                                         sizeof(FloatBottomCachedValue)));
+  DCHECK_GE(floatIndex, 0);
   if (!m_lowestFloatBottomCache[floatIndex].floatingObject)
     return LayoutUnit();
   return m_layoutObject->logicalBottomForFloat(
@@ -423,9 +423,9 @@ void FloatingObjects::setCachedLowestFloatLogicalBottom(
     FloatingObject::Type type,
     FloatingObject* floatingObject) {
   int floatIndex = static_cast<int>(type) - 1;
-  ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) /
-                                       sizeof(FloatBottomCachedValue)));
-  ASSERT(floatIndex >= 0);
+  DCHECK_LT(floatIndex, static_cast<int>(sizeof(m_lowestFloatBottomCache) /
+                                         sizeof(FloatBottomCachedValue)));
+  DCHECK_GE(floatIndex, 0);
   m_cachedHorizontalWritingMode = isHorizontal;
   m_lowestFloatBottomCache[floatIndex].floatingObject = floatingObject;
   m_lowestFloatBottomCache[floatIndex].dirty = false;
@@ -497,7 +497,7 @@ inline FloatingObjectInterval FloatingObjects::intervalForFloatingObject(
 }
 
 void FloatingObjects::addPlacedObject(FloatingObject& floatingObject) {
-  ASSERT(!floatingObject.isInPlacedTree());
+  DCHECK(!floatingObject.isInPlacedTree());
 
   floatingObject.setIsPlaced(true);
   if (m_placedFloatsTree.isInitialized())
@@ -510,7 +510,8 @@ void FloatingObjects::addPlacedObject(FloatingObject& floatingObject) {
 }
 
 void FloatingObjects::removePlacedObject(FloatingObject& floatingObject) {
-  ASSERT(floatingObject.isPlaced() && floatingObject.isInPlacedTree());
+  DCHECK(floatingObject.isPlaced());
+  DCHECK(floatingObject.isInPlacedTree());
 
   if (m_placedFloatsTree.isInitialized()) {
     bool removed =
@@ -539,15 +540,15 @@ FloatingObject* FloatingObjects::add(
 void FloatingObjects::remove(FloatingObject* toBeRemoved) {
   decreaseObjectsCount(toBeRemoved->getType());
   std::unique_ptr<FloatingObject> floatingObject = m_set.take(toBeRemoved);
-  ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
+  DCHECK(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
   if (floatingObject->isPlaced())
     removePlacedObject(*floatingObject);
   markLowestFloatLogicalBottomCacheAsDirty();
-  ASSERT(!floatingObject->originatingLine());
+  DCHECK(!floatingObject->originatingLine());
 }
 
 void FloatingObjects::computePlacedFloatsTree() {
-  ASSERT(!m_placedFloatsTree.isInitialized());
+  DCHECK(!m_placedFloatsTree.isInitialized());
   if (m_set.isEmpty())
     return;
   m_placedFloatsTree.initIfNeeded(m_layoutObject->view()->intervalArena());
@@ -657,10 +658,10 @@ ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(
 
   // Make sure the float hasn't changed since it was added to the placed floats
   // tree.
-  ASSERT(floatingObject.isPlaced());
-  ASSERT(interval.low() == m_layoutObject->logicalTopForFloat(floatingObject));
-  ASSERT(interval.high() ==
-         m_layoutObject->logicalBottomForFloat(floatingObject));
+  DCHECK(floatingObject.isPlaced());
+  DCHECK_EQ(interval.low(), m_layoutObject->logicalTopForFloat(floatingObject));
+  DCHECK_EQ(interval.high(),
+            m_layoutObject->logicalBottomForFloat(floatingObject));
 
   bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
   if (floatIsNewExtreme)

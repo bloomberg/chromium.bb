@@ -162,7 +162,7 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild) {
 
   LayoutTableCell* cell = toLayoutTableCell(child);
 
-  ASSERT(!beforeChild || beforeChild->isTableCell());
+  DCHECK(!beforeChild || beforeChild->isTableCell());
   LayoutTableBoxComponent::addChild(cell, beforeChild);
 
   // Generated content can result in us having a null section so make sure to
@@ -187,7 +187,7 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild) {
 }
 
 void LayoutTableRow::layout() {
-  ASSERT(needsLayout());
+  DCHECK(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   bool paginated = view()->layoutState()->isPaginated();
 

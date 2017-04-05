@@ -1669,7 +1669,7 @@ inline LayoutBox* LayoutBox::lastChildBox() const {
 }
 
 inline LayoutBox* LayoutBox::previousSiblingMultiColumnBox() const {
-  ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
+  DCHECK(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
   LayoutBox* previousBox = previousSiblingBox();
   if (previousBox->isLayoutFlowThread())
     return nullptr;
@@ -1677,13 +1677,13 @@ inline LayoutBox* LayoutBox::previousSiblingMultiColumnBox() const {
 }
 
 inline LayoutBox* LayoutBox::nextSiblingMultiColumnBox() const {
-  ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
+  DCHECK(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
   return nextSiblingBox();
 }
 
 inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper) {
   if (boxWrapper) {
-    ASSERT(!m_inlineBoxWrapper);
+    DCHECK(!m_inlineBoxWrapper);
     // m_inlineBoxWrapper should already be nullptr. Deleting it is a safeguard
     // against security issues. Otherwise, there will two line box wrappers
     // keeping the reference to this layoutObject, and only one will be notified

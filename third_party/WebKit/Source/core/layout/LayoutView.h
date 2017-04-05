@@ -208,7 +208,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // needed. Long term we should rewrite the counter and quotes code.
   void addLayoutCounter() { m_layoutCounterCount++; }
   void removeLayoutCounter() {
-    ASSERT(m_layoutCounterCount > 0);
+    DCHECK_GT(m_layoutCounterCount, 0u);
     m_layoutCounterCount--;
   }
   bool hasLayoutCounters() { return m_layoutCounterCount; }
@@ -224,7 +224,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     m_layoutState = &layoutState;
   }
   void popLayoutState() {
-    ASSERT(m_layoutState);
+    DCHECK(m_layoutState);
     m_layoutState = m_layoutState->next();
   }
 

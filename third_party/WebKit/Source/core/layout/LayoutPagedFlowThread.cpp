@@ -38,7 +38,7 @@ void LayoutPagedFlowThread::updateLogicalWidth() {
 
 void LayoutPagedFlowThread::layout() {
   // There should either be zero or one of those for paged layout.
-  DCHECK(firstMultiColumnBox() == lastMultiColumnBox());
+  DCHECK_EQ(firstMultiColumnBox(), lastMultiColumnBox());
   setProgressionIsInline(pagedBlockFlow()->style()->hasInlinePaginationAxis());
   LayoutMultiColumnFlowThread::layout();
 
@@ -53,8 +53,8 @@ void LayoutPagedFlowThread::layout() {
   // Ensure uniform page height. We don't want the last page to be shorter than
   // the others, or it'll be impossible to scroll that whole page into view.
   LayoutUnit paddedLogicalBottomInFlowThread = pageLogicalHeight * pageCount();
-  ASSERT(paddedLogicalBottomInFlowThread >=
-         columnSet->logicalBottomInFlowThread());
+  DCHECK_GE(paddedLogicalBottomInFlowThread,
+            columnSet->logicalBottomInFlowThread());
   columnSet->endFlow(paddedLogicalBottomInFlowThread);
 }
 

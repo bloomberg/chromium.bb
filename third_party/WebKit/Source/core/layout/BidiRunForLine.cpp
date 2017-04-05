@@ -109,8 +109,8 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
                               bool isNewUBAParagraph) {
   // FIXME: We should pass a BidiRunList into createBidiRunsForLine instead
   // of the resolver owning the runs.
-  ASSERT(&topResolver.runs() == &bidiRuns);
-  ASSERT(topResolver.position() != endOfLine);
+  DCHECK_EQ(&topResolver.runs(), &bidiRuns);
+  DCHECK(topResolver.position() != endOfLine);
   LineLayoutItem currentRoot = topResolver.position().root();
   topResolver.createBidiRunsForLine(endOfLine, override,
                                     previousLineBrokeCleanly);
@@ -133,7 +133,7 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
     // nothing about LayoutObject).
     LineLayoutItem isolatedInline =
         highestContainingIsolateWithinRoot(startObj, currentRoot);
-    ASSERT(isolatedInline);
+    DCHECK(isolatedInline);
 
     InlineBidiResolver isolatedResolver;
     LineMidpointState& isolatedLineMidpointState =
@@ -171,7 +171,7 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
     isolatedResolver.createBidiRunsForLine(endOfLine, NoVisualOverride,
                                            previousLineBrokeCleanly);
 
-    ASSERT(isolatedResolver.runs().runCount());
+    DCHECK(isolatedResolver.runs().runCount());
     if (isolatedResolver.runs().runCount())
       bidiRuns.replaceRunWithRuns(&isolatedRun.runToReplace,
                                   isolatedResolver.runs());

@@ -53,7 +53,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(
 unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(
     LayoutUnit flowThreadOffset,
     PageBoundaryRule rule) const {
-  ASSERT(m_fragmentainerGroups.size() > 0);
+  DCHECK_GT(m_fragmentainerGroups.size(), 0u);
   if (flowThreadOffset <= 0)
     return 0;
   // TODO(mstensho): Introduce an interval tree or similar to speed up this.
@@ -74,7 +74,7 @@ unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(
 const MultiColumnFragmentainerGroup&
 LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(
     const LayoutPoint& visualPoint) const {
-  ASSERT(m_fragmentainerGroups.size() > 0);
+  DCHECK_GT(m_fragmentainerGroups.size(), 0u);
   LayoutUnit blockOffset =
       isHorizontalWritingMode() ? visualPoint.y() : visualPoint.x();
   for (unsigned index = 0; index < m_fragmentainerGroups.size(); index++) {
@@ -183,7 +183,7 @@ bool LayoutMultiColumnSet::newFragmentainerGroupsAllowed() const {
 LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(
     LayoutUnit flowThreadOffset,
     LayoutUnit contentLogicalHeight) const {
-  ASSERT(flowThreadOffset.mightBeSaturated() ||
+  DCHECK(flowThreadOffset.mightBeSaturated() ||
          pageLogicalTopForOffset(flowThreadOffset) == flowThreadOffset);
   FragmentationContext* enclosingFragmentationContext =
       multiColumnFlowThread()->enclosingFragmentationContext();
@@ -195,7 +195,7 @@ LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(
 
   // Assert the problematic situation. If we have no problem with the column
   // height, why are we even here?
-  ASSERT(pageLogicalHeightForOffset(flowThreadOffset) < contentLogicalHeight);
+  DCHECK_LT(pageLogicalHeightForOffset(flowThreadOffset), contentLogicalHeight);
 
   // There's a likelihood for subsequent rows to be taller than the first one.
   // TODO(mstensho): if we're doubly nested (e.g. multicol in multicol in
