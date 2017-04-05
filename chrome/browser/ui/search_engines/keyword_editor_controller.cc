@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -16,9 +15,7 @@ using base::UserMetricsAction;
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : url_model_(TemplateURLServiceFactory::GetForProfile(profile)) {
-  table_model_.reset(new TemplateURLTableModel(
-      url_model_, FaviconServiceFactory::GetForProfile(
-                      profile, ServiceAccessType::EXPLICIT_ACCESS)));
+  table_model_.reset(new TemplateURLTableModel(url_model_));
 }
 
 KeywordEditorController::~KeywordEditorController() {
