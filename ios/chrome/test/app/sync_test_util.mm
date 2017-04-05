@@ -249,7 +249,7 @@ void AddTypedURLOnClient(const GURL& url) {
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
 
-  historyService->AddPage(url, base::Time::UnixEpoch(), nullptr, 1, GURL(),
+  historyService->AddPage(url, base::Time::Now(), nullptr, 1, GURL(),
                           history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
                           history::SOURCE_BROWSED, false);
 }
