@@ -29,6 +29,8 @@ uint16_t aom_read_primitive_refbilevel(aom_reader *r, uint16_t n, uint16_t p,
 uint16_t aom_read_primitive_subexpfin(aom_reader *r, uint16_t n, uint16_t k);
 uint16_t aom_read_primitive_refsubexpfin(aom_reader *r, uint16_t n, uint16_t k,
                                          uint16_t ref);
+int16_t aom_read_signed_primitive_refsubexpfin(aom_reader *r, uint16_t n,
+                                               uint16_t k, int16_t ref);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

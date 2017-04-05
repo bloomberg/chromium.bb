@@ -184,11 +184,28 @@ int aom_count_primitive_subexpfin(uint16_t n, uint16_t k, uint16_t v) {
 // based on a reference ref also in [0, n-1].
 // Recenters symbol around r first and then uses a finite subexponential code.
 void aom_write_primitive_refsubexpfin(aom_writer *w, uint16_t n, uint16_t k,
-                                      uint16_t ref, uint16_t v) {
+                                      int16_t ref, int16_t v) {
   aom_write_primitive_subexpfin(w, n, k, recenter_finite_nonneg(n, ref, v));
+}
+
+void aom_write_signed_primitive_refsubexpfin(aom_writer *w, uint16_t n,
+                                             uint16_t k, uint16_t ref,
+                                             uint16_t v) {
+  ref += n - 1;
+  v += n - 1;
+  const uint16_t scaled_n = (n << 1) - 1;
+  aom_write_primitive_refsubexpfin(w, scaled_n, k, ref, v);
 }
 
 int aom_count_primitive_refsubexpfin(uint16_t n, uint16_t k, uint16_t ref,
                                      uint16_t v) {
   return aom_count_primitive_subexpfin(n, k, recenter_finite_nonneg(n, ref, v));
+}
+
+int aom_count_signed_primitive_refsubexpfin(uint16_t n, uint16_t k, int16_t ref,
+                                            int16_t v) {
+  ref += n - 1;
+  v += n - 1;
+  const uint16_t scaled_n = (n << 1) - 1;
+  return aom_count_primitive_refsubexpfin(scaled_n, k, ref, v);
 }

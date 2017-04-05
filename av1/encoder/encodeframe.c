@@ -18,6 +18,7 @@
 #include "./aom_config.h"
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/binary_codes_writer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/system_state.h"
@@ -5022,36 +5023,65 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 #endif
 
 #if CONFIG_GLOBAL_MOTION
-static int gm_get_params_cost(WarpedMotionParams *gm) {
+static int gm_get_params_cost(WarpedMotionParams *gm,
+                              WarpedMotionParams *ref_gm, int allow_hp) {
   assert(gm->wmtype < GLOBAL_TRANS_TYPES);
   int params_cost = 0;
+  int trans_bits, trans_prec_diff;
   switch (gm->wmtype) {
     case HOMOGRAPHY:
     case HORTRAPEZOID:
     case VERTRAPEZOID:
       if (gm->wmtype != HORTRAPEZOID)
-        params_cost += gm->wmmat[6] == 0 ? 1 : (GM_ABS_ROW3HOMO_BITS + 2);
+        params_cost += aom_count_signed_primitive_refsubexpfin(
+            GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+            (ref_gm->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
+            (gm->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF));
       if (gm->wmtype != VERTRAPEZOID)
-        params_cost += gm->wmmat[7] == 0 ? 1 : (GM_ABS_ROW3HOMO_BITS + 2);
+        params_cost += aom_count_signed_primitive_refsubexpfin(
+            GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+            (ref_gm->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
+            (gm->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF));
     // Fallthrough intended
     case AFFINE:
     case ROTZOOM:
-      params_cost += gm->wmmat[2] == (1 << WARPEDMODEL_PREC_BITS)
-                         ? 1
-                         : (GM_ABS_ALPHA_BITS + 2);
+      params_cost += aom_count_signed_primitive_refsubexpfin(
+          GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+          (ref_gm->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS),
+          (gm->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
       if (gm->wmtype != VERTRAPEZOID)
-        params_cost += gm->wmmat[3] == 0 ? 1 : (GM_ABS_ALPHA_BITS + 2);
+        params_cost += aom_count_signed_primitive_refsubexpfin(
+            GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+            (ref_gm->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+            (gm->wmmat[3] >> GM_ALPHA_PREC_DIFF));
       if (gm->wmtype >= AFFINE) {
         if (gm->wmtype != HORTRAPEZOID)
-          params_cost += gm->wmmat[4] == 0 ? 1 : (GM_ABS_ALPHA_BITS + 2);
-        params_cost += gm->wmmat[5] == (1 << WARPEDMODEL_PREC_BITS)
-                           ? 1
-                           : (GM_ABS_ALPHA_BITS + 2);
+          params_cost += aom_count_signed_primitive_refsubexpfin(
+              GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+              (ref_gm->wmmat[4] >> GM_ALPHA_PREC_DIFF),
+              (gm->wmmat[4] >> GM_ALPHA_PREC_DIFF));
+        params_cost += aom_count_signed_primitive_refsubexpfin(
+            GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+            (ref_gm->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                (1 << GM_ALPHA_PREC_BITS),
+            (gm->wmmat[5] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
       }
     // Fallthrough intended
     case TRANSLATION:
-      params_cost += gm->wmmat[0] == 0 ? 1 : (GM_ABS_TRANS_BITS + 2);
-      params_cost += gm->wmmat[1] == 0 ? 1 : (GM_ABS_TRANS_BITS + 2);
+      trans_bits = (gm->wmtype == TRANSLATION)
+                       ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                       : GM_ABS_TRANS_BITS;
+      trans_prec_diff = (gm->wmtype == TRANSLATION)
+                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                            : GM_TRANS_PREC_DIFF;
+      params_cost += aom_count_signed_primitive_refsubexpfin(
+          (1 << trans_bits) + 1, SUBEXPFIN_K,
+          (ref_gm->wmmat[0] >> trans_prec_diff),
+          (gm->wmmat[0] >> trans_prec_diff));
+      params_cost += aom_count_signed_primitive_refsubexpfin(
+          (1 << trans_bits) + 1, SUBEXPFIN_K,
+          (ref_gm->wmmat[1] >> trans_prec_diff),
+          (gm->wmmat[1] >> trans_prec_diff));
     // Fallthrough intended
     case IDENTITY: break;
     default: assert(0);
@@ -5170,12 +5200,16 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         aom_clear_system_state();
       }
       cpi->gmparams_cost[frame] =
-          gm_get_params_cost(&cm->global_motion[frame]) +
+          gm_get_params_cost(&cm->global_motion[frame],
+                             &cm->prev_frame->global_motion[frame],
+                             cm->allow_high_precision_mv) +
           cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
           cpi->gmtype_cost[IDENTITY];
     }
     cpi->global_motion_search_done = 1;
   }
+  memcpy(cm->cur_frame->global_motion, cm->global_motion,
+         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 #endif  // CONFIG_GLOBAL_MOTION
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {

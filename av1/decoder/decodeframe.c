@@ -4401,12 +4401,14 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 
 #if CONFIG_GLOBAL_MOTION
 static void read_global_motion_params(WarpedMotionParams *params,
+                                      WarpedMotionParams *ref_params,
                                       aom_prob *probs, aom_reader *r,
                                       int allow_hp) {
   TransformationType type =
       aom_read_tree(r, av1_global_motion_types_tree, probs, ACCT_STR);
   int trans_bits;
   int trans_dec_factor;
+  int trans_prec_diff;
   set_default_gmparams(params);
   params->wmtype = type;
   switch (type) {
@@ -4415,26 +4417,39 @@ static void read_global_motion_params(WarpedMotionParams *params,
     case VERTRAPEZOID:
       if (type != HORTRAPEZOID)
         params->wmmat[6] =
-            aom_read_primitive_symmetric(r, GM_ABS_ROW3HOMO_BITS) *
+            aom_read_signed_primitive_refsubexpfin(
+                r, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+                (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF)) *
             GM_ROW3HOMO_DECODE_FACTOR;
       if (type != VERTRAPEZOID)
         params->wmmat[7] =
-            aom_read_primitive_symmetric(r, GM_ABS_ROW3HOMO_BITS) *
+            aom_read_signed_primitive_refsubexpfin(
+                r, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+                (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF)) *
             GM_ROW3HOMO_DECODE_FACTOR;
     case AFFINE:
     case ROTZOOM:
-      params->wmmat[2] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+      params->wmmat[2] = aom_read_signed_primitive_refsubexpfin(
+                             r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                             (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
+                                 (1 << GM_ALPHA_PREC_BITS)) *
                              GM_ALPHA_DECODE_FACTOR +
                          (1 << WARPEDMODEL_PREC_BITS);
       if (type != VERTRAPEZOID)
-        params->wmmat[3] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+        params->wmmat[3] = aom_read_signed_primitive_refsubexpfin(
+                               r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                               (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
                            GM_ALPHA_DECODE_FACTOR;
       if (type >= AFFINE) {
         if (type != HORTRAPEZOID)
-          params->wmmat[4] =
-              aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-              GM_ALPHA_DECODE_FACTOR;
-        params->wmmat[5] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+          params->wmmat[4] = aom_read_signed_primitive_refsubexpfin(
+                                 r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                                 (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
+                             GM_ALPHA_DECODE_FACTOR;
+        params->wmmat[5] = aom_read_signed_primitive_refsubexpfin(
+                               r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                               (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                                   (1 << GM_ALPHA_PREC_BITS)) *
                                GM_ALPHA_DECODE_FACTOR +
                            (1 << WARPEDMODEL_PREC_BITS);
       } else {
@@ -4448,11 +4463,17 @@ static void read_global_motion_params(WarpedMotionParams *params,
       trans_dec_factor = (type == TRANSLATION)
                              ? GM_TRANS_ONLY_DECODE_FACTOR * (1 << !allow_hp)
                              : GM_TRANS_DECODE_FACTOR;
-      params->wmmat[0] =
-          aom_read_primitive_symmetric(r, trans_bits) * trans_dec_factor;
-      params->wmmat[1] =
-          aom_read_primitive_symmetric(r, trans_bits) * trans_dec_factor;
-      break;
+      trans_prec_diff = (type == TRANSLATION)
+                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                            : GM_TRANS_PREC_DIFF;
+      params->wmmat[0] = aom_read_signed_primitive_refsubexpfin(
+                             r, (1 << trans_bits) + 1, SUBEXPFIN_K,
+                             (ref_params->wmmat[0] >> trans_prec_diff)) *
+                         trans_dec_factor;
+      params->wmmat[1] = aom_read_signed_primitive_refsubexpfin(
+                             r, (1 << trans_bits) + 1, SUBEXPFIN_K,
+                             (ref_params->wmmat[1] >> trans_prec_diff)) *
+                         trans_dec_factor;
     case IDENTITY: break;
     default: assert(0);
   }
@@ -4463,9 +4484,9 @@ static void read_global_motion_params(WarpedMotionParams *params,
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    read_global_motion_params(&cm->global_motion[frame],
-                              cm->fc->global_motion_types_prob, r,
-                              cm->allow_high_precision_mv);
+    read_global_motion_params(
+        &cm->global_motion[frame], &cm->prev_frame->global_motion[frame],
+        cm->fc->global_motion_types_prob, r, cm->allow_high_precision_mv);
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,
@@ -4475,6 +4496,8 @@ static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
            cm->global_motion[frame].wmmat[3]);
            */
   }
+  memcpy(cm->cur_frame->global_motion, cm->global_motion,
+         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -4824,6 +4847,11 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_GLOBAL_MOTION
+  int i;
+  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    set_default_gmparams(&cm->global_motion[i]);
+    set_default_gmparams(&cm->cur_frame->global_motion[i]);
+  }
   xd->global_motion = cm->global_motion;
 #endif  // CONFIG_GLOBAL_MOTION
 

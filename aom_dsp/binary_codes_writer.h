@@ -47,6 +47,12 @@ void aom_write_primitive_subexpfin(aom_writer *w, uint16_t n, uint16_t k,
 void aom_write_primitive_refsubexpfin(aom_writer *w, uint16_t n, uint16_t k,
                                       uint16_t ref, uint16_t v);
 
+// Finite subexponential code that codes a symbol v in [-(n-1), n-1] with
+// parameter k based on a reference ref also in [-(n-1), n-1].
+void aom_write_signed_primitive_refsubexpfin(aom_writer *w, uint16_t n,
+                                             uint16_t k, int16_t ref,
+                                             int16_t v);
+
 // Functions that counts bits for the above primitives
 int aom_count_primitive_symmetric(int16_t v, unsigned int mag_bits);
 int aom_count_primitive_quniform(uint16_t n, uint16_t v);
@@ -55,6 +61,8 @@ int aom_count_primitive_refbilevel(uint16_t n, uint16_t p, uint16_t ref,
 int aom_count_primitive_subexpfin(uint16_t n, uint16_t k, uint16_t v);
 int aom_count_primitive_refsubexpfin(uint16_t n, uint16_t k, uint16_t ref,
                                      uint16_t v);
+int aom_count_signed_primitive_refsubexpfin(uint16_t n, uint16_t k, int16_t ref,
+                                            int16_t v);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

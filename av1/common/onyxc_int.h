@@ -108,6 +108,9 @@ typedef struct {
   MV_REF *mvs;
   int mi_rows;
   int mi_cols;
+#if CONFIG_GLOBAL_MOTION
+  WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+#endif  // CONFIG_GLOBAL_MOTION
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
 #if CONFIG_TEMPMV_SIGNALING

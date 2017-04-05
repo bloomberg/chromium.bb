@@ -108,3 +108,12 @@ uint16_t aom_read_primitive_refsubexpfin(aom_reader *r, uint16_t n, uint16_t k,
   return inv_recenter_finite_nonneg(n, ref,
                                     aom_read_primitive_subexpfin(r, n, k));
 }
+
+// Decode finite subexponential code that for a symbol v in [-(n-1), n-1] with
+// parameter k based on a reference ref also in [-(n-1), n-1].
+int16_t aom_read_signed_primitive_refsubexpfin(aom_reader *r, uint16_t n,
+                                               uint16_t k, int16_t ref) {
+  ref += n - 1;
+  const uint16_t scaled_n = (n << 1) - 1;
+  return aom_read_primitive_refsubexpfin(r, scaled_n, k, ref) - n + 1;
+}
