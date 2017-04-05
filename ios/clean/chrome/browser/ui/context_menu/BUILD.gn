@@ -2,20 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("web_contents") {
+source_set("context_menu") {
   sources = [
-    "web_contents_mediator.h",
-    "web_contents_mediator.mm",
-    "web_coordinator.h",
-    "web_coordinator.mm",
+    "context_menu_mediator.h",
+    "context_menu_mediator.mm",
+    "web_context_menu_coordinator.h",
+    "web_context_menu_coordinator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":web_contents_ui",
-    "//ios/clean/chrome/browser/ui/context_menu",
+    ":context_menu_ui",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
     "//ui/base",
@@ -23,11 +24,12 @@ source_set("web_contents") {
   ]
 }
 
-source_set("web_contents_ui") {
+source_set("context_menu_ui") {
   sources = [
-    "web_contents_consumer.h",
-    "web_contents_view_controller.h",
-    "web_contents_view_controller.mm",
+    "context_menu_consumer.h",
+    "context_menu_consumer.mm",
+    "context_menu_view_controller.h",
+    "context_menu_view_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -36,14 +38,14 @@ source_set("web_contents_ui") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "web_contents_mediator_unittest.mm",
+    "context_menu_mediator_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":web_contents",
-    ":web_contents_ui",
+    ":context_menu",
+    ":context_menu_ui",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/test/base",
