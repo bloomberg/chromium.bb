@@ -13,7 +13,7 @@
 
 #define CDEF_STRENGTH_BITS 7
 
-#define DERING_STRENGTHS 21
+#define DERING_STRENGTHS 32
 #define CLPF_STRENGTHS 4
 
 #include "./aom_config.h"
