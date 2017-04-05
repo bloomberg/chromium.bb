@@ -937,7 +937,7 @@ void HistoryService::ScheduleAutocomplete(
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
-                                  base::Closure task) {
+                                  base::OnceClosure task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(backend_task_runner_);
   // TODO(brettw): Do prioritization.

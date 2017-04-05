@@ -32,14 +32,14 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     NOTREACHED();
     return false;
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     {
       base::AutoLock locker(lock_);
@@ -112,7 +112,7 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
 
   // Protect |tasks_|.
   base::Lock lock_;
-  std::queue<base::Closure> tasks_;
+  std::queue<base::OnceClosure> tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTaskRunner);
 };

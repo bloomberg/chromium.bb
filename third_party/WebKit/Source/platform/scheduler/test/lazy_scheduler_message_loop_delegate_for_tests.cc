@@ -68,7 +68,7 @@ bool LazySchedulerMessageLoopDelegateForTests::HasMessageLoop() const {
 
 bool LazySchedulerMessageLoopDelegateForTests::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   EnsureMessageLoop();
   return original_task_runner_->PostDelayedTask(from_here, std::move(task),
@@ -77,7 +77,7 @@ bool LazySchedulerMessageLoopDelegateForTests::PostDelayedTask(
 
 bool LazySchedulerMessageLoopDelegateForTests::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   EnsureMessageLoop();
   return original_task_runner_->PostNonNestableDelayedTask(

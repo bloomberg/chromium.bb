@@ -41,14 +41,14 @@ void SchedulerTqmDelegateForTest::RestoreDefaultTaskRunner() {
 
 bool SchedulerTqmDelegateForTest::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
 }
 
 bool SchedulerTqmDelegateForTest::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
                                                   delay);

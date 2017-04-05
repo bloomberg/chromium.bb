@@ -31,7 +31,7 @@ BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
 void ContentBrowserClient::PostAfterStartupTask(
     const tracked_objects::Location& from_here,
     const scoped_refptr<base::TaskRunner>& task_runner,
-    base::Closure task) {
+    base::OnceClosure task) {
   task_runner->PostTask(from_here, std::move(task));
 }
 

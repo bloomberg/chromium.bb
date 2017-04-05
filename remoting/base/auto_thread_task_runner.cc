@@ -12,14 +12,14 @@ namespace remoting {
 
 AutoThreadTaskRunner::AutoThreadTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::Closure stop_task)
+    base::OnceClosure stop_task)
     : stop_task_(std::move(stop_task)), task_runner_(task_runner) {
   DCHECK(!stop_task_.is_null());
 }
 
 bool AutoThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   CHECK(task_runner_->PostDelayedTask(from_here, std::move(task), delay));
   return true;
@@ -27,7 +27,7 @@ bool AutoThreadTaskRunner::PostDelayedTask(
 
 bool AutoThreadTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   CHECK(task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
                                                  delay));

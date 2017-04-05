@@ -100,7 +100,7 @@ class LenientMockTaskRunner {
 using MockTaskRunner = testing::StrictMock<LenientMockTaskRunner>;
 
 // Represents a pending task.
-using Task = std::pair<base::TimeTicks, base::Closure>;
+using Task = std::pair<base::TimeTicks, base::OnceClosure>;
 
 // Comparator used for sorting Task objects. Can't use std::pair's default
 // comparison operators because Closure's are comparable.
@@ -120,7 +120,7 @@ class TaskRunnerProxy : public base::TaskRunner {
       : mock_(mock), clock_(clock) {}
   bool RunsTasksOnCurrentThread() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
-                       base::Closure closure,
+                       base::OnceClosure closure,
                        base::TimeDelta delta) override {
     mock_->PostDelayedTask(location, delta);
     base::TimeTicks when = clock_->NowTicks() + delta;
@@ -169,7 +169,7 @@ class TaskRunnerProxy : public base::TaskRunner {
   base::SimpleTestTickClock* clock_;
 
   // A min-heap of outstanding tasks.
-  using Task = std::pair<base::TimeTicks, base::Closure>;
+  using Task = std::pair<base::TimeTicks, base::OnceClosure>;
   std::vector<Task> tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerProxy);

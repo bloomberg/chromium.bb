@@ -87,7 +87,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
 
   static bool PostTaskHelper(BrowserThread::ID identifier,
                              const tracked_objects::Location& from_here,
-                             base::Closure task,
+                             base::OnceClosure task,
                              base::TimeDelta delay,
                              bool nestable);
 

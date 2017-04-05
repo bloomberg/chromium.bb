@@ -24,7 +24,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
 
   // WebTaskRunner implementation:
   void postDelayedTask(const WebTraceLocation&,
-                       base::Closure,
+                       base::OnceClosure,
                        double delayMs) override;
   bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;

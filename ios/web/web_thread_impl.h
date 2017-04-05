@@ -49,7 +49,7 @@ class WebThreadImpl : public WebThread, public base::Thread {
 
   static bool PostTaskHelper(WebThread::ID identifier,
                              const tracked_objects::Location& from_here,
-                             base::Closure task,
+                             base::OnceClosure task,
                              base::TimeDelta delay,
                              bool nestable);
 

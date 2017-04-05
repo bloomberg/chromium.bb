@@ -34,14 +34,14 @@ class CONTENT_EXPORT DOMStorageTaskRunner
   // The PostTask() and PostDelayedTask() methods defined by TaskRunner
   // post shutdown-blocking tasks on the primary sequence.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override = 0;
 
   // Posts a shutdown blocking task to |sequence_id|.
   virtual bool PostShutdownBlockingTask(
       const tracked_objects::Location& from_here,
       SequenceID sequence_id,
-      base::Closure task) = 0;
+      base::OnceClosure task) = 0;
 
   virtual void AssertIsRunningOnPrimarySequence() const = 0;
   virtual void AssertIsRunningOnCommitSequence() const = 0;
@@ -66,12 +66,12 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
   bool RunsTasksOnCurrentThread() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
 
   bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
                                 SequenceID sequence_id,
-                                base::Closure task) override;
+                                base::OnceClosure task) override;
 
   void AssertIsRunningOnPrimarySequence() const override;
   void AssertIsRunningOnCommitSequence() const override;
@@ -103,12 +103,12 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
   bool RunsTasksOnCurrentThread() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
 
   bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
                                 SequenceID sequence_id,
-                                base::Closure task) override;
+                                base::OnceClosure task) override;
 
   void AssertIsRunningOnPrimarySequence() const override;
   void AssertIsRunningOnCommitSequence() const override;

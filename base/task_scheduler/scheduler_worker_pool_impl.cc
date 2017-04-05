@@ -58,7 +58,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
 
   // TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       Closure closure,
+                       OnceClosure closure,
                        TimeDelta delay) override {
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
@@ -93,7 +93,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
 
   // SequencedTaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       Closure closure,
+                       OnceClosure closure,
                        TimeDelta delay) override {
     std::unique_ptr<Task> task(
         new Task(from_here, std::move(closure), traits_, delay));
@@ -104,7 +104,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  Closure closure,
+                                  OnceClosure closure,
                                   base::TimeDelta delay) override {
     // Tasks are never nested within the task scheduler.
     return PostDelayedTask(from_here, std::move(closure), delay);

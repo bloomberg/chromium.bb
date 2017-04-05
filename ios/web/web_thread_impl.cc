@@ -49,13 +49,13 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
 
   // SingleThreadTaskRunner implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     return WebThread::PostDelayedTask(id_, from_here, std::move(task), delay);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return WebThread::PostNonNestableDelayedTask(id_, from_here,
                                                  std::move(task), delay);
@@ -291,7 +291,7 @@ WebThreadImpl::~WebThreadImpl() {
 // static
 bool WebThreadImpl::PostTaskHelper(WebThread::ID identifier,
                                    const tracked_objects::Location& from_here,
-                                   base::Closure task,
+                                   base::OnceClosure task,
                                    base::TimeDelta delay,
                                    bool nestable) {
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
@@ -331,7 +331,7 @@ bool WebThreadImpl::PostTaskHelper(WebThread::ID identifier,
 
 // static
 bool WebThread::PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                     base::Closure task) {
+                                     base::OnceClosure task) {
   return g_globals.Get().blocking_pool->PostWorkerTask(from_here,
                                                        std::move(task));
 }
@@ -339,8 +339,8 @@ bool WebThread::PostBlockingPoolTask(const tracked_objects::Location& from_here,
 // static
 bool WebThread::PostBlockingPoolTaskAndReply(
     const tracked_objects::Location& from_here,
-    base::Closure task,
-    base::Closure reply) {
+    base::OnceClosure task,
+    base::OnceClosure reply) {
   return g_globals.Get().blocking_pool->PostTaskAndReply(
       from_here, std::move(task), std::move(reply));
 }
@@ -349,7 +349,7 @@ bool WebThread::PostBlockingPoolTaskAndReply(
 bool WebThread::PostBlockingPoolSequencedTask(
     const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
-    base::Closure task) {
+    base::OnceClosure task) {
   return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
       sequence_token_name, from_here, std::move(task));
 }
@@ -409,7 +409,7 @@ bool WebThread::IsMessageLoopValid(ID identifier) {
 // static
 bool WebThread::PostTask(ID identifier,
                          const tracked_objects::Location& from_here,
-                         base::Closure task) {
+                         base::OnceClosure task) {
   return WebThreadImpl::PostTaskHelper(identifier, from_here, std::move(task),
                                        base::TimeDelta(), true);
 }
@@ -417,7 +417,7 @@ bool WebThread::PostTask(ID identifier,
 // static
 bool WebThread::PostDelayedTask(ID identifier,
                                 const tracked_objects::Location& from_here,
-                                base::Closure task,
+                                base::OnceClosure task,
                                 base::TimeDelta delay) {
   return WebThreadImpl::PostTaskHelper(identifier, from_here, std::move(task),
                                        delay, true);
@@ -426,7 +426,7 @@ bool WebThread::PostDelayedTask(ID identifier,
 // static
 bool WebThread::PostNonNestableTask(ID identifier,
                                     const tracked_objects::Location& from_here,
-                                    base::Closure task) {
+                                    base::OnceClosure task) {
   return WebThreadImpl::PostTaskHelper(identifier, from_here, std::move(task),
                                        base::TimeDelta(), false);
 }
@@ -435,7 +435,7 @@ bool WebThread::PostNonNestableTask(ID identifier,
 bool WebThread::PostNonNestableDelayedTask(
     ID identifier,
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   return WebThreadImpl::PostTaskHelper(identifier, from_here, std::move(task),
                                        delay, false);
@@ -444,8 +444,8 @@ bool WebThread::PostNonNestableDelayedTask(
 // static
 bool WebThread::PostTaskAndReply(ID identifier,
                                  const tracked_objects::Location& from_here,
-                                 base::Closure task,
-                                 base::Closure reply) {
+                                 base::OnceClosure task,
+                                 base::OnceClosure reply) {
   return GetTaskRunnerForThread(identifier)
       ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
 }

@@ -48,7 +48,7 @@ class TestContentBrowserClient : public ::content::ContentBrowserClient {
   // ::content::ContentBrowserClient:
   void PostAfterStartupTask(const tracked_objects::Location&,
                             const scoped_refptr<base::TaskRunner>& task_runner,
-                            base::Closure task) override {
+                            base::OnceClosure task) override {
     scoped_refptr<base::TaskRunner> ui_task_runner =
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI);
@@ -62,7 +62,7 @@ class TestContentBrowserClient : public ::content::ContentBrowserClient {
   }
 
  private:
-  base::Closure last_task_;
+  base::OnceClosure last_task_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
 };

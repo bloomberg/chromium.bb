@@ -62,7 +62,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // Schedule a task to be run after |delayMs| on the the associated WebThread.
   // Can be called from any thread.
   virtual void postDelayedTask(const WebTraceLocation&,
-                               base::Closure,
+                               base::OnceClosure,
                                double delayMs) = 0;
 
   // Returns true if the current thread is a thread on which a task may be run.

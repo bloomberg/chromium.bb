@@ -27,10 +27,10 @@ class PepperMainThreadTaskRunner : public base::SingleThreadTaskRunner {
 
   // base::SingleThreadTaskRunner interface.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 
@@ -40,7 +40,7 @@ class PepperMainThreadTaskRunner : public base::SingleThreadTaskRunner {
  private:
   // Helper that allows a base::Closure to be used as a pp::CompletionCallback,
   // by ignoring the completion result.
-  void RunTask(base::Closure task);
+  void RunTask(base::OnceClosure task);
 
   pp::Core* core_;
 

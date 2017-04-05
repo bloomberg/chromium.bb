@@ -69,13 +69,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
    public:
     Task();
     Task(const tracked_objects::Location& posted_from,
-         base::Closure task,
+         base::OnceClosure task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
          bool nestable);
 
     Task(const tracked_objects::Location& posted_from,
-         base::Closure task,
+         base::OnceClosure task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
          bool nestable,
@@ -131,10 +131,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void UnregisterTaskQueue() override;
   bool RunsTasksOnCurrentThread() const override;
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override;
   std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() override;
   bool IsQueueEnabled() const override;
@@ -283,10 +283,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   ~TaskQueueImpl() override;
 
   bool PostImmediateTaskImpl(const tracked_objects::Location& from_here,
-                             base::Closure task,
+                             base::OnceClosure task,
                              TaskType task_type);
   bool PostDelayedTaskImpl(const tracked_objects::Location& from_here,
-                           base::Closure task,
+                           base::OnceClosure task,
                            base::TimeDelta delay,
                            TaskType task_type);
 
@@ -308,7 +308,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // empty.
   void PushOntoImmediateIncomingQueueLocked(
       const tracked_objects::Location& posted_from,
-      base::Closure task,
+      base::OnceClosure task,
       base::TimeTicks desired_run_time,
       EnqueueOrder sequence_number,
       bool nestable);

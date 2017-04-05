@@ -39,7 +39,7 @@ class CONTENT_EXPORT WorkerThreadRegistry {
   friend class WorkerThread;
   friend class WorkerThreadRegistryTest;
 
-  bool PostTask(int id, base::Closure task);
+  bool PostTask(int id, base::OnceClosure task);
 
   using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
 

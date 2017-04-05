@@ -36,7 +36,7 @@ TestOrderablePendingTask::TestOrderablePendingTask()
 
 TestOrderablePendingTask::TestOrderablePendingTask(
     const tracked_objects::Location& location,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeTicks post_time,
     base::TimeDelta delay,
     TestNestability nestability)
@@ -109,7 +109,7 @@ base::TimeTicks OrderedSimpleTaskRunner::AbsoluteMaxNow() {
 // base::TestSimpleTaskRunner implementation
 bool OrderedSimpleTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TestOrderablePendingTask pt(from_here, std::move(task), now_src_->NowTicks(),
@@ -122,7 +122,7 @@ bool OrderedSimpleTaskRunner::PostDelayedTask(
 
 bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TestOrderablePendingTask pt(from_here, std::move(task), now_src_->NowTicks(),

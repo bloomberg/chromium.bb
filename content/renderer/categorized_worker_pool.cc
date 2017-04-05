@@ -53,7 +53,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
   // Overridden from base::TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     return PostNonNestableDelayedTask(from_here, std::move(task), delay);
   }
@@ -61,7 +61,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
   // Overridden from base::SequencedTaskRunner:
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     DCHECK(task);
     base::AutoLock lock(lock_);
@@ -187,7 +187,7 @@ void CategorizedWorkerPool::Shutdown() {
 // Overridden from base::TaskRunner:
 bool CategorizedWorkerPool::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   base::AutoLock lock(lock_);
 
@@ -415,7 +415,7 @@ void CategorizedWorkerPool::SignalHasReadyToRunTasksWithLockAcquired() {
   }
 }
 
-CategorizedWorkerPool::ClosureTask::ClosureTask(base::Closure closure)
+CategorizedWorkerPool::ClosureTask::ClosureTask(base::OnceClosure closure)
     : closure_(std::move(closure)) {}
 
 // Overridden from cc::Task:

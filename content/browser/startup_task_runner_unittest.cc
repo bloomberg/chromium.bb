@@ -88,25 +88,25 @@ class TaskRunnerProxy : public base::SingleThreadTaskRunner {
   TaskRunnerProxy(MockTaskRunner* mock) : mock_(mock) {}
   bool RunsTasksOnCurrentThread() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
-                       base::Closure closure,
+                       base::OnceClosure closure,
                        base::TimeDelta delta) override {
     last_task_ = std::move(closure);
     return mock_->PostDelayedTask(location, delta);
   }
   bool PostNonNestableDelayedTask(const tracked_objects::Location& location,
-                                  base::Closure closure,
+                                  base::OnceClosure closure,
                                   base::TimeDelta delta) override {
     last_task_ = std::move(closure);
     return mock_->PostNonNestableDelayedTask(location, delta);
   }
 
-  base::Closure TakeLastTaskClosure() { return std::move(last_task_); }
+  base::OnceClosure TakeLastTaskClosure() { return std::move(last_task_); }
 
  private:
   ~TaskRunnerProxy() override {}
 
   MockTaskRunner* mock_;
-  base::Closure last_task_;
+  base::OnceClosure last_task_;
 };
 
 TEST_F(StartupTaskRunnerTest, SynchronousExecution) {

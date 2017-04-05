@@ -25,14 +25,14 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
 
   // base::SingleThreadTaskRunner implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) final;
 
   bool RunsTasksOnCurrentThread() const final;
 
   // This function is currently not used, and will return false.
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) final;
 
  protected:
@@ -49,7 +49,7 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   // Note: The std::map data structure was chosen because the entire
   // cast_unittests suite performed 20% faster than when using
   // std::priority_queue.  http://crbug.com/530842
-  std::map<TaskKey, base::Closure> tasks_;
+  std::map<TaskKey, base::OnceClosure> tasks_;
 
   bool fail_on_next_task_;
 

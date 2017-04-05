@@ -61,7 +61,7 @@ class FakeTaskRunner : public base::TaskRunner {
 
   // base::TaskRunner overrides:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     delays_->push_back(delay.InMilliseconds());
     base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(task));

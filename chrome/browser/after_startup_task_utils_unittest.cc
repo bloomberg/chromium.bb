@@ -31,12 +31,13 @@ class WrappedTaskRunner : public base::TaskRunner {
       : real_task_runner_(real_runner) {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     ++posted_task_count_;
     return real_task_runner_->PostDelayedTask(
         from_here,
-        base::Bind(&WrappedTaskRunner::RunWrappedTask, this, std::move(task)),
+        base::BindOnce(&WrappedTaskRunner::RunWrappedTask, this,
+                       std::move(task)),
         base::TimeDelta());  // Squash all delays so our tests complete asap.
   }
 
@@ -58,7 +59,7 @@ class WrappedTaskRunner : public base::TaskRunner {
  private:
   ~WrappedTaskRunner() override {}
 
-  void RunWrappedTask(base::Closure task) {
+  void RunWrappedTask(base::OnceClosure task) {
     ++ran_task_count_;
     std::move(task).Run();
   }
@@ -98,12 +99,12 @@ class AfterStartupTaskTest : public testing::Test {
   void PostAfterStartupTaskFromDBThread(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
-      base::Closure task) {
+      base::OnceClosure task) {
     RunLoop run_loop;
     db_thread_->real_runner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&AfterStartupTaskUtils::PostTask, from_here, task_runner,
-                   std::move(task)),
+        base::BindOnce(&AfterStartupTaskUtils::PostTask, from_here, task_runner,
+                       std::move(task)),
         base::Bind(&RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
   }

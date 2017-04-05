@@ -1081,7 +1081,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 void ChromeContentBrowserClient::PostAfterStartupTask(
     const tracked_objects::Location& from_here,
     const scoped_refptr<base::TaskRunner>& task_runner,
-    base::Closure task) {
+    base::OnceClosure task) {
   AfterStartupTaskUtils::PostTask(from_here, task_runner, std::move(task));
 }
 

@@ -57,7 +57,7 @@ namespace {
 class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
  public:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     TestSimpleTaskRunner::PostDelayedTask(from_here, std::move(task), delay);
     if (run_tasks_synchronously_)
@@ -66,7 +66,7 @@ class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return PostDelayedTask(from_here, std::move(task), delay);
   }

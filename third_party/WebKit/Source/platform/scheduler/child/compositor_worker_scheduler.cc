@@ -29,13 +29,13 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
                                                     delay);

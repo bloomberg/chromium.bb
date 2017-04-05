@@ -26,7 +26,7 @@ class AfterStartupTaskUtils {
 
     // Overrides from base::TaskRunner:
     bool PostDelayedTask(const tracked_objects::Location& from_here,
-                         base::Closure task,
+                         base::OnceClosure task,
                          base::TimeDelta delay) override;
     bool RunsTasksOnCurrentThread() const override;
 
@@ -47,7 +47,7 @@ class AfterStartupTaskUtils {
   static void PostTask(
       const tracked_objects::Location& from_here,
       const scoped_refptr<base::TaskRunner>& destination_runner,
-      base::Closure task);
+      base::OnceClosure task);
 
   // Returns true if browser startup is complete. Only use this on a one-off
   // basis; If you need to poll this function constantly, use the above

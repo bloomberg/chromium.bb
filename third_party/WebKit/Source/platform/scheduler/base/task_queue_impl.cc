@@ -119,7 +119,7 @@ TaskQueueImpl::Task::Task()
 }
 
 TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
-                          base::Closure task,
+                          base::OnceClosure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           bool nestable)
@@ -132,7 +132,7 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
 }
 
 TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
-                          base::Closure task,
+                          base::OnceClosure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
                           bool nestable,
@@ -194,7 +194,7 @@ bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
 }
 
 bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
-                                    base::Closure task,
+                                    base::OnceClosure task,
                                     base::TimeDelta delay) {
   if (delay.is_zero())
     return PostImmediateTaskImpl(from_here, std::move(task), TaskType::NORMAL);
@@ -205,7 +205,7 @@ bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
 
 bool TaskQueueImpl::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   if (delay.is_zero())
     return PostImmediateTaskImpl(from_here, std::move(task),
@@ -217,7 +217,7 @@ bool TaskQueueImpl::PostNonNestableDelayedTask(
 
 bool TaskQueueImpl::PostImmediateTaskImpl(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     TaskType task_type) {
   DCHECK(task);
   base::AutoLock lock(any_thread_lock_);
@@ -235,7 +235,7 @@ bool TaskQueueImpl::PostImmediateTaskImpl(
 
 bool TaskQueueImpl::PostDelayedTaskImpl(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay,
     TaskType task_type) {
   DCHECK(task);
@@ -332,7 +332,7 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
 
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     const tracked_objects::Location& posted_from,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeTicks desired_run_time,
     EnqueueOrder sequence_number,
     bool nestable) {

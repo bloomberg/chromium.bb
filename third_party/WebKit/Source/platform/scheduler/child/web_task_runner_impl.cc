@@ -22,7 +22,7 @@ RefPtr<WebTaskRunnerImpl> WebTaskRunnerImpl::create(
 }
 
 void WebTaskRunnerImpl::postDelayedTask(const WebTraceLocation& location,
-                                        base::Closure task,
+                                        base::OnceClosure task,
                                         double delayMs) {
   DCHECK_GE(delayMs, 0.0) << location.function_name() << " "
                           << location.file_name();

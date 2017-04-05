@@ -101,31 +101,31 @@ class WebThread {
   // They return true iff the thread existed and the task was posted.
   static bool PostTask(ID identifier,
                        const tracked_objects::Location& from_here,
-                       base::Closure task);
+                       base::OnceClosure task);
   static bool PostDelayedTask(ID identifier,
                               const tracked_objects::Location& from_here,
-                              base::Closure task,
+                              base::OnceClosure task,
                               base::TimeDelta delay);
   static bool PostNonNestableTask(ID identifier,
                                   const tracked_objects::Location& from_here,
-                                  base::Closure task);
+                                  base::OnceClosure task);
   static bool PostNonNestableDelayedTask(
       ID identifier,
       const tracked_objects::Location& from_here,
-      base::Closure task,
+      base::OnceClosure task,
       base::TimeDelta delay);
 
   static bool PostTaskAndReply(ID identifier,
                                const tracked_objects::Location& from_here,
-                               base::Closure task,
-                               base::Closure reply);
+                               base::OnceClosure task,
+                               base::OnceClosure reply);
 
   template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
       const tracked_objects::Location& from_here,
-      base::Callback<ReturnType()> task,
-      base::Callback<void(ReplyArgType)> reply) {
+      base::OnceCallback<ReturnType()> task,
+      base::OnceCallback<void(ReplyArgType)> reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetTaskRunnerForThread(identifier);
     return base::PostTaskAndReplyWithResult(task_runner.get(), from_here,
@@ -161,15 +161,15 @@ class WebThread {
   // base::PostTaskAndReplyWithResult() with GetBlockingPool() as the task
   // runner.
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                   base::Closure task);
+                                   base::OnceClosure task);
   static bool PostBlockingPoolTaskAndReply(
       const tracked_objects::Location& from_here,
-      base::Closure task,
-      base::Closure reply);
+      base::OnceClosure task,
+      base::OnceClosure reply);
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
-      base::Closure task);
+      base::OnceClosure task);
 
   // Returns the thread pool used for blocking file I/O. Use this object to
   // perform random blocking operations such as file writes.

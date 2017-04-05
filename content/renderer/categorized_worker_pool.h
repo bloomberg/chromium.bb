@@ -36,7 +36,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
 
   // Overridden from base::TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 
@@ -85,7 +85,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // |task_graph_runner_|.
   class ClosureTask : public cc::Task {
    public:
-    explicit ClosureTask(base::Closure closure);
+    explicit ClosureTask(base::OnceClosure closure);
 
     // Overridden from cc::Task:
     void RunOnWorkerThread() override;
@@ -94,7 +94,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
     ~ClosureTask() override;
 
    private:
-    base::Closure closure_;
+    base::OnceClosure closure_;
 
     DISALLOW_COPY_AND_ASSIGN(ClosureTask);
   };

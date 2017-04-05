@@ -38,7 +38,7 @@ class DoNothingTaskRunner : public base::TaskRunner {
   ~DoNothingTaskRunner() override {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     return false;
   }
@@ -56,7 +56,7 @@ int WorkerThread::GetCurrentId() {
   return base::PlatformThread::CurrentId();
 }
 
-void WorkerThread::PostTask(int id, base::Closure task) {
+void WorkerThread::PostTask(int id, base::OnceClosure task) {
   WorkerThreadRegistry::Instance()->PostTask(id, std::move(task));
 }
 
@@ -125,7 +125,7 @@ base::TaskRunner* WorkerThreadRegistry::GetTaskRunnerFor(int worker_id) {
              : task_runner_for_dead_worker_.get();
 }
 
-bool WorkerThreadRegistry::PostTask(int id, base::Closure closure) {
+bool WorkerThreadRegistry::PostTask(int id, base::OnceClosure closure) {
   DCHECK(id > 0);
   base::AutoLock locker(task_runner_map_lock_);
   IDToTaskRunnerMap::iterator found = task_runner_map_.find(id);

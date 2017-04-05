@@ -28,7 +28,7 @@ class TestTaskRunner : public base::TaskRunner {
 
   // base::TaskRunner implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
 

@@ -28,7 +28,7 @@ namespace {
 class FakeTaskRunner : public base::TaskRunner {
  public:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     std::move(task).Run();
     return true;

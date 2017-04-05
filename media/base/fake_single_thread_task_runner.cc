@@ -20,7 +20,7 @@ FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() {}
 
 bool FakeSingleThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   if (fail_on_next_task_) {
     LOG(FATAL) << "Infinite task posting loop detected.  Possibly caused by "
@@ -69,7 +69,7 @@ void FakeSingleThreadTaskRunner::RunTasks() {
     if (clock_->NowTicks() < it->first.first)
       return;
 
-    base::Closure task = std::move(it->second);
+    base::OnceClosure task = std::move(it->second);
     tasks_.erase(it);
     std::move(task).Run();
   }
@@ -90,9 +90,9 @@ void FakeSingleThreadTaskRunner::Sleep(base::TimeDelta t) {
       }
 
       clock_->Advance(it->first.first - clock_->NowTicks());
-      const base::Closure task = it->second;
+      base::OnceClosure task = std::move(it->second);
       tasks_.erase(it);
-      task.Run();
+      std::move(task).Run();
     }
 
     // If this point is reached, there's likely some sort of case where a new
@@ -106,7 +106,7 @@ void FakeSingleThreadTaskRunner::Sleep(base::TimeDelta t) {
 
 bool FakeSingleThreadTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   NOTIMPLEMENTED();
   return false;

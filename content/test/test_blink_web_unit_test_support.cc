@@ -65,14 +65,14 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DummyTaskRunner() : thread_id_(base::PlatformThread::CurrentId()) {}
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     // Drop the delayed task.
     return false;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     // Drop the delayed task.
     return false;

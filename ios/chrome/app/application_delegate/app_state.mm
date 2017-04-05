@@ -50,7 +50,7 @@
 
 namespace {
 // Helper method to post |closure| on the UI thread.
-void PostTaskOnUIThread(base::Closure closure) {
+void PostTaskOnUIThread(base::OnceClosure closure) {
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, std::move(closure));
 }
 NSString* const kStartupAttemptReset = @"StartupAttempReset";
@@ -215,17 +215,19 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         [[_browserLauncher browserViewInformation] currentBVC]
             .browserState->GetRequestContext();
     _savingCookies = YES;
-    base::Closure criticalClosure =
+    base::OnceClosure criticalClosure =
         base::MakeCriticalClosure(base::BindBlockArc(^{
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
           _savingCookies = NO;
         }));
+    base::Closure post_back_to_ui =
+        base::Bind(&PostTaskOnUIThread, base::Passed(&criticalClosure));
     web::WebThread::PostTask(
         web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
           net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
               getter->GetURLRequestContext()->cookie_store());
           // FlushStore() runs its callback on any thread. Jump back to UI.
-          store->FlushStore(base::Bind(&PostTaskOnUIThread, criticalClosure));
+          store->FlushStore(post_back_to_ui);
         }));
   }
 

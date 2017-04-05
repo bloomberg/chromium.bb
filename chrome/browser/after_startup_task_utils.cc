@@ -34,13 +34,13 @@ namespace {
 struct AfterStartupTask {
   AfterStartupTask(const tracked_objects::Location& from_here,
                    const scoped_refptr<base::TaskRunner>& task_runner,
-                   base::Closure task)
+                   base::OnceClosure task)
       : from_here(from_here), task_runner(task_runner), task(std::move(task)) {}
   ~AfterStartupTask() {}
 
   const tracked_objects::Location from_here;
   const scoped_refptr<base::TaskRunner> task_runner;
-  base::Closure task;
+  base::OnceClosure task;
 };
 
 // The flag may be read on any thread, but must only be set on the UI thread.
@@ -204,7 +204,7 @@ AfterStartupTaskUtils::Runner::~Runner() = default;
 
 bool AfterStartupTaskUtils::Runner::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    base::Closure task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
   DCHECK(delay.is_zero());
   AfterStartupTaskUtils::PostTask(from_here, destination_runner_,
@@ -224,7 +224,7 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
 void AfterStartupTaskUtils::PostTask(
     const tracked_objects::Location& from_here,
     const scoped_refptr<base::TaskRunner>& destination_runner,
-    base::Closure task) {
+    base::OnceClosure task) {
   if (IsBrowserStartupComplete()) {
     destination_runner->PostTask(from_here, std::move(task));
     return;

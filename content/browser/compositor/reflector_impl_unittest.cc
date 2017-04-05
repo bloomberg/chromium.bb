@@ -35,12 +35,12 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
   FakeTaskRunner() {}
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return true;
   }
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     return true;
   }

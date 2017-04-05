@@ -26,7 +26,7 @@ class TestWorkerThread : public base::SimpleThread {
 
   void Run() override {
     for (;;) {
-      base::Closure task;
+      base::OnceClosure task;
       {
         base::AutoLock hold(lock_);
         if (shutdown_)
@@ -50,7 +50,7 @@ class TestWorkerThread : public base::SimpleThread {
     condition_.Signal();
   }
 
-  void PostTask(base::Closure task) {
+  void PostTask(base::OnceClosure task) {
     base::AutoLock hold(lock_);
     queue_.push_back(std::move(task));
     condition_.Signal();
@@ -59,7 +59,7 @@ class TestWorkerThread : public base::SimpleThread {
  private:
   base::Lock lock_;
   base::ConditionVariable condition_;
-  std::vector<base::Closure> queue_;
+  std::vector<base::OnceClosure> queue_;
   bool shutdown_ = false;
 };
 
@@ -68,13 +68,13 @@ class WorkerTaskRunner : public base::SequencedTaskRunner {
   WorkerTaskRunner() { thread_.Start(); }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  base::Closure task,
+                                  base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return PostDelayedTask(from_here, std::move(task), delay);
   }
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       base::Closure task,
+                       base::OnceClosure task,
                        base::TimeDelta delay) override {
     thread_.PostTask(std::move(task));
     return true;
@@ -142,7 +142,7 @@ class TestableCache : public ImageDecodeCache {
 class DecodeClient {
  public:
   DecodeClient() {}
-  void Callback(base::Closure quit_closure,
+  void Callback(base::OnceClosure quit_closure,
                 ImageController::ImageDecodeRequestId id,
                 ImageController::ImageDecodeResult result) {
     id_ = id;
