@@ -14,8 +14,8 @@
           alt="$i18n{certificateManagerExpandA11yLabel}">
       </cr-expand-button>
     </div>
-    <iron-collapse opened="[[expanded_]]" no-animation>
-      <template is="dom-if" if="[[expanded_]]">
+    <template is="dom-if" if="[[expanded_]]">
+      <iron-collapse opened="[[expanded_]]" no-animation>
         <div class="list-frame">
           <template is="dom-repeat" items="[[model.subnodes]]">
             <settings-certificate-subentry model="[[item]]"
@@ -24,8 +24,8 @@
             </settings-certificate-subentry>
           </template>
         </div>
-      </template>
-    <iron-collapse>
+      <iron-collapse>
+    </template>
   </template>
   <script src="certificate_entry.js"></script>
 </dom-module>
