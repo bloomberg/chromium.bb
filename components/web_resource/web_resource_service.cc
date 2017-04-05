@@ -42,7 +42,8 @@ WebResourceService::WebResourceService(
     int cache_update_delay_ms,
     net::URLRequestContextGetter* request_context,
     const char* disable_network_switch,
-    const ParseJSONCallback& parse_json_callback)
+    const ParseJSONCallback& parse_json_callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : prefs_(prefs),
       resource_request_allowed_notifier_(
           new ResourceRequestAllowedNotifier(prefs, disable_network_switch)),
@@ -55,6 +56,7 @@ WebResourceService::WebResourceService(
       cache_update_delay_ms_(cache_update_delay_ms),
       request_context_(request_context),
       parse_json_callback_(parse_json_callback),
+      traffic_annotation_(traffic_annotation),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_->Init(this);
   DCHECK(prefs);
@@ -150,8 +152,8 @@ void WebResourceService::StartFetch() {
                                                  application_locale_);
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
-  url_fetcher_ =
-      net::URLFetcher::Create(web_resource_server, net::URLFetcher::GET, this);
+  url_fetcher_ = net::URLFetcher::Create(
+      web_resource_server, net::URLFetcher::GET, this, traffic_annotation_);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(),
       data_use_measurement::DataUseUserData::WEB_RESOURCE_SERVICE);

@@ -18,6 +18,31 @@
 #include "url/gurl.h"
 
 namespace {
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("plugins_resource_service", R"(
+        semantics {
+          sender: "Plugins Resource Service"
+          description:
+            "Fetches updates to the list of plugins known to Chromium. For a "
+            "given plugin, this list contains the minimum version not "
+            "containing known security vulnerabilities, and can be used to "
+            "inform the user that their plugins need to be updated."
+          trigger: "Triggered at regular intervals (once per day)."
+          data: "None"
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification:
+            "Not implemented. AllowOutdatedPlugins policy silences local "
+            "warnings, but network request to update the list of plugins are "
+            "still sent."
+        })");
+
+}  // namespace
+
+namespace {
 
 // Delay on first fetch so we don't interfere with startup.
 const int kStartResourceFetchDelayMs = 60 * 1000;
@@ -57,7 +82,8 @@ PluginsResourceService::PluginsResourceService(PrefService* local_state)
           kCacheUpdateDelayMs,
           g_browser_process->system_request_context(),
           switches::kDisableBackgroundNetworking,
-          base::Bind(safe_json::SafeJsonParser::Parse)) {}
+          base::Bind(safe_json::SafeJsonParser::Parse),
+          kTrafficAnnotation) {}
 
 void PluginsResourceService::Init() {
   const base::DictionaryValue* metadata =

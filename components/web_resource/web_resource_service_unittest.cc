@@ -12,6 +12,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "components/web_resource/web_resource_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -69,7 +70,8 @@ class TestWebResourceService : public WebResourceService {
                            cache_update_delay_ms,
                            request_context,
                            disable_network_switch,
-                           parse_json_callback){};
+                           parse_json_callback,
+                           TRAFFIC_ANNOTATION_FOR_TESTS){};
 
   void Unpack(const base::DictionaryValue& parsed_json) override{};
 };

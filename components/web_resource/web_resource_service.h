@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -47,15 +48,17 @@ class WebResourceService
   // Creates a new WebResourceService.
   // If |application_locale| is not empty, it will be appended as a locale
   // parameter to the resource URL.
-  WebResourceService(PrefService* prefs,
-                     const GURL& web_resource_server,
-                     const std::string& application_locale,  // May be empty
-                     const char* last_update_time_pref_name,
-                     int start_fetch_delay_ms,
-                     int cache_update_delay_ms,
-                     net::URLRequestContextGetter* request_context,
-                     const char* disable_network_switch,
-                     const ParseJSONCallback& parse_json_callback);
+  WebResourceService(
+      PrefService* prefs,
+      const GURL& web_resource_server,
+      const std::string& application_locale,  // May be empty
+      const char* last_update_time_pref_name,
+      int start_fetch_delay_ms,
+      int cache_update_delay_ms,
+      net::URLRequestContextGetter* request_context,
+      const char* disable_network_switch,
+      const ParseJSONCallback& parse_json_callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~WebResourceService() override;
 
@@ -138,6 +141,9 @@ class WebResourceService
 
   // Callback used to parse JSON.
   ParseJSONCallback parse_json_callback_;
+
+  // Network traffic annotation for initialization of URLFetcher.
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // So that we can delay our start so as not to affect start-up time; also,
   // so that we can schedule future cache updates.
