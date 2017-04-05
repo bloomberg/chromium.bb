@@ -11,7 +11,10 @@
 namespace blink {
 
 ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
-    : m_module(SharedPersistent<v8::Module>::create(module, isolate)) {}
+    : m_module(SharedPersistent<v8::Module>::create(module, isolate)),
+      m_identityHash(static_cast<unsigned>(module->GetIdentityHash())) {
+  DCHECK(!m_module->isEmpty());
+}
 
 ScriptModule::~ScriptModule() {}
 

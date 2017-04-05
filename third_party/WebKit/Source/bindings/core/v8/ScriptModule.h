@@ -30,8 +30,10 @@ class CORE_EXPORT ScriptModule final {
                               const String& source,
                               const String& fileName);
 
+  // TODO(kouhei): Remove copy ctor
   ScriptModule() {}
-  ScriptModule(const ScriptModule& module) : m_module(module.m_module) {}
+  ScriptModule(WTF::HashTableDeletedValueType)
+      : m_module(WTF::HashTableDeletedValue) {}
   ~ScriptModule();
 
   // Returns exception, if any.
@@ -39,6 +41,30 @@ class CORE_EXPORT ScriptModule final {
   void evaluate(ScriptState*);
 
   Vector<String> moduleRequests(ScriptState*);
+
+  bool isHashTableDeletedValue() const {
+    return m_module.isHashTableDeletedValue();
+  }
+
+  bool operator==(const blink::ScriptModule& other) const {
+    if (isHashTableDeletedValue() && other.isHashTableDeletedValue())
+      return true;
+
+    if (isHashTableDeletedValue() || other.isHashTableDeletedValue())
+      return false;
+
+    blink::SharedPersistent<v8::Module>* left = m_module.get();
+    blink::SharedPersistent<v8::Module>* right = other.m_module.get();
+    if (left == right)
+      return true;
+    if (!left || !right)
+      return false;
+    return *left == *right;
+  }
+
+  bool operator!=(const blink::ScriptModule& other) const {
+    return !(*this == other);
+  }
 
   bool isNull() const { return !m_module || m_module->isEmpty(); }
 
@@ -51,8 +77,40 @@ class CORE_EXPORT ScriptModule final {
       v8::Local<v8::Module> referrer);
 
   RefPtr<SharedPersistent<v8::Module>> m_module;
+  unsigned m_identityHash = 0;
+
+  friend struct ScriptModuleHash;
+};
+
+struct ScriptModuleHash {
+  STATIC_ONLY(ScriptModuleHash);
+
+ public:
+  static unsigned hash(const blink::ScriptModule& key) {
+    return key.m_identityHash;
+  }
+
+  static bool equal(const blink::ScriptModule& a,
+                    const blink::ScriptModule& b) {
+    return a == b;
+  }
+
+  static constexpr bool safeToCompareToEmptyOrDeleted = true;
 };
 
 }  // namespace blink
+
+namespace WTF {
+
+template <>
+struct DefaultHash<blink::ScriptModule> {
+  using Hash = blink::ScriptModuleHash;
+};
+
+template <>
+struct HashTraits<blink::ScriptModule>
+    : public SimpleClassHashTraits<blink::ScriptModule> {};
+
+}  // namespace WTF
 
 #endif  // ScriptModule_h

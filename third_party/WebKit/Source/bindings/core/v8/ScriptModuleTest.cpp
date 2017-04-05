@@ -86,6 +86,50 @@ TEST(ScriptModuleTest, compileFail) {
   ASSERT_TRUE(module.isNull());
 }
 
+TEST(ScriptModuleTest, equalAndHash) {
+  V8TestingScope scope;
+
+  ScriptModule moduleNull;
+  ScriptModule moduleA =
+      ScriptModule::compile(scope.isolate(), "export const a = 'a';", "a.js");
+  ASSERT_FALSE(moduleA.isNull());
+  ScriptModule moduleB =
+      ScriptModule::compile(scope.isolate(), "export const b = 'b';", "b.js");
+  ASSERT_FALSE(moduleB.isNull());
+  Vector<char> moduleDeletedBuffer(sizeof(ScriptModule));
+  ScriptModule& moduleDeleted =
+      *reinterpret_cast<ScriptModule*>(moduleDeletedBuffer.data());
+  HashTraits<ScriptModule>::constructDeletedValue(moduleDeleted, true);
+
+  EXPECT_EQ(moduleNull, moduleNull);
+  EXPECT_EQ(moduleA, moduleA);
+  EXPECT_EQ(moduleB, moduleB);
+  EXPECT_EQ(moduleDeleted, moduleDeleted);
+
+  EXPECT_NE(moduleNull, moduleA);
+  EXPECT_NE(moduleNull, moduleB);
+  EXPECT_NE(moduleNull, moduleDeleted);
+
+  EXPECT_NE(moduleA, moduleNull);
+  EXPECT_NE(moduleA, moduleB);
+  EXPECT_NE(moduleA, moduleDeleted);
+
+  EXPECT_NE(moduleB, moduleNull);
+  EXPECT_NE(moduleB, moduleA);
+  EXPECT_NE(moduleB, moduleDeleted);
+
+  EXPECT_NE(moduleDeleted, moduleNull);
+  EXPECT_NE(moduleDeleted, moduleA);
+  EXPECT_NE(moduleDeleted, moduleB);
+
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleA),
+            DefaultHash<ScriptModule>::Hash::hash(moduleB));
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleNull),
+            DefaultHash<ScriptModule>::Hash::hash(moduleA));
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleNull),
+            DefaultHash<ScriptModule>::Hash::hash(moduleB));
+}
+
 TEST(ScriptModuleTest, moduleRequests) {
   V8TestingScope scope;
   ScriptModule module = ScriptModule::compile(
