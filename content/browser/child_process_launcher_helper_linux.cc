@@ -17,7 +17,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "gin/v8_initializer.h"
 
 namespace content {
 namespace internal {

@@ -20,7 +20,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "gin/v8_initializer.h"
 #include "jni/ChildProcessLauncherHelper_jni.h"
 
 using base::android::AttachCurrentThread;
