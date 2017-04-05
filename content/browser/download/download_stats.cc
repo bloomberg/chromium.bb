@@ -348,13 +348,12 @@ int GetDangerousFileType(const base::FilePath& file_path) {
 }
 
 // Helper method to calculate the bandwidth given the data length and time.
-int CalculateBandwidthBytesPerSecond(size_t length,
-                                     base::TimeDelta elapsed_time) {
-  size_t elapsed_time_ms = elapsed_time.InMilliseconds();
-  if (0u == elapsed_time_ms)
+int64_t CalculateBandwidthBytesPerSecond(size_t length,
+                                         base::TimeDelta elapsed_time) {
+  int64_t elapsed_time_ms = elapsed_time.InMilliseconds();
+  if (0 == elapsed_time_ms)
     elapsed_time_ms = 1;
-
-  return 1000 * length / elapsed_time_ms;
+  return 1000 * static_cast<int64_t>(length) / elapsed_time_ms;
 }
 
 // Helper method to record the bandwidth for a given metric.
@@ -787,7 +786,7 @@ void RecordParallelDownloadStats(
     base::TimeDelta time_with_parallel_streams,
     size_t bytes_downloaded_without_parallel_streams,
     base::TimeDelta time_without_parallel_streams) {
-  int bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
+  int64_t bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
       bytes_downloaded_without_parallel_streams, time_without_parallel_streams);
   RecordBandwidthMetric(
       "Download.BandwidthWithoutParallelStreamsBytesPerSecond",
