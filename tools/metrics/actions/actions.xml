@@ -9794,6 +9794,11 @@ should be able to be added at any place in this file.
   <obsolete>This menu item was never added to the app menu.</obsolete>
 </action>
 
+<action name="MobileMenuDataSaverOpened">
+  <owner>megjablon@chromium.org</owner>
+  <description>User opened the data saver item in the app menu.</description>
+</action>
+
 <action name="MobileMenuDirectShare">
   <owner>aurimas@chromium.org</owner>
   <description>
