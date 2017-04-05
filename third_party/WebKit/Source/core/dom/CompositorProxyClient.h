@@ -12,8 +12,7 @@ namespace blink {
 
 class CompositorProxy;
 
-class CORE_EXPORT CompositorProxyClient
-    : public GarbageCollectedFinalized<CompositorProxyClient> {
+class CORE_EXPORT CompositorProxyClient : public GarbageCollectedMixin {
  public:
   virtual ~CompositorProxyClient(){};
   DEFINE_INLINE_VIRTUAL_TRACE() {}

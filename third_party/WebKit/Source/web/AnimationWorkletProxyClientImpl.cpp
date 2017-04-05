@@ -17,7 +17,6 @@ AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
 }
 
 DEFINE_TRACE(AnimationWorkletProxyClientImpl) {
-  visitor->trace(m_proxies);
   AnimationWorkletProxyClient::trace(visitor);
   CompositorAnimator::trace(visitor);
 }
@@ -30,18 +29,6 @@ bool AnimationWorkletProxyClientImpl::mutate(
 
   // Always request another rAF for now.
   return true;
-}
-
-void AnimationWorkletProxyClientImpl::registerCompositorProxy(
-    CompositorProxy* proxy) {
-  DCHECK(!isMainThread());
-  m_proxies.insert(proxy);
-}
-
-void AnimationWorkletProxyClientImpl::unregisterCompositorProxy(
-    CompositorProxy* proxy) {
-  DCHECK(!isMainThread());
-  m_proxies.erase(proxy);
 }
 
 }  // namespace blink

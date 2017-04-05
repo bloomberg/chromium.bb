@@ -16,17 +16,11 @@ class WorkerClients;
 class WorkerGlobalScope;
 
 class CORE_EXPORT CompositorWorkerProxyClient
-    : public CompositorProxyClient,
-      public Supplement<WorkerClients> {
+    : public Supplement<WorkerClients> {
   WTF_MAKE_NONCOPYABLE(CompositorWorkerProxyClient);
-  USING_GARBAGE_COLLECTED_MIXIN(CompositorWorkerProxyClient);
 
  public:
   CompositorWorkerProxyClient() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    CompositorProxyClient::trace(visitor);
-    Supplement<WorkerClients>::trace(visitor);
-  }
 
   static CompositorWorkerProxyClient* from(WorkerClients*);
   static const char* supplementName();
@@ -34,6 +28,7 @@ class CORE_EXPORT CompositorWorkerProxyClient
   virtual void dispose() = 0;
   virtual void setGlobalScope(WorkerGlobalScope*) = 0;
   virtual void requestAnimationFrame() = 0;
+  virtual CompositorProxyClient* compositorProxyClient() = 0;
 };
 
 CORE_EXPORT void provideCompositorWorkerProxyClientTo(

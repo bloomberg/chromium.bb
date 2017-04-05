@@ -126,7 +126,8 @@ CompositorProxy* CompositorProxy::create(ExecutionContext* context,
     DCHECK(clients);
     CompositorWorkerProxyClient* client =
         CompositorWorkerProxyClient::from(clients);
-    return new CompositorProxy(elementId, compositorMutableProperties, client);
+    return new CompositorProxy(elementId, compositorMutableProperties,
+                               client->compositorProxyClient());
   }
 
   return new CompositorProxy(elementId, compositorMutableProperties);
@@ -176,6 +177,10 @@ CompositorProxy::~CompositorProxy() {
   // a pre-finalizer.
   disconnectInternal();
   DCHECK(!m_connected);
+}
+
+DEFINE_TRACE(CompositorProxy) {
+  visitor->trace(m_client);
 }
 
 bool CompositorProxy::supports(const String& attributeName) const {

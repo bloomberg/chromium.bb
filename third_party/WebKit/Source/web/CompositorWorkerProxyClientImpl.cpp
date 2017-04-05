@@ -21,46 +21,50 @@ class ScopedCompositorMutableState final {
   STACK_ALLOCATED();
 
  public:
-  ScopedCompositorMutableState(
-      HeapHashSet<WeakMember<CompositorProxy>>& proxies,
-      CompositorMutableStateProvider* stateProvider)
-      : m_proxies(proxies) {
-    for (CompositorProxy* proxy : m_proxies) {
+  ScopedCompositorMutableState(CompositorProxyClientImpl* compositorProxyClient,
+                               CompositorMutableStateProvider* stateProvider)
+      : m_compositorProxyClient(compositorProxyClient) {
+    DCHECK(!isMainThread());
+    DCHECK(m_compositorProxyClient);
+    for (CompositorProxy* proxy : m_compositorProxyClient->proxies()) {
       proxy->takeCompositorMutableState(
           stateProvider->getMutableStateFor(proxy->elementId()));
     }
   }
   ~ScopedCompositorMutableState() {
-    for (CompositorProxy* proxy : m_proxies)
+    for (CompositorProxy* proxy : m_compositorProxyClient->proxies())
       proxy->takeCompositorMutableState(nullptr);
   }
 
  private:
-  HeapHashSet<WeakMember<CompositorProxy>>& m_proxies;
+  Member<CompositorProxyClientImpl> m_compositorProxyClient;
 };
 
 CompositorWorkerProxyClientImpl::CompositorWorkerProxyClientImpl(
     CompositorMutatorImpl* mutator)
-    : m_mutator(mutator), m_globalScope(nullptr) {
+    : m_mutator(mutator) {
   DCHECK(isMainThread());
 }
 
 DEFINE_TRACE(CompositorWorkerProxyClientImpl) {
-  visitor->trace(m_proxies);
   CompositorAnimator::trace(visitor);
   CompositorWorkerProxyClient::trace(visitor);
 }
 
 void CompositorWorkerProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope) {
+  DCHECK(!isMainThread());
   TRACE_EVENT0("compositor-worker",
                "CompositorWorkerProxyClientImpl::setGlobalScope");
   DCHECK(!m_globalScope);
+  DCHECK(!m_compositorProxyClient);
   DCHECK(scope);
   m_globalScope = static_cast<CompositorWorkerGlobalScope*>(scope);
   m_mutator->registerCompositorAnimator(this);
+  m_compositorProxyClient = new CompositorProxyClientImpl();
 }
 
 void CompositorWorkerProxyClientImpl::dispose() {
+  DCHECK(!isMainThread());
   // CompositorWorkerProxyClientImpl and CompositorMutatorImpl form a reference
   // cycle. CompositorWorkerGlobalScope and CompositorWorkerProxyClientImpl
   // also form another big reference cycle. So dispose needs to be called on
@@ -71,6 +75,7 @@ void CompositorWorkerProxyClientImpl::dispose() {
 }
 
 void CompositorWorkerProxyClientImpl::requestAnimationFrame() {
+  DCHECK(!isMainThread());
   TRACE_EVENT0("compositor-worker",
                "CompositorWorkerProxyClientImpl::requestAnimationFrame");
   m_requestedAnimationFrameCallbacks = true;
@@ -80,6 +85,7 @@ void CompositorWorkerProxyClientImpl::requestAnimationFrame() {
 bool CompositorWorkerProxyClientImpl::mutate(
     double monotonicTimeNow,
     CompositorMutableStateProvider* stateProvider) {
+  DCHECK(!isMainThread());
   if (!m_globalScope)
     return false;
 
@@ -88,7 +94,8 @@ bool CompositorWorkerProxyClientImpl::mutate(
     return false;
 
   {
-    ScopedCompositorMutableState mutableState(m_proxies, stateProvider);
+    ScopedCompositorMutableState mutableState(m_compositorProxyClient,
+                                              stateProvider);
     m_requestedAnimationFrameCallbacks =
         executeAnimationFrameCallbacks(monotonicTimeNow);
   }
@@ -98,6 +105,7 @@ bool CompositorWorkerProxyClientImpl::mutate(
 
 bool CompositorWorkerProxyClientImpl::executeAnimationFrameCallbacks(
     double monotonicTimeNow) {
+  DCHECK(!isMainThread());
   TRACE_EVENT0(
       "compositor-worker",
       "CompositorWorkerProxyClientImpl::executeAnimationFrameCallbacks");
@@ -108,16 +116,6 @@ bool CompositorWorkerProxyClientImpl::executeAnimationFrameCallbacks(
   double highResTimeMs =
       1000.0 * (monotonicTimeNow - m_globalScope->timeOrigin());
   return m_globalScope->executeAnimationFrameCallbacks(highResTimeMs);
-}
-
-void CompositorWorkerProxyClientImpl::registerCompositorProxy(
-    CompositorProxy* proxy) {
-  m_proxies.insert(proxy);
-}
-
-void CompositorWorkerProxyClientImpl::unregisterCompositorProxy(
-    CompositorProxy* proxy) {
-  m_proxies.erase(proxy);
 }
 
 }  // namespace blink

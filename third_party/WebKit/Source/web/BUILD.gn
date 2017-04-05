@@ -53,6 +53,8 @@ component("web") {
     "CompositorAnimator.h",
     "CompositorMutatorImpl.cpp",
     "CompositorMutatorImpl.h",
+    "CompositorProxyClientImpl.cpp",
+    "CompositorProxyClientImpl.h",
     "CompositorWorkerProxyClientImpl.cpp",
     "CompositorWorkerProxyClientImpl.h",
     "ContextFeaturesClientImpl.cpp",

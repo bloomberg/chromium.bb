@@ -62,15 +62,18 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
       : InProcessWorkerObjectProxy(nullptr, parentFrameTaskRunners) {}
 };
 
-class TestCompositorWorkerProxyClient : public CompositorWorkerProxyClient {
+class TestCompositorWorkerProxyClient
+    : public GarbageCollected<TestCompositorWorkerProxyClient>,
+      public CompositorWorkerProxyClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TestCompositorWorkerProxyClient);
+
  public:
   TestCompositorWorkerProxyClient() {}
 
   void dispose() override {}
   void setGlobalScope(WorkerGlobalScope*) override {}
   void requestAnimationFrame() override {}
-  void registerCompositorProxy(CompositorProxy*) override {}
-  void unregisterCompositorProxy(CompositorProxy*) override {}
+  CompositorProxyClient* compositorProxyClient() override { return nullptr; };
 };
 
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {

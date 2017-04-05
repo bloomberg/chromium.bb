@@ -76,6 +76,7 @@ bool CompositorMutatorImpl::mutate(
 
 void CompositorMutatorImpl::registerCompositorAnimator(
     CompositorAnimator* animator) {
+  DCHECK(!isMainThread());
   TRACE_EVENT0("compositor-worker",
                "CompositorMutatorImpl::registerCompositorAnimator");
   DCHECK(!m_animators.contains(animator));
@@ -90,6 +91,7 @@ void CompositorMutatorImpl::unregisterCompositorAnimator(
 }
 
 void CompositorMutatorImpl::setNeedsMutate() {
+  DCHECK(!isMainThread());
   TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::setNeedsMutate");
   m_client->setNeedsMutate();
 }

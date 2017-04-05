@@ -8,6 +8,7 @@
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "platform/heap/Handle.h"
 #include "web/CompositorAnimator.h"
+#include "web/CompositorProxyClientImpl.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -22,9 +23,11 @@ class WorkerGlobalScope;
 // worker but there may be multiple for a given mutator, e.g. if a single
 // document creates multiple CompositorWorker objects.
 //
+// Owned by the main thread.
 // Should be accessed only on the compositor thread.
 class CompositorWorkerProxyClientImpl final
-    : public CompositorWorkerProxyClient,
+    : public GarbageCollectedFinalized<CompositorWorkerProxyClientImpl>,
+      public CompositorWorkerProxyClient,
       public CompositorAnimator {
   WTF_MAKE_NONCOPYABLE(CompositorWorkerProxyClientImpl);
   USING_GARBAGE_COLLECTED_MIXIN(CompositorWorkerProxyClientImpl);
@@ -41,8 +44,9 @@ class CompositorWorkerProxyClientImpl final
   void dispose() override;
   void setGlobalScope(WorkerGlobalScope*) override;
   void requestAnimationFrame() override;
-  void registerCompositorProxy(CompositorProxy*) override;
-  void unregisterCompositorProxy(CompositorProxy*) override;
+  CompositorProxyClient* compositorProxyClient() override {
+    return m_compositorProxyClient.get();
+  };
 
  private:
   bool executeAnimationFrameCallbacks(double monotonicTimeNow);
@@ -52,8 +56,7 @@ class CompositorWorkerProxyClientImpl final
   CrossThreadPersistent<CompositorWorkerGlobalScope> m_globalScope;
   bool m_requestedAnimationFrameCallbacks;
 
-  // TODO(majidvp): move this out to a separate class that can be composed in.
-  HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
+  CrossThreadPersistent<CompositorProxyClientImpl> m_compositorProxyClient;
 };
 
 }  // namespace blink

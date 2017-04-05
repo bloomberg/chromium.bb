@@ -11,11 +11,13 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimationWorkletProxyClient : public CompositorProxyClient {
+class CORE_EXPORT AnimationWorkletProxyClient : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(AnimationWorkletProxyClient);
 
  public:
   AnimationWorkletProxyClient() {}
+  virtual ~AnimationWorkletProxyClient() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 }  // namespace blink

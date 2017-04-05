@@ -13,7 +13,9 @@ namespace blink {
 CompositorWorkerMessagingProxy::CompositorWorkerMessagingProxy(
     InProcessWorkerBase* worker,
     WorkerClients* workerClients)
-    : InProcessWorkerMessagingProxy(worker, workerClients) {}
+    : InProcessWorkerMessagingProxy(worker, workerClients) {
+  DCHECK(isMainThread());
+}
 
 CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy() {}
 

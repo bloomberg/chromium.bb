@@ -20,6 +20,7 @@ class DOMMatrix;
 class ExceptionState;
 class ExecutionContext;
 
+// Owned by the main thread or control thread.
 class CORE_EXPORT CompositorProxy final
     : public GarbageCollectedFinalized<CompositorProxy>,
       public ScriptWrappable {
@@ -35,7 +36,7 @@ class CORE_EXPORT CompositorProxy final
                                  uint32_t compositorMutableProperties);
   virtual ~CompositorProxy();
 
-  DEFINE_INLINE_TRACE() {}
+  DECLARE_TRACE();
 
   uint64_t elementId() const { return m_elementId; }
   uint32_t compositorMutableProperties() const {
@@ -75,7 +76,7 @@ class CORE_EXPORT CompositorProxy final
   const uint32_t m_compositorMutableProperties = 0;
 
   bool m_connected = true;
-  CrossThreadPersistent<CompositorProxyClient> m_client;
+  Member<CompositorProxyClient> m_client;
   std::unique_ptr<CompositorMutableState> m_state;
 };
 
