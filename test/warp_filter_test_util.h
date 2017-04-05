@@ -56,6 +56,39 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
 
 }  // namespace AV1WarpFilter
 
+#if CONFIG_AOM_HIGHBITDEPTH
+namespace AV1HighbdWarpFilter {
+typedef void (*highbd_warp_affine_func)(
+    int32_t *mat, uint16_t *ref, int width, int height, int stride,
+    uint16_t *pred, int p_col, int p_row, int p_width, int p_height,
+    int p_stride, int subsampling_x, int subsampling_y, int bd, int ref_frm,
+    int32_t alpha, int32_t beta, int32_t gamma, int32_t delta);
+
+typedef std::tr1::tuple<int, int, int, int> HighbdWarpTestParam;
+
+::testing::internal::ParamGenerator<HighbdWarpTestParam> GetDefaultParams();
+
+class AV1HighbdWarpFilterTest
+    : public ::testing::TestWithParam<HighbdWarpTestParam> {
+ public:
+  virtual ~AV1HighbdWarpFilterTest();
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+ protected:
+  int32_t random_param(int bits);
+  void generate_model(int32_t *mat, int32_t *alpha, int32_t *beta,
+                      int32_t *gamma, int32_t *delta);
+
+  void RunCheckOutput(highbd_warp_affine_func test_impl);
+
+  libaom_test::ACMRandom rnd_;
+};
+
+}  // namespace AV1HighbdWarpFilter
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
 }  // namespace libaom_test
 
 #endif  // TEST_WARP_FILTER_TEST_UTIL_H_

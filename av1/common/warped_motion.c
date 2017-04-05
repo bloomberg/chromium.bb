@@ -618,6 +618,14 @@ static const uint16_t div_lut[DIV_LUT_NUM + 1] = {
   8240,  8224,  8208,  8192,
 };
 
+static inline int16_t saturate_int16(int32_t v) {
+  if (v > 32767)
+    return 32767;
+  else if (v < -32768)
+    return -32768;
+  return v;
+}
+
 #if CONFIG_WARPED_MOTION
 // Decomposes a divisor D such that 1/D = y/2^shift, where y is returned
 // at precision of DIV_LUT_PREC_BITS along with the shift.
@@ -848,6 +856,138 @@ static void highbd_warp_plane_old(WarpedMotionParams *wm, uint8_t *ref8,
 
 // Note: For an explanation of the warp algorithm, see the comment
 // above warp_plane()
+//
+// Note also: The "worst case" in terms of modulus of the data stored into 'tmp'
+// (ie, the result of 'sum' in the horizontal filter) occurs when:
+// coeffs = { -2,   8, -22,  87,  72, -21,   8, -2}, and
+// ref =    {  0, 255,   0, 255, 255,   0, 255,  0}
+// Before rounding, this gives sum = 716625. After rounding,
+// HORSHEAR_REDUCE_PREC_BITS = 4 => sum = 44789 > 2^15
+// HORSHEAR_REDUCE_PREC_BITS = 5 => sum = 22395 < 2^15
+//
+// So, as long as HORSHEAR_REDUCE_PREC_BITS >= 5, we can safely use a 16-bit
+// intermediate array.
+void av1_highbd_warp_affine_c(int32_t *mat, uint16_t *ref, int width,
+                              int height, int stride, uint16_t *pred, int p_col,
+                              int p_row, int p_width, int p_height,
+                              int p_stride, int subsampling_x,
+                              int subsampling_y, int bd, int ref_frm,
+                              int32_t alpha, int32_t beta, int32_t gamma,
+                              int32_t delta) {
+#if HORSHEAR_REDUCE_PREC_BITS >= 5
+  int16_t tmp[15 * 8];
+#else
+  int32_t tmp[15 * 8];
+#endif
+  int i, j, k, l, m;
+
+  /* Note: For this code to work, the left/right frame borders need to be
+     extended by at least 13 pixels each. By the time we get here, other
+     code will have set up this border, but we allow an explicit check
+     for debugging purposes.
+  */
+  /*for (i = 0; i < height; ++i) {
+    for (j = 0; j < 13; ++j) {
+      assert(ref[i * stride - 13 + j] == ref[i * stride]);
+      assert(ref[i * stride + width + j] == ref[i * stride + (width - 1)]);
+    }
+  }*/
+
+  for (i = p_row; i < p_row + p_height; i += 8) {
+    for (j = p_col; j < p_col + p_width; j += 8) {
+      int32_t x4, y4, ix4, sx4, iy4, sy4;
+      if (subsampling_x)
+        x4 = ROUND_POWER_OF_TWO_SIGNED(
+            mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
+                (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+            1);
+      else
+        x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
+
+      if (subsampling_y)
+        y4 = ROUND_POWER_OF_TWO_SIGNED(
+            mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
+                (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+            1);
+      else
+        y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
+
+      ix4 = x4 >> WARPEDMODEL_PREC_BITS;
+      sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      iy4 = y4 >> WARPEDMODEL_PREC_BITS;
+      sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+
+      // Horizontal filter
+      for (k = -7; k < 8; ++k) {
+        int iy = iy4 + k;
+        if (iy < 0)
+          iy = 0;
+        else if (iy > height - 1)
+          iy = height - 1;
+
+        if (ix4 <= -7) {
+          for (l = 0; l < 8; ++l) {
+            tmp[(k + 7) * 8 + l] =
+                ref[iy * stride] *
+                (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS));
+          }
+        } else if (ix4 >= width + 6) {
+          for (l = 0; l < 8; ++l) {
+            tmp[(k + 7) * 8 + l] =
+                ref[iy * stride + (width - 1)] *
+                (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS));
+          }
+        } else {
+          int sx = sx4 + alpha * (-4) + beta * k;
+
+          for (l = -4; l < 4; ++l) {
+            int ix = ix4 + l - 3;
+            const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
+                             WARPEDPIXEL_PREC_SHIFTS;
+            const int16_t *coeffs = warped_filter[offs];
+            int32_t sum = 0;
+            // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+            for (m = 0; m < 8; ++m) {
+              sum += ref[iy * stride + ix + m] * coeffs[m];
+            }
+            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
+#if HORSHEAR_REDUCE_PREC_BITS >= 5
+            tmp[(k + 7) * 8 + (l + 4)] = saturate_int16(sum);
+#else
+            tmp[(k + 7) * 8 + (l + 4)] = sum;
+#endif
+            sx += alpha;
+          }
+        }
+      }
+
+      // Vertical filter
+      for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
+        int sy = sy4 + gamma * (-4) + delta * k;
+        for (l = -4; l < 4; ++l) {
+          uint16_t *p =
+              &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
+          const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
+                           WARPEDPIXEL_PREC_SHIFTS;
+          const int16_t *coeffs = warped_filter[offs];
+          int32_t sum = 0;
+          // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
+          for (m = 0; m < 8; ++m) {
+            sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
+          }
+          sum = clip_pixel_highbd(
+              ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS), bd);
+          if (ref_frm)
+            *p = ROUND_POWER_OF_TWO(*p + sum, 1);
+          else
+            *p = sum;
+          sy += gamma;
+        }
+      }
+    }
+  }
+}
+
 static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
                               int height, int stride, uint8_t *pred8, int p_col,
                               int p_row, int p_width, int p_height,
@@ -858,91 +998,20 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if (wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) {
-    int32_t tmp[15 * 8];
-    int i, j, k, l, m;
+  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
+      y_scale == 16) {
     int32_t *mat = wm->wmmat;
-    uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-    uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-
     const int32_t alpha = wm->alpha;
     const int32_t beta = wm->beta;
     const int32_t gamma = wm->gamma;
     const int32_t delta = wm->delta;
 
-    for (i = p_row; i < p_row + p_height; i += 8) {
-      for (j = p_col; j < p_col + p_width; j += 8) {
-        int32_t x4, y4, ix4, sx4, iy4, sy4;
-        if (subsampling_x)
-          x4 = ROUND_POWER_OF_TWO_SIGNED(
-              mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
-                  (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-              1);
-        else
-          x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
-
-        if (subsampling_y)
-          y4 = ROUND_POWER_OF_TWO_SIGNED(
-              mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
-                  (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-              1);
-        else
-          y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
-
-        ix4 = x4 >> WARPEDMODEL_PREC_BITS;
-        sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-        iy4 = y4 >> WARPEDMODEL_PREC_BITS;
-        sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-
-        // Horizontal filter
-        for (k = -7; k < 8; ++k) {
-          int iy = iy4 + k;
-          if (iy < 0)
-            iy = 0;
-          else if (iy > height - 1)
-            iy = height - 1;
-
-          for (l = -4; l < 4; ++l) {
-            int ix = ix4 + l;
-            int sx = ROUND_POWER_OF_TWO_SIGNED(sx4 + alpha * l + beta * k,
-                                               WARPEDDIFF_PREC_BITS);
-            const int16_t *coeffs = warped_filter[sx + WARPEDPIXEL_PREC_SHIFTS];
-            int32_t sum = 0;
-            for (m = 0; m < 8; ++m) {
-              if (ix + m - 3 < 0)
-                sum += ref[iy * stride] * coeffs[m];
-              else if (ix + m - 3 > width - 1)
-                sum += ref[iy * stride + width - 1] * coeffs[m];
-              else
-                sum += ref[iy * stride + ix + m - 3] * coeffs[m];
-            }
-            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
-            tmp[(k + 7) * 8 + (l + 4)] = sum;
-          }
-        }
-
-        // Vertical filter
-        for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
-          for (l = -4; l < AOMMIN(4, p_col + p_width - j - 4); ++l) {
-            uint16_t *p =
-                &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
-            int sy = ROUND_POWER_OF_TWO_SIGNED(sy4 + gamma * l + delta * k,
-                                               WARPEDDIFF_PREC_BITS);
-            const int16_t *coeffs = warped_filter[sy + WARPEDPIXEL_PREC_SHIFTS];
-            int32_t sum = 0;
-            for (m = 0; m < 8; ++m) {
-              sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
-            }
-            sum = clip_pixel_highbd(
-                ROUND_POWER_OF_TWO_SIGNED(sum, VERSHEAR_REDUCE_PREC_BITS), bd);
-            if (ref_frm)
-              *p = ROUND_POWER_OF_TWO_SIGNED(*p + sum, 1);
-            else
-              *p = sum;
-          }
-        }
-      }
-    }
+    uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+    uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+    av1_highbd_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
+                           p_width, p_height, p_stride, subsampling_x,
+                           subsampling_y, bd, ref_frm, alpha, beta, gamma,
+                           delta);
   } else {
     highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col, p_row,
                           p_width, p_height, p_stride, subsampling_x,
@@ -1048,14 +1117,6 @@ static void warp_plane_old(WarpedMotionParams *wm, uint8_t *ref, int width,
 
    TODO(david.barker): Maybe support scaled references?
 */
-static inline int16_t saturate_int16(int32_t v) {
-  if (v > 32767)
-    return 32767;
-  else if (v < -32768)
-    return -32768;
-  return v;
-}
-
 void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
                        int stride, uint8_t *pred, int p_col, int p_row,
                        int p_width, int p_height, int p_stride,

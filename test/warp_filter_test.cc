@@ -16,6 +16,9 @@ using std::tr1::tuple;
 using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
 using libaom_test::AV1WarpFilter::AV1WarpFilterTest;
+#if CONFIG_AOM_HIGHBITDEPTH
+using libaom_test::AV1HighbdWarpFilter::AV1HighbdWarpFilterTest;
+#endif
 
 namespace {
 
