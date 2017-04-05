@@ -1039,7 +1039,6 @@ test("content_unittests") {
     "../browser/background_sync/background_sync_service_impl_unittest.cc",
     "../browser/blob_storage/blob_dispatcher_host_unittest.cc",
     "../browser/blob_storage/blob_reader_unittest.cc",
-    "../browser/blob_storage/blob_storage_context_unittest.cc",
     "../browser/blob_storage/blob_transport_host_unittest.cc",
     "../browser/blob_storage/blob_url_request_job_unittest.cc",
     "../browser/bluetooth/bluetooth_allowed_devices_unittest.cc",

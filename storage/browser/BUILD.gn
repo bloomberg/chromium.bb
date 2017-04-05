@@ -230,6 +230,7 @@ test("storage_unittests") {
     "blob/blob_flattener_unittest.cc",
     "blob/blob_memory_controller_unittest.cc",
     "blob/blob_slice_unittest.cc",
+    "blob/blob_storage_context_unittest.cc",
     "blob/blob_storage_registry_unittest.cc",
     "blob/blob_transport_request_builder_unittest.cc",
     "database/database_quota_client_unittest.cc",
