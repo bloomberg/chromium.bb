@@ -43,7 +43,6 @@ from webkitpy.common.host import Host
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
-from webkitpy.tool.commands.commit_announcer import CommitAnnouncerCommand
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 from webkitpy.tool.commands.help_command import HelpCommand
 from webkitpy.tool.commands.layout_tests_server import LayoutTestsServer
@@ -82,7 +81,6 @@ class WebKitPatch(Host):
         self.commands = [
             AnalyzeBaselines(),
             AutoRebaseline(),
-            CommitAnnouncerCommand(),
             CopyExistingBaselinesInternal(),
             CrashLog(),
             FlakyTests(),
