@@ -450,7 +450,7 @@ void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
   DCHECK(CanRunNudgeJobNow(priority));
 
   DVLOG(2) << "Will run normal mode sync cycle with types "
-           << ModelTypeSetToString(cycle_context_->GetEnabledTypes());
+           << ModelTypeSetToString(GetEnabledAndUnblockedTypes());
   std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
   bool success = syncer_->NormalSyncShare(GetEnabledAndUnblockedTypes(),
                                           &nudge_tracker_, cycle.get());
@@ -485,7 +485,8 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   }
 
   SDVLOG(2) << "Will run configure SyncShare with types "
-            << ModelTypeSetToString(cycle_context_->GetEnabledTypes());
+            << ModelTypeSetToString(
+                   pending_configure_params_->types_to_download);
   std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
   bool success = syncer_->ConfigureSyncShare(
       pending_configure_params_->types_to_download,
