@@ -44,13 +44,6 @@ struct CC_EXPORT EffectNode {
   gfx::Size unscaled_mask_target_size;
 
   bool has_render_surface;
-  // Only applicable if has render surface. A true value means a clip needs to
-  // be applied to the output of the surface when it is drawn onto its parent
-  // surface.
-  // TODO(crbug.com/504464): There is ongoing work to delay render surface
-  // decision to later phase of the pipeline. This flag shall be removed and
-  // computed during render surface decision.
-  bool surface_is_clipped;
   bool has_copy_request;
   bool hidden_by_backface_visibility;
   bool double_sided;
@@ -66,7 +59,6 @@ struct CC_EXPORT EffectNode {
   // rect.
   bool effect_changed;
   int num_copy_requests_in_subtree;
-  bool has_unclipped_descendants;
   int transform_id;
   int clip_id;
   // Effect node id of which this effect contributes to.

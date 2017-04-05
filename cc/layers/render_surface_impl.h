@@ -97,6 +97,14 @@ class CC_EXPORT RenderSurfaceImpl {
     contributes_to_drawn_surface_ = contributes_to_drawn_surface;
   }
 
+  void set_has_contributing_layer_that_escapes_clip(
+      bool contributing_layer_escapes_clip) {
+    has_contributing_layer_that_escapes_clip_ = contributing_layer_escapes_clip;
+  }
+  bool has_contributing_layer_that_escapes_clip() const {
+    return has_contributing_layer_that_escapes_clip_;
+  }
+
   void CalculateContentRectFromAccumulatedContentRect(int max_texture_size);
   void SetContentRectToViewport();
   void SetContentRectForTesting(const gfx::Rect& rect);
@@ -194,6 +202,8 @@ class CC_EXPORT RenderSurfaceImpl {
 
   // Is used to calculate the content rect from property trees.
   gfx::Rect accumulated_content_rect_;
+  // Is used to decide if the surface is clipped.
+  bool has_contributing_layer_that_escapes_clip_ : 1;
   bool surface_property_changed_ : 1;
   bool ancestor_property_changed_ : 1;
 

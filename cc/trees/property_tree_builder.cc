@@ -50,7 +50,6 @@ struct DataForRecursion {
   bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
   bool is_hidden;
-  bool apply_ancestor_clip;
   uint32_t main_thread_scrolling_reasons;
   bool scroll_tree_parent_created_by_uninheritable_criteria;
   const gfx::Transform* device_transform;
@@ -85,93 +84,6 @@ static LayerStickyPositionConstraint StickyPositionConstraint(Layer* layer) {
 static LayerStickyPositionConstraint StickyPositionConstraint(
     LayerImpl* layer) {
   return layer->test_properties()->sticky_position_constraint;
-}
-
-struct PreCalculateMetaInformationRecursiveData {
-  size_t num_unclipped_descendants;
-  int num_descendants_that_draw_content;
-
-  PreCalculateMetaInformationRecursiveData()
-      : num_unclipped_descendants(0),
-        num_descendants_that_draw_content(0) {}
-
-  void Merge(const PreCalculateMetaInformationRecursiveData& data) {
-    num_unclipped_descendants += data.num_unclipped_descendants;
-    num_descendants_that_draw_content += data.num_descendants_that_draw_content;
-  }
-};
-
-static inline bool IsRootLayer(const Layer* layer) {
-  return !layer->parent();
-}
-
-static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
-  return layer->layer_tree_host()->needs_meta_info_recomputation();
-}
-
-// Recursively walks the layer tree(if needed) to compute any information
-// that is needed before doing the main recursion.
-static void PreCalculateMetaInformationInternal(
-    Layer* layer,
-    PreCalculateMetaInformationRecursiveData* recursive_data) {
-  if (!IsMetaInformationRecomputationNeeded(layer)) {
-    DCHECK(IsRootLayer(layer));
-    return;
-  }
-
-  if (layer->clip_parent())
-    recursive_data->num_unclipped_descendants++;
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    Layer* child_layer = layer->child_at(i);
-
-    PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformationInternal(child_layer, &data_for_child);
-    recursive_data->Merge(data_for_child);
-  }
-
-  if (layer->clip_children()) {
-    size_t num_clip_children = layer->clip_children()->size();
-    DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
-    recursive_data->num_unclipped_descendants -= num_clip_children;
-  }
-
-  layer->set_num_unclipped_descendants(
-      recursive_data->num_unclipped_descendants);
-
-  if (IsRootLayer(layer))
-    layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
-}
-
-static void PreCalculateMetaInformationInternalForTesting(
-    LayerImpl* layer,
-    PreCalculateMetaInformationRecursiveData* recursive_data) {
-  if (layer->test_properties()->clip_parent)
-    recursive_data->num_unclipped_descendants++;
-
-  for (size_t i = 0; i < layer->test_properties()->children.size(); ++i) {
-    LayerImpl* child_layer = layer->test_properties()->children[i];
-
-    PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformationInternalForTesting(child_layer, &data_for_child);
-    recursive_data->Merge(data_for_child);
-  }
-
-  if (layer->test_properties()->clip_children) {
-    size_t num_clip_children = layer->test_properties()->clip_children->size();
-    DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
-    recursive_data->num_unclipped_descendants -= num_clip_children;
-  }
-
-  layer->test_properties()->num_unclipped_descendants =
-      recursive_data->num_unclipped_descendants;
-  // TODO(enne): this should be synced from the main thread, so is only
-  // for tests constructing layers on the compositor thread.
-  layer->test_properties()->num_descendants_that_draw_content =
-      recursive_data->num_descendants_that_draw_content;
-
-  if (layer->DrawsContent())
-    recursive_data->num_descendants_that_draw_content++;
 }
 
 static LayerImplList& Children(LayerImpl* layer) {
@@ -212,14 +124,6 @@ static Layer* ClipParent(Layer* layer) {
 
 static LayerImpl* ClipParent(LayerImpl* layer) {
   return layer->test_properties()->clip_parent;
-}
-
-static size_t NumUnclippedDescendants(Layer* layer) {
-  return layer->num_unclipped_descendants();
-}
-
-static size_t NumUnclippedDescendants(LayerImpl* layer) {
-  return layer->test_properties()->num_unclipped_descendants;
 }
 
 static inline const FilterOperations& Filters(Layer* layer) {
@@ -340,24 +244,6 @@ static LayerImpl* Parent(LayerImpl* layer) {
   return layer->test_properties()->parent;
 }
 
-template <typename LayerType>
-static void SetSurfaceIsClipped(DataForRecursion<LayerType>* data_for_children,
-                                bool apply_ancestor_clip,
-                                LayerType* layer) {
-  // A surface with unclipped descendants cannot be clipped by its ancestor
-  // clip at draw time since the unclipped descendants aren't affected by the
-  // ancestor clip.
-  EffectNode* effect_node = data_for_children->property_trees->effect_tree.Node(
-      data_for_children->render_target);
-  DCHECK_EQ(effect_node->owning_layer_id, layer->id());
-  effect_node->surface_is_clipped =
-      apply_ancestor_clip && !NumUnclippedDescendants(layer);
-  // The ancestor clip should propagate to children only if the surface doesn't
-  // apply the clip.
-  data_for_children->apply_ancestor_clip =
-      apply_ancestor_clip && !effect_node->surface_is_clipped;
-}
-
 static inline int SortingContextId(Layer* layer) {
   return layer->sorting_context_id();
 }
@@ -383,45 +269,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   const bool inherits_clip = !ClipParent(layer);
   const int parent_id = inherits_clip ? data_from_ancestor.clip_tree_parent
                                       : ClipParent(layer)->clip_tree_index();
-  ClipNode* parent =
-      data_from_ancestor.property_trees->clip_tree.Node(parent_id);
-
-  bool apply_ancestor_clip = false;
-  if (inherits_clip) {
-    apply_ancestor_clip = data_from_ancestor.apply_ancestor_clip;
-  } else {
-    const EffectNode* parent_effect_node =
-        data_from_ancestor.property_trees->effect_tree.Node(
-            ClipParent(layer)->effect_tree_index());
-    if (parent_effect_node->clip_id == parent->id) {
-      if (parent_effect_node->surface_is_clipped) {
-        // In this case, there is no clipping layer between the clip parent and
-        // its target and the target has applied the clip.
-        apply_ancestor_clip = false;
-      } else {
-        // In this case, there is no clipping layer between the clip parent and
-        // its target and the target has not applied the clip. There are two
-        // cases when a target doesn't apply clip. First, there is no ancestor
-        // clip to apply, in this case apply_ancestor_clip should be false.
-        // Second, there is a clip to apply but there are unclipped descendants,
-        // so the target cannot apply the clip. In this case,
-        // apply_ancestor_clip should be true.
-        apply_ancestor_clip = parent_effect_node->has_unclipped_descendants;
-      }
-    } else {
-      // In this case, there is a clipping layer between the clip parent and
-      // its target.
-      apply_ancestor_clip = true;
-    }
-  }
-  if (created_render_surface)
-    SetSurfaceIsClipped(data_for_children, apply_ancestor_clip, layer);
 
   bool layer_clips_subtree = LayerClipsSubtree(layer);
-  if (layer_clips_subtree) {
-    data_for_children->apply_ancestor_clip = true;
-  }
-
   bool requires_node =
       layer_clips_subtree || Filters(layer).HasFilterThatMovesPixels();
   if (!requires_node) {
@@ -800,8 +649,24 @@ static inline int NumDescendantsThatDrawContent(Layer* layer) {
   return layer->NumDescendantsThatDrawContent();
 }
 
+static inline int NumLayerOrDescendantsThatDrawContentRecursive(
+    LayerImpl* layer) {
+  int num = layer->DrawsContent() ? 1 : 0;
+  for (size_t i = 0; i < layer->test_properties()->children.size(); ++i) {
+    LayerImpl* child_layer = layer->test_properties()->children[i];
+    num += NumLayerOrDescendantsThatDrawContentRecursive(child_layer);
+  }
+  return num;
+}
+
 static inline int NumDescendantsThatDrawContent(LayerImpl* layer) {
-  return layer->test_properties()->num_descendants_that_draw_content;
+  int num_descendants_that_draw_content = 0;
+  for (size_t i = 0; i < layer->test_properties()->children.size(); ++i) {
+    LayerImpl* child_layer = layer->test_properties()->children[i];
+    num_descendants_that_draw_content +=
+        NumLayerOrDescendantsThatDrawContentRecursive(child_layer);
+  }
+  return num_descendants_that_draw_content;
 }
 
 static inline float EffectiveOpacity(Layer* layer) {
@@ -1066,7 +931,6 @@ bool AddEffectNodeIfNeeded(
       // transform id.
       node.transform_id =
           data_from_ancestor.property_trees->transform_tree.next_available_id();
-      node.has_unclipped_descendants = (NumUnclippedDescendants(layer) != 0);
     }
     node.clip_id = data_from_ancestor.clip_tree_parent;
   } else {
@@ -1338,18 +1202,6 @@ void BuildPropertyTreesInternal(
 
 }  // namespace
 
-void CC_EXPORT
-PropertyTreeBuilder::PreCalculateMetaInformation(Layer* root_layer) {
-  PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
-}
-
-void CC_EXPORT PropertyTreeBuilder::PreCalculateMetaInformationForTesting(
-    LayerImpl* root_layer) {
-  PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformationInternalForTesting(root_layer, &recursive_data);
-}
-
 Layer* PropertyTreeBuilder::FindFirstScrollableLayer(Layer* layer) {
   if (!layer)
     return nullptr;
@@ -1414,8 +1266,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.is_hidden = false;
-  // The root clip is always applied.
-  data_for_recursion.apply_ancestor_clip = true;
   data_for_recursion.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
   data_for_recursion.scroll_tree_parent_created_by_uninheritable_criteria =

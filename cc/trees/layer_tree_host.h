@@ -346,12 +346,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   std::unordered_set<Layer*>& LayersThatShouldPushProperties();
   bool LayerNeedsPushPropertiesForTesting(Layer* layer) const;
 
-  virtual void SetNeedsMetaInfoRecomputation(
-      bool needs_meta_info_recomputation);
-  bool needs_meta_info_recomputation() const {
-    return needs_meta_info_recomputation_;
-  }
-
   void SetPageScaleFromImplSide(float page_scale);
   void SetElasticOverscrollFromImplSide(gfx::Vector2dF elastic_overscroll);
   gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
@@ -601,7 +595,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   PropertyTrees property_trees_;
 
   bool needs_full_tree_sync_ = true;
-  bool needs_meta_info_recomputation_ = true;
 
   gfx::Vector2dF elastic_overscroll_;
 

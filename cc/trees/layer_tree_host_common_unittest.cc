@@ -103,8 +103,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                                       Layer* page_scale_layer,
                                       Layer* inner_viewport_scroll_layer,
                                       Layer* outer_viewport_scroll_layer) {
-    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
-
     EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
     gfx::Size device_viewport_size =
         gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -184,8 +182,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(Layer* root_layer) {
     DCHECK(root_layer->layer_tree_host());
-    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
-
     bool can_render_to_separate_surface = true;
 
     const Layer* page_scale_layer =
@@ -221,8 +217,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
       LayerImpl* root_layer) {
     DCHECK(root_layer->layer_tree_impl());
-    PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer);
-
     bool can_render_to_separate_surface = true;
 
     const LayerImpl* page_scale_layer = nullptr;
@@ -4015,7 +4009,8 @@ TEST_F(LayerTreeHostCommonTest,
 TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_child);
 
@@ -4026,6 +4021,8 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
   clip_parent->test_properties()->clip_children =
       base::MakeUnique<std::set<LayerImpl*>>();
   clip_parent->test_properties()->clip_children->insert(clip_child);
+
+  clip_layer->SetBounds(gfx::Size(50, 50));
 
   render_surface1->SetBounds(gfx::Size(20, 20));
   render_surface1->SetDrawsContent(true);
@@ -4040,6 +4037,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
   render_surface2->test_properties()->force_render_surface = true;
 
   clip_parent->SetMasksToBounds(true);
+  clip_layer->SetMasksToBounds(true);
   render_surface1->SetMasksToBounds(true);
 
   float device_scale_factor = 1.f;
@@ -5820,37 +5818,40 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   EXPECT_TRUE(render_surface1->GetRenderSurface());
   EXPECT_TRUE(render_surface2->GetRenderSurface());
 
-  // Since the render surfaces could have expanded, they should not clip (their
-  // bounds would no longer be reliable). We should resort to layer clipping
-  // in this case.
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
+  // render_surface1 should apply the clip from clip_parent. Though there is a
+  // clip child, render_surface1 can apply the clip as there are no clips
+  // between the clip parent and render_surface1
+  EXPECT_EQ(gfx::Rect(1, 1, 40, 40),
             render_surface1->GetRenderSurface()->clip_rect());
-  EXPECT_FALSE(render_surface1->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(render_surface1->GetRenderSurface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(), render_surface1->clip_rect());
+  EXPECT_FALSE(render_surface1->is_clipped());
+
+  // render_surface2 could have expanded, as there is a clip between
+  // clip_child's clip (clip_parent) and render_surface2's clip (intervening).
+  // So, it should not be clipped (their bounds would no longer be reliable).
+  // We should resort to layer clipping in this case.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
             render_surface2->GetRenderSurface()->clip_rect());
   EXPECT_FALSE(render_surface2->GetRenderSurface()->is_clipped());
-
-  // NB: clip rects are in target space.
-  EXPECT_EQ(gfx::Rect(0, 0, 40, 40), render_surface1->clip_rect());
-  EXPECT_TRUE(render_surface1->is_clipped());
 
   // This value is inherited from the clipping ancestor layer, 'intervening'.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5), render_surface2->clip_rect());
   EXPECT_TRUE(render_surface2->is_clipped());
 
-  // The content rects of both render surfaces should both have expanded to
-  // contain the clip child.
+  // The content rects of render_surface2 should have expanded to contain the
+  // clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 40, 40),
             render_surface1->GetRenderSurface()->content_rect());
-  EXPECT_EQ(gfx::Rect(-1, -1, 40, 40),
+  EXPECT_EQ(gfx::Rect(-10, -10, 60, 60),
             render_surface2->GetRenderSurface()->content_rect());
 
   // The clip child should have inherited the clip parent's clip (projected to
-  // the right space, of course), and should have the correctly sized visible
-  // content rect.
-  EXPECT_EQ(gfx::Rect(-1, -1, 40, 40), clip_child->clip_rect());
+  // the right space, of course), but as render_surface1 already applies that
+  // clip, clip_child need not apply it again.
+  EXPECT_EQ(gfx::Rect(), clip_child->clip_rect());
   EXPECT_EQ(gfx::Rect(9, 9, 40, 40), clip_child->visible_layer_rect());
-  EXPECT_TRUE(clip_child->is_clipped());
+  EXPECT_FALSE(clip_child->is_clipped());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
@@ -5903,37 +5904,39 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   EXPECT_TRUE(render_surface1->GetRenderSurface());
   EXPECT_TRUE(render_surface2->GetRenderSurface());
 
-  // Since the render surfaces could have expanded, they should not clip (their
-  // bounds would no longer be reliable). We should resort to layer clipping
-  // in this case.
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
+  // render_surface1 should apply the clip from clip_parent. Though there is a
+  // clip child, render_surface1 can apply the clip as there are no clips
+  // between the clip parent and render_surface1
+  EXPECT_EQ(gfx::Rect(3, 3, 40, 40),
             render_surface1->GetRenderSurface()->clip_rect());
-  EXPECT_FALSE(render_surface1->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(render_surface1->GetRenderSurface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(), render_surface1->clip_rect());
+  EXPECT_FALSE(render_surface1->is_clipped());
+
+  // render_surface2 could have expanded, as there is a clip between
+  // clip_child's clip (clip_parent) and render_surface2's clip (intervening).
+  // So, it should not be clipped (their bounds would no longer be reliable).
+  // We should resort to layer clipping in this case.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
             render_surface2->GetRenderSurface()->clip_rect());
   EXPECT_FALSE(render_surface2->GetRenderSurface()->is_clipped());
-
-  // NB: clip rects are in target space.
-  EXPECT_EQ(gfx::Rect(0, 0, 40, 40), render_surface1->clip_rect());
-  EXPECT_TRUE(render_surface1->is_clipped());
-
   // This value is inherited from the clipping ancestor layer, 'intervening'.
-  EXPECT_EQ(gfx::Rect(2, 2, 3, 3), render_surface2->clip_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), render_surface2->clip_rect());
   EXPECT_TRUE(render_surface2->is_clipped());
 
-  // The content rects of both render surfaces should both have expanded to
-  // contain the clip child.
+  // The content rects of render_surface2 should have expanded to contain the
+  // clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 40, 40),
             render_surface1->GetRenderSurface()->content_rect());
-  EXPECT_EQ(gfx::Rect(2, 2, 40, 40),
+  EXPECT_EQ(gfx::Rect(-10, -10, 60, 60),
             render_surface2->GetRenderSurface()->content_rect());
 
   // The clip child should have inherited the clip parent's clip (projected to
-  // the right space, of course), and should have the correctly sized visible
-  // content rect.
-  EXPECT_EQ(gfx::Rect(2, 2, 40, 40), clip_child->clip_rect());
+  // the right space, of course), but as render_surface1 already applies that
+  // clip, clip_child need not apply it again.
+  EXPECT_EQ(gfx::Rect(), clip_child->clip_rect());
   EXPECT_EQ(gfx::Rect(12, 12, 40, 40), clip_child->visible_layer_rect());
-  EXPECT_TRUE(clip_child->is_clipped());
+  EXPECT_FALSE(clip_child->is_clipped());
 }
 
 TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
@@ -5985,17 +5988,19 @@ TEST_F(LayerTreeHostCommonTest,
   //
   //   root (a render surface)
   //    + clip_parent (masks to bounds)
-  //      + render_surface1
-  //        + clip_child
-  //      + render_surface2
-  //        + non_clip_child
+  //      + clip_layer (masks to bounds)
+  //        + render_surface1
+  //          + clip_child
+  //        + render_surface2
+  //          + non_clip_child
   //
   // In this example render_surface2 should be unaffected by clip_child.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_layer);
   LayerImpl* non_clip_child = AddChild<LayerImpl>(render_surface2);
 
   clip_child->test_properties()->clip_parent = clip_parent;
@@ -6004,7 +6009,7 @@ TEST_F(LayerTreeHostCommonTest,
   clip_parent->test_properties()->clip_children->insert(clip_child);
 
   clip_parent->SetMasksToBounds(true);
-  render_surface1->SetMasksToBounds(true);
+  clip_layer->SetMasksToBounds(true);
 
   render_surface1->SetDrawsContent(true);
   clip_child->SetDrawsContent(true);
@@ -6013,6 +6018,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   root->SetBounds(gfx::Size(15, 15));
   clip_parent->SetBounds(gfx::Size(10, 10));
+  clip_layer->SetBounds(gfx::Size(10, 10));
   render_surface1->SetPosition(gfx::PointF(5, 5));
   render_surface1->SetBounds(gfx::Size(5, 5));
   render_surface1->test_properties()->force_render_surface = true;
@@ -6028,7 +6034,7 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(render_surface1->GetRenderSurface());
   EXPECT_TRUE(render_surface2->GetRenderSurface());
 
-  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), render_surface1->clip_rect());
+  EXPECT_EQ(gfx::Rect(-5, -5, 10, 10), render_surface1->clip_rect());
   EXPECT_TRUE(render_surface1->is_clipped());
 
   // The render surface should not clip (it has unclipped descendants), instead
@@ -6051,10 +6057,6 @@ TEST_F(LayerTreeHostCommonTest,
   // It also shouldn't have grown to accomodate the clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5),
             render_surface2->GetRenderSurface()->content_rect());
-
-  // Sanity check our num_unclipped_descendants values.
-  EXPECT_EQ(1u, render_surface1->test_properties()->num_unclipped_descendants);
-  EXPECT_EQ(0u, render_surface2->test_properties()->num_unclipped_descendants);
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -6129,7 +6131,6 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 
   {
     LayerImplList render_surface_layer_list;
-    FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root_layer);
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root_layer, root_layer->bounds(), &render_surface_layer_list);
     inputs.can_render_to_separate_surface = true;
@@ -9764,9 +9765,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_EQ(parent->num_unclipped_descendants(), 1u);
-
   EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
 }
@@ -9896,6 +9896,7 @@ TEST_F(LayerTreeHostCommonTest,
   clip_parent->SetMasksToBounds(true);
   between_clip_parent_and_child->test_properties()->transform = translate;
   between_clip_parent_and_child->SetBounds(gfx::Size(30, 30));
+  between_clip_parent_and_child->SetMasksToBounds(true);
   render_surface->SetBounds(gfx::Size(30, 30));
   render_surface->test_properties()->force_render_surface = true;
   test_layer->SetBounds(gfx::Size(30, 30));
@@ -10015,7 +10016,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
   LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_layer);
   LayerImpl* unclipped_desc_surface2 =
       AddChild<LayerImpl>(unclipped_desc_surface);
   LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface2);
@@ -10028,8 +10030,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
   unclipped_surface->test_properties()->force_render_surface = true;
   clip_parent->SetBounds(gfx::Size(50, 50));
   clip_parent->SetMasksToBounds(true);
+  clip_layer->SetMasksToBounds(true);
+  clip_layer->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
-  unclipped_desc_surface->SetMasksToBounds(true);
   unclipped_desc_surface->SetDrawsContent(true);
   unclipped_desc_surface->test_properties()->force_render_surface = true;
   unclipped_desc_surface2->SetBounds(gfx::Size(60, 60));
@@ -10050,7 +10053,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
             unclipped_surface->GetRenderSurface()->content_rect());
   EXPECT_EQ(gfx::Rect(50, 50),
             unclipped_desc_surface->GetRenderSurface()->content_rect());
-  EXPECT_EQ(gfx::Rect(50, 50),
+  EXPECT_EQ(gfx::Rect(60, 60),
             unclipped_desc_surface2->GetRenderSurface()->content_rect());
   EXPECT_EQ(gfx::Rect(50, 50),
             clipped_surface->GetRenderSurface()->content_rect());
@@ -10161,13 +10164,16 @@ TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_layer = AddChild<LayerImpl>(root);
   LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_parent_child = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent_child);
   LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
 
   root->SetBounds(gfx::Size(100, 100));
   clip_layer->SetBounds(gfx::Size(20, 20));
   clip_layer->SetMasksToBounds(true);
   clip_parent->SetBounds(gfx::Size(50, 50));
+  clip_parent_child->SetBounds(gfx::Size(20, 20));
+  clip_parent_child->SetMasksToBounds(true);
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
   unclipped_desc_surface->test_properties()->force_render_surface = true;
@@ -10267,12 +10273,15 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
 
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
+  LayerImpl* clip_layer = AddChild<LayerImpl>(root);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
   LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
   LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
 
   root->SetBounds(gfx::Size(30, 30));
   root->SetMasksToBounds(true);
+  clip_layer->SetBounds(gfx::Size(30, 30));
+  clip_layer->SetMasksToBounds(true);
   render_surface1->SetPosition(gfx::PointF(10, 10));
   render_surface1->SetBounds(gfx::Size(30, 30));
   render_surface1->SetDrawsContent(true);
@@ -10281,6 +10290,7 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   render_surface2->SetDrawsContent(true);
   render_surface2->test_properties()->force_render_surface = true;
   clip_child->SetBounds(gfx::Size(30, 30));
+  clip_child->SetDrawsContent(true);
 
   clip_child->test_properties()->clip_parent = root;
   root->test_properties()->clip_children =

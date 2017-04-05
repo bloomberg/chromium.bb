@@ -224,9 +224,12 @@ static ConditionalClip ComputeAccumulatedClip(PropertyTrees* property_trees,
   std::stack<const ClipNode*, std::vector<const ClipNode*>> parent_chain;
 
   // If target is not direct ancestor of clip, this will find least common
-  // ancestor between the target and the clip.
+  // ancestor between the target and the clip. Or, if the target has a
+  // contributing layer that escapes clip, this will find the nearest ancestor
+  // that doesn't.
   while (target_node->clip_id > clip_node->id ||
-         target_node->has_unclipped_descendants) {
+         effect_tree.GetRenderSurface(target_node->id)
+             ->has_contributing_layer_that_escapes_clip()) {
     target_node = effect_tree.Node(target_node->target_id);
   }
 
@@ -316,6 +319,36 @@ static bool HasSingularTransform(int transform_tree_index,
                                  const TransformTree& tree) {
   const TransformNode* node = tree.Node(transform_tree_index);
   return !node->is_invertible || !node->ancestors_are_invertible;
+}
+
+static int LowestCommonAncestor(int clip_id_1,
+                                int clip_id_2,
+                                const ClipTree* clip_tree) {
+  const ClipNode* clip_node_1 = clip_tree->Node(clip_id_1);
+  const ClipNode* clip_node_2 = clip_tree->Node(clip_id_2);
+  while (clip_node_1->id != clip_node_2->id) {
+    if (clip_node_1->id < clip_node_2->id)
+      clip_node_2 = clip_tree->parent(clip_node_2);
+    else
+      clip_node_1 = clip_tree->parent(clip_node_1);
+  }
+  return clip_node_1->id;
+}
+
+static void SetHasContributingLayerThatEscapesClip(int lca_clip_id,
+                                                   int target_effect_id,
+                                                   EffectTree* effect_tree) {
+  const EffectNode* effect_node = effect_tree->Node(target_effect_id);
+  // Find all ancestor targets starting from effect_node who are clipped by
+  // a descendant of lowest ancestor clip and set their
+  // has_contributing_layer_that_escapes_clip to true.
+  while (effect_node->clip_id > lca_clip_id) {
+    RenderSurfaceImpl* render_surface =
+        effect_tree->GetRenderSurface(effect_node->id);
+    DCHECK(render_surface);
+    render_surface->set_has_contributing_layer_that_escapes_clip(true);
+    effect_node = effect_tree->Node(effect_node->target_id);
+  }
 }
 
 template <typename LayerType>
@@ -510,6 +543,30 @@ static gfx::Rect LayerDrawableContentRect(
     return IntersectRects(layer_bounds_in_target_space, clip_rect);
 
   return layer_bounds_in_target_space;
+}
+
+static void SetSurfaceIsClipped(const ClipTree& clip_tree,
+                                RenderSurfaceImpl* render_surface) {
+  bool is_clipped;
+  if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+    // Root render surface is always clipped.
+    is_clipped = true;
+  } else if (render_surface->has_contributing_layer_that_escapes_clip()) {
+    // We cannot clip a surface that has a contribuitng layer which escapes the
+    // clip.
+    is_clipped = false;
+  } else if (render_surface->ClipTreeIndex() ==
+             render_surface->render_target()->ClipTreeIndex()) {
+    // There is no clip between between the render surface and its target, so
+    // the surface need not be clipped.
+    is_clipped = false;
+  } else {
+    // If the clips between the render surface and its target only expand the
+    // clips and do not apply any new clip, we need not clip the render surface.
+    const ClipNode* clip_node = clip_tree.Node(render_surface->ClipTreeIndex());
+    is_clipped = clip_node->clip_type != ClipNode::ClipType::EXPANDS_CLIP;
+  }
+  render_surface->SetIsClipped(is_clipped);
 }
 
 static void SetSurfaceDrawOpacity(const EffectTree& tree,
@@ -926,13 +983,23 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
         transform_node->to_screen_is_potentially_animated;
   }
 
-  // Compute draw opacities
+  // Compute effects and determine if render surfaces have contributing layers
+  // that escape clip.
   for (LayerImpl* layer : *layer_list) {
     layer->draw_properties().opacity =
         LayerDrawOpacity(layer, property_trees->effect_tree);
+    RenderSurfaceImpl* render_target = layer->render_target();
+    int lca_clip_id = LowestCommonAncestor(layer->clip_tree_index(),
+                                           render_target->ClipTreeIndex(),
+                                           &property_trees->clip_tree);
+    if (lca_clip_id != render_target->ClipTreeIndex()) {
+      SetHasContributingLayerThatEscapesClip(lca_clip_id,
+                                             render_target->EffectTreeIndex(),
+                                             &property_trees->effect_tree);
+    }
   }
 
-  // Compute clips and viisble rects
+  // Compute clips and visible rects
   for (LayerImpl* layer : *layer_list) {
     ConditionalClip clip = LayerClipRect(property_trees, layer);
     // is_clipped should be set before visible rect computation as it is used
@@ -967,19 +1034,7 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
 void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
                                   RenderSurfaceImpl* render_surface,
                                   const bool use_layer_lists) {
-  const EffectNode* effect_node =
-      property_trees->effect_tree.Node(render_surface->EffectTreeIndex());
-  if (use_layer_lists) {
-    // TODO(crbug.com/702010) : Calculate surface's is_clipped value outside
-    // cc property tree building. This is a temporary hack to make SPv2 layout
-    // tests pass.
-    bool is_clipped = effect_node->id == EffectTree::kContentsRootNodeId ||
-                      (render_surface->render_target()->ClipTreeIndex() !=
-                       render_surface->ClipTreeIndex());
-    render_surface->SetIsClipped(is_clipped);
-  } else {
-    render_surface->SetIsClipped(effect_node->surface_is_clipped);
-  }
+  SetSurfaceIsClipped(property_trees->clip_tree, render_surface);
   SetSurfaceDrawOpacity(property_trees->effect_tree, render_surface);
   SetSurfaceDrawTransform(property_trees, render_surface);
   render_surface->SetScreenSpaceTransform(

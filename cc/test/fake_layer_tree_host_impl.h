@@ -41,7 +41,6 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   void AdvanceToNextFrame(base::TimeDelta advance_by);
   void UpdateNumChildrenAndDrawPropertiesForActiveTree();
   static void UpdateNumChildrenAndDrawProperties(LayerTreeImpl* layerTree);
-  static int RecursiveUpdateNumChildren(LayerImpl* layer);
 
   using LayerTreeHostImpl::ActivateSyncTree;
   using LayerTreeHostImpl::prepare_tiles_needed;

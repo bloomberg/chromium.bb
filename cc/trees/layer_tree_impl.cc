@@ -1230,7 +1230,6 @@ void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
 
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
   SetElementIdsForTesting();
-  PropertyTreeBuilder::PreCalculateMetaInformationForTesting(layer_list_[0]);
   property_trees_.needs_rebuild = true;
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(

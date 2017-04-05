@@ -736,8 +736,6 @@ void Layer::SetClipParent(Layer* ancestor) {
 
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
-  if (layer_tree_host_)
-    layer_tree_host_->SetNeedsMetaInfoRecomputation(true);
 }
 
 void Layer::AddClipChild(Layer* child) {

@@ -682,7 +682,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT0(
         TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
         "LayerTreeHostInProcessCommon::ComputeVisibleRectsWithPropertyTrees");
-    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
     PropertyTrees* property_trees = &property_trees_;
     if (!settings_.use_layer_lists) {
@@ -1087,10 +1086,6 @@ bool LayerTreeHost::LayerNeedsPushPropertiesForTesting(Layer* layer) const {
          layers_that_should_push_properties_.end();
 }
 
-void LayerTreeHost::SetNeedsMetaInfoRecomputation(bool needs_recomputation) {
-  needs_meta_info_recomputation_ = needs_recomputation;
-}
-
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
   DCHECK(CommitRequested());
   page_scale_factor_ = page_scale;
@@ -1119,8 +1114,6 @@ void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
 
 void LayerTreeHost::SetNeedsFullTreeSync() {
   needs_full_tree_sync_ = true;
-  needs_meta_info_recomputation_ = true;
-
   property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
@@ -1247,7 +1240,6 @@ void LayerTreeHost::SetElementIdsForTesting() {
 }
 
 void LayerTreeHost::BuildPropertyTreesForTesting() {
-  PropertyTreeBuilder::PreCalculateMetaInformation(root_layer());
   gfx::Transform identity_transform;
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer(), page_scale_layer(), inner_viewport_scroll_layer(),
