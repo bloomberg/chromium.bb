@@ -74,7 +74,7 @@ public class SubresourceFilterExperimentalInfoBar
         } else {
             String link = layout.getContext().getString(R.string.details_link);
             layout.setMessage(mMessage);
-            layout.setMessageLinkText(link);
+            layout.appendMessageLinkText(link);
         }
     }
 

@@ -11,8 +11,10 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
@@ -90,6 +92,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
 
     private CharSequence mMessageMainText;
     private String mMessageLinkText;
+    private int mMessageInlineLinkRangeStart;
+    private int mMessageInlineLinkRangeEnd;
 
     /**
      * Constructs a layout for the specified infobar. After calling this, be sure to set the
@@ -169,11 +173,21 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Sets the message to show for a link in the message, if an infobar requires a link
-     * (e.g. "Learn more").
+     * Appends a link to the message, if an infobar requires one (e.g. "Learn more").
      */
-    public void setMessageLinkText(String linkText) {
+    public void appendMessageLinkText(String linkText) {
         mMessageLinkText = linkText;
+        mMessageTextView.setText(prepareMainMessageString());
+    }
+
+    /**
+     * Sets up the message to have an inline link, assuming an inclusive range.
+     * @param rangeStart Where the link starts.
+     * @param rangeEnd   Where the link ends.
+     */
+    void setInlineMessageLink(int rangeStart, int rangeEnd) {
+        mMessageInlineLinkRangeStart = rangeStart;
+        mMessageInlineLinkRangeEnd = rangeEnd;
         mMessageTextView.setText(prepareMainMessageString());
     }
 
@@ -459,7 +473,33 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     private CharSequence prepareMainMessageString() {
         SpannableStringBuilder fullString = new SpannableStringBuilder();
 
-        if (mMessageMainText != null) fullString.append(mMessageMainText);
+        if (!TextUtils.isEmpty(mMessageMainText)) {
+            SpannableString spannedMessage = new SpannableString(mMessageMainText);
+
+            // If there's an inline link, apply the necessary span for it.
+            if (mMessageInlineLinkRangeEnd != 0) {
+                assert mMessageInlineLinkRangeStart < mMessageInlineLinkRangeEnd;
+                assert mMessageInlineLinkRangeEnd < mMessageMainText.length();
+
+                spannedMessage.setSpan(
+                        new ClickableSpan() {
+                            @Override
+                            public void onClick(View view) {
+                                mInfoBarView.onLinkClicked();
+                            }
+
+                            @Override
+                            public void updateDrawState(TextPaint ds) {
+                                super.updateDrawState(ds);
+                                ds.setUnderlineText(false);
+                            }
+                        },
+                        mMessageInlineLinkRangeStart, mMessageInlineLinkRangeEnd,
+                        Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+            }
+
+            fullString.append(spannedMessage);
+        }
 
         // Concatenate the text to display for the link and make it clickable.
         if (!TextUtils.isEmpty(mMessageLinkText)) {
