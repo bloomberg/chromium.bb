@@ -12,14 +12,22 @@ namespace blink {
 
 namespace {
 
+bool isSelfPositionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<
+      CSSValueStart, CSSValueEnd, CSSValueCenter, CSSValueSelfStart,
+      CSSValueSelfEnd, CSSValueFlexStart, CSSValueFlexEnd, CSSValueLeft,
+      CSSValueRight>(id);
+}
+
 CSSIdentifierValue* consumeSelfPositionKeyword(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter ||
-      id == CSSValueSelfStart || id == CSSValueSelfEnd ||
-      id == CSSValueFlexStart || id == CSSValueFlexEnd || id == CSSValueLeft ||
-      id == CSSValueRight)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return nullptr;
+  return isSelfPositionKeyword(range.peek().id())
+             ? CSSPropertyParserHelpers::consumeIdent(range)
+             : nullptr;
+}
+
+bool isAutoOrNormalOrStretch(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<CSSValueAuto, CSSValueNormal,
+                                                CSSValueStretch>(id);
 }
 
 bool isContentDistributionKeyword(CSSValueID id) {
@@ -82,12 +90,11 @@ CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
 
 CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range) {
-  if (CSSPropertyParserHelpers::identMatches<CSSValueAuto, CSSValueNormal,
-                                             CSSValueStretch>(
-          range.peek().id()))
+  CSSValueID id = range.peek().id();
+  if (isAutoOrNormalOrStretch(id))
     return CSSPropertyParserHelpers::consumeIdent(range);
 
-  if (isBaselineKeyword(range.peek().id()))
+  if (isBaselineKeyword(id))
     return consumeBaselineKeyword(range);
 
   CSSIdentifierValue* overflowPosition =
@@ -106,6 +113,18 @@ CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
                                 CSSValuePair::DropIdenticalValues);
   }
   return selfPosition;
+}
+
+CSSValue* CSSPropertyAlignmentUtils::consumeSimplifiedItemPosition(
+    CSSParserTokenRange& range) {
+  CSSValueID id = range.peek().id();
+  if (isAutoOrNormalOrStretch(id))
+    return CSSPropertyParserHelpers::consumeIdent(range);
+
+  if (isBaselineKeyword(id))
+    return consumeBaselineKeyword(range);
+
+  return consumeSelfPositionKeyword(range);
 }
 
 CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(

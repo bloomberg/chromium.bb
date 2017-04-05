@@ -236,6 +236,7 @@ parentRule
 perspective
 perspectiveOrigin
 placeContent
+placeItems
 pointerEvents
 position
 quotes

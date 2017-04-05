@@ -463,7 +463,9 @@ String StylePropertySerializer::getPropertyValue(
     case CSSPropertyGridGap:
       return getShorthandValue(gridGapShorthand());
     case CSSPropertyPlaceContent:
-      return placeContentPropertyValue();
+      return getAlignmentShorthandValue(placeContentShorthand());
+    case CSSPropertyPlaceItems:
+      return getAlignmentShorthandValue(placeItemsShorthand());
     case CSSPropertyFont:
       return fontValue();
     case CSSPropertyFontVariant:
@@ -858,10 +860,11 @@ String StylePropertySerializer::getCommonValue(
   return res;
 }
 
-String StylePropertySerializer::placeContentPropertyValue() const {
-  String value = getCommonValue(placeContentShorthand());
+String StylePropertySerializer::getAlignmentShorthandValue(
+    const StylePropertyShorthand& shorthand) const {
+  String value = getCommonValue(shorthand);
   if (value.isNull() || value.isEmpty())
-    return getShorthandValue(placeContentShorthand());
+    return getShorthandValue(shorthand);
   return value;
 }
 

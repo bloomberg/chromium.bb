@@ -2351,6 +2351,13 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                         layoutObject, styledNode,
                                         allowVisitedStyle);
     }
+    case CSSPropertyPlaceItems: {
+      // TODO (jfernandez): The spec states that we should return the specified
+      // value.
+      return valuesForShorthandProperty(placeItemsShorthand(), style,
+                                        layoutObject, styledNode,
+                                        allowVisitedStyle);
+    }
     case CSSPropertyAlignContent:
       return valueForContentPositionAndDistributionWithOverflowAlignment(
           style.alignContent(), CSSValueStretch);
