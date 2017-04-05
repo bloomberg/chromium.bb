@@ -1467,6 +1467,11 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusSimple) {
 // while another window is focused.
 // http://crbug.com/660044.
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusWindowCycle) {
+#if defined(OS_LINUX)
+  // Flaky on linux, crbug.com/706830.
+  if (GetParam())
+    return;
+#endif  // defined(OS_LINUX)
   TestHelper("testKeyboardFocusWindowFocusCycle", "web_view/focus",
              NO_TEST_SERVER);
 
