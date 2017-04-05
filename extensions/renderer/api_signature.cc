@@ -8,12 +8,22 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/argument_spec.h"
 #include "gin/arguments.h"
 
 namespace extensions {
 
 namespace {
+
+bool HasCallback(const std::vector<std::unique_ptr<ArgumentSpec>>& signature) {
+  // TODO(devlin): This is how extension APIs have always determined if a
+  // function has a callback, but it seems a little silly. In the long run (once
+  // signatures are generated), it probably makes sense to indicate this
+  // differently.
+  return !signature.empty() &&
+         signature.back()->type() == ArgumentType::FUNCTION;
+}
 
 // A class to help with argument parsing. Note that this uses v8::Locals and
 // const&s because it's an implementation detail of the APISignature; this
@@ -59,6 +69,7 @@ class ArgumentParser {
 
   // Adds a null value to the parsed arguments.
   virtual void AddNull() = 0;
+  virtual void AddNullCallback() = 0;
   // Returns a base::Value to be populated during argument matching.
   virtual std::unique_ptr<base::Value>* GetBuffer() = 0;
   // Adds a new parsed argument.
@@ -89,6 +100,9 @@ class V8ArgumentParser : public ArgumentParser {
 
  private:
   void AddNull() override { values_->push_back(v8::Null(GetIsolate())); }
+  void AddNullCallback() override {
+    values_->push_back(v8::Null(GetIsolate()));
+  }
   std::unique_ptr<base::Value>* GetBuffer() override { return nullptr; }
   void AddParsedArgument(v8::Local<v8::Value> value) override {
     values_->push_back(value);
@@ -120,6 +134,10 @@ class BaseValueArgumentParser : public ArgumentParser {
   void AddNull() override {
     list_value_->Append(base::Value::CreateNullValue());
   }
+  void AddNullCallback() override {
+    // The base::Value conversion doesn't include the callback directly, so we
+    // don't add a null parameter here.
+  }
   std::unique_ptr<base::Value>* GetBuffer() override { return &last_arg_; }
   void AddParsedArgument(v8::Local<v8::Value> value) override {
     // The corresponding base::Value is expected to have been stored in
@@ -140,13 +158,7 @@ class BaseValueArgumentParser : public ArgumentParser {
 };
 
 bool ArgumentParser::ParseArguments() {
-  // TODO(devlin): This is how extension APIs have always determined if a
-  // function has a callback, but it seems a little silly. In the long run (once
-  // signatures are generated), it probably makes sense to indicate this
-  // differently.
-  bool signature_has_callback =
-      !signature_.empty() &&
-      signature_.back()->type() == ArgumentType::FUNCTION;
+  bool signature_has_callback = HasCallback(signature_);
 
   size_t end_size =
       signature_has_callback ? signature_.size() - 1 : signature_.size();
@@ -202,6 +214,7 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
       return false;
     }
     ConsumeArgument();
+    AddNullCallback();
     return true;
   }
 
@@ -263,6 +276,45 @@ bool APISignature::ParseArgumentsToJSON(
     return false;
   *json_out = std::move(json);
   *callback_out = parser.callback();
+  return true;
+}
+
+bool APISignature::ConvertArgumentsIgnoringSchema(
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& arguments,
+    std::unique_ptr<base::ListValue>* json_out,
+    v8::Local<v8::Function>* callback_out) const {
+  size_t size = arguments.size();
+  v8::Local<v8::Function> callback;
+  // TODO(devlin): This is what the current bindings do, but it's quite terribly
+  // incorrect. We only hit this flow when an API method has a hook to update
+  // the arguments post-validation, and in some cases, the arguments returned by
+  // that hook do *not* match the signature of the API method (e.g.
+  // fileSystem.getDisplayPath); see also note in api_bindings.cc for why this
+  // is bad. But then here, we *rely* on the signature to determine whether or
+  // not the last parameter is a callback, even though the hooks may not return
+  // the arguments in the signature. This is very broken.
+  if (HasCallback(signature_)) {
+    CHECK(!arguments.empty());
+    if (arguments[size - 1]->IsFunction()) {
+      callback = arguments[size - 1].As<v8::Function>();
+      --size;
+    }
+  }
+
+  auto json = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+  for (size_t i = 0; i < size; ++i) {
+    std::unique_ptr<base::Value> converted =
+        converter->FromV8Value(arguments[i], context);
+    if (!converted)
+      return false;
+    json->Append(std::move(converted));
+  }
+
+  *json_out = std::move(json);
+  *callback_out = callback;
   return true;
 }
 

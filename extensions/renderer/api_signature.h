@@ -50,6 +50,15 @@ class APISignature {
                             v8::Local<v8::Function>* callback_out,
                             std::string* error) const;
 
+  // Converts |arguments| to a base::ListValue, ignoring the defined signature.
+  // This is used when custom bindings modify the passed arguments to a form
+  // that doesn't match the documented signature.
+  bool ConvertArgumentsIgnoringSchema(
+      v8::Local<v8::Context> context,
+      const std::vector<v8::Local<v8::Value>>& arguments,
+      std::unique_ptr<base::ListValue>* json_out,
+      v8::Local<v8::Function>* callback_out) const;
+
  private:
   // The list of expected arguments.
   std::vector<std::unique_ptr<ArgumentSpec>> signature_;

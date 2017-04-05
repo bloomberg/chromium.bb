@@ -291,7 +291,9 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     arguments->swap(parsed_v8_args);
   }
 
+  bool updated_args = false;
   if (!post_validate_hook.IsEmpty()) {
+    updated_args = true;
     UpdateArguments(post_validate_hook, context, arguments);
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
@@ -299,8 +301,12 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     }
   }
 
-  if (handle_request.IsEmpty())
-    return RequestResult(RequestResult::NOT_HANDLED, custom_callback);
+  if (handle_request.IsEmpty()) {
+    RequestResult::ResultCode result = updated_args
+                                           ? RequestResult::ARGUMENTS_UPDATED
+                                           : RequestResult::NOT_HANDLED;
+    return RequestResult(result, custom_callback);
+  }
 
   v8::Global<v8::Value> global_result =
       run_js_.Run(handle_request, context, arguments->size(),

@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -103,6 +104,19 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, LazyListeners) {
   EventRouter* event_router = EventRouter::Get(profile());
   EXPECT_TRUE(event_router->ExtensionHasEventListener(extension->id(),
                                                       "tabs.onCreated"));
+}
+
+// End-to-end test for the fileSystem API, which includes parameters with
+// instance-of requirements and a post-validation argument updater that violates
+// the schema.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, FileSystemApiGetDisplayPath) {
+  base::FilePath test_dir = test_data_dir_.AppendASCII("native_bindings");
+  FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+      "test_root", test_dir);
+  base::FilePath test_file = test_dir.AppendASCII("text.txt");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest("native_bindings/instance_of")) << message_;
 }
 
 }  // namespace extensions

@@ -1077,6 +1077,40 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
              "['foo',42]", false);
 }
 
+// Tests using setUpdateArgumentsPostValidate to return a list of arguments
+// that violates the function schema. Sadly, this should succeed. :(
+// See comment in api_binding.cc.
+TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidateViolatingSchema) {
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
+      "    return [{}];\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name = gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(v8::Global<v8::String>(isolate(), source_string),
+                          v8::Global<v8::String>(isolate(), source_name));
+
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
+
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
+
+  // Call the method with a valid signature. The hook should be entered and
+  // manipulate the arguments.
+  ExpectPass(binding_object, "obj.oneString('ping');", "[{}]", false);
+}
+
 // Test that user gestures are properly recorded when calling APIs.
 TEST_F(APIBindingUnittest, TestUserGestures) {
   SetFunctions(kFunctions);

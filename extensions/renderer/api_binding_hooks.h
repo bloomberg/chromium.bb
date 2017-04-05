@@ -33,6 +33,7 @@ class APIBindingHooks {
   struct RequestResult {
     enum ResultCode {
       HANDLED,             // A custom hook handled the request.
+      ARGUMENTS_UPDATED,   // The arguments were updated post-validation.
       THROWN,              // An exception was thrown during parsing or
                            // handling.
       INVALID_INVOCATION,  // The request was called with invalid arguments.

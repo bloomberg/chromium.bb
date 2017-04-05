@@ -109,8 +109,9 @@ function getFileBindingsForApi(apiName) {
     // backgroundPageModuleSystem.require('fileSystem') is insufficient as
     // requireNative is only allowed while lazily loading an API.
     backgroundPage.chrome.fileSystem;
-    var bindFileEntryCallback = backgroundPageModuleSystem.require(
-        apiName).bindFileEntryCallback;
+    var bindFileEntryCallback =
+        backgroundPageModuleSystem.require('fileEntryBindingUtil')
+            .getFileBindingsForApi(apiName).bindFileEntryCallback;
     var entryIdManager = backgroundPageModuleSystem.require('entryIdManager');
   }
   return {bindFileEntryCallback: bindFileEntryCallback,

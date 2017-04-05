@@ -4,9 +4,10 @@
 
 // Custom binding for the fileSystem API.
 
-var binding = require('binding').Binding.create('fileSystem');
-var sendRequest = require('sendRequest');
-
+var binding = apiBridge || require('binding').Binding.create('fileSystem');
+var sendRequest = bindingUtil ?
+    bindingUtil.sendRequest.bind(bindingUtil) :
+    require('sendRequest').sendRequest;
 var getFileBindingsForApi =
     require('fileEntryBindingUtil').getFileBindingsForApi;
 var fileBindings = getFileBindingsForApi('fileSystem');
@@ -42,8 +43,8 @@ binding.registerCustomHook(function(bindingsAPI) {
     var fileSystemName = fileEntry.filesystem.name;
     var relativePath = $String.slice(fileEntry.fullPath, 1);
 
-    sendRequest.sendRequest(this.name, [id, fileSystemName, relativePath],
-      this.definition.parameters);
+    sendRequest('fileSystem.retainEntry', [id, fileSystemName, relativePath],
+                bindingUtil ? undefined : this.definition.parameters);
     return id;
   });
 
@@ -53,8 +54,8 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (savedEntry) {
       safeCallbackApply('fileSystem.isRestorable', {}, callback, [true]);
     } else {
-      sendRequest.sendRequest(
-          this.name, [id, callback], this.definition.parameters);
+      sendRequest('fileSystem.isRestorable', [id, callback],
+                  bindingUtil ? undefined : this.definition.parameters);
     }
   });
 
@@ -104,5 +105,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   };
 });
 
-exports.$set('bindFileEntryCallback', bindFileEntryCallback);
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

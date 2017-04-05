@@ -484,6 +484,7 @@ void APIBinding::HandleCall(const std::string& name,
 
   bool invalid_invocation = false;
   v8::Local<v8::Function> custom_callback;
+  bool updated_args = false;
   {
     v8::TryCatch try_catch(isolate);
     APIBindingHooks::RequestResult hooks_result = binding_hooks_->RunHooks(
@@ -502,6 +503,8 @@ void APIBinding::HandleCall(const std::string& name,
         if (!hooks_result.return_value.IsEmpty())
           arguments->Return(hooks_result.return_value);
         return;  // Our work here is done.
+      case APIBindingHooks::RequestResult::ARGUMENTS_UPDATED:
+        updated_args = true;  // Intentional fall-through.
       case APIBindingHooks::RequestResult::NOT_HANDLED:
         break;  // Handle in the default manner.
     }
@@ -517,9 +520,29 @@ void APIBinding::HandleCall(const std::string& name,
   v8::Local<v8::Function> callback;
   {
     v8::TryCatch try_catch(isolate);
-    invalid_invocation = !signature->ParseArgumentsToJSON(
-        context, argument_list, *type_refs_,
-        &converted_arguments, &callback, &error);
+
+    // If custom hooks updated the arguments post-validation, we just trust the
+    // values the hooks provide and convert them directly. This is because some
+    // APIs have one set of values they use for validation, and a second they
+    // use in the implementation of the function (see, e.g.
+    // fileSystem.getDisplayPath).
+    // TODO(devlin): That's unfortunate. Not only does it require special casing
+    // here, but it also means we can't auto-generate the params for the
+    // function on the browser side.
+    if (updated_args) {
+      bool success = signature->ConvertArgumentsIgnoringSchema(
+          context, argument_list, &converted_arguments, &callback);
+      if (!success) {
+        // Converted arguments passed to us by our bindings should never fail.
+        NOTREACHED();
+        return;
+      }
+    } else {
+      invalid_invocation = !signature->ParseArgumentsToJSON(
+          context, argument_list, *type_refs_, &converted_arguments, &callback,
+          &error);
+    }
+
     if (try_catch.HasCaught()) {
       DCHECK(!converted_arguments);
       try_catch.ReThrow();

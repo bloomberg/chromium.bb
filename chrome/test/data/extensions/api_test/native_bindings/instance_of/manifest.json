@@ -1,0 +1,11 @@
+{
+  "name": "instanceof test",
+  "version": "1",
+  "description": "instanceof test",
+  "permissions": ["fileSystem"],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}
