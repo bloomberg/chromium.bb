@@ -84,7 +84,8 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
     const blink::WebMouseWheelEvent& web_wheel, const ui::LatencyInfo&) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  TouchSetScrollDeltas(env, web_wheel.x, web_wheel.y, web_wheel.deltaX,
+  TouchSetScrollDeltas(env, web_wheel.positionInWidget().x,
+                       web_wheel.positionInWidget().y, web_wheel.deltaX,
                        web_wheel.deltaY);
   Java_MotionEventSynthesizer_inject(
       env, touch_event_synthesizer_,

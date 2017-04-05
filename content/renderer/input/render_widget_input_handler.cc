@@ -260,8 +260,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (WebInputEvent::isMouseEventType(input_event.type())) {
     const WebMouseEvent& mouse_event =
         static_cast<const WebMouseEvent&>(input_event);
-    TRACE_EVENT2("renderer", "HandleMouseMove", "x", mouse_event.x, "y",
-                 mouse_event.y);
+    TRACE_EVENT2("renderer", "HandleMouseMove", "x",
+                 mouse_event.positionInWidget().x, "y",
+                 mouse_event.positionInWidget().y);
     context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
   }

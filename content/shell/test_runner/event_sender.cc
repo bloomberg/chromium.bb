@@ -224,10 +224,8 @@ void InitMouseEventGeneric(WebMouseEvent::Button b,
                            int tiltY,
                            WebMouseEvent* e) {
   e->button = b;
-  e->x = pos.x;
-  e->y = pos.y;
-  e->globalX = pos.x;
-  e->globalY = pos.y;
+  e->setPositionInWidget(pos.x, pos.y);
+  e->setPositionInScreen(pos.x, pos.y);
   e->pointerType = pointerType;
   e->id = pointerId;
   e->force = pressure;
@@ -249,10 +247,10 @@ void InitMouseEvent(WebMouseEvent::Button b,
 void InitGestureEventFromMouseWheel(const WebMouseWheelEvent& wheel_event,
                                     WebGestureEvent* gesture_event) {
   gesture_event->sourceDevice = blink::WebGestureDeviceTouchpad;
-  gesture_event->x = wheel_event.x;
-  gesture_event->y = wheel_event.y;
-  gesture_event->globalX = wheel_event.globalX;
-  gesture_event->globalY = wheel_event.globalY;
+  gesture_event->x = wheel_event.positionInWidget().x;
+  gesture_event->y = wheel_event.positionInWidget().y;
+  gesture_event->globalX = wheel_event.positionInScreen().x;
+  gesture_event->globalY = wheel_event.positionInScreen().y;
 }
 
 int GetKeyModifier(const std::string& modifier_name) {
@@ -1361,8 +1359,10 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->x, event->y);
-  WebPoint screen_point(event->globalX, event->globalY);
+  WebPoint client_point(event->positionInWidget().x,
+                        event->positionInWidget().y);
+  WebPoint screen_point(event->positionInScreen().x,
+                        event->positionInScreen().y);
   current_drag_data_ = drag_data;
   current_drag_effects_allowed_ = mask;
   current_drag_effect_ = mainFrameWidget()->dragTargetDragEnter(
@@ -2670,8 +2670,10 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->x, event->y);
-  WebPoint screen_point(event->globalX, event->globalY);
+  WebPoint client_point(event->positionInWidget().x,
+                        event->positionInWidget().y);
+  WebPoint screen_point(event->positionInScreen().x,
+                        event->positionInScreen().y);
   current_drag_effect_ = drag_effect;
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
@@ -2702,8 +2704,10 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
   if (current_drag_data_.isNull())
     return;
 
-  WebPoint client_point(event->x, event->y);
-  WebPoint screen_point(event->globalX, event->globalY);
+  WebPoint client_point(event->positionInWidget().x,
+                        event->positionInWidget().y);
+  WebPoint screen_point(event->positionInScreen().x,
+                        event->positionInScreen().y);
   blink::WebDragOperation drag_effect = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
       event->modifiers());
@@ -2728,8 +2732,10 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& raw_event) {
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->x, event->y);
-  WebPoint screen_point(event->globalX, event->globalY);
+  WebPoint client_point(event->positionInWidget().x,
+                        event->positionInWidget().y);
+  WebPoint screen_point(event->positionInScreen().x,
+                        event->positionInScreen().y);
   current_drag_effect_ = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
       event->modifiers());
@@ -2752,7 +2758,7 @@ void EventSender::ReplaySavedEvents() {
             current_pointer_state_[kRawMousePointerId].current_buttons_, e.pos,
             click_count_, &event);
         current_pointer_state_[kRawMousePointerId].last_pos_ =
-            WebPoint(event.x, event.y);
+            WebPoint(event.positionInWidget().x, event.positionInWidget().y);
         HandleInputEventOnViewOrPopup(event);
         DoDragAfterMouseMove(event);
         break;

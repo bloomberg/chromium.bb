@@ -783,8 +783,7 @@ class PolicyTest : public InProcessBrowserTest {
                                      blink::WebInputEvent::TimeStampForTesting);
     click_event.button = blink::WebMouseEvent::Button::Left;
     click_event.clickCount = 1;
-    click_event.x = x;
-    click_event.y = y;
+    click_event.setPositionInWidget(x, y);
     contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
     click_event.setType(blink::WebInputEvent::MouseUp);
     contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);

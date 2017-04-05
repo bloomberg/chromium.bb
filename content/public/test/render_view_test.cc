@@ -449,8 +449,7 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
                             WebInputEvent::NoModifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = WebMouseEvent::Button::Left;
-  mouse_event.x = point.x();
-  mouse_event.y = point.y();
+  mouse_event.setPositionInWidget(point.x(), point.y());
   mouse_event.clickCount = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
@@ -476,8 +475,7 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
                             WebInputEvent::NoModifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = WebMouseEvent::Button::Right;
-  mouse_event.x = point.x();
-  mouse_event.y = point.y();
+  mouse_event.setPositionInWidget(point.x(), point.y());
   mouse_event.clickCount = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(

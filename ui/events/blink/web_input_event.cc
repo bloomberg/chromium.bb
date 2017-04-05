@@ -235,8 +235,7 @@ blink::WebMouseEvent MakeWebMouseEvent(
 #endif
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.x = event.x();
-  webkit_event.y = event.y();
+  webkit_event.setPositionInWidget(event.x(), event.y());
 
 #if defined(OS_WIN)
   if (event.native_event().message)
@@ -245,8 +244,7 @@ blink::WebMouseEvent MakeWebMouseEvent(
 
   const gfx::Point screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
-  webkit_event.globalX = screen_point.x();
-  webkit_event.globalY = screen_point.y();
+  webkit_event.setPositionInScreen(screen_point.x(), screen_point.y());
 
   return webkit_event;
 }
@@ -271,13 +269,11 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.x = event.x();
-  webkit_event.y = event.y();
+  webkit_event.setPositionInWidget(event.x(), event.y());
 
   const gfx::Point screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
-  webkit_event.globalX = screen_point.x();
-  webkit_event.globalY = screen_point.y();
+  webkit_event.setPositionInScreen(screen_point.x(), screen_point.y());
 
   return webkit_event;
 }
@@ -302,13 +298,11 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.x = event.x();
-  webkit_event.y = event.y();
+  webkit_event.setPositionInWidget(event.x(), event.y());
 
   const gfx::Point screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
-  webkit_event.globalX = screen_point.x();
-  webkit_event.globalY = screen_point.y();
+  webkit_event.setPositionInScreen(screen_point.x(), screen_point.y());
 
   return webkit_event;
 }

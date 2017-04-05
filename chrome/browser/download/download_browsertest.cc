@@ -2630,8 +2630,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
                                    blink::WebInputEvent::AltKey,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.x = 15;
-  mouse_event.y = 15;
+  mouse_event.setPositionInWidget(15, 15);
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);
@@ -2687,8 +2686,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Right;
-  mouse_event.x = 15;
-  mouse_event.y = 15;
+  mouse_event.setPositionInWidget(15, 15);
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);
@@ -2792,8 +2790,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
                                    blink::WebInputEvent::AltKey,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.x = 15;
-  mouse_event.y = 15;
+  mouse_event.setPositionInWidget(15, 15);
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);

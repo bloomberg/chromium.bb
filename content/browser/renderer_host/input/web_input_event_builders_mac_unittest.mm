@@ -609,11 +609,11 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
   EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.deltaY);
   EXPECT_EQ(web_event.deltaY, ui_event.y_offset());
 
-  EXPECT_EQ(11, web_event.x);
-  EXPECT_EQ(web_event.x, ui_event.x());
+  EXPECT_EQ(11, web_event.positionInWidget().x);
+  EXPECT_EQ(web_event.positionInWidget().x, ui_event.x());
 
   // Both ui:: and blink:: events use an origin at the top-left.
-  EXPECT_EQ(100 - 22, web_event.y);
-  EXPECT_EQ(web_event.y, ui_event.y());
+  EXPECT_EQ(100 - 22, web_event.positionInWidget().y);
+  EXPECT_EQ(web_event.positionInWidget().y, ui_event.y());
   [window close];
 }

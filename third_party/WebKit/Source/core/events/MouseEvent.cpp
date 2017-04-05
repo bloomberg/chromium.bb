@@ -168,7 +168,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType,
               ? abstractView->getInputDeviceCapabilities()->firesTouchEvents(
                     event.fromTouch())
               : nullptr),
-      m_screenLocation(event.globalX, event.globalY),
+      m_screenLocation(event.positionInScreen().x, event.positionInScreen().y),
       m_movementDelta(flooredIntPoint(event.movementInRootFrame())),
       m_positionType(PositionType::Position),
       m_button(static_cast<short>(event.button)),

@@ -1138,10 +1138,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown,
                                WebInputEvent::NoModifiers,
                                WebInputEvent::TimeStampForTesting);
-  mouseDownEvent.x = 10;
-  mouseDownEvent.y = 10;
-  mouseDownEvent.globalX = 110;
-  mouseDownEvent.globalY = 210;
+  mouseDownEvent.setPositionInWidget(10, 10);
+  mouseDownEvent.setPositionInScreen(110, 210);
   mouseDownEvent.clickCount = 1;
   mouseDownEvent.button = WebMouseEvent::Button::Right;
 
@@ -1152,7 +1150,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   WebFrameClient* oldClient = webViewImpl()->mainFrameImpl()->client();
   MockWebFrameClient mockWebFrameClient;
   EXPECT_CALL(mockWebFrameClient, showContextMenu(ContextMenuAtLocation(
-                                      mouseDownEvent.x, mouseDownEvent.y)));
+                                      mouseDownEvent.positionInWidget().x,
+                                      mouseDownEvent.positionInWidget().y)));
 
   // Do a sanity check with no scale applied.
   webViewImpl()->mainFrameImpl()->setClient(&mockWebFrameClient);
@@ -1170,7 +1169,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
   visualViewport.setLocation(FloatPoint(60, 80));
   EXPECT_CALL(mockWebFrameClient, showContextMenu(ContextMenuAtLocation(
-                                      mouseDownEvent.x, mouseDownEvent.y)));
+                                      mouseDownEvent.positionInWidget().x,
+                                      mouseDownEvent.positionInWidget().y)));
 
   mouseDownEvent.button = WebMouseEvent::Button::Right;
   webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseDownEvent));

@@ -43,8 +43,7 @@ class FromGWSPageLoadMetricsObserverTest
                                      blink::WebInputEvent::NoModifiers,
                                      blink::WebInputEvent::TimeStampForTesting);
     mouse_event.button = blink::WebMouseEvent::Button::Left;
-    mouse_event.x = 7;
-    mouse_event.y = 7;
+    mouse_event.setPositionInWidget(7, 7);
     mouse_event.clickCount = 1;
     SimulateInputEvent(mouse_event);
   }

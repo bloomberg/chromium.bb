@@ -30,6 +30,8 @@ class WebGestureEvent : public WebInputEvent {
     MomentumPhase,             // Momentum phase.
   };
 
+  // TODO(mustaq): Make these coordinates private & fractional, as in
+  // WebMouseEvent.h .
   int x;
   int y;
   int globalX;

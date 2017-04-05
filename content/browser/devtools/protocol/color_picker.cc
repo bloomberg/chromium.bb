@@ -112,8 +112,8 @@ void ColorPicker::FrameUpdated(const SkBitmap& bitmap,
 }
 
 bool ColorPicker::HandleMouseEvent(const blink::WebMouseEvent& event) {
-  last_cursor_x_ = event.x;
-  last_cursor_y_ = event.y;
+  last_cursor_x_ = event.positionInWidget().x;
+  last_cursor_y_ = event.positionInWidget().y;
   if (frame_.drawsNothing())
     return true;
 

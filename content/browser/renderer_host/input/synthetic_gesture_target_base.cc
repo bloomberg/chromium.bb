@@ -65,14 +65,16 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   } else if (event.type() == WebInputEvent::MouseWheel) {
     const WebMouseWheelEvent& web_wheel =
         static_cast<const WebMouseWheelEvent&>(event);
-    CHECK(PointIsWithinContents(web_wheel.x, web_wheel.y))
+    CHECK(PointIsWithinContents(web_wheel.positionInWidget().x,
+                                web_wheel.positionInWidget().y))
         << "Mouse wheel position is not within content bounds.";
     DispatchWebMouseWheelEventToPlatform(web_wheel, latency_info);
   } else if (WebInputEvent::isMouseEventType(event.type())) {
     const WebMouseEvent& web_mouse =
         static_cast<const WebMouseEvent&>(event);
     CHECK(event.type() != WebInputEvent::MouseDown ||
-          PointIsWithinContents(web_mouse.x, web_mouse.y))
+          PointIsWithinContents(web_mouse.positionInWidget().x,
+                                web_mouse.positionInWidget().y))
         << "Mouse pointer is not within content bounds on MouseDown.";
     DispatchWebMouseEventToPlatform(web_mouse, latency_info);
   } else {

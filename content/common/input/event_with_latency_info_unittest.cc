@@ -310,11 +310,9 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
 
   // Coalesce old and new events.
   mouse_wheel_0 = CreateMouseWheel(1, 1);
-  mouse_wheel_0.event.x = 1;
-  mouse_wheel_0.event.y = 1;
+  mouse_wheel_0.event.setPositionInWidget(1, 1);
   mouse_wheel_1 = CreateMouseWheel(2, 2);
-  mouse_wheel_1.event.x = 2;
-  mouse_wheel_1.event.y = 2;
+  mouse_wheel_1.event.setPositionInWidget(2, 2);
   MouseWheelEventWithLatencyInfo mouse_wheel_1_copy = mouse_wheel_1;
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
   EXPECT_EQ(mouse_wheel_0.event.modifiers(), mouse_wheel_1.event.modifiers());
@@ -327,8 +325,8 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   Coalesce(mouse_wheel_0, &mouse_wheel_1);
 
   // Coalesced event has the position of the most recent event.
-  EXPECT_EQ(1, mouse_wheel_1.event.x);
-  EXPECT_EQ(1, mouse_wheel_1.event.y);
+  EXPECT_EQ(1, mouse_wheel_1.event.positionInWidget().x);
+  EXPECT_EQ(1, mouse_wheel_1.event.positionInWidget().y);
 
   // deltaX/Y, wheelTicksX/Y, and movementX/Y of the coalesced event are
   // calculated properly.

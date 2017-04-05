@@ -537,12 +537,11 @@ void SimulateMouseClickAt(WebContents* web_contents,
       blink::WebInputEvent::MouseDown, modifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = button;
-  mouse_event.x = point.x();
-  mouse_event.y = point.y();
-  // Mac needs globalX/globalY for events to plugins.
+  mouse_event.setPositionInWidget(point.x(), point.y());
+  // Mac needs positionInScreen for events to plugins.
   gfx::Rect offset = web_contents->GetContainerBounds();
-  mouse_event.globalX = point.x() + offset.x();
-  mouse_event.globalY = point.y() + offset.y();
+  mouse_event.setPositionInScreen(point.x() + offset.x(),
+                                  point.y() + offset.y());
   mouse_event.clickCount = 1;
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
@@ -557,8 +556,7 @@ void SimulateMouseEvent(WebContents* web_contents,
   blink::WebMouseEvent mouse_event(
       type, blink::WebInputEvent::NoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  mouse_event.x = point.x();
-  mouse_event.y = point.y();
+  mouse_event.setPositionInWidget(point.x(), point.y());
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
 }
@@ -570,8 +568,7 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
       blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
 
-  wheel_event.x = point.x();
-  wheel_event.y = point.y();
+  wheel_event.setPositionInWidget(point.x(), point.y());
   wheel_event.deltaX = delta.x();
   wheel_event.deltaY = delta.y();
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(

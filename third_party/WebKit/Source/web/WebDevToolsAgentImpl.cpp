@@ -543,8 +543,7 @@ void WebDevToolsAgentImpl::inspectElementAt(int sessionId,
   HitTestRequest request(hitType);
   WebMouseEvent dummyEvent(WebInputEvent::MouseDown, WebInputEvent::NoModifiers,
                            WTF::monotonicallyIncreasingTimeMS());
-  dummyEvent.x = pointInRootFrame.x;
-  dummyEvent.y = pointInRootFrame.y;
+  dummyEvent.setPositionInWidget(pointInRootFrame.x, pointInRootFrame.y);
   IntPoint transformedPoint = flooredIntPoint(
       TransformWebMouseEvent(m_webLocalFrameImpl->frameView(), dummyEvent)
           .positionInRootFrame());

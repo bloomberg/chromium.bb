@@ -1409,10 +1409,8 @@ TEST_F(RenderViewImplTest, ContextMenu) {
                             WebInputEvent::NoModifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = WebMouseEvent::Button::Right;
-  mouse_event.x = 250;
-  mouse_event.y = 250;
-  mouse_event.globalX = 250;
-  mouse_event.globalY = 250;
+  mouse_event.setPositionInWidget(250, 250);
+  mouse_event.setPositionInScreen(250, 250);
 
   SendWebMouseEvent(mouse_event);
 

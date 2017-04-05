@@ -362,10 +362,8 @@ void InputHandler::DispatchMouseEvent(
       GetEventTimestamp(std::move(timestamp)));
 
   event.button = event_button;
-  event.x = x * page_scale_factor_;
-  event.y = y * page_scale_factor_;
-  event.globalX = x * page_scale_factor_;
-  event.globalY = y * page_scale_factor_;
+  event.setPositionInWidget(x * page_scale_factor_, y * page_scale_factor_);
+  event.setPositionInScreen(x * page_scale_factor_, y * page_scale_factor_);
   event.clickCount = click_count.fromMaybe(0);
   event.pointerType = blink::WebPointerProperties::PointerType::Mouse;
 
@@ -440,11 +438,9 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     event.reset(mouse_event);
   }
 
-  mouse_event->x = x;
-  mouse_event->y = y;
+  mouse_event->setPositionInWidget(x, y);
   mouse_event->button = event_button;
-  mouse_event->globalX = x;
-  mouse_event->globalY = y;
+  mouse_event->setPositionInScreen(x, y);
   mouse_event->clickCount = click_count.fromMaybe(0);
   mouse_event->pointerType = blink::WebPointerProperties::PointerType::Touch;
 

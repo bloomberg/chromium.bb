@@ -100,10 +100,8 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
   mouse.clickCount = (mouse.type() == WebInputEvent::MouseDown ||
                       mouse.type() == WebInputEvent::MouseUp);
 
-  mouse.x = gesture.x;
-  mouse.y = gesture.y;
-  mouse.globalX = gesture.globalX;
-  mouse.globalY = gesture.globalY;
+  mouse.setPositionInWidget(gesture.x, gesture.y);
+  mouse.setPositionInScreen(gesture.globalX, gesture.globalY);
 
   return mouse;
 }
@@ -176,10 +174,9 @@ class PepperWidget : public WebWidget {
           WebMouseEvent mouse(WebInputEvent::MouseMove,
                               gesture_event->modifiers(),
                               gesture_event->timeStampSeconds());
-          mouse.x = gesture_event->x;
-          mouse.y = gesture_event->y;
-          mouse.globalX = gesture_event->globalX;
-          mouse.globalY = gesture_event->globalY;
+          mouse.setPositionInWidget(gesture_event->x, gesture_event->y);
+          mouse.setPositionInScreen(gesture_event->globalX,
+                                    gesture_event->globalY);
           mouse.movementX = 0;
           mouse.movementY = 0;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);

@@ -35,8 +35,7 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result(type, modifiers,
                        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  result.x = window_x;
-  result.y = window_y;
+  result.setPositionInWidget(window_x, window_y);
   result.setModifiers(modifiers);
   result.pointerType = pointer_type;
   result.id = ui::PointerEvent::kMousePointerId;
@@ -71,10 +70,8 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
                                                              bool precise) {
   WebMouseWheelEvent result(WebInputEvent::MouseWheel, modifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  result.globalX = global_x;
-  result.globalY = global_y;
-  result.x = x;
-  result.y = y;
+  result.setPositionInScreen(global_x, global_y);
+  result.setPositionInWidget(x, y);
   result.deltaX = dx;
   result.deltaY = dy;
   if (dx)

@@ -245,8 +245,9 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, delta.x(), delta.y(), 0,
                                                 false);
 
-  mouse_wheel_event.x = current_move_segment_start_position_.x();
-  mouse_wheel_event.y = current_move_segment_start_position_.y();
+  mouse_wheel_event.setPositionInWidget(
+      current_move_segment_start_position_.x(),
+      current_move_segment_start_position_.y());
 
   mouse_wheel_event.setTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
 

@@ -1278,10 +1278,9 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
       .WillOnce(testing::Return(scroll_result_did_scroll_));
   WebMouseWheelEvent expected_wheel(WebInputEvent::MouseWheel, modifiers,
                                     WebInputEvent::TimeStampForTesting);
-  expected_wheel.x = fling_point.x;
-  expected_wheel.y = fling_point.y;
-  expected_wheel.globalX = fling_global_point.x;
-  expected_wheel.globalY = fling_global_point.y;
+  expected_wheel.setPositionInWidget(fling_point.x, fling_point.y);
+  expected_wheel.setPositionInScreen(fling_global_point.x,
+                                     fling_global_point.y);
   expected_wheel.deltaX = fling_delta.x / 10;
   expected_wheel.hasPreciseScrollingDeltas = true;
 

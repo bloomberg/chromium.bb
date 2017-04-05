@@ -768,8 +768,7 @@ void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event) {
       roundedIntPoint(m_element->layoutObject()->absoluteToLocal(
           absoluteRootFrameLocation, UseTransforms));
   WebMouseWheelEvent translatedEvent = event->nativeEvent().flattenTransform();
-  translatedEvent.x = localPoint.x();
-  translatedEvent.y = localPoint.y();
+  translatedEvent.setPositionInWidget(localPoint.x(), localPoint.y());
 
   WebCursorInfo cursorInfo;
   if (m_webPlugin->handleInputEvent(translatedEvent, cursorInfo) !=

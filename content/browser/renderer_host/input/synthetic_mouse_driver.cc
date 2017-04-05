@@ -52,8 +52,9 @@ void SyntheticMouseDriver::Release(
     SyntheticPointerActionParams::Button button) {
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::MouseUp, mouse_event_.x, mouse_event_.y,
-      last_modifiers_, mouse_event_.pointerType);
+      blink::WebInputEvent::MouseUp, mouse_event_.positionInWidget().x,
+      mouse_event_.positionInWidget().y, last_modifiers_,
+      mouse_event_.pointerType);
   mouse_event_.clickCount = 1;
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);

@@ -448,7 +448,8 @@ class EventTestPlugin : public FakeWebPlugin {
         event.type() == WebInputEvent::MouseWheel) {
       const WebMouseEvent& mouseEvent =
           static_cast<const WebMouseEvent&>(event);
-      m_lastMouseEventLocation = IntPoint(mouseEvent.x, mouseEvent.y);
+      m_lastMouseEventLocation = IntPoint(mouseEvent.positionInWidget().x,
+                                          mouseEvent.positionInWidget().y);
     }
 
     return WebInputEventResult::HandledSystem;
@@ -537,8 +538,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
                            WebInputEvent::TimeStampForTesting);
 
   WebRect rect = pluginContainerOneElement.boundsInViewport();
-  event.x = rect.x + rect.width / 2;
-  event.y = rect.y + rect.height / 2;
+  event.setPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
   webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();

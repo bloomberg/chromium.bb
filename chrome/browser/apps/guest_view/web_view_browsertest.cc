@@ -309,11 +309,10 @@ class LeftMouseClick {
     DCHECK(click_completed_);
     click_completed_ = false;
     mouse_event_.setType(blink::WebInputEvent::MouseDown);
-    mouse_event_.x = point.x();
-    mouse_event_.y = point.y();
+    mouse_event_.setPositionInWidget(point.x(), point.y());
     const gfx::Rect offset = web_contents_->GetContainerBounds();
-    mouse_event_.globalX = point.x() + offset.x();
-    mouse_event_.globalY = point.y() + offset.y();
+    mouse_event_.setPositionInScreen(point.x() + offset.x(),
+                                     point.y() + offset.y());
     mouse_event_.clickCount = 1;
     web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event_);
@@ -781,8 +780,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
                                      blink::WebInputEvent::NoModifiers,
                                      blink::WebInputEvent::TimeStampForTesting);
     mouse_event.button = blink::WebMouseEvent::Button::Right;
-    mouse_event.x = 1;
-    mouse_event.y = 1;
+    mouse_event.setPositionInWidget(1, 1);
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event);
     mouse_event.setType(blink::WebInputEvent::MouseUp);
@@ -3456,8 +3454,7 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
       blink::WebInputEvent::MouseMove,
       blink::WebInputEvent::IsTouchAccessibility,
       blink::WebInputEvent::TimeStampForTesting);
-  accessibility_touch_event.x = 95;
-  accessibility_touch_event.y = 55;
+  accessibility_touch_event.setPositionInWidget(95, 55);
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       accessibility_touch_event);
 

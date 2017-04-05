@@ -16,18 +16,11 @@ class WebGestureEvent;
 
 // WebMouseEvent --------------------------------------------------------------
 
+// TODO(mustaq): We are truncating |float|s to integers whenever setting
+//   coordinate values, to avoid regressions for now. Will be fixed later
+//   on. crbug.com/456625
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
  public:
-  // Renderer coordinates. Similar to viewport coordinates but without
-  // DevTools emulation transform or overscroll applied. i.e. the coordinates
-  // in Chromium's RenderView bounds.
-  int x;
-  int y;
-
-  // Screen coordinate
-  int globalX;
-  int globalY;
-
   int clickCount;
 
   WebMouseEvent(Type typeParam,
@@ -42,10 +35,8 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                       modifiersParam,
                       timeStampSecondsParam),
         WebPointerProperties(),
-        x(xParam),
-        y(yParam),
-        globalX(globalXParam),
-        globalY(globalYParam) {}
+        m_positionInWidget(xParam, yParam),
+        m_positionInScreen(globalXParam, globalYParam) {}
 
   WebMouseEvent(Type typeParam,
                 WebFloatPoint position,
@@ -59,11 +50,9 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                       modifiersParam,
                       timeStampSecondsParam),
         WebPointerProperties(buttonParam, PointerType::Mouse),
-        x(position.x),
-        y(position.y),
-        globalX(globalPosition.x),
-        globalY(globalPosition.y),
-        clickCount(clickCountParam) {}
+        clickCount(clickCountParam),
+        m_positionInWidget(floor(position.x), floor(position.y)),
+        m_positionInScreen(floor(globalPosition.x), floor(globalPosition.y)) {}
 
   WebMouseEvent(Type typeParam,
                 int modifiersParam,
@@ -95,6 +84,16 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   BLINK_PLATFORM_EXPORT WebMouseEvent flattenTransform() const;
 #endif
 
+  WebFloatPoint positionInWidget() const { return m_positionInWidget; }
+  void setPositionInWidget(float x, float y) {
+    m_positionInWidget = WebFloatPoint(floor(x), floor(y));
+  }
+
+  WebFloatPoint positionInScreen() const { return m_positionInScreen; }
+  void setPositionInScreen(float x, float y) {
+    m_positionInScreen = WebFloatPoint(floor(x), floor(y));
+  }
+
  protected:
   explicit WebMouseEvent(unsigned sizeParam)
       : WebInputEvent(sizeParam), WebPointerProperties() {}
@@ -107,6 +106,15 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
         WebPointerProperties() {}
 
   void flattenTransformSelf();
+
+ private:
+  // Widget coordinate, which is relative to the bound of current RenderWidget
+  // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
+  // coordinates but without DevTools emulation transform or overscroll applied.
+  WebFloatPoint m_positionInWidget;
+
+  // Screen coordinate
+  WebFloatPoint m_positionInScreen;
 };
 
 #pragma pack(pop)

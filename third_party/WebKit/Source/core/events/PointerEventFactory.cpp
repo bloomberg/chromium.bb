@@ -146,8 +146,8 @@ void updateMousePointerEventInit(const WebMouseEvent& mouseEvent,
   // and pointerType which is the same among the coalesced events and the
   // dispatched event.
 
-  pointerEventInit->setScreenX(mouseEvent.globalX);
-  pointerEventInit->setScreenY(mouseEvent.globalY);
+  pointerEventInit->setScreenX(mouseEvent.positionInScreen().x);
+  pointerEventInit->setScreenY(mouseEvent.positionInScreen().y);
 
   IntPoint locationInFrameZoomed;
   if (view && view->frame() && view->frame()->view()) {

@@ -60,15 +60,15 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       // Flings are automatically generated for android UI. Ignore this input.
       break;
     case blink::WebMouseEvent::MouseEnter:
-      SetPointer(env, mouse->x, mouse->y);
+      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
       Inject(env, Action::HoverEnter, gesture->timeStampSeconds());
       break;
     case blink::WebMouseEvent::MouseMove:
-      SetPointer(env, mouse->x, mouse->y);
+      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
       Inject(env, Action::HoverMove, gesture->timeStampSeconds());
       break;
     case blink::WebMouseEvent::MouseLeave:
-      SetPointer(env, mouse->x, mouse->y);
+      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
       Inject(env, Action::HoverExit, gesture->timeStampSeconds());
       break;
     default:

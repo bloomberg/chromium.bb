@@ -213,8 +213,8 @@ void AppendMouseEvent(const WebInputEvent& event,
     result.mouse_button =
         static_cast<PP_InputEvent_MouseButton>(mouse_event.button);
   }
-  result.mouse_position.x = mouse_event.x;
-  result.mouse_position.y = mouse_event.y;
+  result.mouse_position.x = mouse_event.positionInWidget().x;
+  result.mouse_position.y = mouse_event.positionInWidget().y;
   result.mouse_click_count = mouse_event.clickCount;
   result.mouse_movement.x = mouse_event.movementX;
   result.mouse_movement.y = mouse_event.movementY;
@@ -466,8 +466,8 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
     else if (mouse_event->modifiers() & WebInputEvent::RightButtonDown)
       mouse_event->button = WebMouseEvent::Button::Right;
   }
-  mouse_event->x = event.mouse_position.x;
-  mouse_event->y = event.mouse_position.y;
+  mouse_event->setPositionInWidget(event.mouse_position.x,
+                                   event.mouse_position.y);
   mouse_event->clickCount = event.mouse_click_count;
   mouse_event->movementX = event.mouse_movement.x;
   mouse_event->movementY = event.mouse_movement.y;
@@ -675,8 +675,7 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
     case PP_INPUTEVENT_TYPE_WHEEL: {
       WebMouseWheelEvent* web_mouse_wheel_event =
           static_cast<WebMouseWheelEvent*>(original_event.get());
-      web_mouse_wheel_event->x = plugin_x;
-      web_mouse_wheel_event->y = plugin_y;
+      web_mouse_wheel_event->setPositionInWidget(plugin_x, plugin_y);
       events.push_back(std::move(original_event));
       break;
     }

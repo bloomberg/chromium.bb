@@ -159,7 +159,8 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
 
   if (mouse_event.button == WebMouseEvent::Button::Right &&
       mouse_event.type() == WebInputEvent::MouseDown) {
-    client_->ShowContextMenuAtPoint(gfx::Point(mouse_event.x, mouse_event.y));
+    client_->ShowContextMenuAtPoint(gfx::Point(
+        mouse_event.positionInWidget().x, mouse_event.positionInWidget().y));
   }
 
   if (mouse_event.button != WebMouseEvent::Button::Left)
@@ -463,10 +464,10 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   point.radiusY = 0.5f * cursor_size_.height();
   point.force = eventType == WebInputEvent::TouchEnd ? 0.f : 1.f;
   point.rotationAngle = 0.f;
-  point.position.x = mouse_event.x;
-  point.screenPosition.x = mouse_event.globalX;
-  point.position.y = mouse_event.y;
-  point.screenPosition.y = mouse_event.globalY;
+  point.position.x = mouse_event.positionInWidget().x;
+  point.screenPosition.x = mouse_event.positionInScreen().x;
+  point.position.y = mouse_event.positionInWidget().y;
+  point.screenPosition.y = mouse_event.positionInScreen().y;
   point.tiltX = 0;
   point.tiltY = 0;
   point.pointerType = blink::WebPointerProperties::PointerType::Touch;

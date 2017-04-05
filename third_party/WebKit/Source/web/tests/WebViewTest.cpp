@@ -2542,8 +2542,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
                            WebInputEvent::TimeStampForTesting);
 
   mouseEvent.button = WebMouseEvent::Button::Right;
-  mouseEvent.x = 1;
-  mouseEvent.y = 1;
+  mouseEvent.setPositionInWidget(1, 1);
   mouseEvent.clickCount = 1;
   webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   runPendingTasks();
@@ -3589,8 +3588,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
   WebMouseEvent mouseEvent(WebInputEvent::MouseDown, WebInputEvent::NoModifiers,
                            WebInputEvent::TimeStampForTesting);
   mouseEvent.button = WebMouseEvent::Button::Left;
-  mouseEvent.x = 1;
-  mouseEvent.y = 1;
+  mouseEvent.setPositionInWidget(1, 1);
   mouseEvent.clickCount = 1;
   webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   mouseEvent.setType(WebInputEvent::MouseUp);

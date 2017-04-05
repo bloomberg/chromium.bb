@@ -70,8 +70,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   ui::MouseWheelEvent wheel_event(
       gfx::Vector2d(web_wheel.deltaX, web_wheel.deltaY), gfx::Point(),
       gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  gfx::PointF location(web_wheel.x * device_scale_factor_,
-                       web_wheel.y * device_scale_factor_);
+  gfx::PointF location(web_wheel.positionInWidget().x * device_scale_factor_,
+                       web_wheel.positionInWidget().y * device_scale_factor_);
   wheel_event.set_location_f(location);
   wheel_event.set_root_location_f(location);
 
@@ -151,8 +151,9 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   int flags = WebEventModifiersToEventFlags(web_mouse_event.modifiers());
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), flags, flags);
-  gfx::PointF location(web_mouse_event.x * device_scale_factor_,
-                       web_mouse_event.y * device_scale_factor_);
+  gfx::PointF location(
+      web_mouse_event.positionInWidget().x * device_scale_factor_,
+      web_mouse_event.positionInWidget().y * device_scale_factor_);
   mouse_event.set_location_f(location);
   mouse_event.set_root_location_f(location);
   ui::PointerDetails pointer_details = mouse_event.pointer_details();

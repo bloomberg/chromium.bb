@@ -33,15 +33,15 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
       ::GetDesktopWindow(), WM_MOUSEMOVE, 0, MAKELPARAM(300, 200), 100,
       blink::WebPointerProperties::PointerType::Mouse);
 
-  // The WebMouseEvent.x, WebMouseEvent.y fields should be in pixels
-  // on return and hence should be the same value as the x and y coordinates
-  // passed in to the WebMouseEventBuilder::Build function.
-  EXPECT_EQ(300, mouse_move.x);
-  EXPECT_EQ(200, mouse_move.y);
+  // The WebMouseEvent.position field should be in pixels on return and hence
+  // should be the same value as the x and y coordinates passed in to the
+  // WebMouseEventBuilder::Build function.
+  EXPECT_EQ(300, mouse_move.positionInWidget().x);
+  EXPECT_EQ(200, mouse_move.positionInWidget().y);
 
-  // WebMouseEvent.globalX and WebMouseEvent.globalY are calculated in DIPs.
-  EXPECT_EQ(150, mouse_move.globalX);
-  EXPECT_EQ(100, mouse_move.globalY);
+  // WebMouseEvent.positionInScreen is calculated in DIPs.
+  EXPECT_EQ(150, mouse_move.positionInScreen().x);
+  EXPECT_EQ(100, mouse_move.positionInScreen().y);
 
   EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
             mouse_move.pointerType);

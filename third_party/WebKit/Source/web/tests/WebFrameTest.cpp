@@ -11567,8 +11567,7 @@ bool testSelectAll(const std::string& html) {
                            WebInputEvent::TimeStampForTesting);
 
   mouseEvent.button = WebMouseEvent::Button::Right;
-  mouseEvent.x = 10;
-  mouseEvent.y = 10;
+  mouseEvent.setPositionInWidget(10, 10);
   mouseEvent.clickCount = 1;
   webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   runPendingTasks();

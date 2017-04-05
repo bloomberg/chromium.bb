@@ -200,8 +200,8 @@ bool TextInputTestHelper::ClickElement(const std::string& id,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.x = rect.CenterPoint().x();
-  mouse_event.y = rect.CenterPoint().y();
+  mouse_event.setPositionInWidget(rect.CenterPoint().x(),
+                                  rect.CenterPoint().y());
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 

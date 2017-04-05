@@ -301,12 +301,10 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
                                      blink::WebInputEvent::NoModifiers,
                                      blink::WebInputEvent::TimeStampForTesting);
     mouse_event.button = button;
-    mouse_event.x = x;
-    mouse_event.y = y;
+    mouse_event.setPositionInWidget(x, y);
     // Needed for the WebViewTest.ContextMenuPositionAfterCSSTransforms
     gfx::Rect rect = rwh->GetView()->GetViewBounds();
-    mouse_event.globalX = x + rect.x();
-    mouse_event.globalY = y + rect.y();
+    mouse_event.setPositionInScreen(x + rect.x(), y + rect.y());
     rwh->ForwardMouseEvent(mouse_event);
     mouse_event.setType(blink::WebInputEvent::MouseUp);
     rwh->ForwardMouseEvent(mouse_event);

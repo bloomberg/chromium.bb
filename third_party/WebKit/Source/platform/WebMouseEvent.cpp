@@ -17,11 +17,9 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
     : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, timeStampSeconds),
       WebPointerProperties(buttonParam,
                            WebPointerProperties::PointerType::Mouse),
-      x(gestureEvent.x),
-      y(gestureEvent.y),
-      globalX(gestureEvent.globalX),
-      globalY(gestureEvent.globalY),
-      clickCount(clickCountParam) {
+      clickCount(clickCountParam),
+      m_positionInWidget(gestureEvent.x, gestureEvent.y),
+      m_positionInScreen(gestureEvent.globalX, gestureEvent.globalY) {
   setFrameScale(gestureEvent.frameScale());
   setFrameTranslate(gestureEvent.frameTranslate());
 }
@@ -31,8 +29,9 @@ WebFloatPoint WebMouseEvent::movementInRootFrame() const {
 }
 
 WebFloatPoint WebMouseEvent::positionInRootFrame() const {
-  return WebFloatPoint((x / m_frameScale) + m_frameTranslate.x,
-                       (y / m_frameScale) + m_frameTranslate.y);
+  return WebFloatPoint(
+      (m_positionInWidget.x / m_frameScale) + m_frameTranslate.x,
+      (m_positionInWidget.y / m_frameScale) + m_frameTranslate.y);
 }
 
 WebMouseEvent WebMouseEvent::flattenTransform() const {
@@ -42,8 +41,10 @@ WebMouseEvent WebMouseEvent::flattenTransform() const {
 }
 
 void WebMouseEvent::flattenTransformSelf() {
-  x = (x / m_frameScale) + m_frameTranslate.x;
-  y = (y / m_frameScale) + m_frameTranslate.y;
+  m_positionInWidget.x =
+      floor((m_positionInWidget.x / m_frameScale) + m_frameTranslate.x);
+  m_positionInWidget.y =
+      floor((m_positionInWidget.y / m_frameScale) + m_frameTranslate.y);
   m_frameTranslate.x = 0;
   m_frameTranslate.y = 0;
   m_frameScale = 1;

@@ -719,10 +719,11 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
   blink::WebMouseEvent mouse_event =
       ui::MakeWebMouseEvent(*event, base::Bind(&GetScreenLocationFromEvent));
 
-  bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
-                                  event->type() == ui::ET_MOUSE_DRAGGED) &&
-                                 mouse_event.x == center.x() &&
-                                 mouse_event.y == center.y();
+  bool is_move_to_center_event =
+      (event->type() == ui::ET_MOUSE_MOVED ||
+       event->type() == ui::ET_MOUSE_DRAGGED) &&
+      mouse_event.positionInWidget().x == center.x() &&
+      mouse_event.positionInWidget().y == center.y();
 
   // For fractional scale factors, the conversion from pixels to dip and
   // vice versa could result in off by 1 or 2 errors which hurts us because
@@ -736,8 +737,8 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
       IsFractionalScaleFactor(host_view_->current_device_scale_factor())) {
     if (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) {
-      if ((abs(mouse_event.x - center.x()) <= 2) &&
-          (abs(mouse_event.y - center.y()) <= 2)) {
+      if ((std::abs(mouse_event.positionInWidget().x - center.x()) <= 2) &&
+          (std::abs(mouse_event.positionInWidget().y - center.y()) <= 2)) {
         is_move_to_center_event = true;
       }
     }
@@ -779,7 +780,8 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // reset any global_mouse_position set previously.
   if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
       ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
-    global_mouse_position_.SetPoint(event->globalX, event->globalY);
+    global_mouse_position_.SetPoint(event->positionInScreen().x,
+                                    event->positionInScreen().y);
   }
 
   // Movement is computed by taking the difference of the new cursor position
@@ -788,21 +790,24 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // We do not measure movement as the delta from cursor to center because
   // we may receive more mouse movement events before our warp has taken
   // effect.
-  event->movementX = event->globalX - global_mouse_position_.x();
-  event->movementY = event->globalY - global_mouse_position_.y();
+  event->movementX = event->positionInScreen().x - global_mouse_position_.x();
+  event->movementY = event->positionInScreen().y - global_mouse_position_.y();
 
-  global_mouse_position_.SetPoint(event->globalX, event->globalY);
+  global_mouse_position_.SetPoint(event->positionInScreen().x,
+                                  event->positionInScreen().y);
 
   // Under mouse lock, coordinates of mouse are locked to what they were when
   // mouse lock was entered.
   if (mouse_locked_) {
-    event->x = unlocked_mouse_position_.x();
-    event->y = unlocked_mouse_position_.y();
-    event->globalX = unlocked_global_mouse_position_.x();
-    event->globalY = unlocked_global_mouse_position_.y();
+    event->setPositionInWidget(unlocked_mouse_position_.x(),
+                               unlocked_mouse_position_.y());
+    event->setPositionInScreen(unlocked_global_mouse_position_.x(),
+                               unlocked_global_mouse_position_.y());
   } else {
-    unlocked_mouse_position_.SetPoint(event->x, event->y);
-    unlocked_global_mouse_position_.SetPoint(event->globalX, event->globalY);
+    unlocked_mouse_position_.SetPoint(event->positionInWidget().x,
+                                      event->positionInWidget().y);
+    unlocked_global_mouse_position_.SetPoint(event->positionInScreen().x,
+                                             event->positionInScreen().y);
   }
 }
 

@@ -198,8 +198,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseMove,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.x = 10;
-  mouse_event.y = 11;
+  mouse_event.setPositionInWidget(10, 11);
   mouse_event.movementX = 12;
   mouse_event.movementY = 13;
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -246,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
                                                &transformed_point);
 
-  mouse_event.x = -transformed_point.x() + 14;
-  mouse_event.y = -transformed_point.y() + 15;
+  mouse_event.setPositionInWidget(-transformed_point.x() + 14,
+                                  -transformed_point.y() + 15);
   mouse_event.movementX = 16;
   mouse_event.movementY = 17;
   // We use root_view intentionally as the RenderWidgetHostInputEventRouter is
@@ -344,8 +343,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   blink::WebMouseWheelEvent wheel_event(
       blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
       blink::WebInputEvent::TimeStampForTesting);
-  wheel_event.x = 10;
-  wheel_event.y = 11;
+  wheel_event.setPositionInWidget(10, 11);
   wheel_event.deltaX = -12;
   wheel_event.deltaY = -13;
   router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());
@@ -393,8 +391,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
                                                &transformed_point);
 
-  wheel_event.x = -transformed_point.x() + 14;
-  wheel_event.y = -transformed_point.y() + 15;
+  wheel_event.setPositionInWidget(-transformed_point.x() + 14,
+                                  -transformed_point.y() + 15);
   wheel_event.deltaX = -16;
   wheel_event.deltaY = -17;
   // We use root_view intentionally as the RenderWidgetHostInputEventRouter is

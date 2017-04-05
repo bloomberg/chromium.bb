@@ -501,7 +501,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame,
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
-  IntPoint point(event.x, event.y);
+  IntPoint point(event.positionInWidget().x, event.positionInWidget().y);
   if (event.button == WebMouseEvent::Button::Left &&
       m_page->mainFrame()->isLocalFrame()) {
     point =
@@ -642,10 +642,10 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
     syntheticWheel.wheelTicksX = delta.width / tickDivisor;
     syntheticWheel.wheelTicksY = delta.height / tickDivisor;
     syntheticWheel.hasPreciseScrollingDeltas = true;
-    syntheticWheel.x = m_positionOnFlingStart.x;
-    syntheticWheel.y = m_positionOnFlingStart.y;
-    syntheticWheel.globalX = m_globalPositionOnFlingStart.x;
-    syntheticWheel.globalY = m_globalPositionOnFlingStart.y;
+    syntheticWheel.setPositionInWidget(m_positionOnFlingStart.x,
+                                       m_positionOnFlingStart.y);
+    syntheticWheel.setPositionInScreen(m_globalPositionOnFlingStart.x,
+                                       m_globalPositionOnFlingStart.y);
 
     if (handleMouseWheel(*m_page->deprecatedLocalMainFrame(), syntheticWheel) !=
         WebInputEventResult::NotHandled)
@@ -1007,10 +1007,8 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
       WebInputEvent::MouseWheel,
       pinchEvent.modifiers() | WebInputEvent::ControlKey,
       pinchEvent.timeStampSeconds());
-  wheelEvent.x = pinchEvent.x;
-  wheelEvent.y = pinchEvent.y;
-  wheelEvent.globalX = pinchEvent.globalX;
-  wheelEvent.globalY = pinchEvent.globalY;
+  wheelEvent.setPositionInWidget(pinchEvent.x, pinchEvent.y);
+  wheelEvent.setPositionInScreen(pinchEvent.globalX, pinchEvent.globalY);
   wheelEvent.deltaX = 0;
 
   // The function to convert scales to deltaY values is designed to be

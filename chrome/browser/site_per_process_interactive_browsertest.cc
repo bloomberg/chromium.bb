@@ -1100,8 +1100,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   auto send_right_mouse_event = [](content::RenderWidgetHost* host, int x,
                                    int y, blink::WebInputEvent::Type type) {
     blink::WebMouseEvent event;
-    event.x = x;
-    event.y = y;
+    event.setPositionInWidget(x, y);
     event.button = blink::WebMouseEvent::Button::Right;
     event.setType(type);
     host->ForwardMouseEvent(event);
@@ -1123,7 +1122,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
 class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
  public:
   SitePerProcessAutofillTest() : SitePerProcessInteractiveBrowserTest() {}
-  ~SitePerProcessAutofillTest() override{};
+  ~SitePerProcessAutofillTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessInteractiveBrowserTest::SetUpCommandLine(command_line);
@@ -1137,7 +1136,7 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
  protected:
   class TestAutofillClient : public autofill::TestAutofillClient {
    public:
-    TestAutofillClient() : popup_shown_(false){};
+    TestAutofillClient() : popup_shown_(false) {}
     ~TestAutofillClient() override {}
 
     void WaitForNextPopup() {

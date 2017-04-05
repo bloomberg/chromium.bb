@@ -771,7 +771,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame,
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
-  IntPoint point(event.x, event.y);
+  IntPoint point(event.positionInWidget().x, event.positionInWidget().y);
   if (event.button == WebMouseEvent::Button::Left) {
     point = m_localRoot->frameView()->rootFrameToContents(point);
     HitTestResult result(

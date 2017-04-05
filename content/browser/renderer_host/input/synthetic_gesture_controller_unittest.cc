@@ -247,14 +247,15 @@ class MockDragMouseTarget : public MockMoveGestureTarget {
       EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
       EXPECT_EQ(mouse_event.clickCount, 1);
       EXPECT_EQ(mouse_event.type(), WebInputEvent::MouseDown);
-      start_.SetPoint(mouse_event.x, mouse_event.y);
+      start_.SetPoint(mouse_event.positionInWidget().x,
+                      mouse_event.positionInWidget().y);
       last_mouse_point_ = start_;
       started_ = true;
     } else {
       EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
       ASSERT_NE(mouse_event.type(), WebInputEvent::MouseDown);
 
-      gfx::PointF mouse_point(mouse_event.x, mouse_event.y);
+      gfx::PointF mouse_point(mouse_event.positionInWidget());
       gfx::Vector2dF delta = mouse_point - last_mouse_point_;
       total_abs_move_distance_length_ += delta.Length();
       if (mouse_event.type() == WebInputEvent::MouseUp)
@@ -490,7 +491,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.type(), WebInputEvent::MouseDown);
         EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
         EXPECT_EQ(mouse_event.clickCount, 1);
-        position_ = gfx::PointF(mouse_event.x, mouse_event.y);
+        position_ = gfx::PointF(mouse_event.positionInWidget());
         start_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64_t>(mouse_event.timeStampSeconds() * 1000));
         state_ = STARTED;
@@ -499,7 +500,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.type(), WebInputEvent::MouseUp);
         EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
         EXPECT_EQ(mouse_event.clickCount, 1);
-        EXPECT_EQ(position_, gfx::PointF(mouse_event.x, mouse_event.y));
+        EXPECT_EQ(position_, gfx::PointF(mouse_event.positionInWidget()));
         stop_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64_t>(mouse_event.timeStampSeconds() * 1000));
         state_ = FINISHED;
@@ -609,7 +610,7 @@ class MockSyntheticPointerMouseActionTarget
     ASSERT_TRUE(WebInputEvent::isMouseEventType(event.type()));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
     type_ = mouse_event.type();
-    position_ = gfx::PointF(mouse_event.x, mouse_event.y);
+    position_ = gfx::PointF(mouse_event.positionInWidget());
     clickCount_ = mouse_event.clickCount;
     button_ = mouse_event.button;
     num_actions_dispatched_++;

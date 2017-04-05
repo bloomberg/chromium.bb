@@ -140,8 +140,8 @@ class TouchEmulatorTest : public testing::Test,
         WebMouseEvent::Button::NoButton;
     last_mouse_x_ = x;
     last_mouse_y_ = y;
-    event.x = event.globalX = x;
-    event.y = event.globalY = y;
+    event.setPositionInWidget(x, y);
+    event.setPositionInScreen(x, y);
     emulator()->HandleMouseEvent(event);
   }
 

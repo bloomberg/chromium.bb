@@ -65,7 +65,7 @@ class LongPressEventBuilder : public WebGestureEvent {
 
 class MousePressEventBuilder : public WebMouseEvent {
  public:
-  MousePressEventBuilder(IntPoint position,
+  MousePressEventBuilder(IntPoint positionParam,
                          int clickCountParam,
                          WebMouseEvent::Button buttonParam)
       : WebMouseEvent(WebInputEvent::MouseDown,
@@ -73,8 +73,8 @@ class MousePressEventBuilder : public WebMouseEvent {
                       TimeTicks::Now().InSeconds()) {
     clickCount = clickCountParam;
     button = buttonParam;
-    x = globalX = position.x();
-    y = globalY = position.y();
+    setPositionInWidget(positionParam.x(), positionParam.y());
+    setPositionInScreen(positionParam.x(), positionParam.y());
     m_frameScale = 1;
   }
 };

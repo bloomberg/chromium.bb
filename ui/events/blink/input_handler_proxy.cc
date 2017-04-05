@@ -514,7 +514,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       // TODO(davemoore): This should never happen, but bug #326635 showed some
       // surprising crashes.
       CHECK(input_handler_);
-      input_handler_->MouseMoveAt(gfx::Point(mouse_event.x, mouse_event.y));
+      input_handler_->MouseMoveAt(gfx::Point(mouse_event.positionInWidget().x,
+                                             mouse_event.positionInWidget().y));
       return DID_NOT_HANDLE;
     }
     case WebInputEvent::MouseLeave: {
@@ -706,8 +707,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
       cc::ScrollStateData scroll_state_update_data;
       scroll_state_update_data.delta_x = scroll_delta.x();
       scroll_state_update_data.delta_y = scroll_delta.y();
-      scroll_state_update_data.position_x = wheel_event.x;
-      scroll_state_update_data.position_y = wheel_event.y;
+      scroll_state_update_data.position_x = wheel_event.positionInWidget().x;
+      scroll_state_update_data.position_y = wheel_event.positionInWidget().y;
       cc::ScrollState scroll_state_update(scroll_state_update_data);
 
       cc::InputHandlerScrollResult scroll_result =
@@ -719,8 +720,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
         return DID_NOT_HANDLE;
       }
 
-      HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y), scroll_result,
-                       false);
+      HandleOverscroll(gfx::Point(wheel_event.positionInWidget().x,
+                                  wheel_event.positionInWidget().y),
+                       scroll_result, false);
       if (scroll_result.did_scroll) {
         return listener_properties == cc::EventListenerProperties::kPassive
                    ? DID_HANDLE_NON_BLOCKING
@@ -733,8 +735,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
     }
   } else {  // !touchpad_and_wheel_scroll_latching_enabled_
     cc::ScrollStateData scroll_state_begin_data;
-    scroll_state_begin_data.position_x = wheel_event.x;
-    scroll_state_begin_data.position_y = wheel_event.y;
+    scroll_state_begin_data.position_x = wheel_event.positionInWidget().x;
+    scroll_state_begin_data.position_y = wheel_event.positionInWidget().y;
     scroll_state_begin_data.is_beginning = true;
     cc::ScrollState scroll_state_begin(scroll_state_begin_data);
     cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
@@ -761,13 +763,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
         cc::ScrollStateData scroll_state_update_data;
         scroll_state_update_data.delta_x = scroll_delta.x();
         scroll_state_update_data.delta_y = scroll_delta.y();
-        scroll_state_update_data.position_x = wheel_event.x;
-        scroll_state_update_data.position_y = wheel_event.y;
+        scroll_state_update_data.position_x = wheel_event.positionInWidget().x;
+        scroll_state_update_data.position_y = wheel_event.positionInWidget().y;
         cc::ScrollState scroll_state_update(scroll_state_update_data);
 
         cc::InputHandlerScrollResult scroll_result =
             input_handler_->ScrollBy(&scroll_state_update);
-        HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y),
+        HandleOverscroll(gfx::Point(wheel_event.positionInWidget().x,
+                                    wheel_event.positionInWidget().y),
                          scroll_result, false);
 
         cc::ScrollStateData scroll_state_end_data;
@@ -1506,10 +1509,10 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       synthetic_wheel.deltaX = increment.width;
       synthetic_wheel.deltaY = increment.height;
       synthetic_wheel.hasPreciseScrollingDeltas = true;
-      synthetic_wheel.x = fling_parameters_.point.x;
-      synthetic_wheel.y = fling_parameters_.point.y;
-      synthetic_wheel.globalX = fling_parameters_.globalPoint.x;
-      synthetic_wheel.globalY = fling_parameters_.globalPoint.y;
+      synthetic_wheel.setPositionInWidget(fling_parameters_.point.x,
+                                          fling_parameters_.point.y);
+      synthetic_wheel.setPositionInScreen(fling_parameters_.globalPoint.x,
+                                          fling_parameters_.globalPoint.y);
 
       disposition = FlingScrollByMouseWheel(synthetic_wheel, properties);
 

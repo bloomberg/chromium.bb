@@ -468,8 +468,9 @@ void BrowserPluginGuest::ResendEventToEmbedder(
   } else if (event.type() == blink::WebInputEvent::MouseWheel) {
     blink::WebMouseWheelEvent resent_wheel_event;
     memcpy(&resent_wheel_event, &event, sizeof(blink::WebMouseWheelEvent));
-    resent_wheel_event.x += offset_from_embedder.x();
-    resent_wheel_event.y += offset_from_embedder.y();
+    resent_wheel_event.setPositionInWidget(
+        resent_wheel_event.positionInWidget().x + offset_from_embedder.x(),
+        resent_wheel_event.positionInWidget().y + offset_from_embedder.y());
     resent_wheel_event.resendingPluginId = browser_plugin_instance_id_;
     // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
     // https://crbug.com/613628

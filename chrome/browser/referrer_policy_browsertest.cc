@@ -181,8 +181,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
           blink::WebInputEvent::MouseDown, blink::WebInputEvent::NoModifiers,
           blink::WebInputEvent::TimeStampForTesting);
       mouse_event.button = button;
-      mouse_event.x = 15;
-      mouse_event.y = 15;
+      mouse_event.setPositionInWidget(15, 15);
       mouse_event.clickCount = 1;
       tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
       mouse_event.setType(blink::WebInputEvent::MouseUp);

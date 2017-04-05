@@ -117,8 +117,7 @@ std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
   std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent(
       type, blink::WebInputEvent::NoModifiers, timestamp));
   mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
-  mouse_event->x = x;
-  mouse_event->y = y;
+  mouse_event->setPositionInWidget(x, y);
   mouse_event->clickCount = 1;
 
   return mouse_event;

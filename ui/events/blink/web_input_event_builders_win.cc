@@ -170,18 +170,18 @@ WebMouseEvent WebMouseEventBuilder::Build(
   result.id = ui::PointerEvent::kMousePointerId;
 
   // set position fields:
-  result.x = static_cast<short>(LOWORD(lparam));
-  result.y = static_cast<short>(HIWORD(lparam));
+  result.setPositionInWidget(static_cast<short>(LOWORD(lparam)),
+                             static_cast<short>(HIWORD(lparam)));
 
-  POINT global_point = {result.x, result.y};
+  POINT global_point = {result.positionInWidget().x,
+                        result.positionInWidget().y};
   ClientToScreen(hwnd, &global_point);
 
   // We need to convert the global point back to DIP before using it.
   gfx::Point dip_global_point = display::win::ScreenWin::ScreenToDIPPoint(
       gfx::Point(global_point.x, global_point.y));
 
-  result.globalX = dip_global_point.x();
-  result.globalY = dip_global_point.y();
+  result.setPositionInScreen(dip_global_point.x(), dip_global_point.y());
 
   // calculate number of clicks:
 
@@ -193,9 +193,9 @@ WebMouseEvent WebMouseEventBuilder::Build(
 
   double current_time = result.timeStampSeconds();
   bool cancel_previous_click =
-      (abs(last_click_position_x - result.x) >
+      (abs(last_click_position_x - result.positionInWidget().x) >
        (::GetSystemMetrics(SM_CXDOUBLECLK) / 2)) ||
-      (abs(last_click_position_y - result.y) >
+      (abs(last_click_position_y - result.positionInWidget().y) >
        (::GetSystemMetrics(SM_CYDOUBLECLK) / 2)) ||
       ((current_time - g_last_click_time) * 1000.0 > ::GetDoubleClickTime());
 
@@ -204,8 +204,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
       ++g_last_click_count;
     } else {
       g_last_click_count = 1;
-      last_click_position_x = result.x;
-      last_click_position_y = result.y;
+      last_click_position_x = result.positionInWidget().x;
+      last_click_position_y = result.positionInWidget().y;
     }
     g_last_click_time = current_time;
     last_click_button = result.button;
@@ -259,8 +259,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
 
     POINT cursor_position = {0};
     GetCursorPos(&cursor_position);
-    result.globalX = cursor_position.x;
-    result.globalY = cursor_position.y;
+    result.setPositionInScreen(cursor_position.x, cursor_position.y);
 
     switch (LOWORD(wparam)) {
       case SB_LINEUP:  // == SB_LINELEFT
@@ -288,8 +287,8 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     // Non-synthesized event; we can just read data off the event.
     key_state = GET_KEYSTATE_WPARAM(wparam);
 
-    result.globalX = static_cast<short>(LOWORD(lparam));
-    result.globalY = static_cast<short>(HIWORD(lparam));
+    result.setPositionInScreen(static_cast<short>(LOWORD(lparam)),
+                               static_cast<short>(HIWORD(lparam)));
 
     // Currently we leave hasPreciseScrollingDeltas false, even for trackpad
     // scrolls that generate WM_MOUSEWHEEL, since we don't have a good way to
@@ -317,10 +316,10 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   result.setModifiers(modifiers);
 
   // Set coordinates by translating event coordinates from screen to client.
-  POINT client_point = {result.globalX, result.globalY};
+  POINT client_point = {result.positionInScreen().x,
+                        result.positionInScreen().y};
   MapWindowPoints(0, hwnd, &client_point, 1);
-  result.x = client_point.x;
-  result.y = client_point.y;
+  result.setPositionInWidget(client_point.x, client_point.y);
 
   // Convert wheel delta amount to a number of pixels to scroll.
   //

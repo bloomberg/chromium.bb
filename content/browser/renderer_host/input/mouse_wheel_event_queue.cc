@@ -91,10 +91,12 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         WebInputEvent::GestureScrollUpdate, WebInputEvent::NoModifiers,
         event_sent_for_gesture_ack_->event.timeStampSeconds());
 
-    scroll_update.x = event_sent_for_gesture_ack_->event.x;
-    scroll_update.y = event_sent_for_gesture_ack_->event.y;
-    scroll_update.globalX = event_sent_for_gesture_ack_->event.globalX;
-    scroll_update.globalY = event_sent_for_gesture_ack_->event.globalY;
+    scroll_update.x = event_sent_for_gesture_ack_->event.positionInWidget().x;
+    scroll_update.y = event_sent_for_gesture_ack_->event.positionInWidget().y;
+    scroll_update.globalX =
+        event_sent_for_gesture_ack_->event.positionInScreen().x;
+    scroll_update.globalY =
+        event_sent_for_gesture_ack_->event.positionInScreen().y;
     scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
     scroll_update.resendingPluginId = -1;
 

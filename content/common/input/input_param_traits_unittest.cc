@@ -216,7 +216,7 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.x = 10;
+  mouse_event.setPositionInWidget(10, 0);
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
   events.push_back(base::MakeUnique<InputEvent>(mouse_event, latency));
 

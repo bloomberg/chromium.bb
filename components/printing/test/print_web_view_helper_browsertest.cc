@@ -359,8 +359,8 @@ TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.x = bounds.CenterPoint().x();
-  mouse_event.y = bounds.CenterPoint().y();
+  mouse_event.setPositionInWidget(bounds.CenterPoint().x(),
+                                  bounds.CenterPoint().y());
   mouse_event.clickCount = 1;
   SendWebMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);
@@ -666,8 +666,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.x = bounds.CenterPoint().x();
-  mouse_event.y = bounds.CenterPoint().y();
+  mouse_event.setPositionInWidget(bounds.CenterPoint().x(),
+                                  bounds.CenterPoint().y());
   mouse_event.clickCount = 1;
   SendWebMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);

@@ -60,7 +60,8 @@ class WebTouchPoint : public WebPointerProperties {
 
   State state;
 
-  // TODO(e_hakkinen): Move position fields to WebPointerProperties.
+  // TODO(mustaq): Move these coordinates to WebPointerProperties as private
+  // class members, as in WebMouseEvent.h now. crbug.com/508283
   WebFloatPoint screenPosition;
   WebFloatPoint position;
 

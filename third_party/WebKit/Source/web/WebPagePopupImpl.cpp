@@ -484,7 +484,8 @@ WebInputEventResult WebPagePopupImpl::handleGestureEvent(
 
 void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame,
                                        const WebMouseEvent& event) {
-  if (isViewportPointInWindow(event.x, event.y))
+  if (isViewportPointInWindow(event.positionInWidget().x,
+                              event.positionInWidget().y))
     PageWidgetEventHandler::handleMouseDown(mainFrame, event);
   else
     cancel();
@@ -493,7 +494,8 @@ void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame,
 WebInputEventResult WebPagePopupImpl::handleMouseWheel(
     LocalFrame& mainFrame,
     const WebMouseWheelEvent& event) {
-  if (isViewportPointInWindow(event.x, event.y))
+  if (isViewportPointInWindow(event.positionInWidget().x,
+                              event.positionInWidget().y))
     return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
   cancel();
   return WebInputEventResult::NotHandled;

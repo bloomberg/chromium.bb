@@ -2092,12 +2092,12 @@ class InputRouterImplScaleMouseEventTest
     SCOPED_TRACE(name);
     SimulateMouseEvent(type, 10, 10);
     const WebMouseEvent* sent_event = GetSentWebInputEvent<WebMouseEvent>();
-    EXPECT_EQ(20, sent_event->x);
-    EXPECT_EQ(20, sent_event->y);
+    EXPECT_EQ(20, sent_event->positionInWidget().x);
+    EXPECT_EQ(20, sent_event->positionInWidget().y);
 
     const WebMouseEvent* filter_event = GetFilterWebInputEvent<WebMouseEvent>();
-    EXPECT_EQ(10, filter_event->x);
-    EXPECT_EQ(10, filter_event->y);
+    EXPECT_EQ(10, filter_event->positionInWidget().x);
+    EXPECT_EQ(10, filter_event->positionInWidget().y);
 
     process_->sink().ClearMessages();
   }
@@ -2122,8 +2122,8 @@ TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
 
   const WebMouseWheelEvent* sent_event =
       GetSentWebInputEvent<WebMouseWheelEvent>();
-  EXPECT_EQ(10, sent_event->x);
-  EXPECT_EQ(10, sent_event->y);
+  EXPECT_EQ(10, sent_event->positionInWidget().x);
+  EXPECT_EQ(10, sent_event->positionInWidget().y);
   EXPECT_EQ(20, sent_event->deltaX);
   EXPECT_EQ(20, sent_event->deltaY);
   EXPECT_EQ(2, sent_event->wheelTicksX);
@@ -2131,8 +2131,8 @@ TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
 
   const WebMouseWheelEvent* filter_event =
       GetFilterWebInputEvent<WebMouseWheelEvent>();
-  EXPECT_EQ(5, filter_event->x);
-  EXPECT_EQ(5, filter_event->y);
+  EXPECT_EQ(5, filter_event->positionInWidget().x);
+  EXPECT_EQ(5, filter_event->positionInWidget().y);
   EXPECT_EQ(10, filter_event->deltaX);
   EXPECT_EQ(10, filter_event->deltaY);
   EXPECT_EQ(1, filter_event->wheelTicksX);

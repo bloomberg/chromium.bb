@@ -1027,8 +1027,9 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
       const blink::WebMouseEvent& mouse_event,
       const ui::LatencyInfo& ui_latency) {
-  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent",
-               "x", mouse_event.x, "y", mouse_event.y);
+  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent", "x",
+               mouse_event.positionInWidget().x, "y",
+               mouse_event.positionInWidget().y);
 
   for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
     if (mouse_event_callbacks_[i].Run(mouse_event))

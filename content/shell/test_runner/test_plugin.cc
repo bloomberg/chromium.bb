@@ -88,7 +88,9 @@ void PrintEventDetails(WebTestDelegate* delegate,
              event.type() == blink::WebInputEvent::MouseWheel) {
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
-    delegate->PrintMessage(base::StringPrintf("* %d, %d\n", mouse.x, mouse.y));
+    delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f\n",
+                                              mouse.positionInWidget().x,
+                                              mouse.positionInWidget().y));
   } else if (blink::WebInputEvent::isGestureEventType(event.type())) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);

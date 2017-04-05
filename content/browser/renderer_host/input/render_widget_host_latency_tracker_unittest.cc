@@ -671,8 +671,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
   {
     auto event =
         SyntheticWebMouseWheelEventBuilder::Build(0, 0, -5, 0, 0, true);
-    event.x = 100;
-    event.y = 200;
+    event.setPositionInWidget(100, 200);
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(1u, latency_info.input_coordinates_size());
@@ -682,8 +681,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
 
   {
     auto event = SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove);
-    event.x = 300;
-    event.y = 400;
+    event.setPositionInWidget(300, 400);
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(1u, latency_info.input_coordinates_size());

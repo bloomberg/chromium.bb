@@ -147,8 +147,8 @@ WebMouseEvent createMouseEvent(WebInputEvent::Type type,
                                const IntPoint& point,
                                int modifiers) {
   WebMouseEvent result(type, modifiers, WebInputEvent::TimeStampForTesting);
-  result.x = result.globalX = point.x();
-  result.y = result.globalX = point.y();
+  result.setPositionInWidget(point.x(), point.y());
+  result.setPositionInScreen(point.x(), point.y());
   result.button = button;
   result.clickCount = 1;
   return result;

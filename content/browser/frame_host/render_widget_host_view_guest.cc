@@ -184,9 +184,8 @@ void RenderWidgetHostViewGuest::ProcessMouseEvent(
     // click. Sends a synthetic event for the focusing side effect.
     // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
     // http://crbug.com/533069
-    MaybeSendSyntheticTapGesture(
-        blink::WebFloatPoint(event.x, event.y),
-        blink::WebFloatPoint(event.globalX, event.globalY));
+    MaybeSendSyntheticTapGesture(event.positionInWidget(),
+                                 event.positionInScreen());
   }
   host_->ForwardMouseEventWithLatencyInfo(event, latency);
 }
@@ -564,8 +563,9 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
       event->type() == blink::WebInputEvent::MouseWheel) {
     blink::WebMouseWheelEvent rescaled_event =
         *static_cast<const blink::WebMouseWheelEvent*>(event);
-    rescaled_event.x /= current_device_scale_factor();
-    rescaled_event.y /= current_device_scale_factor();
+    rescaled_event.setPositionInWidget(
+        rescaled_event.positionInWidget().x / current_device_scale_factor(),
+        rescaled_event.positionInWidget().y / current_device_scale_factor());
     rescaled_event.deltaX /= current_device_scale_factor();
     rescaled_event.deltaY /= current_device_scale_factor();
     rescaled_event.wheelTicksX /= current_device_scale_factor();
@@ -592,8 +592,8 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     if (guest_ && mouse_event.type() == blink::WebInputEvent::MouseDown &&
         mouse_event.button == blink::WebPointerProperties::Button::Right)
       guest_->SetContextMenuPosition(
-          gfx::Point(mouse_event.globalX - GetViewBounds().x(),
-                     mouse_event.globalY - GetViewBounds().y()));
+          gfx::Point(mouse_event.positionInScreen().x - GetViewBounds().x(),
+                     mouse_event.positionInScreen().y - GetViewBounds().y()));
     host_->ForwardMouseEvent(mouse_event);
     return;
   }

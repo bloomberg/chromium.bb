@@ -115,20 +115,20 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
                                         NSView* view) {
   NSPoint screen_local = ui::ConvertPointFromWindowToScreen(
       [view window], [event locationInWindow]);
-  result->globalX = screen_local.x;
-  // Flip y.
   NSScreen* primary_screen = ([[NSScreen screens] count] > 0)
                                  ? [[NSScreen screens] firstObject]
                                  : nil;
-  if (primary_screen)
-    result->globalY = [primary_screen frame].size.height - screen_local.y;
-  else
-    result->globalY = screen_local.y;
+  // Flip y conditionally.
+  result->setPositionInScreen(
+      screen_local.x, primary_screen
+                          ? [primary_screen frame].size.height - screen_local.y
+                          : screen_local.y);
 
   NSPoint content_local =
       [view convertPoint:[event locationInWindow] fromView:nil];
-  result->x = content_local.x;
-  result->y = [view frame].size.height - content_local.y;  // Flip y.
+  // Flip y.
+  result->setPositionInWidget(content_local.x,
+                              [view frame].size.height - content_local.y);
 
   result->movementX = [event deltaX];
   result->movementY = [event deltaY];
@@ -507,10 +507,10 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
   blink::WebMouseEvent temp;
 
   SetWebEventLocationFromEventInView(&temp, event, view);
-  result.x = temp.x;
-  result.y = temp.y;
-  result.globalX = temp.globalX;
-  result.globalY = temp.globalY;
+  result.x = temp.positionInWidget().x;
+  result.y = temp.positionInWidget().y;
+  result.globalX = temp.positionInScreen().x;
+  result.globalY = temp.positionInScreen().y;
 
   result.setModifiers(ModifiersFromEvent(event));
   result.setTimeStampSeconds([event timestamp]);

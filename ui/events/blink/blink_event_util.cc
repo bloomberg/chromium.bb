@@ -758,10 +758,9 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     blink::WebMouseWheelEvent* wheel_event = new blink::WebMouseWheelEvent;
     scaled_event.reset(wheel_event);
     *wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
-    wheel_event->x += delta.x();
-    wheel_event->y += delta.y();
-    wheel_event->x *= scale;
-    wheel_event->y *= scale;
+    float x = (wheel_event->positionInWidget().x + delta.x()) * scale;
+    float y = (wheel_event->positionInWidget().y + delta.y()) * scale;
+    wheel_event->setPositionInWidget(x, y);
     if (!wheel_event->scrollByPage) {
       wheel_event->deltaX *= scale;
       wheel_event->deltaY *= scale;
@@ -772,10 +771,9 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     blink::WebMouseEvent* mouse_event = new blink::WebMouseEvent;
     scaled_event.reset(mouse_event);
     *mouse_event = static_cast<const blink::WebMouseEvent&>(event);
-    mouse_event->x += delta.x();
-    mouse_event->y += delta.y();
-    mouse_event->x *= scale;
-    mouse_event->y *= scale;
+    float x = (mouse_event->positionInWidget().x + delta.x()) * scale;
+    float y = (mouse_event->positionInWidget().y + delta.y()) * scale;
+    mouse_event->setPositionInWidget(x, y);
     mouse_event->movementX *= scale;
     mouse_event->movementY *= scale;
   } else if (blink::WebInputEvent::isTouchEventType(event.type())) {

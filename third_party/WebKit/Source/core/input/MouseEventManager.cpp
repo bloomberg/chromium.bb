@@ -529,7 +529,8 @@ IntPoint MouseEventManager::lastKnownMousePosition() {
 void MouseEventManager::setLastKnownMousePosition(const WebMouseEvent& event) {
   m_isMousePositionUnknown = false;
   m_lastKnownMousePosition = flooredIntPoint(event.positionInRootFrame());
-  m_lastKnownMouseGlobalPosition = IntPoint(event.globalX, event.globalY);
+  m_lastKnownMouseGlobalPosition =
+      IntPoint(event.positionInScreen().x, event.positionInScreen().y);
 }
 
 void MouseEventManager::dispatchFakeMouseMoveEventSoon() {
@@ -906,8 +907,9 @@ WebInputEventResult MouseEventManager::dispatchDragEvent(
   IntPoint movement = flooredIntPoint(event.movementInRootFrame());
   DragEvent* me = DragEvent::create(
       eventType, true, cancelable, m_frame->document()->domWindow(), 0,
-      event.globalX, event.globalY, position.x(), position.y(), movement.x(),
-      movement.y(), static_cast<WebInputEvent::Modifiers>(event.modifiers()), 0,
+      event.positionInScreen().x, event.positionInScreen().y, position.x(),
+      position.y(), movement.x(), movement.y(),
+      static_cast<WebInputEvent::Modifiers>(event.modifiers()), 0,
       MouseEvent::webInputEventModifiersToButtons(event.modifiers()), nullptr,
       TimeTicks::FromSeconds(event.timeStampSeconds()), dataTransfer,
       event.fromTouch() ? MouseEvent::FromTouch

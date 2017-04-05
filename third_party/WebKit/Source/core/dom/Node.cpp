@@ -2135,8 +2135,8 @@ void Node::createAndDispatchPointerEvent(const AtomicString& mouseEventName,
   pointerEventInit.setComposed(true);
   pointerEventInit.setDetail(0);
 
-  pointerEventInit.setScreenX(mouseEvent.globalX);
-  pointerEventInit.setScreenY(mouseEvent.globalY);
+  pointerEventInit.setScreenX(mouseEvent.positionInScreen().x);
+  pointerEventInit.setScreenY(mouseEvent.positionInScreen().y);
 
   IntPoint locationInFrameZoomed;
   if (view && view->frame() && view->frame()->view()) {

@@ -135,10 +135,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 10;
-    webMouseEvent.y = 10;
-    webMouseEvent.globalX = 10;
-    webMouseEvent.globalY = 10;
+    webMouseEvent.setPositionInWidget(10, 10);
+    webMouseEvent.setPositionInScreen(10, 10);
     webMouseEvent.movementX = 10;
     webMouseEvent.movementY = 10;
 
@@ -147,8 +145,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     IntPoint position = flooredIntPoint(transformedEvent.positionInRootFrame());
     EXPECT_EQ(5, position.x());
     EXPECT_EQ(5, position.y());
-    EXPECT_EQ(10, transformedEvent.globalX);
-    EXPECT_EQ(10, transformedEvent.globalY);
+    EXPECT_EQ(10, transformedEvent.positionInScreen().x);
+    EXPECT_EQ(10, transformedEvent.positionInScreen().y);
 
     IntPoint movement = flooredIntPoint(transformedEvent.movementInRootFrame());
     EXPECT_EQ(5, movement.x());
@@ -365,10 +363,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 100;
-    webMouseEvent.y = 110;
-    webMouseEvent.globalX = 100;
-    webMouseEvent.globalY = 110;
+    webMouseEvent.setPositionInWidget(100, 110);
+    webMouseEvent.setPositionInScreen(100, 110);
     webMouseEvent.movementX = 60;
     webMouseEvent.movementY = 60;
 
@@ -378,8 +374,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
     EXPECT_FLOAT_EQ(30, position.x());
     EXPECT_FLOAT_EQ(30, position.y());
-    EXPECT_EQ(100, transformedEvent.globalX);
-    EXPECT_EQ(110, transformedEvent.globalY);
+    EXPECT_EQ(100, transformedEvent.positionInScreen().x);
+    EXPECT_EQ(110, transformedEvent.positionInScreen().y);
 
     IntPoint movement = flooredIntPoint(transformedEvent.movementInRootFrame());
     EXPECT_EQ(20, movement.x());
@@ -390,16 +386,16 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     WebMouseEvent webMouseEvent1(WebInputEvent::MouseMove,
                                  WebInputEvent::NoModifiers,
                                  WebInputEvent::TimeStampForTesting);
-    webMouseEvent1.x = 100;
-    webMouseEvent1.y = 110;
-    webMouseEvent1.globalX = 100;
-    webMouseEvent1.globalY = 110;
+    webMouseEvent1.setPositionInWidget(100, 110);
+    webMouseEvent1.setPositionInScreen(100, 110);
     webMouseEvent1.movementX = 60;
     webMouseEvent1.movementY = 60;
 
     WebMouseEvent webMouseEvent2 = webMouseEvent1;
-    webMouseEvent2.y = 140;
-    webMouseEvent2.globalY = 140;
+    webMouseEvent2.setPositionInWidget(webMouseEvent1.positionInWidget().x,
+                                       140);
+    webMouseEvent2.setPositionInScreen(webMouseEvent1.positionInScreen().x,
+                                       140);
     webMouseEvent2.movementY = 30;
 
     std::vector<const WebInputEvent*> events;
@@ -413,8 +409,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     FloatPoint position = coalescedevents[0].positionInRootFrame();
     EXPECT_FLOAT_EQ(30, position.x());
     EXPECT_FLOAT_EQ(30, position.y());
-    EXPECT_EQ(100, coalescedevents[0].globalX);
-    EXPECT_EQ(110, coalescedevents[0].globalY);
+    EXPECT_EQ(100, coalescedevents[0].positionInScreen().x);
+    EXPECT_EQ(110, coalescedevents[0].positionInScreen().y);
 
     IntPoint movement =
         flooredIntPoint(coalescedevents[0].movementInRootFrame());
@@ -424,8 +420,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     position = coalescedevents[1].positionInRootFrame();
     EXPECT_FLOAT_EQ(30, position.x());
     EXPECT_FLOAT_EQ(40, position.y());
-    EXPECT_EQ(100, coalescedevents[1].globalX);
-    EXPECT_EQ(140, coalescedevents[1].globalY);
+    EXPECT_EQ(100, coalescedevents[1].positionInScreen().x);
+    EXPECT_EQ(140, coalescedevents[1].positionInScreen().y);
 
     movement = flooredIntPoint(coalescedevents[1].movementInRootFrame());
     EXPECT_EQ(20, movement.x());
@@ -679,10 +675,8 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 10;
-    webMouseEvent.y = 10;
-    webMouseEvent.globalX = 10;
-    webMouseEvent.globalY = 10;
+    webMouseEvent.setPositionInWidget(10, 10);
+    webMouseEvent.setPositionInScreen(10, 10);
 
     WebMouseEvent transformedMouseEvent =
         TransformWebMouseEvent(view, webMouseEvent);
@@ -690,18 +684,16 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
         flooredIntPoint(transformedMouseEvent.positionInRootFrame());
     EXPECT_EQ(5 + visualOffset.x(), position.x());
     EXPECT_EQ(5 + visualOffset.y(), position.y());
-    EXPECT_EQ(10, transformedMouseEvent.globalX);
-    EXPECT_EQ(10, transformedMouseEvent.globalY);
+    EXPECT_EQ(10, transformedMouseEvent.positionInScreen().x);
+    EXPECT_EQ(10, transformedMouseEvent.positionInScreen().y);
   }
 
   {
     WebMouseWheelEvent webMouseWheelEvent(WebInputEvent::MouseWheel,
                                           WebInputEvent::NoModifiers,
                                           WebInputEvent::TimeStampForTesting);
-    webMouseWheelEvent.x = 10;
-    webMouseWheelEvent.y = 10;
-    webMouseWheelEvent.globalX = 10;
-    webMouseWheelEvent.globalY = 10;
+    webMouseWheelEvent.setPositionInWidget(10, 10);
+    webMouseWheelEvent.setPositionInScreen(10, 10);
 
     WebMouseWheelEvent scaledMouseWheelEvent =
         TransformWebMouseWheelEvent(view, webMouseWheelEvent);
@@ -709,8 +701,8 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
         flooredIntPoint(scaledMouseWheelEvent.positionInRootFrame());
     EXPECT_EQ(5 + visualOffset.x(), position.x());
     EXPECT_EQ(5 + visualOffset.y(), position.y());
-    EXPECT_EQ(10, scaledMouseWheelEvent.globalX);
-    EXPECT_EQ(10, scaledMouseWheelEvent.globalY);
+    EXPECT_EQ(10, scaledMouseWheelEvent.positionInScreen().x);
+    EXPECT_EQ(10, scaledMouseWheelEvent.positionInScreen().y);
   }
 
   {
@@ -784,20 +776,22 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 10;
-    webMouseEvent.y = 50;
-    webMouseEvent.globalX = 10;
-    webMouseEvent.globalY = 50;
+    webMouseEvent.setPositionInWidget(10, 50);
+    webMouseEvent.setPositionInScreen(10, 50);
 
     WebMouseEvent transformedMouseEvent =
         TransformWebMouseEvent(view, webMouseEvent);
     IntPoint position =
         flooredIntPoint(transformedMouseEvent.positionInRootFrame());
 
-    EXPECT_EQ(webMouseEvent.x + elasticOverscroll.width(), position.x());
-    EXPECT_EQ(webMouseEvent.y + elasticOverscroll.height(), position.y());
-    EXPECT_EQ(webMouseEvent.globalX, transformedMouseEvent.globalX);
-    EXPECT_EQ(webMouseEvent.globalY, transformedMouseEvent.globalY);
+    EXPECT_EQ(webMouseEvent.positionInWidget().x + elasticOverscroll.width(),
+              position.x());
+    EXPECT_EQ(webMouseEvent.positionInWidget().y + elasticOverscroll.height(),
+              position.y());
+    EXPECT_EQ(webMouseEvent.positionInScreen().x,
+              transformedMouseEvent.positionInScreen().x);
+    EXPECT_EQ(webMouseEvent.positionInScreen().y,
+              transformedMouseEvent.positionInScreen().y);
   }
 
   // Elastic overscroll and pinch-zoom (this doesn't actually ever happen,
@@ -811,24 +805,24 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 10;
-    webMouseEvent.y = 10;
-    webMouseEvent.globalX = 10;
-    webMouseEvent.globalY = 10;
+    webMouseEvent.setPositionInWidget(10, 10);
+    webMouseEvent.setPositionInScreen(10, 10);
 
     WebMouseEvent transformedMouseEvent =
         TransformWebMouseEvent(view, webMouseEvent);
     IntPoint position =
         flooredIntPoint(transformedMouseEvent.positionInRootFrame());
 
-    EXPECT_EQ(webMouseEvent.x / pageScale + visualOffset.x() +
-                  elasticOverscroll.width(),
+    EXPECT_EQ(webMouseEvent.positionInWidget().x / pageScale +
+                  visualOffset.x() + elasticOverscroll.width(),
               position.x());
-    EXPECT_EQ(webMouseEvent.y / pageScale + visualOffset.y() +
-                  elasticOverscroll.height(),
+    EXPECT_EQ(webMouseEvent.positionInWidget().y / pageScale +
+                  visualOffset.y() + elasticOverscroll.height(),
               position.y());
-    EXPECT_EQ(webMouseEvent.globalX, transformedMouseEvent.globalX);
-    EXPECT_EQ(webMouseEvent.globalY, transformedMouseEvent.globalY);
+    EXPECT_EQ(webMouseEvent.positionInScreen().x,
+              transformedMouseEvent.positionInScreen().x);
+    EXPECT_EQ(webMouseEvent.positionInScreen().y,
+              transformedMouseEvent.positionInScreen().y);
   }
 }
 
@@ -857,20 +851,22 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
     WebMouseEvent webMouseEvent(WebInputEvent::MouseMove,
                                 WebInputEvent::NoModifiers,
                                 WebInputEvent::TimeStampForTesting);
-    webMouseEvent.x = 10;
-    webMouseEvent.y = 50;
-    webMouseEvent.globalX = 10;
-    webMouseEvent.globalY = 50;
+    webMouseEvent.setPositionInWidget(10, 50);
+    webMouseEvent.setPositionInScreen(10, 50);
 
     WebMouseEvent transformedMouseEvent =
         TransformWebMouseEvent(view, webMouseEvent);
     IntPoint position =
         flooredIntPoint(transformedMouseEvent.positionInRootFrame());
 
-    EXPECT_EQ(webMouseEvent.x + elasticOverscroll.width(), position.x());
-    EXPECT_EQ(webMouseEvent.y + elasticOverscroll.height(), position.y());
-    EXPECT_EQ(webMouseEvent.globalX, transformedMouseEvent.globalX);
-    EXPECT_EQ(webMouseEvent.globalY, transformedMouseEvent.globalY);
+    EXPECT_EQ(webMouseEvent.positionInWidget().x + elasticOverscroll.width(),
+              position.x());
+    EXPECT_EQ(webMouseEvent.positionInWidget().y + elasticOverscroll.height(),
+              position.y());
+    EXPECT_EQ(webMouseEvent.positionInScreen().x,
+              transformedMouseEvent.positionInScreen().x);
+    EXPECT_EQ(webMouseEvent.positionInScreen().y,
+              transformedMouseEvent.positionInScreen().y);
   }
 }
 

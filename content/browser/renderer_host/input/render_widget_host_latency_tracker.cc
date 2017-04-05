@@ -47,15 +47,17 @@ void UpdateLatencyCoordinatesImpl(const WebGestureEvent& gesture,
 void UpdateLatencyCoordinatesImpl(const WebMouseEvent& mouse,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(mouse.x * device_scale_factor,
-                                          mouse.y * device_scale_factor));
+  latency->AddInputCoordinate(
+      gfx::PointF(mouse.positionInWidget().x * device_scale_factor,
+                  mouse.positionInWidget().y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinatesImpl(const WebMouseWheelEvent& wheel,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(wheel.x * device_scale_factor,
-                                          wheel.y * device_scale_factor));
+  latency->AddInputCoordinate(
+      gfx::PointF(wheel.positionInWidget().x * device_scale_factor,
+                  wheel.positionInWidget().y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinates(const WebInputEvent& event,

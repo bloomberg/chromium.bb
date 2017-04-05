@@ -177,7 +177,7 @@ class MockSyntheticPointerMouseActionTarget
     DCHECK(WebInputEvent::isMouseEventType(event.type()));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
     type_ = mouse_event.type();
-    position_ = gfx::PointF(mouse_event.x, mouse_event.y);
+    position_ = gfx::PointF(mouse_event.positionInWidget());
     click_count_ = mouse_event.clickCount;
     modifiers_ = mouse_event.modifiers();
     button_ = mouse_event.button;

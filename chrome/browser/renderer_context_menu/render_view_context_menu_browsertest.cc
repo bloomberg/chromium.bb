@@ -214,13 +214,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Right;
-  mouse_event.x = 15;
-  mouse_event.y = 15;
+  mouse_event.setPositionInWidget(15, 15);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   gfx::Rect offset = tab->GetContainerBounds();
-  mouse_event.globalX = 15 + offset.x();
-  mouse_event.globalY = 15 + offset.y();
+  mouse_event.setPositionInScreen(15 + offset.x(), 15 + offset.y());
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   mouse_event.setType(blink::WebInputEvent::MouseUp);
@@ -356,8 +354,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Right;
-  mouse_event.x = 15;
-  mouse_event.y = 15;
+  mouse_event.setPositionInWidget(15, 15);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);

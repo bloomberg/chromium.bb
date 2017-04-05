@@ -182,11 +182,12 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
                  ->GetMouseLockWidget()
                  ->GetView();
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), target, &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            target, &transformed_point))
       return;
 
-    event->x = transformed_point.x();
-    event->y = transformed_point.y();
+    event->setPositionInWidget(transformed_point.x(), transformed_point.y());
     target->ProcessMouseEvent(*event, latency);
     return;
   }
@@ -202,13 +203,17 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
        event->modifiers() & mouse_button_modifiers)) {
     target = mouse_capture_target_.target;
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), target, &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            target, &transformed_point))
       return;
     if (event->type() == blink::WebInputEvent::MouseUp)
       mouse_capture_target_.target = nullptr;
   } else {
-    target = FindEventTarget(root_view, gfx::Point(event->x, event->y),
-                             &transformed_point);
+    target = FindEventTarget(
+        root_view,
+        gfx::Point(event->positionInWidget().x, event->positionInWidget().y),
+        &transformed_point);
   }
 
   // RenderWidgetHostViewGuest does not properly handle direct routing of mouse
@@ -232,11 +237,12 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
       // (i.e., owner view is a RenderWidgetHostViewChildFrame).
       gfx::Point owner_point;
       if (!root_view->TransformPointToCoordSpaceForView(
-              gfx::Point(event->x, event->y), owner_view, &owner_point)) {
+              gfx::Point(event->positionInWidget().x,
+                         event->positionInWidget().y),
+              owner_view, &owner_point)) {
         return;
       }
-      event->x = owner_point.x();
-      event->y = owner_point.y();
+      event->setPositionInWidget(owner_point.x(), owner_point.y());
     }
     owner_view->ProcessMouseEvent(*event, latency_info);
     return;
@@ -256,8 +262,7 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
       target != last_mouse_move_target_)
     SendMouseEnterOrLeaveEvents(event, target, root_view);
 
-  event->x = transformed_point.x();
-  event->y = transformed_point.y();
+  event->setPositionInWidget(transformed_point.x(), transformed_point.y());
   target->ProcessMouseEvent(*event, latency);
 }
 
@@ -274,18 +279,21 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
                  ->GetMouseLockWidget()
                  ->GetView();
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), target, &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            target, &transformed_point))
       return;
   } else {
-    target = FindEventTarget(root_view, gfx::Point(event->x, event->y),
-                             &transformed_point);
+    target = FindEventTarget(
+        root_view,
+        gfx::Point(event->positionInWidget().x, event->positionInWidget().y),
+        &transformed_point);
   }
 
   if (!target)
     return;
 
-  event->x = transformed_point.x();
-  event->y = transformed_point.y();
+  event->setPositionInWidget(transformed_point.x(), transformed_point.y());
   target->ProcessMouseWheelEvent(*event, latency);
 }
 
@@ -495,10 +503,12 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     // propagated to its embedding surface, which makes it impossible to
     // compute the transformation for it
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), view, &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            view, &transformed_point))
       transformed_point = gfx::Point();
-    mouse_leave.x = transformed_point.x();
-    mouse_leave.y = transformed_point.y();
+    mouse_leave.setPositionInWidget(transformed_point.x(),
+                                    transformed_point.y());
     view->ProcessMouseEvent(mouse_leave, ui::LatencyInfo());
   }
 
@@ -507,11 +517,12 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     blink::WebMouseEvent mouse_move(*event);
     mouse_move.setType(blink::WebInputEvent::MouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), common_ancestor,
-            &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            common_ancestor, &transformed_point))
       transformed_point = gfx::Point();
-    mouse_move.x = transformed_point.x();
-    mouse_move.y = transformed_point.y();
+    mouse_move.setPositionInWidget(transformed_point.x(),
+                                   transformed_point.y());
     common_ancestor->ProcessMouseEvent(mouse_move, ui::LatencyInfo());
   }
 
@@ -522,10 +533,12 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     blink::WebMouseEvent mouse_enter(*event);
     mouse_enter.setType(blink::WebInputEvent::MouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
-            gfx::Point(event->x, event->y), view, &transformed_point))
+            gfx::Point(event->positionInWidget().x,
+                       event->positionInWidget().y),
+            view, &transformed_point))
       transformed_point = gfx::Point();
-    mouse_enter.x = transformed_point.x();
-    mouse_enter.y = transformed_point.y();
+    mouse_enter.setPositionInWidget(transformed_point.x(),
+                                    transformed_point.y());
     view->ProcessMouseEvent(mouse_enter, ui::LatencyInfo());
   }
 
