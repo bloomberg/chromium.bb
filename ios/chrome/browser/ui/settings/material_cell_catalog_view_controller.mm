@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
+#import "ios/chrome/browser/ui/settings/simple_signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
@@ -96,8 +97,8 @@ const CGFloat kHorizontalImageFixedSize = 40;
 }  // namespace
 
 @implementation MaterialCellCatalogViewController {
-  base::scoped_nsobject<SigninPromoViewMediator> _coldStateMediator;
-  base::scoped_nsobject<SigninPromoViewMediator> _warmStateMediator;
+  base::scoped_nsobject<SimpleSigninPromoViewMediator> _coldStateMediator;
+  base::scoped_nsobject<SimpleSigninPromoViewMediator> _warmStateMediator;
 }
 
 - (instancetype)init {
@@ -485,14 +486,14 @@ const CGFloat kHorizontalImageFixedSize = 40;
 }
 
 - (CollectionViewItem*)coldStateSigninPromoItem {
-  _coldStateMediator.reset([[SigninPromoViewMediator alloc] init]);
+  _coldStateMediator.reset([[SimpleSigninPromoViewMediator alloc] init]);
   return
       [[[SigninPromoItem alloc] initWithType:ItemTypeWarmStateSigninPromo
                                 configurator:_coldStateMediator] autorelease];
 }
 
 - (CollectionViewItem*)warmStateSigninPromoItem {
-  _warmStateMediator.reset([[SigninPromoViewMediator alloc] init]);
+  _warmStateMediator.reset([[SimpleSigninPromoViewMediator alloc] init]);
   _warmStateMediator.get().userFullName = @"John Doe";
   _warmStateMediator.get().userEmail = @"johndoe@example.com";
   return

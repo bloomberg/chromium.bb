@@ -9,14 +9,32 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 
-// Class that configures a SigninPromoView instance. This class is a simple
-// implementation that only stores data.
-// Create a subclass that monitors profile notification.
+@class ChromeIdentity;
+@class SigninPromoViewMediator;
+
+// Handles identity update notifications.
+@protocol SigninPromoViewMediatorDelegate<NSObject>
+
+- (void)signinPromoViewMediatorCurrentIdentityUpdated:
+    (SigninPromoViewMediator*)signinPromoViewMediator;
+- (void)signinPromoViewMediatorCurrentIdentityChanged:
+    (SigninPromoViewMediator*)signinPromoViewMediator;
+
+@end
+
+// Class that configures a SigninPromoView based on the identities known by
+// ChromeIdentityService. If at least one identity is found, the view will be
+// configured in a warm state mode (the user will be invited to continue without
+// typing its password). Otherwise, the view will be configured in a cold state
+// mode.
 @interface SigninPromoViewMediator : NSObject<SigninPromoViewConfigurator>
 
-@property(nonatomic, copy) NSString* userFullName;
-@property(nonatomic, copy) NSString* userEmail;
-@property(nonatomic, copy) UIImage* userImage;
+// Delegate to handles identity update notification.
+@property(nonatomic, weak) id<SigninPromoViewMediatorDelegate> delegate;
+
+// Chrome identity used to configure the view in a warm state mode. Otherwise
+// contains nil.
+@property(nonatomic, readonly, strong) ChromeIdentity* defaultIdentity;
 
 @end
 

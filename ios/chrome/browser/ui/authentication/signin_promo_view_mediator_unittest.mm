@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -34,6 +36,25 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_OCMOCK_VERIFY((id)secondary_button_);
   }
 
+  void TestColdState() {
+    EXPECT_EQ(nil, mediator_.defaultIdentity);
+    ExpectColdStateConfiguration();
+    [mediator_ configureSigninPromoView:signin_promo_view_];
+    CheckColdStateConfiguration();
+  }
+
+  void TestWarmState() {
+    expected_default_dentity_ =
+        [FakeChromeIdentity identityWithEmail:@"johndoe@example.com"
+                                       gaiaID:@"1"
+                                         name:@"John Doe"];
+    ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+        ->AddIdentity(expected_default_dentity_);
+    ExpectWarmStateConfiguration();
+    [mediator_ configureSigninPromoView:signin_promo_view_];
+    CheckWarmStateConfiguration();
+  }
+
   void ExpectColdStateConfiguration() {
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeColdState]);
     image_view_profile_image_ = nil;
@@ -48,6 +69,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   }
 
   void ExpectWarmStateConfiguration() {
+    EXPECT_EQ(expected_default_dentity_, mediator_.defaultIdentity);
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeWarmState]);
     OCMExpect([signin_promo_view_
         setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -71,16 +93,21 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   void CheckWarmStateConfiguration() {
     EXPECT_NE(nil, image_view_profile_image_);
+    NSString* userFullName = expected_default_dentity_.userFullName;
     NSRange profileNameRange =
-        [primary_button_title_ rangeOfString:mediator_.userFullName];
+        [primary_button_title_ rangeOfString:userFullName];
     EXPECT_NE(profileNameRange.length, 0u);
+    NSString* userEmail = expected_default_dentity_.userEmail;
     NSRange profileEmailRange =
-        [secondary_button_title_ rangeOfString:mediator_.userEmail];
+        [secondary_button_title_ rangeOfString:userEmail];
     EXPECT_NE(profileEmailRange.length, 0u);
   }
 
   // Mediator used for the tests.
   SigninPromoViewMediator* mediator_;
+
+  // Identity used for the warm state.
+  FakeChromeIdentity* expected_default_dentity_;
 
   // Mocks.
   SigninPromoView* signin_promo_view_;
@@ -96,49 +123,27 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 };
 
 TEST_F(SigninPromoViewMediatorTest, ColdStateConfigureSigninPromoView) {
-  EXPECT_EQ(nil, mediator_.userFullName);
-  EXPECT_EQ(nil, mediator_.userEmail);
-  EXPECT_EQ(nil, mediator_.userImage);
-
-  ExpectColdStateConfiguration();
-  [mediator_ configureSigninPromoView:signin_promo_view_];
-  CheckColdStateConfiguration();
+  TestColdState();
 }
 
 TEST_F(SigninPromoViewMediatorTest,
        WarmStateConfigureSigninPromoViewWithoutImage) {
-  mediator_.userFullName = @"John Doe";
-  mediator_.userEmail = @"johndoe@example.com";
-
-  ExpectWarmStateConfiguration();
-  [mediator_ configureSigninPromoView:signin_promo_view_];
-  CheckWarmStateConfiguration();
-}
-
-TEST_F(SigninPromoViewMediatorTest,
-       WarmStateConfigureSigninPromoViewWithImage) {
-  mediator_.userFullName = @"John Doe";
-  mediator_.userEmail = @"johndoe@example.com";
-  mediator_.userImage = [[UIImage alloc] init];
-
-  ExpectWarmStateConfiguration();
-  [mediator_ configureSigninPromoView:signin_promo_view_];
-  CheckWarmStateConfiguration();
-  EXPECT_EQ(mediator_.userImage, image_view_profile_image_);
+  TestWarmState();
 }
 
 // Cold state configuration and then warm state configuration.
-TEST_F(SigninPromoViewMediatorTest, TwoConfigureSigninPromoView) {
-  ExpectColdStateConfiguration();
-  [mediator_ configureSigninPromoView:signin_promo_view_];
-  CheckColdStateConfiguration();
+TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithColdAndWarm) {
+  TestColdState();
+  TestWarmState();
+}
 
-  mediator_.userFullName = @"John Doe";
-  mediator_.userEmail = @"johndoe@example.com";
-
-  ExpectWarmStateConfiguration();
-  [mediator_ configureSigninPromoView:signin_promo_view_];
-  CheckWarmStateConfiguration();
+// Warm state configuration and then cold state configuration.
+TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
+  TestWarmState();
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->RemoveIdentity(expected_default_dentity_);
+  expected_default_dentity_ = nil;
+  TestColdState();
 }
 
 }  // namespace

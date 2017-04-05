@@ -108,6 +108,7 @@ source_set("authentication_arc") {
     ":authentication_ui",
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
