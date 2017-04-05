@@ -53,6 +53,7 @@ template("libgtkui") {
                 "gtk_event_loop.h",
                 "gtk_key_bindings_handler.cc",
                 "gtk_key_bindings_handler.h",
+                "gtk_signal.h",
                 "gtk_status_icon.cc",
                 "gtk_status_icon.h",
                 "gtk_ui.cc",
