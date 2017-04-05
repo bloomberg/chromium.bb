@@ -1024,6 +1024,12 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
                                const PropertyTrees* property_trees) {
   // Mask draw properties are used only for rastering, so most of the draw
   // properties computed for other layers are not needed.
+  // Draw transform of a mask layer has to be a 2d scale.
+  // TODO(sunxd): the draw transform of a mask layer misses the "scale to fit"
+  // factor from mask layer to its parent. So does the screen space transform.
+  // It does not cause a problem because currently we only have 1:1 mask layer.
+  mask_layer->draw_properties().target_space_transform = DrawTransform(
+      mask_layer, property_trees->transform_tree, property_trees->effect_tree);
   mask_layer->draw_properties().screen_space_transform =
       ScreenSpaceTransformInternal(mask_layer,
                                    property_trees->transform_tree);

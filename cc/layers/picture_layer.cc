@@ -146,6 +146,11 @@ bool PictureLayer::Update() {
 }
 
 void PictureLayer::SetLayerMaskType(LayerMaskType mask_type) {
+  // We do not allow converting SINGLE_TEXTURE_MASK to MULTI_TEXTURE_MASK in
+  // order to avoid rerastering when a mask's transform is being animated.
+  if (mask_type_ == LayerMaskType::SINGLE_TEXTURE_MASK &&
+      LayerMaskType::MULTI_TEXTURE_MASK)
+    return;
   mask_type_ = mask_type;
 }
 

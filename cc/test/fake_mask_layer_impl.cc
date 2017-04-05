@@ -8,13 +8,23 @@
 
 namespace cc {
 
-FakeMaskLayerImpl::FakeMaskLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id) {}
+FakeMaskLayerImpl::FakeMaskLayerImpl(LayerTreeImpl* tree_impl,
+                                     int id,
+                                     scoped_refptr<RasterSource> raster_source,
+                                     Layer::LayerMaskType mask_type)
+    : PictureLayerImpl(tree_impl, id, mask_type) {
+  SetBounds(raster_source->GetSize());
+  Region region;
+  UpdateRasterSource(raster_source, &region, nullptr);
+}
 
 std::unique_ptr<FakeMaskLayerImpl> FakeMaskLayerImpl::Create(
     LayerTreeImpl* tree_impl,
-    int id) {
-  return base::WrapUnique(new FakeMaskLayerImpl(tree_impl, id));
+    int id,
+    scoped_refptr<RasterSource> raster_source,
+    Layer::LayerMaskType mask_type) {
+  return base::WrapUnique(
+      new FakeMaskLayerImpl(tree_impl, id, raster_source, mask_type));
 }
 
 void FakeMaskLayerImpl::GetContentsResourceId(ResourceId* resource_id,

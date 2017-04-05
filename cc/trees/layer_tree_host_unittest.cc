@@ -6541,6 +6541,104 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateCopyRequests);
 
+class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
+    : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // The masked layer has bounds 50x50, but it has a child that causes
+    // the surface bounds to be larger. It also has a parent that clips the
+    // masked layer and its surface.
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+
+    std::unique_ptr<RecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
+    PaintFlags paint1, paint2;
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 90), paint1);
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 90, 100, 10), paint2);
+    client_.set_fill_with_nonsolid_color(true);
+    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::CreateWithRecordingSource(
+            &client_, std::move(recording_source));
+    content_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Size layer_size(100, 100);
+    content_layer->SetBounds(layer_size);
+
+    gfx::Size mask_size(100, 100);
+    mask_layer->SetBounds(mask_size);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer_id_ = mask_layer->id();
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+    scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
+    outer_viewport_scroll_layer->SetBounds(layer_size);
+    CreateVirtualViewportLayers(root.get(), outer_viewport_scroll_layer,
+                                gfx::Size(50, 50), gfx::Size(50, 50),
+                                layer_tree_host());
+    outer_viewport_scroll_layer->scroll_clip_layer()->SetMasksToBounds(true);
+    outer_viewport_scroll_layer->AddChild(content_layer);
+
+    client_.set_bounds(root->bounds());
+    outer_viewport_scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back().get();
+    EXPECT_EQ(2u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(),
+              render_pass_quad->rect.ToString());
+    if (host_impl->settings().enable_mask_tiling) {
+      PictureLayerImpl* mask_layer_impl = static_cast<PictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(mask_layer_id_));
+      gfx::SizeF texture_size(
+          mask_layer_impl->CalculateTileSize(mask_layer_impl->bounds()));
+      EXPECT_EQ(
+          gfx::RectF(50.f / texture_size.width(), 50.f / texture_size.height(),
+                     50.f / texture_size.width(), 50.f / texture_size.height())
+              .ToString(),
+          render_pass_quad->mask_uv_rect.ToString());
+    } else {
+      EXPECT_EQ(gfx::ScaleRect(gfx::RectF(50.f, 50.f, 50.f, 50.f), 1.f / 100.f)
+                    .ToString(),
+                render_pass_quad->mask_uv_rect.ToString());
+    }
+    EndTest();
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+  int mask_layer_id_;
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin);
+
 class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
  protected:
   void SetupTree() override {
@@ -6561,8 +6659,19 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
         FakePictureLayer::Create(&client_);
     content_layer->AddChild(content_child_layer);
 
+    std::unique_ptr<RecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
+    PaintFlags paint1, paint2;
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 90), paint1);
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 90, 100, 10), paint2);
+    client_.set_fill_with_nonsolid_color(true);
+    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
+
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::CreateWithRecordingSource(
+            &client_, std::move(recording_source));
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -6586,6 +6695,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);
     mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    mask_layer_id_ = mask_layer->id();
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -6614,15 +6724,28 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     // coords in the mask are scaled by 10/50 and 20/50.
     // The surface is clipped to (20,10) so the mask texture coords are offset
     // by 20/50 and 10/50
-    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
-                  .ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+    if (host_impl->settings().enable_mask_tiling) {
+      PictureLayerImpl* mask_layer_impl = static_cast<PictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(mask_layer_id_));
+      gfx::SizeF texture_size(
+          mask_layer_impl->CalculateTileSize(mask_layer_impl->bounds()));
+      EXPECT_EQ(
+          gfx::RectF(20.f / texture_size.width(), 10.f / texture_size.height(),
+                     10.f / texture_size.width(), 20.f / texture_size.height())
+              .ToString(),
+          render_pass_quad->mask_uv_rect.ToString());
+    } else {
+      EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
+                    .ToString(),
+                render_pass_quad->mask_uv_rect.ToString());
+    }
     EndTest();
     return draw_result;
   }
 
   void AfterTest() override {}
 
+  int mask_layer_id_;
   FakeContentLayerClient client_;
 };
 
@@ -6652,8 +6775,19 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
         FakePictureLayer::Create(&client_);
     scaling_layer->AddChild(content_layer);
 
+    std::unique_ptr<RecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
+    PaintFlags paint1, paint2;
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 10), paint1);
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 10, 100, 90), paint2);
+    client_.set_fill_with_nonsolid_color(true);
+    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
+
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::CreateWithRecordingSource(
+            &client_, std::move(recording_source));
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -6696,16 +6830,28 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
         // mask, that should fully map onto the quad.
         EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
                   render_pass_quad->rect.ToString());
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->mask_uv_rect.ToString());
+        if (host_impl->settings().enable_mask_tiling) {
+          EXPECT_EQ(
+              gfx::RectF(0.f, 0.f, 100.f / 128.f, 100.f / 128.f).ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
+        } else {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        }
         break;
       case 1:
         // Applying a DSF should change the render surface size, but won't
         // affect which part of the mask is used.
         EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
                   render_pass_quad->rect.ToString());
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->mask_uv_rect.ToString());
+        if (host_impl->settings().enable_mask_tiling) {
+          EXPECT_EQ(
+              gfx::RectF(0.f, 0.f, 100.f / 128.f, 100.f / 128.f).ToString(),
+              render_pass_quad->mask_uv_rect.ToString());
+        } else {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        }
         EndTest();
         break;
     }
@@ -6741,8 +6887,19 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
         FakePictureLayer::Create(&client_);
     root->AddChild(content_layer);
 
+    std::unique_ptr<RecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
+    PaintFlags paint1, paint2;
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 90), paint1);
+    static_cast<FakeRecordingSource*>(recording_source.get())
+        ->add_draw_rect_with_flags(gfx::Rect(0, 90, 100, 10), paint2);
+    client_.set_fill_with_nonsolid_color(true);
+    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
+
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::CreateWithRecordingSource(
+            &client_, std::move(recording_source));
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -6780,16 +6937,26 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
         // Check that the mask fills the surface.
         EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
                   render_pass_quad->rect.ToString());
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->mask_uv_rect.ToString());
+        if (host_impl->settings().enable_mask_tiling) {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 50.f / 128.f, 50.f / 128.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        } else {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        }
         break;
       case 1:
         // Applying a DSF should change the render surface size, but won't
         // affect which part of the mask is used.
         EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
                   render_pass_quad->rect.ToString());
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->mask_uv_rect.ToString());
+        if (host_impl->settings().enable_mask_tiling) {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 50.f / 128.f, 50.f / 128.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        } else {
+          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                    render_pass_quad->mask_uv_rect.ToString());
+        }
         EndTest();
         break;
     }

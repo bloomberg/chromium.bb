@@ -101,12 +101,12 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, rect, rect, pass_id,
-               0,                 // mask_resource_id
-               gfx::RectF(),      // mask_uv_rect
-               gfx::Size(),       // mask_texture_size
-               gfx::Vector2dF(),  // filters scale
-               gfx::PointF(),     // filter origin
-               gfx::RectF());     // tex_coord_rect
+               0,                  // mask_resource_id
+               gfx::RectF(),       // mask_uv_rect
+               gfx::Size(),        // mask_texture_size
+               gfx::Vector2dF(),   // filters scale
+               gfx::PointF(),      // filter origin
+               gfx::RectF(rect));  // tex_coord_rect
 }
 
 void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
@@ -1591,9 +1591,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+  render_pass_quad->SetNew(
+      pass_shared_state, pass_rect, pass_rect, child_pass_id, 0, gfx::RectF(),
+      gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF(pass_rect));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -1657,9 +1657,9 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+  render_pass_quad->SetNew(
+      pass_shared_state, pass_rect, pass_rect, child_pass_id, 0, gfx::RectF(),
+      gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF(pass_rect));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -1723,9 +1723,9 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+  render_pass_quad->SetNew(
+      pass_shared_state, pass_rect, pass_rect, child_pass_id, 0, gfx::RectF(),
+      gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF(pass_rect));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -1810,9 +1810,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
-                           gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+  render_pass_quad->SetNew(
+      pass_shared_state, pass_rect, pass_rect, child_pass_id, 0, gfx::RectF(),
+      gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF(pass_rect));
 
   RenderPassList pass_list;
 
@@ -2012,7 +2012,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       gfx::Size(mask_rect.size()),               // mask_texture_size
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
-      gfx::RectF());                             // tex_coord_rect
+      gfx::RectF(sub_rect));                     // tex_coord_rect
 
   // White background behind the masked render pass.
   SolidColorDrawQuad* white =
@@ -2107,7 +2107,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       gfx::Size(mask_rect.size()),               // mask_texture_size
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
-      gfx::RectF());                             // tex_coord_rect
+      gfx::RectF(sub_rect));                     // tex_coord_rect
 
   // White background behind the masked render pass.
   SolidColorDrawQuad* white =

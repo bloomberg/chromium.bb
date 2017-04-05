@@ -169,6 +169,9 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect CalculateClippedAccumulatedContentRect();
   gfx::Rect CalculateExpandedClipForFilters(
       const gfx::Transform& target_to_surface);
+  void TileMaskLayer(RenderPass* render_pass,
+                     SharedQuadState* shared_quad_state,
+                     const gfx::Rect& visible_layer_rect);
 
   LayerTreeImpl* layer_tree_impl_;
   int stable_effect_id_;

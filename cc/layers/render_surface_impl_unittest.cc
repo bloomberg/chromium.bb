@@ -9,6 +9,7 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/test/fake_mask_layer_impl.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,6 +69,8 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilledSolidColor(layer_size);
 
   LayerTestCommon::LayerImplTest impl;
   std::unique_ptr<LayerImpl> root =
@@ -81,8 +84,9 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   scale.Scale(2, 2);
   surface->test_properties()->transform = scale;
 
-  surface->test_properties()->SetMaskLayer(
-      FakeMaskLayerImpl::Create(impl.host_impl()->active_tree(), 4));
+  surface->test_properties()->SetMaskLayer(FakeMaskLayerImpl::Create(
+      impl.host_impl()->active_tree(), 4, raster_source,
+      Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
   surface->test_properties()->mask_layer->SetDrawsContent(true);
   surface->test_properties()->mask_layer->SetBounds(layer_size);
 
@@ -109,9 +113,10 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(render_pass.get(), &append_quads_data);
 
+  DCHECK(render_pass->quad_list.front());
   const RenderPassDrawQuad* quad =
       RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
-  EXPECT_EQ(gfx::RectF(0, 0, 1.f, 1.f), quad->mask_uv_rect);
+  EXPECT_EQ(gfx::RectF(0, 0, 1, 1), quad->mask_uv_rect);
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
 }
 

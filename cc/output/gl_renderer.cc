@@ -224,6 +224,8 @@ struct DrawRenderPassDrawQuadParams {
   gfx::QuadF surface_quad;
 
   gfx::Transform contents_device_transform;
+
+  gfx::RectF tex_coord_rect;
 };
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
@@ -1035,6 +1037,7 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.clip_region = clip_region;
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
+  params.tex_coord_rect = quad->tex_coord_rect;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 here is arbitrary and unused.
@@ -1242,6 +1245,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
             gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
                        subset.width(), subset.height());
         params->src_offset.SetPoint(subset.x(), subset.y());
+        gfx::RectF tex_rect = gfx::RectF(gfx::PointF(params->src_offset),
+                                         params->dst_rect.size());
+        params->tex_coord_rect = tex_rect;
       }
     }
   }
@@ -1321,12 +1327,7 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
-  gfx::RectF tex_rect = params->quad->tex_coord_rect;
-  if (tex_rect.IsEmpty()) {
-    // TODO(sunxd): make this never be empty.
-    tex_rect =
-        gfx::RectF(gfx::PointF(params->src_offset), params->dst_rect.size());
-  }
+  gfx::RectF tex_rect = params->tex_coord_rect;
 
   gfx::Size texture_size;
   if (params->filter_image) {
@@ -3330,6 +3331,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   params.contents_texture = contents_texture;
   params.quad_to_target_transform =
       params.quad->shared_quad_state->quad_to_target_transform;
+  params.tex_coord_rect = params.quad->tex_coord_rect;
 
   // Calculate projection and window matrices using InitializeViewport(). This
   // requires creating a dummy DrawingFrame.
