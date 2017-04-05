@@ -207,8 +207,8 @@ inline void NGInlineNode::AssertEndOffset(unsigned index,
 DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,
                   node,
-                  node->Type() == NGLayoutInputNode::kLegacyInline,
-                  node.Type() == NGLayoutInputNode::kLegacyInline);
+                  node->IsInline(),
+                  node.IsInline());
 
 // A vector-like object that points to a subset of an array of
 // |NGLayoutInlineItem|.

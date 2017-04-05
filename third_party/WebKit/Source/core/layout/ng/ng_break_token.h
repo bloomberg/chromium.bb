@@ -38,6 +38,9 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   enum NGBreakTokenType { kBlockBreakToken, kInlineBreakToken };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
 
+  bool IsBlockType() const { return Type() == kBlockBreakToken; }
+  bool IsInlineType() const { return Type() == kInlineBreakToken; }
+
   enum NGBreakTokenStatus { kUnfinished, kFinished };
 
   // Whether the layout node cannot produce any more fragments.

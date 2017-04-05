@@ -79,8 +79,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 DEFINE_TYPE_CASTS(NGBlockNode,
                   NGLayoutInputNode,
                   node,
-                  node->Type() == NGLayoutInputNode::kLegacyBlock,
-                  node.Type() == NGLayoutInputNode::kLegacyBlock);
+                  node->IsBlock(),
+                  node.IsBlock());
 
 }  // namespace blink
 

@@ -70,8 +70,8 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
 DEFINE_TYPE_CASTS(NGBlockBreakToken,
                   NGBreakToken,
                   token,
-                  token->Type() == NGBreakToken::kBlockBreakToken,
-                  token.Type() == NGBreakToken::kBlockBreakToken);
+                  token->IsBlockType(),
+                  token.IsBlockType());
 
 }  // namespace blink
 

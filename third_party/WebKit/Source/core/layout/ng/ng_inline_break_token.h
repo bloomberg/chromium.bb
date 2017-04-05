@@ -45,8 +45,8 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
 DEFINE_TYPE_CASTS(NGInlineBreakToken,
                   NGBreakToken,
                   token,
-                  token->Type() == NGBreakToken::kInlineBreakToken,
-                  token.Type() == NGBreakToken::kInlineBreakToken);
+                  token->IsInlineType(),
+                  token.IsInlineType());
 
 }  // namespace blink
 

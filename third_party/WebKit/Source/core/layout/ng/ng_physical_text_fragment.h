@@ -47,9 +47,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
                   NGPhysicalFragment,
-                  text,
-                  text->Type() == NGPhysicalFragment::kFragmentText,
-                  text.Type() == NGPhysicalFragment::kFragmentText);
+                  fragment,
+                  fragment->IsText(),
+                  fragment.IsText());
 
 }  // namespace blink
 

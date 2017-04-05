@@ -55,7 +55,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   NGLayoutInputNode* node3 = node2->NextSibling();
 
   Vector<RefPtr<NGBreakToken>> child_break_tokens;
-  child_break_tokens.push_back(NGBlockBreakToken::create(toNGBlockNode(node1)));
+  child_break_tokens.push_back(NGBlockBreakToken::create(node1));
   RefPtr<NGBlockBreakToken> parent_token =
       NGBlockBreakToken::create(container, LayoutUnit(50), child_break_tokens);
 
@@ -66,7 +66,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),
             iterator.NextChild());
 
-  child_break_tokens.push_back(NGBlockBreakToken::create(toNGBlockNode(node2)));
+  child_break_tokens.push_back(NGBlockBreakToken::create(node2));
   parent_token =
       NGBlockBreakToken::create(container, LayoutUnit(50), child_break_tokens);
 
@@ -93,8 +93,8 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
   NGLayoutInputNode* node3 = node2->NextSibling();
 
   Vector<RefPtr<NGBreakToken>> child_break_tokens;
-  RefPtr<NGBreakToken> child_token = NGBlockBreakToken::create(
-      toNGBlockNode(node1), LayoutUnit(), child_break_tokens);
+  RefPtr<NGBreakToken> child_token =
+      NGBlockBreakToken::create(node1, LayoutUnit(), child_break_tokens);
   child_break_tokens.push_back(child_token);
   RefPtr<NGBlockBreakToken> parent_token =
       NGBlockBreakToken::create(container, LayoutUnit(50), child_break_tokens);
@@ -108,8 +108,8 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),
             iterator.NextChild());
 
-  child_token = NGBlockBreakToken::create(toNGBlockNode(node2), LayoutUnit(),
-                                          child_break_tokens);
+  child_token =
+      NGBlockBreakToken::create(node2, LayoutUnit(), child_break_tokens);
   child_break_tokens.push_back(child_token);
   parent_token =
       NGBlockBreakToken::create(container, LayoutUnit(50), child_break_tokens);

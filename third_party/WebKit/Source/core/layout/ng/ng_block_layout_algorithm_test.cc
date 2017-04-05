@@ -726,7 +726,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   EXPECT_EQ(kBorderTop + kPaddingTop + kHeight + kPaddingBottom + kBorderBottom,
             child->Height());
 
-  ASSERT_TRUE(child->Type() == NGPhysicalFragment::kFragmentBox);
+  ASSERT_TRUE(child->IsBox());
   ASSERT_EQ(static_cast<const NGPhysicalBoxFragment*>(child)->Children().size(),
             1UL);
 

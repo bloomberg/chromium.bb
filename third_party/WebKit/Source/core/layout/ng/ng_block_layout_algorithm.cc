@@ -107,23 +107,22 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
   for (NGLayoutInputNode* node = Node()->FirstChild(); node;
        node = node->NextSibling()) {
     MinMaxContentSize child_sizes;
-    if (node->Type() == NGLayoutInputNode::kLegacyInline) {
+    if (node->IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
       // all inline nodes following |node| and their descendants, and produces
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_sizes = toNGInlineNode(node)->ComputeMinMaxContentSize();
+      child_sizes = node->ComputeMinMaxContentSize();
     } else {
       Optional<MinMaxContentSize> child_minmax;
-      NGBlockNode* block_child = toNGBlockNode(node);
-      if (NeedMinMaxContentSizeForContentContribution(block_child->Style())) {
-        child_minmax = block_child->ComputeMinMaxContentSize();
+      if (NeedMinMaxContentSizeForContentContribution(node->Style())) {
+        child_minmax = node->ComputeMinMaxContentSize();
       }
 
-      child_sizes = ComputeMinAndMaxContentContribution(block_child->Style(),
-                                                        child_minmax);
+      child_sizes =
+          ComputeMinAndMaxContentContribution(node->Style(), child_minmax);
     }
 
     sizes.min_content = std::max(sizes.min_content, child_sizes.min_content);
@@ -226,15 +225,14 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   curr_bfc_offset_.block_offset += content_size_;
 
   while (child) {
-    if (child->Type() == NGLayoutInputNode::kLegacyBlock) {
-      NGBlockNode* current_block_child = toNGBlockNode(child);
-      EPosition position = current_block_child->Style().position();
+    if (child->IsBlock()) {
+      EPosition position = child->Style().position();
       if (position == EPosition::kAbsolute || position == EPosition::kFixed) {
         // TODO(ikilpatrick): curr_margin_strut_ shouldn't be included if there
         // is no content size yet? See floats-wrap-inside-inline-006.
         NGLogicalOffset offset = {border_and_padding_.inline_start,
                                   content_size_ + curr_margin_strut_.Sum()};
-        builder_.AddOutOfFlowChildCandidate(current_block_child, offset);
+        builder_.AddOutOfFlowChildCandidate(toNGBlockNode(child), offset);
         NGBlockChildIterator::Entry entry = child_iterator.NextChild();
         child = entry.node;
         child_break_token = entry.token;
