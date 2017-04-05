@@ -17,9 +17,10 @@ static_library("core") {
     "switches.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//net",
+    "//url",
   ]
 }
 
