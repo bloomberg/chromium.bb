@@ -3313,6 +3313,35 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadWebviewAccessibleResource) {
   EXPECT_EQ(webview_url, web_view_contents->GetLastCommittedURL());
 }
 
+// Tests that a WebView can navigate an iframe to a blob URL that it creates
+// while its main frame is at a WebView accessible resource.
+IN_PROC_BROWSER_TEST_P(WebViewTest, BlobInWebviewAccessibleResource) {
+  TestHelper("testBlobInWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::WebContents* web_view_contents =
+      GetGuestViewManager()->GetLastGuestCreated();
+  ASSERT_TRUE(embedder_contents);
+  ASSERT_TRUE(web_view_contents);
+
+  GURL embedder_url(embedder_contents->GetLastCommittedURL());
+  GURL webview_url(embedder_url.GetOrigin().spec() + "assets/foo.html");
+
+  EXPECT_EQ(webview_url, web_view_contents->GetLastCommittedURL());
+
+  content::RenderFrameHost* main_frame = web_view_contents->GetMainFrame();
+  content::RenderFrameHost* blob_frame = ChildFrameAt(main_frame, 0);
+  EXPECT_TRUE(blob_frame->GetLastCommittedURL().SchemeIsBlob());
+
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      blob_frame,
+      "window.domAutomationController.send(document.body.innerText);",
+      &result));
+  EXPECT_EQ("Blob content", result);
+}
+
 // Tests that a WebView cannot load a webview-inaccessible resource. See
 // https://crbug.com/640072.
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInaccessibleResource) {

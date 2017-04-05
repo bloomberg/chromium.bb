@@ -10,6 +10,8 @@ window.runTest = function(testName) {
     testLoadWebviewAccessibleResource();
   } else if (testName == 'testReloadWebviewAccessibleResource') {
     testReloadWebviewAccessibleResource();
+  } else if (testName == 'testBlobInWebviewAccessibleResource') {
+    testBlobInWebviewAccessibleResource();
   } else if (testName == 'testLoadWebviewInaccessibleResource') {
     testLoadWebviewInaccessibleResource();
   } else {
@@ -56,6 +58,29 @@ function testReloadWebviewAccessibleResource() {
       webview.executeScript({code: 'location.reload();'});
       didReload = true;
     }
+  });
+  webview.src = '/assets/foo.html';
+}
+
+function testBlobInWebviewAccessibleResource() {
+  var webview = document.querySelector('webview');
+  var frameCreated = false;
+
+  webview.addEventListener('loadstop', function() {
+    if (frameCreated)
+      return;
+    var script =
+        "var blob = new Blob(['<html><body>Blob content</body></html>']," +
+        "                    {type: 'text/html'});" +
+        "var blobURL = URL.createObjectURL(blob);" +
+        "var frame = document.createElement('iframe');" +
+        "document.body.appendChild(frame);" +
+        "frame.onload = function() {" +
+        "  chrome.test.sendMessage('TEST_PASSED');" +
+        "};" +
+        "frame.src = blobURL;";
+    webview.executeScript({code: script});
+    frameCreated = true;
   });
   webview.src = '/assets/foo.html';
 }
