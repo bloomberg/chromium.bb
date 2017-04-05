@@ -86,10 +86,10 @@ class HashCountedSet {
   // Increases the count if an equal value is already present the return value
   // is a pair of an iterator to the new value's location, and a bool that is
   // true if an new entry was added.
-  AddResult add(const ValueType&);
+  AddResult insert(const ValueType&);
 
   // Generalized add(), adding the value N times.
-  AddResult add(const ValueType&, unsigned);
+  AddResult insert(const ValueType&, unsigned);
 
   // Reduces the count of the value, and removes it if count goes down to
   // zero, returns true if the value is removed.
@@ -116,7 +116,7 @@ class HashCountedSet {
 
 template <typename T, typename U, typename V, typename W>
 inline typename HashCountedSet<T, U, V, W>::AddResult
-HashCountedSet<T, U, V, W>::add(const ValueType& value, unsigned count) {
+HashCountedSet<T, U, V, W>::insert(const ValueType& value, unsigned count) {
   DCHECK_GT(count, 0u);
   AddResult result = m_impl.insert(value, 0);
   result.storedValue->value += count;
@@ -125,8 +125,8 @@ HashCountedSet<T, U, V, W>::add(const ValueType& value, unsigned count) {
 
 template <typename T, typename U, typename V, typename W>
 inline typename HashCountedSet<T, U, V, W>::AddResult
-HashCountedSet<T, U, V, W>::add(const ValueType& value) {
-  return add(value, 1u);
+HashCountedSet<T, U, V, W>::insert(const ValueType& value) {
+  return insert(value, 1u);
 }
 
 template <typename T, typename U, typename V, typename W>

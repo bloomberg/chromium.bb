@@ -238,7 +238,7 @@ Database::Database(DatabaseContext* databaseContext,
   {
     MutexLocker locker(guidMutex());
     m_guid = guidForOriginAndName(getSecurityOrigin()->toString(), name);
-    guidCount().add(m_guid);
+    guidCount().insert(m_guid);
   }
 
   m_filename = DatabaseManager::manager().fullPathForDatabase(

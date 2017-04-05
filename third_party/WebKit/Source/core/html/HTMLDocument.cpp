@@ -152,7 +152,7 @@ void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map,
                                 const AtomicString& name) {
   if (name.isEmpty())
     return;
-  map.add(name);
+  map.insert(name);
   if (LocalFrame* f = frame()) {
     f->script()
         .windowProxy(DOMWrapperWorld::mainWorld())

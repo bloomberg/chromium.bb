@@ -370,7 +370,7 @@ void Resource::checkNotify() {
 
 void Resource::markClientFinished(ResourceClient* client) {
   if (m_clients.contains(client)) {
-    m_finishedClients.add(client);
+    m_finishedClients.insert(client);
     m_clients.remove(client);
   }
 }
@@ -659,7 +659,7 @@ void Resource::didAddClient(ResourceClient* c) {
   if (isLoaded()) {
     c->notifyFinished(this);
     if (m_clients.contains(c)) {
-      m_finishedClients.add(c);
+      m_finishedClients.insert(c);
       m_clients.remove(c);
     }
   }
@@ -712,7 +712,7 @@ void Resource::addClient(ResourceClient* client,
   willAddClientOrObserver(policy);
 
   if (m_isRevalidating) {
-    m_clients.add(client);
+    m_clients.insert(client);
     return;
   }
 
@@ -720,12 +720,12 @@ void Resource::addClient(ResourceClient* client,
   // and the resource type supprts it, send it asynchronously.
   if ((errorOccurred() || !response().isNull()) &&
       !typeNeedsSynchronousCacheHit(getType()) && !m_needsSynchronousCacheHit) {
-    m_clientsAwaitingCallback.add(client);
+    m_clientsAwaitingCallback.insert(client);
     ResourceCallback::callbackHandler().schedule(this);
     return;
   }
 
-  m_clients.add(client);
+  m_clients.insert(client);
   didAddClient(client);
   return;
 }
@@ -814,7 +814,7 @@ void Resource::finishPendingClients() {
     // Handle case (2) to skip removed clients.
     if (!m_clientsAwaitingCallback.remove(client))
       continue;
-    m_clients.add(client);
+    m_clients.insert(client);
 
     // When revalidation starts after waiting clients are scheduled and
     // before they are added here. In such cases, we just add the clients

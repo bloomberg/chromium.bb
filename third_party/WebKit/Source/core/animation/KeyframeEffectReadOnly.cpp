@@ -104,7 +104,7 @@ KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,
 
 void KeyframeEffectReadOnly::attach(Animation* animation) {
   if (m_target) {
-    m_target->ensureElementAnimations().animations().add(animation);
+    m_target->ensureElementAnimations().animations().insert(animation);
     m_target->setNeedsAnimationStyleRecalc();
     if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
         m_target->isSVGElement())

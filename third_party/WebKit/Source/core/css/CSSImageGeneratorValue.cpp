@@ -47,7 +47,7 @@ void CSSImageGeneratorValue::addClient(const LayoutObject* layoutObject,
   }
 
   if (!size.isEmpty())
-    m_sizes.add(size);
+    m_sizes.insert(size);
 
   LayoutObjectSizeCountMap::iterator it = m_clients.find(layoutObject);
   if (it == m_clients.end()) {

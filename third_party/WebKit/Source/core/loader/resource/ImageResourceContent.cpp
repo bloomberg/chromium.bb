@@ -102,7 +102,7 @@ void ImageResourceContent::markObserverFinished(
   if (it == m_observers.end())
     return;
   m_observers.remove(it);
-  m_finishedObservers.add(observer);
+  m_finishedObservers.insert(observer);
 }
 
 void ImageResourceContent::addObserver(ImageResourceObserver* observer) {
@@ -112,7 +112,7 @@ void ImageResourceContent::addObserver(ImageResourceObserver* observer) {
 
   {
     ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
-    m_observers.add(observer);
+    m_observers.insert(observer);
   }
 
   if (m_info->isCacheValidator())

@@ -109,7 +109,7 @@ void CSSSelectorWatch::updateSelectorMatches(
 
   for (const auto& selector : addedSelectors) {
     HashCountedSet<String>::AddResult result =
-        m_matchingCallbackSelectors.add(selector);
+        m_matchingCallbackSelectors.insert(selector);
     if (!result.isNewEntry)
       continue;
 

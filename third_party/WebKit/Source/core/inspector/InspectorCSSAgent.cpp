@@ -1144,7 +1144,7 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(
       String familyName = simpleFontData->platformData().fontFamilyName();
       if (familyName.isNull())
         familyName = "";
-      fontStats->add(
+      fontStats->insert(
           std::make_pair(simpleFontData->isCustomFont() ? 1 : 0, familyName),
           runFontData.m_glyphCount);
     }

@@ -19,7 +19,7 @@ class SVGElementProxy::IdObserver : public IdTargetObserver {
       : IdTargetObserver(treeScope.idTargetObserverRegistry(), proxy.id()),
         m_treeScope(&treeScope) {}
 
-  void addClient(SVGResourceClient* client) { m_clients.add(client); }
+  void addClient(SVGResourceClient* client) { m_clients.insert(client); }
   bool removeClient(SVGResourceClient* client) {
     return m_clients.remove(client);
   }
@@ -28,7 +28,7 @@ class SVGElementProxy::IdObserver : public IdTargetObserver {
   TreeScope* treeScope() const { return m_treeScope; }
   void transferClients(IdObserver& observer) {
     for (const auto& client : m_clients)
-      observer.m_clients.add(client.key, client.value);
+      observer.m_clients.insert(client.key, client.value);
     m_clients.clear();
   }
 

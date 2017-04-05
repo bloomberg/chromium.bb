@@ -2423,8 +2423,8 @@ TEST(HeapTest, HeapCollectionTypes) {
       set2->insert(three);
       set2->insert(four);
       set->insert(oneB);
-      set3->add(oneB);
-      set3->add(oneB);
+      set3->insert(oneB);
+      set3->insert(oneB);
       vector->push_back(oneB);
       deque->push_back(oneB);
       vector2->push_back(threeB);
@@ -2951,12 +2951,12 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     weakSet->insert(two);
     weakSet->insert(keepNumbersAlive[0]);
     weakSet->insert(keepNumbersAlive[1]);
-    weakCountedSet->add(IntWrapper::create(0));
-    weakCountedSet->add(two);
-    weakCountedSet->add(two);
-    weakCountedSet->add(two);
-    weakCountedSet->add(keepNumbersAlive[0]);
-    weakCountedSet->add(keepNumbersAlive[1]);
+    weakCountedSet->insert(IntWrapper::create(0));
+    weakCountedSet->insert(two);
+    weakCountedSet->insert(two);
+    weakCountedSet->insert(two);
+    weakCountedSet->insert(keepNumbersAlive[0]);
+    weakCountedSet->insert(keepNumbersAlive[1]);
     EXPECT_EQ(1u, weakStrong->size());
     EXPECT_EQ(1u, strongWeak->size());
     EXPECT_EQ(2u, weakWeak->size());
@@ -3559,9 +3559,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
 TEST(HeapTest, HeapHashCountedSetToVector) {
   HeapHashCountedSet<Member<IntWrapper>> set;
   HeapVector<Member<IntWrapper>> vector;
-  set.add(new IntWrapper(1));
-  set.add(new IntWrapper(1));
-  set.add(new IntWrapper(2));
+  set.insert(new IntWrapper(1));
+  set.insert(new IntWrapper(1));
+  set.insert(new IntWrapper(2));
 
   copyToVector(set, vector);
   EXPECT_EQ(3u, vector.size());
@@ -3579,9 +3579,9 @@ TEST(HeapTest, HeapHashCountedSetToVector) {
 TEST(HeapTest, WeakHeapHashCountedSetToVector) {
   HeapHashCountedSet<WeakMember<IntWrapper>> set;
   HeapVector<Member<IntWrapper>> vector;
-  set.add(new IntWrapper(1));
-  set.add(new IntWrapper(1));
-  set.add(new IntWrapper(2));
+  set.insert(new IntWrapper(1));
+  set.insert(new IntWrapper(1));
+  set.insert(new IntWrapper(2));
 
   copyToVector(set, vector);
   EXPECT_LE(3u, vector.size());

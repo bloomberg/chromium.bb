@@ -136,7 +136,7 @@ class SubframeLoadingDisabler {
 
   explicit SubframeLoadingDisabler(Node* root) : m_root(root) {
     if (m_root)
-      disabledSubtreeRoots().add(m_root);
+      disabledSubtreeRoots().insert(m_root);
   }
 
   ~SubframeLoadingDisabler() {

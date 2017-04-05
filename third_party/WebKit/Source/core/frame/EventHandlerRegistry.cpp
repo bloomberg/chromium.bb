@@ -90,7 +90,7 @@ bool EventHandlerRegistry::updateEventHandlerTargets(
     EventTarget* target) {
   EventTargetSet* targets = &m_targets[handlerClass];
   if (op == Add) {
-    if (!targets->add(target).isNewEntry) {
+    if (!targets->insert(target).isNewEntry) {
       // Just incremented refcount, no real change.
       return false;
     }

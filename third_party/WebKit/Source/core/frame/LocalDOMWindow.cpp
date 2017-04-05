@@ -193,7 +193,7 @@ static void addUnloadEventListener(LocalDOMWindow* domWindow) {
                                   LocalFrameClient::UnloadHandler);
   }
 
-  set.add(domWindow);
+  set.insert(domWindow);
 }
 
 static void removeUnloadEventListener(LocalDOMWindow* domWindow) {
@@ -227,7 +227,7 @@ static void addBeforeUnloadEventListener(LocalDOMWindow* domWindow) {
                                   LocalFrameClient::BeforeUnloadHandler);
   }
 
-  set.add(domWindow);
+  set.insert(domWindow);
 }
 
 static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow) {
