@@ -860,7 +860,7 @@ void DocumentMarkerController::showMarkers() const {
         builder.append(":");
         builder.appendNumber(marker->endOffset());
         builder.append("](");
-        builder.appendNumber(marker->activeMatch());
+        builder.appendNumber(marker->IsActiveMatch());
         builder.append(")");
       }
     }

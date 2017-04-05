@@ -1313,7 +1313,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerForeground(
   TextRun run = m_inlineTextBox.constructTextRun(style);
 
   Color textColor =
-      LayoutTheme::theme().platformTextSearchColor(marker.activeMatch());
+      LayoutTheme::theme().platformTextSearchColor(marker.IsActiveMatch());
   if (style.visitedDependentColor(CSSPropertyColor) == textColor)
     return;
 
@@ -1355,7 +1355,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(
   TextRun run = m_inlineTextBox.constructTextRun(style);
 
   Color color = LayoutTheme::theme().platformTextSearchHighlightColor(
-      marker.activeMatch());
+      marker.IsActiveMatch());
   GraphicsContext& context = paintInfo.context;
   GraphicsContextStateSaver stateSaver(context);
 

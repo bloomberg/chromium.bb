@@ -954,7 +954,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   unsigned activeMarkerCount = 0;
   for (const auto& marker : markers) {
-    if (marker->activeMatch())
+    if (marker->IsActiveMatch())
       activeMarkerCount++;
   }
 

@@ -66,7 +66,8 @@ class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
  public:
   static DocumentMarkerTextMatch* create(bool);
 
-  bool activeMatch() const { return m_match; }
+  bool IsActiveMatch() const { return m_match; }
+
   bool isTextMatch() const override { return true; }
 
  private:
@@ -182,10 +183,10 @@ const String& DocumentMarker::description() const {
   return emptyString;
 }
 
-bool DocumentMarker::activeMatch() const {
+bool DocumentMarker::IsActiveMatch() const {
   if (DocumentMarkerTextMatch* details =
           toDocumentMarkerTextMatch(m_details.get()))
-    return details->activeMatch();
+    return details->IsActiveMatch();
   return false;
 }
 

@@ -152,7 +152,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   unsigned endOffset() const { return m_endOffset; }
 
   const String& description() const;
-  bool activeMatch() const;
+  bool IsActiveMatch() const;
   Color underlineColor() const;
   bool thick() const;
   Color backgroundColor() const;

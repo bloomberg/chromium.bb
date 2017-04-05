@@ -599,7 +599,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(
     return;
 
   Color textColor =
-      LayoutTheme::theme().platformTextSearchColor(marker.activeMatch());
+      LayoutTheme::theme().platformTextSearchColor(marker.IsActiveMatch());
 
   PaintFlags fillFlags;
   fillFlags.setColor(textColor.rgb());
@@ -641,7 +641,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(
     return;
 
   Color color = LayoutTheme::theme().platformTextSearchHighlightColor(
-      marker.activeMatch());
+      marker.IsActiveMatch());
   for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
     const SVGTextFragment& fragment = textMatchInfo.fragment;
 
