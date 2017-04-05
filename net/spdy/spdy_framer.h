@@ -210,6 +210,18 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) = 0;
 };
 
+class SpdyFrameSequence {
+ public:
+  virtual ~SpdyFrameSequence() {}
+
+  // Serializes the next frame in the sequence to |output|. Returns the number
+  // of bytes written to |output|.
+  virtual size_t NextFrame(ZeroCopyOutputBuffer* output) = 0;
+
+  // Returns true iff there is at least one more frame in the sequence.
+  virtual bool HasNextFrame() const = 0;
+};
+
 class ExtensionVisitorInterface {
  public:
   virtual ~ExtensionVisitorInterface() {}
