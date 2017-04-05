@@ -402,10 +402,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 };
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
-    :  // TaskScheduler must run on its own thread because the main thread waits
-       // for a task running in it.
-      thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD |
-                     content::TestBrowserThreadBundle::REAL_TASK_SCHEDULER) {
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
   // Although is really a unit test which runs in the browser_tests binary, it
   // doesn't get the unit setup which normally happens in the unit test binary.
   ChromeUnitTestSuite::InitializeProviders();

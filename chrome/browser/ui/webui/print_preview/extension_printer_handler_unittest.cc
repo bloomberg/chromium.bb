@@ -27,6 +27,7 @@
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/test_utils.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
@@ -787,7 +788,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   EXPECT_EQ(0u, call_count);
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
@@ -841,7 +842,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   EXPECT_EQ(0u, call_count);
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
@@ -895,7 +896,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
 
   EXPECT_EQ(0u, call_count);
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
