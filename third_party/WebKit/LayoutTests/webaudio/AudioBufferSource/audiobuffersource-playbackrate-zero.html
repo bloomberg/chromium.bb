@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
 
 
     // Task: Render the actual buffer and compare with the reference.
-    audit.defineTask('synthesize-verify', function (done) {
+    audit.define('synthesize-verify', (task, should) => {
       var ramp = context.createBufferSource();
       var rampBuffer = createLinearRampBuffer(context, renderLength);
       ramp.buffer = rampBuffer;
@@ -62,24 +62,15 @@
           }
         }
 
-        Should('The zero playbackRate', passed)
-          .summarize(
+        should(passed, 'The zero playbackRate')
+          .message(
             'held the sample value correctly',
             'should hold the sample value. ' + 'Expected ' + rampData[half] +
             ' but got ' + data[i] + ' at the index ' + i);
-      }).then(done);
+      }).then(() => task.done());
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks(
-      'synthesize-verify',
-      'finish'
-    );
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

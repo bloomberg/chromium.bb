@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -22,7 +22,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("absn-set-onended", function (done) {
+      audit.define("absn-set-onended", (task, should) => {
         // Test that the onended event for an AudioBufferSourceNode is fired when it is set
         // directly.
         var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
@@ -31,63 +31,66 @@
         source.buffer = buffer;
         source.connect(context.destination);
         source.onended = function (e) {
-          Should("AudioBufferSource.onended called when ended set directly", true)
+          should(true, "AudioBufferSource.onended called when ended set directly")
             .beEqualTo(true);
         };
         source.start();
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("absn-add-listener", function (done) {
+      audit.define("absn-add-listener", (task, should) => {
         // Test that the onended event for an AudioBufferSourceNode is fired when
         // addEventListener is used to set the handler.
-        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
-        var buffer = context.createBuffer(1, sourceBufferLengthFrames, context.sampleRate);
+        var context = new OfflineAudioContext(1, renderLengthFrames,
+          sampleRate);
+        var buffer = context.createBuffer(1, sourceBufferLengthFrames,
+          context.sampleRate);
         var source = context.createBufferSource();
         source.buffer = buffer;
         source.connect(context.destination);
         source.addEventListener("ended", function (e) {
-          Should("AudioBufferSource.onended called when using addEventListener",
-          true).beEqualTo(true);
+          should(true,
+              "AudioBufferSource.onended called when using addEventListener"
+            )
+            .beEqualTo(true);
         });
         source.start();
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("osc-set-onended", function (done) {
+      audit.define("osc-set-onended", (task, should) => {
         // Test that the onended event for an OscillatorNode is fired when it is set
         // directly.
         var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
         var source = context.createOscillator();
         source.connect(context.destination);
         source.onended = function (e) {
-          Should("Oscillator.onended called when ended set directly", true).beEqualTo(true);
+          should(true, "Oscillator.onended called when ended set directly")
+            .beEqualTo(true);
         };
         source.start();
         source.stop(stopTime);
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("osc-add-listener", function (done) {
+      audit.define("osc-add-listener", (task, should) => {
         // Test that the onended event for an OscillatorNode is fired when
         // addEventListener is used to set the handler.
-        var context = new OfflineAudioContext(1, renderLengthFrames, sampleRate);
+        var context = new OfflineAudioContext(1, renderLengthFrames,
+          sampleRate);
         var source = context.createOscillator();
         source.connect(context.destination);
         source.addEventListener("ended", function (e) {
-          Should("Oscillator.onended called when using addEventListener", true).beEqualTo(true);
+          should(true,
+              "Oscillator.onended called when using addEventListener")
+            .beEqualTo(true);
         });
         source.start();
         source.stop(stopTime);
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
-      succesfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>

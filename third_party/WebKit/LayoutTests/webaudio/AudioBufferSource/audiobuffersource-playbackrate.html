@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script>
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 <body>
   <script>
@@ -91,7 +91,7 @@
 
   // Test if AudioBufferSourceNode.playbackRate can playback at different rates
   // properly.
-  audit.defineTask("playbackrate-test", function (taskDone) {
+  audit.define("playbackrate-test", (task, should) => {
     let context = new OfflineAudioContext(2, totalDuration *
       sampleRate,
       sampleRate);
@@ -118,7 +118,7 @@
           let octaveActual = actual.subarray(start, end);
           let octaveExpected = expected.subarray(start, end);
 
-          compareBuffersWithConstraints(octaveActual, octaveExpected,
+          compareBuffersWithConstraints(should, octaveActual, octaveExpected,
             {
               prefix: i,
               thresholdSNR: testConstraints[i].thresholdSNR,
@@ -127,10 +127,10 @@
         }
 
       })
-      .then(taskDone);
+      .then(() => task.done());
   });
 
-  audit.runTasks();
+  audit.run();
   </script>
 </body>
 </html>

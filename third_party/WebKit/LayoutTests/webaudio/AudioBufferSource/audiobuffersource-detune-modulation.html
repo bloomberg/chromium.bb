@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
   <script src="../resources/audiobuffersource-testing.js"></script>
   <script src="../resources/buffer-loader.js"></script>
 </head>
@@ -23,12 +23,12 @@
 
     // Task: Load the reference file asynchronously. In order to create a new
     // reference file, use the task 'generate-reference' below.
-    audit.defineTask('load-reference', function (done) {
+    audit.define('load-reference', (task, should) => {
       var loader = new BufferLoader(context, [
         'audiobuffersource-detune-modulation-expected.wav'
         ], function (bufferList) {
           referenceBuffer = bufferList[0];
-          done();
+          task.done();
         });
 
       loader.load();
@@ -36,7 +36,7 @@
 
 
     // Task: Render the actual buffer and compare with the reference.
-    audit.defineTask('generate-verify', function (done) {
+    audit.define('generate-verify', (task, should) => {
 
       // With this setting, the detune will be changing continuously and
       // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
@@ -50,7 +50,8 @@
 
         // Compare two buffers with arbitrary (yet reasonable) constraints.
         // There parameters are determined by try bot experiments.
-        compareBuffersWithConstraints(actual, expected, {
+        compareBuffersWithConstraints(should, actual, expected, {
+          prefix: "",
           thresholdSNR: 93.31,
           thresholdDiffULP: 1.01,
           thresholdDiffCount: 0,
@@ -58,11 +59,11 @@
 
         var filename = 'audiobuffersource-detune-modulation-actual.wav';
         if (downloadAudioBuffer(renderedBuffer, filename))
-          Should("Saved reference file", true).summarize(filename, "");
-      }).then(done);
+          should(true, "Saved reference file").message(filename, "");
+      }).then(() => task.done());
     });
 
-    audit.runTasks();
+    audit.run();
   </script>
 </body>
 

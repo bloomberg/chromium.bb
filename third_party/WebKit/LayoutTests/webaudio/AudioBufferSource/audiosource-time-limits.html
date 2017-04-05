@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
     <title>Test Scheduled Sources with Huge Time Limits</title>
   </head>
@@ -17,7 +17,7 @@
       
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("buffersource: huge stop time", function (done) {
+      audit.define("buffersource: huge stop time", (task, should) => {
         // We only need to generate a small number of frames for this test.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var src = context.createBufferSource();
@@ -34,12 +34,14 @@
 
         context.startRendering().then(function (resultBuffer) {
           var result = resultBuffer.getChannelData(0);
-          Should("Output from AudioBufferSource.stop(" + endTime + ")", result).beConstantValueOf(1);
-        }).then(done);
+          should(result,
+              "Output from AudioBufferSource.stop(" + endTime + ")")
+            .beConstantValueOf(1);
+        }).then(() => task.done());
       });
 
       
-      audit.defineTask("oscillator: huge stop time", function (done) {
+      audit.define("oscillator: huge stop time", (task, should) => {
         // We only need to generate a small number of frames for this test.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var src = context.createOscillator();
@@ -54,16 +56,14 @@
           var result = resultBuffer.getChannelData(0);
           // The buffer should not be empty.  Just find the max and verify that it's not zero.
           var max = Math.max.apply(null, result);
-          Should("Peak amplitude from oscillator.stop(" + endTime + ")", max).beGreaterThan(0);
-        }).then(done);
+          should(max,
+              "Peak amplitude from oscillator.stop(" + endTime + ")")
+            .beGreaterThan(0);
+        }).then(() => task.done());
       });
 
       
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

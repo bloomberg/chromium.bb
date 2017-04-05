@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -20,7 +20,7 @@
       // Create a graph for testing in an isolated scope. Returns |context|.
       // Create two nodes and schedule only one of them. Then check if |onended|
       // from the scheduled node is fired correctly.
-      function createGraphInIsolatedScope(sourceNodeType, done) {
+      function createGraphInIsolatedScope(sourceNodeType, task, should) {
 
         'use strict';
 
@@ -38,8 +38,10 @@
           // If the node is GCed, |onended| won't be fired. Then this test
           // will be timed out because done() will not get called.
           node.onended = function () {
-            Should(sourceNodeType + 'Node 1 survived GC and onended event fired', true).beEqualTo(true);
-            done();
+            should(true, sourceNodeType +
+                'Node 1 survived GC and onended event fired')
+              .beEqualTo(true);
+            task.done();
           };
 
           node.start();
@@ -56,26 +58,15 @@
         context.startRendering();
       }
 
-      audit.defineTask('oscillator-onended', function (done) {
-        createGraphInIsolatedScope('Oscillator', done);
+      audit.define('oscillator-onended', (task, should) => {
+        createGraphInIsolatedScope('Oscillator', task, should);
       });
 
-      audit.defineTask('buffersource-onended', function (done) {
-        createGraphInIsolatedScope('BufferSource', done);
+      audit.define('buffersource-onended', (task, should) => {
+        createGraphInIsolatedScope('BufferSource', task, should);
       });
 
-      audit.defineTask('finish', function (done) {
-        done();
-      });
-
-
-      audit.runTasks(
-        'oscillator-onended',
-        'buffersource-onended',
-        'finish'
-      );
-
-      succesfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -21,7 +21,7 @@
     // 3]. Then set a loop range over the second region. Start the loop and
     // disable it in the middle of looping. Verify the rendered buffer has the
     // entire content including the looped region.
-    audit.defineTask('premature-loop-stop', function (done) {
+    audit.define('premature-loop-stop', (task, should) => {
       var regionValues = [1, 2, 3];
 
       // The region length is 2 * render quantum size to be able to suspend the
@@ -70,19 +70,13 @@
         var region2 = channel.subarray(regionLength, 4 * regionLength - 1);
         var region3 = channel.subarray(4 * regionLength, 5 * regionLength - 1);
 
-        Should('Region #1', region1).beConstantValueOf(1);
-        Should('Region #2 (looped)', region2).beConstantValueOf(2);
-        Should('Region #3', region3).beConstantValueOf(3);
-      }).then(done);
+        should(region1, 'Region #1').beConstantValueOf(1);
+        should(region2, 'Region #2 (looped)').beConstantValueOf(2);
+        should(region3, 'Region #3').beConstantValueOf(3);
+      }).then(() => task.done());
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks();
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -33,7 +33,7 @@
       });
     }
 
-    audit.defineTask('test-late-start', function (done) {
+    audit.define('test-late-start', (task, should) => {
       var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
       var dcOffsetbuffer = createConstantBuffer(context, 1, 1.0);
       var source = context.createBufferSource();
@@ -64,23 +64,17 @@
         var startIndex = getStartIndex(startTime);
         var nonZeroValueIndex = getValueChangeIndex(channelData, 1.0);
 
-        Should('The output', channelData).containValues([0, 1]);
-        Should('The index of value change', nonZeroValueIndex)
+        should(channelData, 'The output').containValues([0, 1]);
+        should(nonZeroValueIndex, 'The index of value change')
           .beEqualTo(startIndex);
 
-        Should('The index of the first non-zero sample', nonZeroValueIndex)
+        should(nonZeroValueIndex, 'The index of the first non-zero sample')
           .notBeEqualTo(0)
       
-      }).then(done);
+      }).then(() => task.done());
     });
 
-    audit.defineTask('finish-test', function (done) {
-      done();
-    });
-
-    audit.runTasks();
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

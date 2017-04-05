@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
   <script src="../resources/audiobuffersource-testing.js"></script>
   <script src="../resources/buffer-loader.js"></script>
 </head>
@@ -23,12 +23,13 @@
 
     // Task: Load the reference file asynchronously. In order to create a new
     // reference file, use the task 'generate-reference' below.
-    audit.defineTask('load-reference', function (done) {
+    audit.define('load-reference', (task, should) => {
       var loader = new BufferLoader(context, [
         'audiobuffersource-playbackrate-modulation-expected.wav'
         ], function (bufferList) {
           referenceBuffer = bufferList[0];
-          done();
+          should(true, "Loaded reference file").beTrue();
+          task.done();
         });
 
       loader.load();
@@ -36,7 +37,7 @@
 
 
     // Task: Render the actual buffer and compare with the reference.
-    audit.defineTask('generate-verify', function (done) {
+    audit.define('generate-verify', (task, should) => {
       
       // With this setting, the playback rate will be changing continuously and
       // repeatedly within the range of [0, 200] around 100Hz, based on the
@@ -49,7 +50,8 @@
 
         // Compare two buffers with arbitrary (yet reasonable) constraints.
         // There parameters are determined by try bot experiments.
-        compareBuffersWithConstraints(actual, expected, {
+        compareBuffersWithConstraints(should, actual, expected, {
+          prefix: "Verify",
           thresholdSNR: 92.72,
           thresholdDiffULP: 0.985,
           thresholdDiffCount: 0,
@@ -58,11 +60,11 @@
 
         var filename = 'audiobuffersource-playbackrate-modulation-actual.wav';
         if (downloadAudioBuffer(renderedBuffer, filename))
-          Should("Saved reference file", true).summarize(filename, "");
-      }).then(done);
+          should(true, "Saved reference file").message(filename, "");
+      }).then(() => task.done());
     });
 
-    audit.runTasks();
+    audit.run();
   </script>
 </body>
 

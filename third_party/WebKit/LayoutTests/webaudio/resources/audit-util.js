@@ -172,12 +172,18 @@ function downloadAudioBuffer(audioBuffer, filename, asFloat) {
 //     which exceeds the threshold. The default is 0.
 //   options.bitDepth: The expected result is assumed to come from an audio
 //     file with this number of bits of precision. The default is 16.
-function compareBuffersWithConstraints(actual, expected, options) {
+function compareBuffersWithConstraints(should, actual, expected, options) {
     if (!options)
         options = {};
 
-    if (actual.length !== expected.length)
-        testFailed('Buffer length mismatches.');
+    // Only print out the message if the lengths are different; the
+    // expectation is that they are the same, so don't clutter up the
+    // output.
+    if (actual.length !== expected.length) {
+        should(actual.length === expected.length,
+                "Length of actual and expected buffers should match")
+            .beTrue();
+    }
 
     var maxError = -1;
     var diffCount = 0;
@@ -212,13 +218,16 @@ function compareBuffersWithConstraints(actual, expected, options) {
     var snr = 10 * Math.log10(signalPower / noisePower);
     var maxErrorULP = maxError * scaleFactor;
 
-    Should("SNR", snr).beGreaterThanOrEqualTo(thresholdSNR);
+    should(snr, "SNR").beGreaterThanOrEqualTo(thresholdSNR);
 
-    Should(options.prefix + ': Maximum difference (in ulp units (' + bitDepth + '-bits))',
-      maxErrorULP).beLessThanOrEqualTo(thresholdDiffULP);
+    should(maxErrorULP,
+        options.prefix + ': Maximum difference (in ulp units (' + bitDepth +
+        '-bits))'
+    ).beLessThanOrEqualTo(thresholdDiffULP);
 
-    Should(options.prefix + ': Number of differences between results', diffCount)
-      .beLessThanOrEqualTo(thresholdDiffCount);
+    should(diffCount, options.prefix +
+        ': Number of differences between results').beLessThanOrEqualTo(
+        thresholdDiffCount);
 }
 
 // Create an impulse in a buffer of length sampleFrameLength
