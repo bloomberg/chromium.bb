@@ -83,19 +83,6 @@ class CastTrustStore {
   DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
 };
 
-using ExtensionsMap = std::map<net::der::Input, net::ParsedExtension>;
-
-// Helper that looks up an extension by OID given a map of extensions.
-bool GetExtensionValue(const ExtensionsMap& extensions,
-                       const net::der::Input& oid,
-                       net::der::Input* value) {
-  auto it = extensions.find(oid);
-  if (it == extensions.end())
-    return false;
-  *value = it->second.value;
-  return true;
-}
-
 // Returns the OID for the Audio-Only Cast policy
 // (1.3.6.1.4.1.11129.2.5.2) in DER form.
 net::der::Input AudioOnlyPolicyOid() {
@@ -200,28 +187,15 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
   if (!cert->key_usage().AssertsBit(net::KEY_USAGE_BIT_DIGITAL_SIGNATURE))
     return false;
 
-  // Get the Extended Key Usage extension.
-  net::der::Input extension_value;
-  if (!GetExtensionValue(cert->unparsed_extensions(), net::ExtKeyUsageOid(),
-                         &extension_value)) {
-    return false;
-  }
-  std::vector<net::der::Input> ekus;
-  if (!net::ParseEKUExtension(extension_value, &ekus))
-    return false;
-
   // Ensure Extended Key Usage contains client auth.
-  if (!HasClientAuth(ekus))
+  if (!cert->has_extended_key_usage() ||
+      !HasClientAuth(cert->extended_key_usage()))
     return false;
 
   // Check for an optional audio-only policy extension.
   *policy = CastDeviceCertPolicy::NONE;
-  if (GetExtensionValue(cert->unparsed_extensions(),
-                        net::CertificatePoliciesOid(), &extension_value)) {
-    std::vector<net::der::Input> policies;
-    if (!net::ParseCertificatePoliciesExtension(extension_value, &policies))
-      return false;
-
+  if (cert->has_policy_oids()) {
+    const std::vector<net::der::Input>& policies = cert->policy_oids();
     // Look for an audio-only policy. Disregard any other policy found.
     if (std::find(policies.begin(), policies.end(), AudioOnlyPolicyOid()) !=
         policies.end()) {
