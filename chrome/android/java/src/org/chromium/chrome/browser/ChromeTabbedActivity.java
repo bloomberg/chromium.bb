@@ -1040,6 +1040,19 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         return;
                     }
 
+                    if (!PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+                        // The incognito launcher shortcut is manipulated in #onDeferredStartup(),
+                        // so it's possible for a user to invoke the shortcut before it's disabled.
+                        // Opening an incognito tab while incognito mode is disabled from somewhere
+                        // besides the launcher shortcut is an error.
+                        if (!fromLauncherShortcut) {
+                            assert false : "Tried to open incognito tab while incognito disabled";
+                            Log.e(TAG, "Tried to open incognito tab while incognito disabled");
+                        }
+
+                        return;
+                    }
+
                     if (url == null || url.equals(UrlConstants.NTP_URL)) {
                         if (fromLauncherShortcut) {
                             getTabCreator(true).launchUrl(
@@ -1316,6 +1329,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         "MemoryAndroid.DeviceMemoryClass", am.getMemoryClass());
 
                 AutocompleteController.nativePrefetchZeroSuggestResults();
+
+                LauncherShortcutActivity.updateIncognitoShortcut(ChromeTabbedActivity.this);
             }
         });
     }
@@ -1926,7 +1941,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private void reportNewTabShortcutUsed(boolean isIncognito) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
-        ShortcutManager shortcutManager = (ShortcutManager) getSystemService(ShortcutManager.class);
+        ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
         shortcutManager.reportShortcutUsed(
                 isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
     }
