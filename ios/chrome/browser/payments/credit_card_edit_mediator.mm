@@ -42,12 +42,16 @@ const CGFloat kCardTypeIconDimension = 25.0;
 // and should outlive it.
 @property(nonatomic, assign) autofill::CreditCard* creditCard;
 
+// The list of field definitions for the editor.
+@property(nonatomic, strong) NSArray<EditorField*>* editorFields;
+
 @end
 
 @implementation CreditCardEditViewControllerMediator
 
 @synthesize paymentRequest = _paymentRequest;
 @synthesize creditCard = _creditCard;
+@synthesize editorFields = _editorFields;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
                             creditCard:(autofill::CreditCard*)creditCard {
@@ -55,6 +59,7 @@ const CGFloat kCardTypeIconDimension = 25.0;
   if (self) {
     _paymentRequest = paymentRequest;
     _creditCard = creditCard;
+    _editorFields = [self createEditorFields];
   }
   return self;
 }
@@ -85,6 +90,12 @@ const CGFloat kCardTypeIconDimension = 25.0;
 }
 
 - (NSArray<EditorField*>*)editorFields {
+  return _editorFields;
+}
+
+#pragma mark - Helper methods
+
+- (NSArray<EditorField*>*)createEditorFields {
   // Server credit cards are not editable.
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard))
     return @[];

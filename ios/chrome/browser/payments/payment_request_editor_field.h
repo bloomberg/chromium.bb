@@ -24,7 +24,7 @@
 // Whether the field is required.
 @property(nonatomic, getter=isRequired) BOOL required;
 // The associated AutofillEditItem instance. May be nil.
-@property(nonatomic, assign) AutofillEditItem* item;
+@property(nonatomic, strong) AutofillEditItem* item;
 // The section identifier for the associated AutofillEditItem.
 @property(nonatomic, assign) NSInteger sectionIdentifier;
 
