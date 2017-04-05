@@ -456,11 +456,17 @@ CommandHandler.onCommand = function(command) {
         current = cursors.Range.fromNode(node);
       break;
     case 'forceClickOnCurrentItem':
-      if (ChromeVoxState.instance.currentRange_) {
-        var actionNode = ChromeVoxState.instance.currentRange_.start.node;
-        if (actionNode.role == RoleType.INLINE_TEXT_BOX)
+      if (ChromeVoxState.instance.currentRange) {
+        var actionNode = ChromeVoxState.instance.currentRange.start.node;
+        while (actionNode.role == RoleType.INLINE_TEXT_BOX ||
+            actionNode.role == RoleType.STATIC_TEXT)
           actionNode = actionNode.parent;
-        actionNode.doDefault();
+        if (actionNode.inPageLinkTarget) {
+          ChromeVoxState.instance.navigateToRange(
+              cursors.Range.fromNode(actionNode.inPageLinkTarget));
+        } else {
+          actionNode.doDefault();
+        }
       }
       // Skip all other processing; if focus changes, we should get an event
       // for that.

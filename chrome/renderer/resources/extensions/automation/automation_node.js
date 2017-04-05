@@ -737,6 +737,7 @@ var intAttributes = [
 
 var nodeRefAttributes = [
     ['activedescendantId', 'activeDescendant'],
+    ['inPageLinkTargetId', 'inPageLinkTarget'],
     ['nextOnLineId', 'nextOnLine'],
     ['previousOnLineId', 'previousOnLine'],
     ['tableColumnHeaderId', 'tableColumnHeader'],

@@ -479,7 +479,9 @@ Output.RULES = {
       enter: '$nameFromNode $role $description'
     },
     link: {
-      enter: '$nameFromNode= $role $state'
+      enter: '$nameFromNode= $role $state',
+      speak: '$name $value $state ' +
+          '$if($inPageLinkTarget, @internal_link, $role) $description',
     },
     list: {
       enter: '$role @@list_with_items($countChildren(listItem))',

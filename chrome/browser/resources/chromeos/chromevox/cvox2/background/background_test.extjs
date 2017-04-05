@@ -1228,3 +1228,16 @@ TEST_F('BackgroundTest', 'BrailleCaretNavigation', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'InPageLinks', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <a href="#there">hi</a>
+    <button id="there">there</button>
+  */}, function(root) {
+    mockFeedback.expectSpeech('hi', 'Internal link')
+        .call(doCmd('forceClickOnCurrentItem'))
+        .expectSpeech('there', 'Button')
+        .replay();
+  });
+});

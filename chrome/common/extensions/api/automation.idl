@@ -443,6 +443,9 @@
     // applicable
     AutomationNode? activeDescendant;
 
+    // The target of an in-page link.
+    AutomationNode? inPageLinkTarget;
+
     //
     // Link attributes.
     //
@@ -759,7 +762,8 @@
     // tree with a placeholder root node; listen for the "loadComplete" event to
     // get a notification that the tree has fully loaded (the previous root node
     // reference will stop working at or before this point).
-    [nocompile] static void getTree(optional long tabId, RootCallback callback);
+    [nocompile] static void getTree(optional long tabId,
+                                    optional RootCallback callback);
 
     // Get the automation tree for the whole desktop which consists of all on
     // screen views. Note this API is currently only supported on Chrome OS.
