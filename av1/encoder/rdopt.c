@@ -1376,6 +1376,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                        int blk_col, TX_SIZE tx_size, int64_t *out_dist,
                        int64_t *out_sse) {
   MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_DAALA_DIST
@@ -1442,11 +1443,26 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
 #if CONFIG_DAALA_DIST
     if (plane == 0) {
-      if (bsw >= 8 && bsh >= 8)
-        tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
-                             use_activity_masking, x->qindex);
-      else
+      if (bsw >= 8 && bsh >= 8) {
+        if (!is_inter_block(mbmi)) {
+          const int pred_stride = block_size_wide[plane_bsize];
+          const int16_t *pred = &pd->pred[(blk_row * pred_stride + blk_col)
+                                          << tx_size_wide_log2[0]];
+          int i, j;
+          DECLARE_ALIGNED(16, uint8_t, pred8[MAX_TX_SQUARE]);
+
+          for (j = 0; j < bsh; j++)
+            for (i = 0; i < bsw; i++)
+              pred8[j * bsw + i] = pred[j * pred_stride + i];
+          tmp = av1_daala_dist(src, src_stride, pred8, bsw, tx_size, qm,
+                               use_activity_masking, x->qindex);
+        } else {
+          tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
+                               use_activity_masking, x->qindex);
+        }
+      } else {
         tmp = 0;
+      }
     } else
 #endif  // CONFIG_DAALA_DIST
     {
@@ -1460,47 +1476,69 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     *out_sse = (int64_t)tmp * 16;
 
     if (eob) {
+      if (!is_inter_block(mbmi)) {
+#if CONFIG_DAALA_DIST
+        if (plane == 0) {
+          if (bsw >= 8 && bsh >= 8)
+            tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
+                                 use_activity_masking, x->qindex);
+          else
+            tmp = 0;
+        } else {
+#endif  // CONFIG_DAALA_DIST
+          tmp = pixel_sse(cpi, xd, plane, src, src_stride, dst, dst_stride,
+                          blk_row, blk_col, plane_bsize, tx_bsize);
+#if CONFIG_DAALA_DIST
+        }
+#endif  // CONFIG_DAALA_DIST
+      } else {
 #if CONFIG_AOM_HIGHBITDEPTH
-      DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
-      uint8_t *recon = (uint8_t *)recon16;
+        DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
+        uint8_t *recon = (uint8_t *)recon16;
 #else
-      DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
+        DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
-                                 NULL, 0, bsw, bsh, xd->bd);
-      } else
+        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+          aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
+                                   NULL, 0, bsw, bsh, xd->bd);
+        } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-      {
-        aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL, 0,
-                          bsw, bsh);
-      }
+          aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL,
+                            0, bsw, bsh);
+#if CONFIG_AOM_HIGHBITDEPTH
+        }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #else
-      (void)dst;
+        (void)dst;
 #endif  // !CONFIG_PVQ
 
-      const int block_raster_idx =
-          av1_block_index_to_raster_order(tx_size, block);
-      const PLANE_TYPE plane_type = get_plane_type(plane);
-      TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
+        const int block_raster_idx =
+            av1_block_index_to_raster_order(tx_size, block);
+        const PLANE_TYPE plane_type = get_plane_type(plane);
+        TX_TYPE tx_type =
+            get_tx_type(plane_type, xd, block_raster_idx, tx_size);
 
-      av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, recon,
-                                  MAX_TX_SIZE, eob);
+        av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, recon,
+                                    MAX_TX_SIZE, eob);
 
 #if CONFIG_DAALA_DIST
-      if (plane == 0) {
-        if (bsw >= 8 && bsh >= 8)
-          tmp = av1_daala_dist(src, src_stride, recon, MAX_TX_SIZE, tx_size, qm,
-                               use_activity_masking, x->qindex);
-        else
-          tmp = 0;
-      } else
+        if (plane == 0) {
+          if (bsw >= 8 && bsh >= 8)
+            tmp = av1_daala_dist(src, src_stride, recon, MAX_TX_SIZE, tx_size,
+                                 qm, use_activity_masking, x->qindex);
+          else
+            tmp = 0;
+        } else {
 #endif  // CONFIG_DAALA_DIST
-        tmp = pixel_sse(cpi, xd, plane, src, src_stride, recon, MAX_TX_SIZE,
-                        blk_row, blk_col, plane_bsize, tx_bsize);
+          tmp = pixel_sse(cpi, xd, plane, src, src_stride, recon, MAX_TX_SIZE,
+                          blk_row, blk_col, plane_bsize, tx_bsize);
+#if CONFIG_DAALA_DIST
+        }
+#endif  // CONFIG_DAALA_DIST
+      }
     }
     *out_dist = (int64_t)tmp * 16;
   }
@@ -1526,13 +1564,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
                                            *(args->t_left + blk_row));
   RD_STATS this_rd_stats;
-#if CONFIG_DAALA_DIST
-  int qm = OD_HVS_QM;
-  int use_activity_masking = 0;
-#if CONFIG_PVQ
-  use_activity_masking = x->daala_enc.use_activity_masking;
-#endif  // CONFIG_PVQ
-#endif  // CONFIG_DAALA_DIST
 
 #if !CONFIG_PVQ
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
@@ -1549,82 +1580,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     };
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
-    if (args->cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
-      dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-                 tx_size, &this_rd_stats.dist, &this_rd_stats.sse);
-    } else {
-      // Note that the encode block_intra call above already calls
-      // av1_inv_txfm_add, so we can't just call dist_block here.
-      const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-      const struct macroblock_plane *const p = &x->plane[plane];
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-
-      const int src_stride = p->src.stride;
-      const int dst_stride = pd->dst.stride;
-      const int diff_stride = block_size_wide[plane_bsize];
-
-      const uint8_t *src =
-          &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
-      const uint8_t *dst =
-          &pd->dst
-               .buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-      const int16_t *diff = &p->src_diff[(blk_row * diff_stride + blk_col)
-                                         << tx_size_wide_log2[0]];
-      unsigned int tmp;
-
-#if CONFIG_DAALA_DIST
-      if (plane == 0) {
-        const int bsw = block_size_wide[tx_bsize];
-        const int bsh = block_size_high[tx_bsize];
-
-        if (bsw >= 8 && bsh >= 8) {
-          const int16_t *pred = &pd->pred[(blk_row * diff_stride + blk_col)
-                                          << tx_size_wide_log2[0]];
-          int i, j;
-          DECLARE_ALIGNED(16, uint8_t, pred8[MAX_TX_SQUARE]);
-
-          for (j = 0; j < bsh; j++)
-            for (i = 0; i < bsw; i++)
-              pred8[j * bsw + i] = pred[j * diff_stride + i];
-
-          this_rd_stats.sse =
-              av1_daala_dist(src, src_stride, pred8, bsw, tx_size, qm,
-                             use_activity_masking, x->qindex);
-        } else {
-          this_rd_stats.sse = 0;
-        }
-      } else
-#endif  // CONFIG_DAALA_DIST
-      {
-        this_rd_stats.sse =
-            sum_squares_visible(xd, plane, diff, diff_stride, blk_row, blk_col,
-                                plane_bsize, tx_bsize);
-
-#if CONFIG_AOM_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-          this_rd_stats.sse =
-              ROUND_POWER_OF_TWO(this_rd_stats.sse, (xd->bd - 8) * 2);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-      }
-
-      this_rd_stats.sse = this_rd_stats.sse * 16;
-
-#if CONFIG_DAALA_DIST
-      if (plane == 0) {
-        const int bsw = block_size_wide[tx_bsize];
-        const int bsh = block_size_high[tx_bsize];
-
-        if (bsw >= 8 && bsh >= 8)
-          tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
-                               use_activity_masking, x->qindex);
-        else
-          tmp = 0;
-      } else
-#endif  // CONFIG_DAALA_DIST
-        tmp = pixel_sse(args->cpi, xd, plane, src, src_stride, dst, dst_stride,
-                        blk_row, blk_col, plane_bsize, tx_bsize);
-      this_rd_stats.dist = (int64_t)tmp * 16;
-    }
+    dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
+               tx_size, &this_rd_stats.dist, &this_rd_stats.sse);
   } else {
     // full forward transform and quantization
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
