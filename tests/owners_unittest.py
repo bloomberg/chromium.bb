@@ -74,11 +74,12 @@ class _BaseTestCase(unittest.TestCase):
     self.root = '/'
     self.fopen = self.repo.open_for_reading
 
-  def db(self, root=None, fopen=None, os_path=None, status_file=None):
+  def db(self, root=None, fopen=None, os_path=None):
     root = root or self.root
     fopen = fopen or self.fopen
     os_path = os_path or self.repo
-    return owners.Database(root, status_file, fopen, os_path)
+    # pylint: disable=no-value-for-parameter
+    return owners.Database(root, fopen, os_path)
 
 
 class OwnersDatabaseTest(_BaseTestCase):
@@ -335,8 +336,9 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assert_syntax_error('file:foo/bar/baz\n')
 
   def test_non_existant_status_file(self):
-    db = self.db(status_file='does_not_exist')
-    self.files['/foo/OWNERS'] = brett
+    db = self.db()
+    self.files['/OWNERS'] = owners_file(brett,
+                                        comment='OWNERS_STATUS = nonexistant')
     self.files['/foo/DEPS'] = ''
     self.assertRaises(IOError, db.reviewers_for, ['foo/DEPS'], None)
 

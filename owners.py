@@ -100,16 +100,14 @@ class Database(object):
   of changed files, and see if a list of changed files is covered by a
   list of reviewers."""
 
-  def __init__(self, root, status_file, fopen, os_path):
+  def __init__(self, root, fopen, os_path):
     """Args:
       root: the path to the root of the Repository
-      status_file: the path relative to root to global status entries or None
       open: function callback to open a text file for reading
       os_path: module/object callback with fields for 'abspath', 'dirname',
           'exists', 'join', and 'relpath'
     """
     self.root = root
-    self.status_file = status_file
     self.fopen = fopen
     self.os_path = os_path
 
@@ -139,6 +137,9 @@ class Database(object):
     # differently depending on whether they are regular owners files or
     # being included from another file.
     self._included_files = {}
+
+    # File with global status lines for owners.
+    self._status_file = None
 
   def reviewers_for(self, files, author):
     """Returns a suggested set of reviewers that will cover the files.
@@ -233,6 +234,8 @@ class Database(object):
 
     self.read_files.add(owners_path)
 
+    is_toplevel = path == 'OWNERS'
+
     comment = []
     dirpath = self.os_path.dirname(path)
     in_comment = False
@@ -241,6 +244,11 @@ class Database(object):
       lineno += 1
       line = line.strip()
       if line.startswith('#'):
+        if is_toplevel:
+          m = re.match('#\s*OWNERS_STATUS\s+=\s+(.+)$', line)
+          if m:
+            self._status_file = m.group(1).strip()
+            continue
         if not in_comment:
           comment = []
         comment.append(line[1:].strip())
@@ -276,12 +284,15 @@ class Database(object):
                       ' '.join(comment))
 
   def _read_global_comments(self):
-    if not self.status_file:
-      return
+    if not self._status_file:
+      if not 'OWNERS' in self.read_files:
+        self._read_owners('OWNERS')
+      if not self._status_file:
+        return
 
-    owners_status_path = self.os_path.join(self.root, self.status_file)
+    owners_status_path = self.os_path.join(self.root, self._status_file)
     if not self.os_path.exists(owners_status_path):
-      raise IOError('Could not find global status file "%s"' % 
+      raise IOError('Could not find global status file "%s"' %
                     owners_status_path)
 
     if owners_status_path in self.read_files:

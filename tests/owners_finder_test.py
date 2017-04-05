@@ -41,7 +41,8 @@ def owners_file(*email_addresses, **kwargs):
 def test_repo():
   return filesystem_mock.MockFileSystem(files={
     '/DEPS': '',
-    '/OWNERS': owners_file(ken, peter, tom),
+    '/OWNERS': owners_file(ken, peter, tom,
+                           comment='OWNERS_STATUS = build/OWNERS.status'),
     '/build/OWNERS.status': '%s: bar' % jochen,
     '/base/vlog.h': '',
     '/chrome/OWNERS': owners_file(ben, brett),
@@ -73,8 +74,7 @@ class OutputInterceptedOwnersFinder(owners_finder.OwnersFinder):
   def __init__(self, files, local_root,
                fopen, os_path, disable_color=False):
     super(OutputInterceptedOwnersFinder, self).__init__(
-      files, local_root, os_path.join('build', 'OWNERS.status'), None,
-      fopen, os_path, disable_color=disable_color)
+      files, local_root, None, fopen, os_path, disable_color=disable_color)
     self.output = []
     self.indentation_stack = []
 

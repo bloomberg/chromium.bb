@@ -22,7 +22,7 @@ class OwnersFinder(object):
 
   indentation = 0
 
-  def __init__(self, files, local_root, owners_status_file, author,
+  def __init__(self, files, local_root, author,
                fopen, os_path,
                email_postfix='@chromium.org',
                disable_color=False):
@@ -34,8 +34,7 @@ class OwnersFinder(object):
       self.COLOR_GREY = ''
       self.COLOR_RESET = ''
 
-    self.db = owners_module.Database(local_root, owners_status_file, fopen,
-                                     os_path)
+    self.db = owners_module.Database(local_root, fopen, os_path)
     self.db.load_data_needed_for(files)
 
     self.os_path = os_path
@@ -52,8 +51,7 @@ class OwnersFinder(object):
     if len(filtered_files) != len(files):
       files = filtered_files
       # Reload the database.
-      self.db = owners_module.Database(local_root, owners_status_file, fopen,
-                                       os_path)
+      self.db = owners_module.Database(local_root, fopen, os_path)
       self.db.load_data_needed_for(files)
 
     self.all_possible_owners = self.db.all_possible_owners(files, None)

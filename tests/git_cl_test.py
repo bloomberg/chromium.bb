@@ -684,25 +684,6 @@ class TestGitCl(TestCase):
     ]
     self.assertIsNone(git_cl.LoadCodereviewSettingsFromFile(codereview_file))
 
-  def test_LoadCodereviewSettingsFromFile_owners_status(self):
-    codereview_file = StringIO.StringIO('OWNERS_STATUS_FILE: status')
-    self.calls = [
-      ((['git', 'config', '--unset-all', 'rietveld.server'],), ''),
-      ((['git', 'config', '--unset-all', 'rietveld.cc'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.private'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
-        CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.project'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
-        CERR1),
-      ((['git', 'config', 'rietveld.owners-status-file', 'status'],), ''),
-    ]
-    self.assertIsNone(git_cl.LoadCodereviewSettingsFromFile(codereview_file))
-
   @classmethod
   def _is_gerrit_calls(cls, gerrit=False):
     return [((['git', 'config', 'rietveld.autoupdate'],), ''),

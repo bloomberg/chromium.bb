@@ -422,7 +422,6 @@ class InputApi(object):
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
-                                     change.GetOwnersStatusFile(),
                                      fopen=file, os_path=self.os_path)
     self.verbose = verbose
     self.Command = CommandData
@@ -918,10 +917,6 @@ class Change(object):
         x for x in self.AffectedFiles(include_deletes=False)
         if x.IsTestableFile())
 
-  def GetOwnersStatusFile(self):
-    """Returns the name of the global OWNERS status file."""
-    return None
-
 
 class GitChange(Change):
   _AFFECTED_FILES = GitAffectedFile
@@ -932,19 +927,6 @@ class GitChange(Change):
     root = root or self.RepositoryRoot()
     return subprocess.check_output(
         ['git', 'ls-files', '--', '.'], cwd=root).splitlines()
-
-  def GetOwnersStatusFile(self):
-    """Returns the name of the global OWNERS status file."""
-
-    try:
-      status_file = subprocess.check_output(
-          ['git', 'config', 'rietveld.owners-status-file'],
-          cwd=self.RepositoryRoot())
-      return status_file
-    except subprocess.CalledProcessError:
-      pass
-
-    return None
 
 
 def ListRelevantPresubmitFiles(files, root):

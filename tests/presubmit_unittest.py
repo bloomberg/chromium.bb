@@ -120,8 +120,6 @@ index fe3de7b..54ae6e1 100755
         self._root = obj.fake_root_dir
       def RepositoryRoot(self):
         return self._root
-      def GetOwnersStatusFile(self):
-        return None
 
     self.mox.StubOutWithMock(presubmit, 'random')
     self.mox.StubOutWithMock(presubmit, 'warn')
@@ -513,7 +511,6 @@ class PresubmitUnittest(PresubmitTestsBase):
         0,
         0,
         None)
-    change.GetOwnersStatusFile = lambda: None
     executer = presubmit.PresubmitExecuter(change, False, None, False)
     self.failIf(executer.ExecPresubmitScript('', fake_presubmit))
     # No error if no on-upload entry point
@@ -1068,7 +1065,6 @@ class InputApiUnittest(PresubmitTestsBase):
         0,
         0,
         None)
-    change.GetOwnersStatusFile = lambda: None
     input_api = presubmit.InputApi(
         change,
         presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
@@ -1197,7 +1193,6 @@ class InputApiUnittest(PresubmitTestsBase):
 
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
-    change.GetOwnersStatusFile = lambda: None
     input_api = presubmit.InputApi(
         change,
         presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
@@ -1218,7 +1213,6 @@ class InputApiUnittest(PresubmitTestsBase):
 
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
-    change.GetOwnersStatusFile = lambda: None
     input_api = presubmit.InputApi(
         change, './PRESUBMIT.py', False, None, False)
     # Sample usage of overiding the default white and black lists.
@@ -1542,7 +1536,7 @@ class ChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTestableFiles',
         'AffectedTextFiles',
         'AllFiles', 'DescriptionText', 'FullDescriptionText',
-        'GetOwnersStatusFile', 'LocalPaths', 'Name', 'RepositoryRoot',
+        'LocalPaths', 'Name', 'RepositoryRoot',
         'RightHandSideLines', 'SetDescriptionText', 'TAG_LINE_RE',
         'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
