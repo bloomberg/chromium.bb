@@ -5176,8 +5176,8 @@
       'tags': [],
       'desc': '''How frequently monitoring network packets are sent, in milliseconds.
 
-      If this policy is unset, the default frequency is 3 minutes. The minimum
-      frequency is 30 seconds and the maximum frequency is 24 hours - values
+      If this policy is unset, the default interval is 3 minutes. The minimum
+      interval is 30 seconds and the maximum interval is 24 hours - values
       outside of this range will be clamped to this range.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
