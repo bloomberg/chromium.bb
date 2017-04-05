@@ -214,11 +214,20 @@
     <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
       Google Play Store (beta)
     </message>
-    <message name="IDS_SETTINGS_ANDROID_APPS_ENABLE" desc="Label for the checkbox that enables Google Play Store (Arc++) apps.">
-      Enable Google Play Store on your Chromebook.
+    <message name="IDS_SETTINGS_ANDROID_APPS_LABEL" desc="The text associated with the primary section setting.">
+      Google Play Store
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_ENABLE" desc="Label for the button that enables Google Play Store (Arc++) apps.">
+      Turn on
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_SUBTEXT" desc="Description for the section for enabling and managing Google Play Store (Android) apps.">
+      Install apps and games from Google Play on your Chromebook. &lt;a target="_blank" href="<ph name="URL">$1<ex>https://google.com/</ex></ph>"&gt;Learn more&lt;/a&gt;
     </message>
     <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS" desc="Label for launching Android apps settings.">
-      Manage your Android preferences
+      Manage Android preferences
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_REMOVE" desc="Label for the control to open a dialog confirming removal of the Google Play Store.">
+      Remove Google Play Store
     </message>
     <message name="IDS_SETTINGS_ANDROID_APPS_LEARN_MORE" desc="Link for more informaiton about installing Android apps on Chrome OS.">
       Learn more
@@ -233,6 +242,9 @@
       Content you’ve purchased such as movies, TV shows, music, books, or other in-app purchases may also be deleted.
       <ph name="LINE_BREAKS2">&lt;br&gt;&lt;br&gt;</ph>
       This doesn’t affect apps or content on other devices.
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE" desc="Lable for confirmation button in the disable android apps dialog.">
+      Remove Android apps
     </message>
   </if>
 
