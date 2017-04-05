@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.support.test.filters.LargeTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -80,6 +81,7 @@ public class WebApkIntegrationTest extends ChromeActivityTestCaseBase<WebApkActi
      */
     @LargeTest
     @Feature({"WebApk"})
+    @RetryOnFailure
     public void testLaunch() throws InterruptedException {
         startWebApkActivity("org.chromium.webapk.test",
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
