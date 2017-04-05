@@ -183,11 +183,6 @@ TEST(TextEliderTest, TestHostEliding) {
      "reallyreallyreallylongdomainname.com"},
     {"http://foo", "foo"},
     {"http://foo.bar", "foo.bar"},
-#if !defined(OS_IOS)
-    // iOS width calculations are off by a letter from other platforms for
-    // strings with too many kerned letters on the default font set.
-    // TODO(rohitrao): Fix secure_display::ElideHost for iOS
-    // (crbug.com/517604).
     {"http://subdomain.google.com", kEllipsisStr + ".google.com"},
     {"http://a.b.c.d.e.f.com", kEllipsisStr + "f.com"},
     {"http://subdomain.foo.bar", kEllipsisStr + "in.foo.bar"},
@@ -197,7 +192,6 @@ TEST(TextEliderTest, TestHostEliding) {
     // IDN - Greek alpha.beta.gamma.delta.epsilon.zeta.com
     {"http://xn--mxa.xn--nxa.xn--oxa.xn--pxa.xn--qxa.xn--rxa.com",
      kEllipsisStr + ".\xCE\xB5.\xCE\xB6.com"},
-#endif  // !defined(OS_IOS)
   };
 
   for (size_t i = 0; i < arraysize(testcases); ++i) {
