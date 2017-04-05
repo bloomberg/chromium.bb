@@ -21,11 +21,13 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
+#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -157,6 +159,14 @@ class FullCardRequester
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
   [_viewController setDelegate:self];
+  DCHECK(_browserState);
+  const SigninManager* signinManager =
+      ios::SigninManagerFactory::GetForBrowserStateIfExists(_browserState);
+  if (signinManager && signinManager->IsAuthenticated()) {
+    NSString* accountName = base::SysUTF8ToNSString(
+        signinManager->GetAuthenticatedAccountInfo().email);
+    [_viewController setAuthenticatedAccountName:accountName];
+  }
   [_viewController loadModel];
 
   _navigationController = [[UINavigationController alloc]

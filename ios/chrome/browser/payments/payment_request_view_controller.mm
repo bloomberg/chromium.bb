@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -25,6 +26,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -53,6 +55,11 @@ using ::payment_request_util::GetShippingSectionTitle;
 using ::payment_request_util::GetShippingAddressSelectorTitle;
 using ::payment_request_util::GetShippingOptionSelectorTitle;
 
+// String used as the "URL" to take the user to the settings page for card and
+// address options. Needs to be URL-like; otherwise, the link will not appear
+// as a link in the UI (see setLabelLinkURL: in CollectionViewFooterCell).
+const char kSettingsURL[] = "settings://card-and-address";
+
 }  // namespace
 
 NSString* const kPaymentRequestCollectionViewID =
@@ -68,6 +75,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierShipping,
   SectionIdentifierPayment,
   SectionIdentifierContactInfo,
+  SectionIdentifierFooter,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -85,6 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeContactInfoTitle,
   ItemTypeContactInfo,
   ItemTypeAddContactInfo,
+  ItemTypeFooterText,
 };
 
 }  // namespace
@@ -115,6 +124,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pageHost = _pageHost;
 @synthesize pending = _pending;
 @synthesize delegate = _delegate;
+@synthesize showDataSource = _showDataSource;
+@synthesize authenticatedAccountName = _authenticatedAccountName;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
@@ -173,6 +184,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self navigationItem].rightBarButtonItem = payButtonItem;
 
     _paymentRequest = paymentRequest;
+
+    // By default, data source is shown.
+    _showDataSource = TRUE;
   }
   return self;
 }
@@ -357,6 +371,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   [model addItem:contactInfoItem
       toSectionWithIdentifier:SectionIdentifierContactInfo];
+
+  // Footer Text section.
+  [model addSectionWithIdentifier:SectionIdentifierFooter];
+  CollectionViewFooterItem* footer =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooterText];
+  if (!_showDataSource) {
+    footer.text =
+        l10n_util::GetNSString(IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS);
+  } else if ([_authenticatedAccountName length]) {
+    const std::string unformattedString = l10n_util::GetStringUTF8(
+        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN);
+    const std::string accountName =
+        base::SysNSStringToUTF8(_authenticatedAccountName);
+    const std::string formattedString =
+        base::StringPrintf(unformattedString.c_str(), accountName.c_str());
+    footer.text = base::SysUTF8ToNSString(formattedString);
+  } else {
+    footer.text = l10n_util::GetNSString(
+        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT);
+  }
+  footer.linkURL = GURL(kSettingsURL);
+  footer.linkDelegate = self;
+  [model addItem:footer toSectionWithIdentifier:SectionIdentifierFooter];
 }
 
 - (void)viewDidLoad {
@@ -460,6 +497,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.email = GetEmailLabelFromAutofillProfile(*profile);
 }
 
+#pragma mark - CollectionViewFooterLinkDelegate
+
+- (void)cell:(CollectionViewFooterCell*)cell didTapLinkURL:(GURL)url {
+  DCHECK_EQ(url, GURL(kSettingsURL)) << "Unknown URL tapped";
+  NOTIMPLEMENTED();  // TODO(macourteau): take the user to the right place.
+}
+
 #pragma mark UICollectionViewDataSource
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -514,6 +558,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeAddContactInfo:
       // TODO(crbug.com/602666): Handle displaying contact info selection view.
       break;
+    case ItemTypeFooterText:
+      // Selecting the footer item should not trigger an action, unless the
+      // link was clicked, which will call didTapLinkURL:.
+      break;
     default:
       NOTREACHED();
       break;
@@ -531,6 +579,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeShippingAddress:
     case ItemTypePaymentMethod:
     case ItemTypeContactInfo:
+    case ItemTypeFooterText:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -552,17 +601,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-// If there are no payment items to display, there is no effect from touching
-// the total so there should not be an ink ripple.
 - (BOOL)collectionView:(UICollectionView*)collectionView
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  if (type == ItemTypeSummaryTotal &&
-      _paymentRequest->payment_details().display_items.empty()) {
+  // If there are no payment items to display, there is no effect from touching
+  // the total so there should not be an ink ripple. The footer should also not
+  // have a ripple.
+  if ((type == ItemTypeSummaryTotal &&
+       _paymentRequest->payment_details().display_items.empty()) ||
+      (type == ItemTypeFooterText)) {
     return YES;
   } else {
     return NO;
   }
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
+  // No background on the footer text item.
+  NSInteger sectionIdentifier =
+      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
+  return sectionIdentifier == SectionIdentifierFooter ? YES : NO;
 }
 
 @end

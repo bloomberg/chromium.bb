@@ -1081,8 +1081,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mClient.onCardAndAddressSettingsClicked();
             }
         };
-        SpannableString spannableMessage =
-                SpanApplier.applySpans(message, new SpanInfo("<link>", "</link>", settingsSpan));
+        SpannableString spannableMessage = SpanApplier.applySpans(
+                message, new SpanInfo("BEGIN_LINK", "END_LINK", settingsSpan));
 
         TextView view = new TextViewWithClickableSpans(mContext);
         view.setText(spannableMessage);

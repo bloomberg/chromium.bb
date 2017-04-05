@@ -67,8 +67,9 @@ TEST_F(PaymentRequestViewControllerTest, TestModel) {
 
   [GetPaymentRequestViewController() loadModel];
 
-  // There should be three sections in total. Summary, Shipping, and Payment.
-  ASSERT_EQ(4, NumberOfSections());
+  // There should be five sections in total. Summary, Shipping, Payment,
+  // Contact info and a footer.
+  ASSERT_EQ(5, NumberOfSections());
 
   // The only item in the Summary section should be of type PriceItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));

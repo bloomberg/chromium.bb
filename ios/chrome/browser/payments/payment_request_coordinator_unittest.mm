@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_address.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
@@ -83,12 +84,16 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
     payment_request_ = base::MakeUnique<PaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
+
+    TestChromeBrowserState::Builder test_cbs_builder;
+    browser_state_ = test_cbs_builder.Build();
   }
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
+  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and
@@ -102,6 +107,7 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
       initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setBrowserState:browser_state_.get()];
 
   [coordinator start];
   // Short delay to allow animation to complete.
@@ -270,6 +276,7 @@ TEST_F(PaymentRequestCoordinatorTest, DidCancel) {
          EXPECT_EQ(coordinator, callerCoordinator);
        }];
   [coordinator setDelegate:delegate_mock];
+  [coordinator setBrowserState:browser_state_.get()];
 
   [coordinator start];
   // Short delay to allow animation to complete.

@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
 extern NSString* const kPaymentRequestCollectionViewID;
@@ -46,7 +48,8 @@ class PaymentRequest;
 
 // View controller responsible for presenting the details of a PaymentRequest to
 // the user and communicating their choices to the supplied delegate.
-@interface PaymentRequestViewController : CollectionViewController
+@interface PaymentRequestViewController
+    : CollectionViewController<CollectionViewFooterLinkDelegate>
 
 // The favicon of the page invoking the Payment Request API.
 @property(nonatomic, strong) UIImage* pageFavicon;
@@ -62,6 +65,13 @@ class PaymentRequest;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
+
+// Whether the data source should be shown (usually until the first payment
+// has been completed) or not.
+@property(nonatomic, assign) BOOL showDataSource;
+
+// If the user is signed in, the name of the authenticated account.
+@property(nonatomic, copy) NSString* authenticatedAccountName;
 
 // Updates the payment summary section UI. If |totalValueChanged| is YES,
 // adds a label to the total amount item indicating that the total amount was
