@@ -3949,7 +3949,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
       const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
       const int data_offset = have_tiles ? 4 : 0;
-
+#if CONFIG_EC_ADAPT
+      const int tile_idx = tile_row * tile_cols + tile_col;
+      TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
+#endif
       av1_tile_set_row(&tile_info, cm, tile_row);
 
       buf->data = dst + total_size;
@@ -3957,6 +3960,11 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       // Is CONFIG_EXT_TILE = 1, every tile in the row has a header,
       // even for the last one, unless no tiling is used at all.
       total_size += data_offset;
+#if CONFIG_EC_ADAPT
+      // Initialise tile context from the frame context
+      this_tile->tctx = *cm->fc;
+      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+#endif
 #if !CONFIG_ANS
       aom_start_encode(&mode_bc, buf->data + data_offset);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
