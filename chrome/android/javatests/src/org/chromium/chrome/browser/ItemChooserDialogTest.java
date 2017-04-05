@@ -204,6 +204,28 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @LargeTest
+    public void testSelectOneItemThenDisableTheSelectedItem() {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
+
+        selectItem(dialog, 1, "key1", true);
+        assertEquals("key1", itemAdapter.getSelectedItemKey());
+        mChooserDialog.setEnabled("key1", false);
+        // The selected item is disabled, so no item is selected.
+        assertEquals("", itemAdapter.getSelectedItemKey());
+        mChooserDialog.setEnabled("key1", true);
+        // The disabled item is not automatically selected again when it is re-enabled.
+        assertEquals("", itemAdapter.getSelectedItemKey());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
     public void testPairButtonDisabledOrEnabledAfterSelectedItemDisabledOrEnabled() {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -220,7 +242,9 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertFalse(button.isEnabled());
 
         mChooserDialog.setEnabled("key1", true);
-        assertTrue(button.isEnabled());
+        // The disabled item is not automatically selected again when it is re-enabled,
+        // so the button is still disabled.
+        assertFalse(button.isEnabled());
 
         mChooserDialog.dismiss();
     }

@@ -267,7 +267,8 @@ public class ItemChooserDialog {
 
             if (mSelectedItem != ListView.INVALID_POSITION) {
                 ItemChooserRow selectedRow = getItem(mSelectedItem);
-                if (id.equals(selectedRow.mKey)) {
+                if (id.equals(selectedRow.mKey) && !enabled) {
+                    mSelectedItem = ListView.INVALID_POSITION;
                     mConfirmButton.setEnabled(enabled);
                 }
             }
