@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/jni/chromoting_jni_instance.h"
+#include "remoting/client/chromoting_session.h"
 
-#include <android/log.h>
 #include <stdint.h>
 
 #include "base/bind.h"
@@ -16,12 +15,10 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/chromoting_event.h"
-#include "remoting/client/audio_player_android.h"
+#include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/client_telemetry_logger.h"
-#include "remoting/client/jni/android_keymap.h"
-#include "remoting/client/jni/jni_client.h"
-#include "remoting/client/jni/jni_pairing_secret_fetcher.h"
+#include "remoting/client/native_device_keymap.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/client_authentication_config.h"
@@ -38,7 +35,6 @@ namespace remoting {
 
 namespace {
 
-// TODO(solb) Move into location shared with client plugin.
 const char* const kXmppServer = "talk.google.com";
 const int kXmppPort = 5222;
 const bool kXmppUseTls = true;
@@ -48,17 +44,19 @@ const int kPerfStatsIntervalMs = 60000;
 
 }  // namespace
 
-ChromotingJniInstance::ChromotingJniInstance(
-    base::WeakPtr<JniClient> jni_client,
-    base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
+ChromotingSession::ChromotingSession(
+    base::WeakPtr<ChromotingSession::Delegate> delegate,
     std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
-    const ConnectToHostInfo& info)
-    : jni_client_(jni_client),
-      secret_fetcher_(secret_fetcher),
+    base::WeakPtr<protocol::AudioStub> audio_player,
+    const ConnectToHostInfo& info,
+    protocol::ClientAuthenticationConfig& client_auth_config)
+    : delegate_(delegate),
       connection_info_(info),
+      client_auth_config_(client_auth_config),
       cursor_shape_stub_(std::move(cursor_shape_stub)),
       video_renderer_(std::move(video_renderer)),
+      audio_player_(audio_player),
       capabilities_(info.capabilities),
       weak_factory_(this) {
   runtime_ = ChromotingClientRuntime::GetInstance();
@@ -72,39 +70,31 @@ ChromotingJniInstance::ChromotingJniInstance(
   xmpp_config_.username = info.username;
   xmpp_config_.auth_token = info.auth_token;
 
-  client_auth_config_.host_id = info.host_id;
-  client_auth_config_.pairing_client_id = info.pairing_id;
-  client_auth_config_.pairing_secret = info.pairing_secret;
-  client_auth_config_.fetch_secret_callback =
-      base::Bind(&JniPairingSecretFetcher::FetchSecret, secret_fetcher);
   client_auth_config_.fetch_third_party_token_callback = base::Bind(
-      &ChromotingJniInstance::FetchThirdPartyToken, GetWeakPtr(),
-      info.host_pubkey);
+      &ChromotingSession::FetchThirdPartyToken, GetWeakPtr(), info.host_pubkey);
 }
 
-ChromotingJniInstance::~ChromotingJniInstance() {
+ChromotingSession::~ChromotingSession() {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
   if (client_) {
     ReleaseResources();
   }
 }
 
-void ChromotingJniInstance::Connect() {
+void ChromotingSession::Connect() {
   if (runtime_->network_task_runner()->BelongsToCurrentThread()) {
     ConnectToHostOnNetworkThread();
   } else {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread,
-                   GetWeakPtr()));
+        FROM_HERE, base::Bind(&ChromotingSession::ConnectToHostOnNetworkThread,
+                              GetWeakPtr()));
   }
 }
 
-void ChromotingJniInstance::Disconnect() {
+void ChromotingSession::Disconnect() {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::Disconnect, GetWeakPtr()));
+        FROM_HERE, base::Bind(&ChromotingSession::Disconnect, GetWeakPtr()));
     return;
   }
 
@@ -114,16 +104,15 @@ void ChromotingJniInstance::Disconnect() {
   // Remote disconnection will trigger OnConnectionState(...) and later trigger
   // Disconnect().
   if (connected_) {
-    logger_->LogSessionStateChange(
-        ChromotingEvent::SessionState::CLOSED,
-        ChromotingEvent::ConnectionError::NONE);
+    logger_->LogSessionStateChange(ChromotingEvent::SessionState::CLOSED,
+                                   ChromotingEvent::ConnectionError::NONE);
     connected_ = false;
   }
 
   ReleaseResources();
 }
 
-void ChromotingJniInstance::FetchThirdPartyToken(
+void ChromotingSession::FetchThirdPartyToken(
     const std::string& host_public_key,
     const std::string& token_url,
     const std::string& scope,
@@ -131,58 +120,45 @@ void ChromotingJniInstance::FetchThirdPartyToken(
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(third_party_token_fetched_callback_.is_null());
 
-  __android_log_print(ANDROID_LOG_INFO,
-                      "ThirdPartyAuth",
-                      "Fetching Third Party Token from user.");
-
   third_party_token_fetched_callback_ = token_fetched_callback;
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniClient::FetchThirdPartyToken, jni_client_,
-                            token_url, host_public_key, scope));
+      FROM_HERE, base::Bind(&ChromotingSession::Delegate::FetchThirdPartyToken,
+                            delegate_, token_url, host_public_key, scope));
 }
 
-void ChromotingJniInstance::HandleOnThirdPartyTokenFetched(
+void ChromotingSession::HandleOnThirdPartyTokenFetched(
     const std::string& token,
     const std::string& shared_secret) {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
-
-  __android_log_print(
-      ANDROID_LOG_INFO, "ThirdPartyAuth", "Third Party Token Fetched.");
 
   if (!third_party_token_fetched_callback_.is_null()) {
     base::ResetAndReturn(&third_party_token_fetched_callback_)
         .Run(token, shared_secret);
   } else {
-    __android_log_print(
-        ANDROID_LOG_WARN,
-        "ThirdPartyAuth",
-        "Ignored OnThirdPartyTokenFetched() without a pending fetch.");
+    LOG(WARNING) << "ThirdPartyAuth: Ignored OnThirdPartyTokenFetched()"
+                    " without a pending fetch.";
   }
 }
 
-void ChromotingJniInstance::ProvideSecret(const std::string& pin,
-                                          bool create_pairing,
-                                          const std::string& device_name) {
+void ChromotingSession::ProvideSecret(const std::string& pin,
+                                      bool create_pairing,
+                                      const std::string& device_name) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   create_pairing_ = create_pairing;
 
   if (create_pairing)
     SetDeviceName(device_name);
-
-  runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniPairingSecretFetcher::ProvideSecret,
-                            secret_fetcher_, pin));
 }
 
-void ChromotingJniInstance::SendMouseEvent(
-    int x, int y,
-    protocol::MouseEvent_MouseButton button,
-    bool button_down) {
+void ChromotingSession::SendMouseEvent(int x,
+                                       int y,
+                                       protocol::MouseEvent_MouseButton button,
+                                       bool button_down) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendMouseEvent,
-                              GetWeakPtr(), x, y, button, button_down));
+        FROM_HERE, base::Bind(&ChromotingSession::SendMouseEvent, GetWeakPtr(),
+                              x, y, button, button_down));
     return;
   }
 
@@ -196,10 +172,10 @@ void ChromotingJniInstance::SendMouseEvent(
   client_->input_stub()->InjectMouseEvent(event);
 }
 
-void ChromotingJniInstance::SendMouseWheelEvent(int delta_x, int delta_y) {
+void ChromotingSession::SendMouseWheelEvent(int delta_x, int delta_y) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendMouseWheelEvent,
+        FROM_HERE, base::Bind(&ChromotingSession::SendMouseWheelEvent,
                               GetWeakPtr(), delta_x, delta_y));
     return;
   }
@@ -210,14 +186,14 @@ void ChromotingJniInstance::SendMouseWheelEvent(int delta_x, int delta_y) {
   client_->input_stub()->InjectMouseEvent(event);
 }
 
-bool ChromotingJniInstance::SendKeyEvent(int scan_code,
-                                         int key_code,
-                                         bool key_down) {
+bool ChromotingSession::SendKeyEvent(int scan_code,
+                                     int key_code,
+                                     bool key_down) {
   // For software keyboards |scan_code| is set to 0, in which case the
   // |key_code| is used instead.
   uint32_t usb_key_code =
       scan_code ? ui::KeycodeConverter::NativeKeycodeToUsbKeycode(scan_code)
-                : AndroidKeycodeToUsbKeycode(key_code);
+                : NativeDeviceKeycodeToUsbKeycode(key_code);
   if (!usb_key_code) {
     LOG(WARNING) << "Ignoring unknown key code: " << key_code
                  << " scan code: " << scan_code;
@@ -228,11 +204,11 @@ bool ChromotingJniInstance::SendKeyEvent(int scan_code,
   return true;
 }
 
-void ChromotingJniInstance::SendTextEvent(const std::string& text) {
+void ChromotingSession::SendTextEvent(const std::string& text) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ChromotingJniInstance::SendTextEvent, GetWeakPtr(), text));
+        base::Bind(&ChromotingSession::SendTextEvent, GetWeakPtr(), text));
     return;
   }
 
@@ -241,22 +217,22 @@ void ChromotingJniInstance::SendTextEvent(const std::string& text) {
   client_->input_stub()->InjectTextEvent(event);
 }
 
-void ChromotingJniInstance::SendTouchEvent(
+void ChromotingSession::SendTouchEvent(
     const protocol::TouchEvent& touch_event) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendTouchEvent,
-                              GetWeakPtr(), touch_event));
+        FROM_HERE, base::Bind(&ChromotingSession::SendTouchEvent, GetWeakPtr(),
+                              touch_event));
     return;
   }
 
   client_->input_stub()->InjectTouchEvent(touch_event);
 }
 
-void ChromotingJniInstance::EnableVideoChannel(bool enable) {
+void ChromotingSession::EnableVideoChannel(bool enable) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::EnableVideoChannel,
+        FROM_HERE, base::Bind(&ChromotingSession::EnableVideoChannel,
                               GetWeakPtr(), enable));
     return;
   }
@@ -266,11 +242,11 @@ void ChromotingJniInstance::EnableVideoChannel(bool enable) {
   client_->host_stub()->ControlVideo(video_control);
 }
 
-void ChromotingJniInstance::SendClientMessage(const std::string& type,
-                                              const std::string& data) {
+void ChromotingSession::SendClientMessage(const std::string& type,
+                                          const std::string& data) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendClientMessage,
+        FROM_HERE, base::Bind(&ChromotingSession::SendClientMessage,
                               GetWeakPtr(), type, data));
     return;
   }
@@ -281,7 +257,7 @@ void ChromotingJniInstance::SendClientMessage(const std::string& type,
   client_->host_stub()->DeliverClientMessage(extension_message);
 }
 
-void ChromotingJniInstance::OnConnectionState(
+void ChromotingSession::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
@@ -291,9 +267,8 @@ void ChromotingJniInstance::OnConnectionState(
   connected_ = state == protocol::ConnectionToHost::CONNECTED;
   EnableStatsLogging(connected_);
 
-  logger_->LogSessionStateChange(
-      ClientTelemetryLogger::TranslateState(state),
-      ClientTelemetryLogger::TranslateError(error));
+  logger_->LogSessionStateChange(ClientTelemetryLogger::TranslateState(state),
+                                 ClientTelemetryLogger::TranslateError(error));
 
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
     protocol::PairingRequest request;
@@ -303,67 +278,69 @@ void ChromotingJniInstance::OnConnectionState(
   }
 
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&JniClient::OnConnectionState, jni_client_, state, error));
+      FROM_HERE, base::Bind(&ChromotingSession::Delegate::OnConnectionState,
+                            delegate_, state, error));
 }
 
-void ChromotingJniInstance::OnConnectionReady(bool ready) {
+void ChromotingSession::OnConnectionReady(bool ready) {
   // We ignore this message, since OnConnectionState tells us the same thing.
 }
 
-void ChromotingJniInstance::OnRouteChanged(
-    const std::string& channel_name,
-    const protocol::TransportRoute& route) {
+void ChromotingSession::OnRouteChanged(const std::string& channel_name,
+                                       const protocol::TransportRoute& route) {
   std::string message = "Channel " + channel_name + " using " +
-      protocol::TransportRoute::GetTypeString(route.type) + " connection.";
-  __android_log_print(ANDROID_LOG_INFO, "route", "%s", message.c_str());
+                        protocol::TransportRoute::GetTypeString(route.type) +
+                        " connection.";
+  VLOG(1) << "Route: " << message;
 }
 
-void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
+void ChromotingSession::SetCapabilities(const std::string& capabilities) {
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&JniClient::SetCapabilities, jni_client_, capabilities));
+      FROM_HERE, base::Bind(&ChromotingSession::Delegate::SetCapabilities,
+                            delegate_, capabilities));
 }
 
-void ChromotingJniInstance::SetPairingResponse(
+void ChromotingSession::SetPairingResponse(
     const protocol::PairingResponse& response) {
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniClient::CommitPairingCredentials, jni_client_,
-                            client_auth_config_.host_id, response.client_id(),
-                            response.shared_secret()));
+      FROM_HERE,
+      base::Bind(&ChromotingSession::Delegate::CommitPairingCredentials,
+                 delegate_, client_auth_config_.host_id, response.client_id(),
+                 response.shared_secret()));
 }
 
-void ChromotingJniInstance::DeliverHostMessage(
+void ChromotingSession::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniClient::HandleExtensionMessage, jni_client_,
-                            message.type(), message.data()));
+      FROM_HERE,
+      base::Bind(&ChromotingSession::Delegate::HandleExtensionMessage,
+                 delegate_, message.type(), message.data()));
 }
 
-void ChromotingJniInstance::SetDesktopSize(const webrtc::DesktopSize& size,
-                                           const webrtc::DesktopVector& dpi) {
-  // JniFrameConsumer get size from the frames and it doesn't use DPI, so this
-  // call can be ignored.
+void ChromotingSession::SetDesktopSize(const webrtc::DesktopSize& size,
+                                       const webrtc::DesktopVector& dpi) {
+  // ChromotingSession's VideoRenderer gets size from the frames and it doesn't
+  // use DPI, so this call can be ignored.
 }
 
-protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
+protocol::ClipboardStub* ChromotingSession::GetClipboardStub() {
   return this;
 }
 
-protocol::CursorShapeStub* ChromotingJniInstance::GetCursorShapeStub() {
+protocol::CursorShapeStub* ChromotingSession::GetCursorShapeStub() {
   return cursor_shape_stub_.get();
 }
 
-void ChromotingJniInstance::InjectClipboardEvent(
+void ChromotingSession::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   NOTIMPLEMENTED();
 }
 
-base::WeakPtr<ChromotingJniInstance> ChromotingJniInstance::GetWeakPtr() {
+base::WeakPtr<ChromotingSession> ChromotingSession::GetWeakPtr() {
   return weak_ptr_;
 }
 
-void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
+void ChromotingSession::ConnectToHostOnNetworkThread() {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -373,12 +350,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   perf_tracker_.reset(new protocol::PerformanceTracker());
 
-  video_renderer_->Initialize(*client_context_,
-                              perf_tracker_.get());
-
-  if (!audio_player_) {
-    audio_player_.reset(new AudioPlayerAndroid());
-  }
+  video_renderer_->Initialize(*client_context_, perf_tracker_.get());
 
   logger_.reset(new ClientTelemetryLogger(runtime_->log_writer(),
                                           ChromotingEvent::Mode::ME2ME));
@@ -388,8 +360,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       connection_info_.host_os_version);
 
   client_.reset(new ChromotingClient(client_context_.get(), this,
-                                     video_renderer_.get(),
-                                     audio_player_->GetWeakPtr()));
+                                     video_renderer_.get(), audio_player_));
 
   signaling_.reset(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
@@ -419,22 +390,21 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                  connection_info_.host_jid, capabilities_);
 }
 
-void ChromotingJniInstance::SetDeviceName(const std::string& device_name) {
+void ChromotingSession::SetDeviceName(const std::string& device_name) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SetDeviceName,
-                              GetWeakPtr(), device_name));
+        FROM_HERE, base::Bind(&ChromotingSession::SetDeviceName, GetWeakPtr(),
+                              device_name));
     return;
   }
 
   device_name_ = device_name;
 }
 
-void ChromotingJniInstance::SendKeyEventInternal(int usb_key_code,
-                                                 bool key_down) {
+void ChromotingSession::SendKeyEventInternal(int usb_key_code, bool key_down) {
   if (!runtime_->network_task_runner()->BelongsToCurrentThread()) {
     runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendKeyEventInternal,
+        FROM_HERE, base::Bind(&ChromotingSession::SendKeyEventInternal,
                               GetWeakPtr(), usb_key_code, key_down));
     return;
   }
@@ -445,53 +415,36 @@ void ChromotingJniInstance::SendKeyEventInternal(int usb_key_code,
   client_->input_stub()->InjectKeyEvent(event);
 }
 
-void ChromotingJniInstance::EnableStatsLogging(bool enabled) {
+void ChromotingSession::EnableStatsLogging(bool enabled) {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
 
   if (enabled && !stats_logging_enabled_) {
     runtime_->network_task_runner()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ChromotingJniInstance::LogPerfStats, GetWeakPtr()),
+        FROM_HERE, base::Bind(&ChromotingSession::LogPerfStats, GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
   }
   stats_logging_enabled_ = enabled;
 }
 
-void ChromotingJniInstance::LogPerfStats() {
+void ChromotingSession::LogPerfStats() {
   DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
 
   if (!stats_logging_enabled_)
     return;
 
-  __android_log_print(
-      ANDROID_LOG_INFO, "stats",
-      "Bandwidth:%.0f FrameRate:%.1f;"
-      " (Avg, Max) Capture:%.1f, %" PRId64 " Encode:%.1f, %" PRId64
-      " Decode:%.1f, %" PRId64 " Render:%.1f, %" PRId64 " RTL:%.0f, %" PRId64,
-      perf_tracker_->video_bandwidth(), perf_tracker_->video_frame_rate(),
-      perf_tracker_->video_capture_ms().Average(),
-      perf_tracker_->video_capture_ms().Max(),
-      perf_tracker_->video_encode_ms().Average(),
-      perf_tracker_->video_encode_ms().Max(),
-      perf_tracker_->video_decode_ms().Average(),
-      perf_tracker_->video_decode_ms().Max(),
-      perf_tracker_->video_paint_ms().Average(),
-      perf_tracker_->video_paint_ms().Max(),
-      perf_tracker_->round_trip_ms().Average(),
-      perf_tracker_->round_trip_ms().Max());
-
   logger_->LogStatistics(perf_tracker_.get());
 
   runtime_->network_task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, GetWeakPtr()),
+      FROM_HERE, base::Bind(&ChromotingSession::LogPerfStats, GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 }
 
-void ChromotingJniInstance::ReleaseResources() {
+void ChromotingSession::ReleaseResources() {
   logger_.reset();
 
   // |client_| must be torn down before |signaling_|.
   client_.reset();
+  delegate_.reset();
   audio_player_.reset();
   video_renderer_.reset();
   signaling_.reset();

@@ -70,7 +70,7 @@ class ChromotingClientRuntime {
     return url_requester_;
   }
 
-  // Must call and use log_writter on the network thread.
+  // Must call and use log_writer on the network thread.
   ChromotingEventLogWriter* log_writer();
 
  private:
@@ -86,6 +86,12 @@ class ChromotingClientRuntime {
 
   // References to native threads.
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
+
+  // TODO(nicholss): AutoThreads will be leaked because they depend on the main
+  // thread. We should update this class to use regular threads like the client
+  // plugin does.
+  // Longer term we should migrate most of these to background tasks except the
+  // network thread to TaskScheduler, removing the need for threads.
 
   scoped_refptr<AutoThreadTaskRunner> display_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;

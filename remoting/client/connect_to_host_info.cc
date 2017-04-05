@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/jni/connect_to_host_info.h"
+#include "remoting/client/connect_to_host_info.h"
 
 namespace remoting {
 

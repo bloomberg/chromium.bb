@@ -14,7 +14,7 @@
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/client/chromoting_client_runtime.h"
-#include "remoting/client/jni/chromoting_jni_instance.h"
+#include "remoting/client/chromoting_session.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {

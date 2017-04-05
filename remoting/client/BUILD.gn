@@ -13,13 +13,15 @@ static_library("client") {
     "audio_player.h",
     "chromoting_client.cc",
     "chromoting_client.h",
+    "chromoting_session.cc",
+    "chromoting_session.h",
     "client_context.cc",
     "client_context.h",
-    "client_status_logger.cc",
-    "client_status_logger.h",
     "client_telemetry_logger.cc",
     "client_telemetry_logger.h",
     "client_user_interface.h",
+    "connect_to_host_info.cc",
+    "connect_to_host_info.h",
     "cursor_shape_stub_proxy.cc",
     "cursor_shape_stub_proxy.h",
     "dual_buffer_frame_consumer.cc",
@@ -30,6 +32,8 @@ static_library("client") {
     "host_experiment_sender.h",
     "key_event_mapper.cc",
     "key_event_mapper.h",
+    "native_device_keymap.cc",
+    "native_device_keymap.h",
     "normalizing_input_filter_cros.cc",
     "normalizing_input_filter_cros.h",
     "normalizing_input_filter_mac.cc",
@@ -59,13 +63,13 @@ static_library("client") {
     "//remoting/protocol",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//ui/events:dom_keycode_converter",
   ]
 
   libs = []
 
   if (is_nacl) {
     sources -= [
-      "client_status_logger.cc",
       "client_telemetry_logger.cc",
       "server_log_entry_client.cc",
     ]
@@ -79,7 +83,9 @@ static_library("client") {
     sources += [
       "audio_player_android.cc",
       "audio_player_android.h",
+      "native_device_keymap_android.cc",
     ]
+    sources -= [ "native_device_keymap.cc" ]
     libs += [
       "android",
       "OpenSLES",
@@ -96,7 +102,6 @@ source_set("unit_tests") {
   sources = [
     "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
-    "client_status_logger_unittest.cc",
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",

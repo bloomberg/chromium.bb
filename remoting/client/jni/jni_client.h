@@ -10,13 +10,14 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/client/chromoting_session.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
 
+class AudioPlayerAndroid;
 class ChromotingClientRuntime;
-class ChromotingJniInstance;
 class JniGlDisplayHandler;
 class JniPairingSecretFetcher;
 
@@ -25,10 +26,10 @@ struct ConnectToHostInfo;
 // Houses resources scoped to a session and exposes JNI interface to the
 // Java client during a session. All its methods should be invoked exclusively
 // from the UI thread unless otherwise noted.
-class JniClient {
+class JniClient : public ChromotingSession::Delegate {
  public:
   JniClient(base::android::ScopedJavaGlobalRef<jobject> java_client);
-  virtual ~JniClient();
+  ~JniClient() override;
 
   // Initiates a connection with the specified host. To skip the attempt at
   // pair-based authentication, leave |pairing_id| and |pairing_secret| as
@@ -39,34 +40,36 @@ class JniClient {
   // |session_|. This is a no-op unless |session| is currently non-null.
   void DisconnectFromHost();
 
-  // Notifies Java code of the current connection status. Call on UI thread.
-  void OnConnectionState(protocol::ConnectionToHost::State state,
-                         protocol::ErrorCode error);
-
   // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
   void DisplayAuthenticationPrompt(bool pairing_supported);
+
+  // Register C++ methods exposed to Java using JNI.
+  static bool RegisterJni(JNIEnv* env);
+
+  // ChromotingSession::Delegate implementation
+
+  // Notifies Java code of the current connection status. Call on UI thread.
+  void OnConnectionState(protocol::ConnectionToHost::State state,
+                         protocol::ErrorCode error) override;
 
   // Saves new pairing credentials to permanent storage. Call on UI thread.
   void CommitPairingCredentials(const std::string& host,
                                 const std::string& id,
-                                const std::string& secret);
+                                const std::string& secret) override;
 
   // Pops up a third party login page to fetch token required for
   // authentication. Call on UI thread.
   void FetchThirdPartyToken(const std::string& token_url,
                             const std::string& client_id,
-                            const std::string& scope);
+                            const std::string& scope) override;
 
   // Pass on the set of negotiated capabilities to the client.
-  void SetCapabilities(const std::string& capabilities);
+  void SetCapabilities(const std::string& capabilities) override;
 
   // Passes on the deconstructed ExtensionMessage to the client to handle
   // appropriately.
   void HandleExtensionMessage(const std::string& type,
-                              const std::string& message);
-
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJni(JNIEnv* env);
+                              const std::string& message) override;
 
   // The following methods are exposed to Java via JNI.
 
@@ -154,12 +157,13 @@ class JniClient {
   base::android::ScopedJavaGlobalRef<jobject> java_client_;
 
   std::unique_ptr<JniGlDisplayHandler> display_handler_;
+  std::unique_ptr<AudioPlayerAndroid> audio_player_;
 
   // Deleted on UI thread.
   std::unique_ptr<JniPairingSecretFetcher> secret_fetcher_;
 
   // Deleted on Network thread.
-  std::unique_ptr<ChromotingJniInstance> session_;
+  std::unique_ptr<ChromotingSession> session_;
 
   // Holds pointer for the UI thread.
   base::WeakPtr<JniClient> weak_ptr_;

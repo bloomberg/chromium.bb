@@ -59,6 +59,8 @@ class ClientTelemetryLogger {
   // Generates a new random session ID.
   void GenerateSessionId();
 
+  void PrintLogStatistics(protocol::PerformanceTracker* perf_tracker);
+
   // If not session ID has been set, simply generates a new one without sending
   // any logs, otherwise expire the session ID if the maximum duration has been
   // exceeded, and sends SessionIdOld and SessionIdNew events describing the

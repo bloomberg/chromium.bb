@@ -36,11 +36,12 @@ namespace remoting {
 
 // class AudioPlayerIos;
 class ClientProxy;
-class ClientStatusLogger;
+// class ClientStatusLogger;
 class FrameConsumerBridge;
 
-// ClientUserInterface that indirectly makes and receives OBJ_C calls from the
-// UI application.
+// TODO(nicholss): Delete this Class. It needs to use the client version of
+// ClientInstance. ClientUserInterface that indirectly makes and receives OBJ_C
+// calls from the UI application.
 class ClientInstance : public ClientUserInterface,
                        public protocol::ClipboardStub,
                        public protocol::CursorShapeStub,
@@ -158,7 +159,9 @@ class ClientInstance : public ClientUserInterface,
   std::unique_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
-  std::unique_ptr<ClientStatusLogger> client_status_logger_;
+
+  // TODO(nicholss): Migrate to ClientTelemetryLogger
+  //  std::unique_ptr<ClientStatusLogger> client_status_logger_;
 
   // This group of variables is to be used on the audio thread.
   // std::unique_ptr<AudioPlayerIos> audio_player_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CLIENT_JNI_CONNECT_TO_HOST_INFO_H_
-#define CLIENT_JNI_CONNECT_TO_HOST_INFO_H_
+#ifndef REMOTING_CLIENT_CONNECT_TO_HOST_INFO_H_
+#define REMOTING_CLIENT_CONNECT_TO_HOST_INFO_H_
 
 #include <string>
 
@@ -31,4 +31,4 @@ struct ConnectToHostInfo {
 
 }  // namespace remoting
 
-#endif  // CLIENT_JNI_CONNECT_TO_HOST_INFO_H_
+#endif  // REMOTING_CLIENT_CONNECT_TO_HOST_INFO_H_

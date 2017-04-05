@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_
-#define REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_
+#ifndef REMOTING_CLIENT_CHROMOTING_SESSION_H_
+#define REMOTING_CLIENT_CHROMOTING_SESSION_H_
 
 #include <memory>
 #include <string>
@@ -16,7 +16,7 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/client/jni/connect_to_host_info.h"
+#include "remoting/client/connect_to_host_info.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -26,34 +26,58 @@
 namespace remoting {
 
 namespace protocol {
+class AudioStub;
 class ClipboardEvent;
 class PerformanceTracker;
 class VideoRenderer;
 }  // namespace protocol
 
-class AudioPlayerAndroid;
 class ChromotingClientRuntime;
-class JniClient;
-class JniPairingSecretFetcher;
 
-// ChromotingJniInstance is scoped to the session.
+// ChromotingSession is scoped to the session.
 // This class is Created on the UI thread but thereafter it is used and
 // destroyed on the network thread. Except where indicated, all methods are
 // called on the network thread.
-class ChromotingJniInstance
-  : public ClientUserInterface,
-    public protocol::ClipboardStub {
+class ChromotingSession : public ClientUserInterface,
+                          public protocol::ClipboardStub {
  public:
-  // Initiates a connection with the specified host. Call from the UI thread.
-  // The instance does not take ownership of |jni_runtime|. To connect with an
-  // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
-  ChromotingJniInstance(base::WeakPtr<JniClient> jni_client,
-                        base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
-                        std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
-                        std::unique_ptr<protocol::VideoRenderer> video_renderer,
-                        const ConnectToHostInfo& info);
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
 
-  ~ChromotingJniInstance() override;
+    // Notifies Java code of the current connection status.
+    virtual void OnConnectionState(protocol::ConnectionToHost::State state,
+                                   protocol::ErrorCode error) = 0;
+
+    // Saves new pairing credentials to permanent storage.
+    virtual void CommitPairingCredentials(const std::string& host,
+                                          const std::string& id,
+                                          const std::string& secret) = 0;
+
+    // Pops up a third party login page to fetch token required for
+    // authentication.
+    virtual void FetchThirdPartyToken(const std::string& token_url,
+                                      const std::string& client_id,
+                                      const std::string& scope) = 0;
+
+    // Pass on the set of negotiated capabilities to the client.
+    virtual void SetCapabilities(const std::string& capabilities) = 0;
+
+    // Passes on the deconstructed ExtensionMessage to the client to handle
+    // appropriately.
+    virtual void HandleExtensionMessage(const std::string& type,
+                                        const std::string& message) = 0;
+  };
+
+  // Initiates a connection with the specified host. Call from the UI thread.
+  ChromotingSession(base::WeakPtr<ChromotingSession::Delegate> delegate,
+                    std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
+                    std::unique_ptr<protocol::VideoRenderer> video_renderer,
+                    base::WeakPtr<protocol::AudioStub> audio_player,
+                    const ConnectToHostInfo& info,
+                    protocol::ClientAuthenticationConfig& client_auth_config);
+
+  ~ChromotingSession() override;
 
   // Starts the connection. Can be called on any thread.
   void Connect();
@@ -77,12 +101,14 @@ class ChromotingJniInstance
   // Provides the user's PIN and resumes the host authentication attempt. Call
   // on the UI thread once the user has finished entering this PIN into the UI,
   // but only after the UI has been asked to provide a PIN (via FetchSecret()).
-  void ProvideSecret(const std::string& pin, bool create_pair,
+  void ProvideSecret(const std::string& pin,
+                     bool create_pair,
                      const std::string& device_name);
 
   // Moves the host's cursor to the specified coordinates, optionally with some
   // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.
-  void SendMouseEvent(int x, int y,
+  void SendMouseEvent(int x,
+                      int y,
                       protocol::MouseEvent_MouseButton button,
                       bool button_down);
   void SendMouseWheelEvent(int delta_x, int delta_y);
@@ -119,7 +145,7 @@ class ChromotingJniInstance
 
   // Get the weak pointer of the instance. Please only use it on the network
   // thread.
-  base::WeakPtr<ChromotingJniInstance> GetWeakPtr();
+  base::WeakPtr<ChromotingSession> GetWeakPtr();
 
  private:
   void ConnectToHostOnNetworkThread();
@@ -144,12 +170,9 @@ class ChromotingJniInstance
   // Used to obtain task runner references.
   ChromotingClientRuntime* runtime_;
 
-  base::WeakPtr<JniClient> jni_client_;
-
-  base::WeakPtr<JniPairingSecretFetcher> secret_fetcher_;
-
+  // Called on UI thread.
+  base::WeakPtr<ChromotingSession::Delegate> delegate_;
   ConnectToHostInfo connection_info_;
-
   protocol::ClientAuthenticationConfig client_auth_config_;
 
   // This group of variables is to be used on the network thread.
@@ -162,7 +185,8 @@ class ChromotingJniInstance
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
-  std::unique_ptr<AudioPlayerAndroid> audio_player_;
+  // Called on UI Thread.
+  base::WeakPtr<protocol::AudioStub> audio_player_;
 
   // Indicates whether to establish a new pairing with this host. This is
   // modified in ProvideSecret(), but thereafter to be used only from the
@@ -189,12 +213,12 @@ class ChromotingJniInstance
 
   std::unique_ptr<ClientTelemetryLogger> logger_;
 
-  base::WeakPtr<ChromotingJniInstance> weak_ptr_;
-  base::WeakPtrFactory<ChromotingJniInstance> weak_factory_;
+  base::WeakPtr<ChromotingSession> weak_ptr_;
+  base::WeakPtrFactory<ChromotingSession> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromotingJniInstance);
+  DISALLOW_COPY_AND_ASSIGN(ChromotingSession);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_JNI_CHROMOTING_JNI_INSTANCE_H_
+#endif  // REMOTING_CLIENT_CHROMOTING_SESSION_H_

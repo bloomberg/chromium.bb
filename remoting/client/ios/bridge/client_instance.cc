@@ -14,7 +14,7 @@
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/audio_player.h"
-#include "remoting/client/client_status_logger.h"
+//#include "remoting/client/client_status_logger.h"
 #include "remoting/client/ios/bridge/client_proxy.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -33,7 +33,7 @@
 
 namespace {
 const char* const kXmppServer = "talk.google.com";
-const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
+// const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 }  // namespace
 
 namespace remoting {
@@ -191,7 +191,7 @@ void ClientInstance::OnConnectionState(protocol::ConnectionToHost::State state,
                                        protocol::ErrorCode error) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  client_status_logger_->LogSessionStateChange(state, error);
+  //  client_status_logger_->LogSessionStateChange(state, error);
 
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientInstance::HandleConnectionStateOnUIThread,
@@ -287,8 +287,8 @@ void ClientInstance::ConnectToHostOnNetworkThread() {
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
                              url_requester_, xmpp_config_));
 
-  client_status_logger_.reset(new ClientStatusLogger(
-      ServerLogEntry::ME2ME, signaling_.get(), kDirectoryBotJid));
+  // client_status_logger_.reset(new ClientStatusLogger(
+  //     ServerLogEntry::ME2ME, signaling_.get(), kDirectoryBotJid));
 
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
@@ -324,7 +324,7 @@ void ClientInstance::DisconnectFromHostOnNetworkThread() {
 
   // |client_| must be torn down before |signaling_|.
   client_.reset();
-  client_status_logger_.reset();
+  //  client_status_logger_.reset();
   signaling_.reset();
   perf_tracker_.reset();
   //  audio_consumer_->reset(); // TODO(nicholss): Or should this be a call to

@@ -23,16 +23,9 @@ shared_library("remoting_client_jni") {
     "//remoting/client",
     "//remoting/client/display",
     "//remoting/protocol",
-    "//ui/events:dom_keycode_converter",
     "//ui/gfx",
   ]
   sources = [
-    "android_keymap.cc",
-    "android_keymap.h",
-    "chromoting_jni_instance.cc",
-    "chromoting_jni_instance.h",
-    "connect_to_host_info.cc",
-    "connect_to_host_info.h",
     "display_updater_factory.h",
     "egl_thread_context.cc",
     "egl_thread_context.h",
@@ -52,7 +45,6 @@ shared_library("remoting_client_jni") {
   ]
   libs = [
     "android",
-    "OpenSLES",
     "EGL",
   ]
   configs += [ "//remoting/build/config:enable_webrtc_remoting_client" ]

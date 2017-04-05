@@ -4,9 +4,15 @@
 
 #include "remoting/client/client_telemetry_logger.h"
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "remoting/base/telemetry_log_writer.h"
+
+#if defined(OS_ANDROID)
+#include <android/log.h>
+#endif  // OS_ANDROID
 
 namespace {
 
@@ -62,8 +68,34 @@ void ClientTelemetryLogger::LogStatistics(
   DCHECK(thread_checker_.CalledOnValidThread());
   RefreshSessionIdIfOutdated();
 
+  PrintLogStatistics(perf_tracker);
+
   ChromotingEvent event = MakeStatsEvent(perf_tracker);
   log_writer_->Log(event);
+}
+
+void ClientTelemetryLogger::PrintLogStatistics(
+    protocol::PerformanceTracker* perf_tracker) {
+#if defined(OS_ANDROID)
+  __android_log_print(
+      ANDROID_LOG_INFO, "stats",
+#else
+  VLOG(1) << base::StringPrintf(
+#endif  // OS_ANDROID
+      "Bandwidth:%.0f FrameRate:%.1f;"
+      " (Avg, Max) Capture:%.1f, %" PRId64 " Encode:%.1f, %" PRId64
+      " Decode:%.1f, %" PRId64 " Render:%.1f, %" PRId64 " RTL:%.0f, %" PRId64,
+      perf_tracker->video_bandwidth(), perf_tracker->video_frame_rate(),
+      perf_tracker->video_capture_ms().Average(),
+      perf_tracker->video_capture_ms().Max(),
+      perf_tracker->video_encode_ms().Average(),
+      perf_tracker->video_encode_ms().Max(),
+      perf_tracker->video_decode_ms().Average(),
+      perf_tracker->video_decode_ms().Max(),
+      perf_tracker->video_paint_ms().Average(),
+      perf_tracker->video_paint_ms().Max(),
+      perf_tracker->round_trip_ms().Average(),
+      perf_tracker->round_trip_ms().Max());
 }
 
 void ClientTelemetryLogger::SetSessionIdGenerationTimeForTest(

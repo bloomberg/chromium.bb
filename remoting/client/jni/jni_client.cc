@@ -8,11 +8,13 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/Client_jni.h"
+#include "remoting/client/audio_player_android.h"
 #include "remoting/client/chromoting_client_runtime.h"
-#include "remoting/client/jni/chromoting_jni_instance.h"
-#include "remoting/client/jni/connect_to_host_info.h"
+#include "remoting/client/chromoting_session.h"
+#include "remoting/client/connect_to_host_info.h"
 #include "remoting/client/jni/jni_gl_display_handler.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
+#include "remoting/client/jni/jni_runtime_delegate.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
 #include "remoting/protocol/video_renderer.h"
 
@@ -40,15 +42,26 @@ JniClient::~JniClient() {
 void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(!display_handler_);
+  DCHECK(!audio_player_);
   DCHECK(!session_);
   DCHECK(!secret_fetcher_);
   display_handler_.reset(new JniGlDisplayHandler(java_client_));
   secret_fetcher_.reset(
       new JniPairingSecretFetcher(GetWeakPtr(), info.host_id));
-  session_.reset(
-      new ChromotingJniInstance(GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
-                                display_handler_->CreateCursorShapeStub(),
-                                display_handler_->CreateVideoRenderer(), info));
+
+  protocol::ClientAuthenticationConfig client_auth_config;
+  client_auth_config.host_id = info.host_id;
+  client_auth_config.pairing_client_id = info.pairing_id;
+  client_auth_config.pairing_secret = info.pairing_secret;
+  client_auth_config.fetch_secret_callback = base::Bind(
+      &JniPairingSecretFetcher::FetchSecret, secret_fetcher_->GetWeakPtr());
+
+  audio_player_.reset(new AudioPlayerAndroid());
+
+  session_.reset(new ChromotingSession(
+      weak_ptr_, display_handler_->CreateCursorShapeStub(),
+      display_handler_->CreateVideoRenderer(), audio_player_->GetWeakPtr(),
+      info, client_auth_config));
   session_->Connect();
 }
 
@@ -62,6 +75,10 @@ void JniClient::DisconnectFromHost() {
   if (secret_fetcher_) {
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
                                                 secret_fetcher_.release());
+  }
+  if (audio_player_) {
+    runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
+                                                audio_player_.release());
   }
   display_handler_.reset();
 }
@@ -164,6 +181,7 @@ void JniClient::Connect(
   info.host_version = ConvertJavaStringToUTF8(env, host_version);
   info.host_os = ConvertJavaStringToUTF8(env, host_os);
   info.host_os_version = ConvertJavaStringToUTF8(env, host_os_version);
+
   ConnectToHost(info);
 }
 
@@ -178,8 +196,17 @@ void JniClient::AuthenticationResponse(
     const JavaParamRef<jstring>& pin,
     jboolean createPair,
     const JavaParamRef<jstring>& deviceName) {
-  session_->ProvideSecret(ConvertJavaStringToUTF8(env, pin), createPair,
-                          ConvertJavaStringToUTF8(env, deviceName));
+  if (session_) {
+    session_->ProvideSecret(ConvertJavaStringToUTF8(env, pin), createPair,
+                            ConvertJavaStringToUTF8(env, deviceName));
+  }
+
+  if (secret_fetcher_) {
+    runtime_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&JniPairingSecretFetcher::ProvideSecret,
+                              secret_fetcher_->GetWeakPtr(),
+                              ConvertJavaStringToUTF8(env, pin)));
+  }
 }
 
 void JniClient::SendMouseEvent(
@@ -261,7 +288,7 @@ void JniClient::OnThirdPartyTokenFetched(
     const JavaParamRef<jstring>& shared_secret) {
   runtime_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniInstance::HandleOnThirdPartyTokenFetched,
+      base::Bind(&ChromotingSession::HandleOnThirdPartyTokenFetched,
                  session_->GetWeakPtr(), ConvertJavaStringToUTF8(env, token),
                  ConvertJavaStringToUTF8(env, shared_secret)));
 }

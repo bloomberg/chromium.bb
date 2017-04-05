@@ -171,6 +171,8 @@ test("remoting_unittests") {
 
   if (is_android) {
     deps += [ "//net/android:net_java" ]
+
+    libs += [ "android" ]
   }
 
   if (is_win) {
