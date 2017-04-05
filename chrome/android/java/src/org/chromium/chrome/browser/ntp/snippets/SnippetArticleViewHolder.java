@@ -88,7 +88,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final boolean mUseFaviconService;
     private final int mIconBackgroundColor;
     private final ColorStateList mIconForegroundColorList;
-    private final int mFileTypeIconPaddingPx;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -124,8 +123,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(parent.getContext());
         mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(parent.getContext());
-        mFileTypeIconPaddingPx = itemView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_thumbnail_file_type_icon_padding);
         mThumbnailProvider = new ThumbnailProviderImpl(
                 Math.min(mThumbnailView.getMaxWidth(), mThumbnailView.getMaxHeight()));
 
@@ -300,7 +297,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private void setThumbnailFromBitmap(Bitmap thumbnail) {
         assert thumbnail != null && !thumbnail.isRecycled();
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageBitmap(thumbnail);
         mThumbnailView.setTint(null);
@@ -308,8 +304,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     private void setThumbnailFromFileType(int fileType) {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        mThumbnailView.setPadding(mFileTypeIconPaddingPx, mFileTypeIconPaddingPx,
-                mFileTypeIconPaddingPx, mFileTypeIconPaddingPx);
         mThumbnailView.setBackgroundColor(mIconBackgroundColor);
         mThumbnailView.setImageResource(
                 DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_36_DP));
@@ -357,7 +351,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         }
 
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
-        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         mThumbnailView.setTint(null);
@@ -402,7 +395,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 new BitmapDrawable(mThumbnailView.getResources(), scaledThumbnail)};
         TransitionDrawable transitionDrawable = new TransitionDrawable(layers);
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(transitionDrawable);
         mThumbnailView.setTint(null);
