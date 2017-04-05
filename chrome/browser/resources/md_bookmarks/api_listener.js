@@ -26,8 +26,9 @@ cr.define('bookmarks.ApiListener', function() {
    * @param {{parentId: string, index: number}} removeInfo
    */
   function onBookmarkRemoved(id, removeInfo) {
+    var nodes = bookmarks.Store.getInstance().data.nodes;
     dispatch(bookmarks.actions.removeBookmark(
-        id, removeInfo.parentId, removeInfo.index));
+        id, removeInfo.parentId, removeInfo.index, nodes));
   }
 
   /**

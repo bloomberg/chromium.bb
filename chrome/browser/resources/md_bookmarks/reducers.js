@@ -44,6 +44,18 @@ cr.define('bookmarks', function() {
   };
 
   /**
+   * @param {SelectionState} selectionState
+   * @param {!Set<string>} deleted
+   * @return SelectionState
+   */
+  SelectionState.deselectDeletedItems = function(selectionState, deleted) {
+    return /** @type {SelectionState} */ Object.assign({}, selectionState, {
+      items: bookmarks.util.removeIdsFromSet(selectionState.items, deleted),
+      anchor: null,
+    });
+  };
+
+  /**
    * @param {SelectionState} selection
    * @param {Action} action
    * @return {SelectionState}
@@ -57,8 +69,12 @@ cr.define('bookmarks', function() {
         return SelectionState.deselectAll(selection);
       case 'select-items':
         return SelectionState.selectItems(selection, action);
+      case 'remove-bookmark':
+        return SelectionState.deselectDeletedItems(
+            selection, action.descendants);
+      default:
+        return selection;
     }
-    return selection;
   };
 
   var SearchState = {};
@@ -99,6 +115,22 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {SearchState} search
+   * @param {!Set<string>} deletedIds
+   * @return {SearchState}
+   */
+  SearchState.removeDeletedResults = function(search, deletedIds) {
+    var newResults = [];
+    search.results.forEach(function(id) {
+      if (!deletedIds.has(id))
+        newResults.push(id);
+    });
+    return /** @type {SearchState} */ (Object.assign({}, search, {
+      results: newResults,
+    }));
+  };
+
+  /**
+   * @param {SearchState} search
    * @param {Action} action
    * @return {SearchState}
    */
@@ -111,6 +143,8 @@ cr.define('bookmarks', function() {
         return SearchState.clearSearch();
       case 'finish-search':
         return SearchState.finishSearch(search, action);
+      case 'remove-bookmark':
+        return SearchState.removeDeletedResults(search, action.descendants);
       default:
         return search;
     }
@@ -152,12 +186,15 @@ cr.define('bookmarks', function() {
    * @return {NodeList}
    */
   NodeState.removeBookmark = function(nodes, action) {
-    return NodeState.modifyNode_(nodes, action.parentId, function(node) {
-      var newChildren = node.children.slice();
-      newChildren.splice(action.index, 1);
-      return /** @type {BookmarkNode} */ (
-          Object.assign({}, node, {children: newChildren}));
-    });
+    var newState =
+        NodeState.modifyNode_(nodes, action.parentId, function(node) {
+          var newChildren = node.children.slice();
+          newChildren.splice(action.index, 1);
+          return /** @type {BookmarkNode} */ (
+              Object.assign({}, node, {children: newChildren}));
+        });
+
+    return bookmarks.util.removeIdsFromMap(newState, action.descendants);
   };
 
   /**
@@ -239,10 +276,9 @@ cr.define('bookmarks', function() {
    */
   SelectedFolderState.updateSelectedFolder = function(
       selectedFolder, action, nodes) {
-    // TODO(tsergeant): It should not be possible to select a non-folder.
-    // TODO(tsergeant): Select parent folder when selected folder is deleted.
     switch (action.name) {
       case 'select-folder':
+        // TODO(tsergeant): It should not be possible to select a non-folder.
         return action.id;
       case 'change-folder-open':
         // When hiding the selected folder by closing its ancestor, select
@@ -259,6 +295,13 @@ cr.define('bookmarks', function() {
         // TODO(tsergeant): Return to the folder that was selected before the
         // search.
         return nodes[ROOT_NODE_ID].children[0];
+      case 'remove-bookmark':
+        // When deleting the selected folder (or its ancestor), select the
+        // parent of the deleted node.
+        if (selectedFolder &&
+            SelectedFolderState.isAncestorOf(nodes, action.id, selectedFolder))
+          return assert(nodes[action.id].parentId);
+        return selectedFolder;
       default:
         return selectedFolder;
     }
@@ -322,6 +365,9 @@ cr.define('bookmarks', function() {
 
         return ClosedFolderState.openFolderAndAncestors(
             closedFolders, action.parentId, nodes);
+      case 'remove-bookmark':
+        return bookmarks.util.removeIdsFromSet(
+            closedFolders, action.descendants);
       default:
         return closedFolders;
     };

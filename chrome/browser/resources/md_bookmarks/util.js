@@ -89,11 +89,72 @@ cr.define('bookmarks.util', function() {
     return false;
   }
 
+  /**
+   * Get all descendants of a node, including the node itself.
+   * @param {NodeList} nodes
+   * @param {string} baseId
+   * @return {!Set<string>}
+   */
+  function getDescendants(nodes, baseId) {
+    var descendants = new Set();
+    var stack = [];
+    stack.push(baseId);
+
+    while (stack.length > 0) {
+      var id = stack.pop();
+      var node = nodes[id];
+
+      if (!node)
+        continue;
+
+      descendants.add(id);
+
+      if (!node.children)
+        continue;
+
+      node.children.forEach(function(childId) {
+        stack.push(childId);
+      });
+    }
+
+    return descendants;
+  }
+
+  /**
+   * @param {!Object<string, T>} map
+   * @param {!Set<string>} ids
+   * @return {!Object<string, T>}
+   * @template T
+   */
+  function removeIdsFromMap(map, ids) {
+    var newMap = Object.assign({}, map);
+    ids.forEach(function(id) {
+      delete newMap[id];
+    });
+    return newMap;
+  }
+
+  /**
+   * @param {!Set<string>} set
+   * @param {!Set<string>} ids
+   * @return {!Set<string>}
+   */
+  function removeIdsFromSet(set, ids) {
+    var difference = new Set(set);
+    ids.forEach(function(id) {
+      difference.delete(id);
+    });
+    return difference;
+  }
+
   return {
     createEmptyState: createEmptyState,
+    getDescendants: getDescendants,
     getDisplayedList: getDisplayedList,
     hasChildFolders: hasChildFolders,
     isShowingSearch: isShowingSearch,
     normalizeNodes: normalizeNodes,
+    removeIdsFromMap: removeIdsFromMap,
+    removeIdsFromSet: removeIdsFromSet,
   };
 });

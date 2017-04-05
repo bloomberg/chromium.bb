@@ -87,6 +87,28 @@ suite('selection state', function() {
     state = bookmarks.SelectionState.updateSelection(state, action);
     assertDeepEquals({}, state.items);
   });
+
+  test('deselects items when they are deleted', function() {
+    var nodeList = testTree(createFolder('0', [
+      createFolder(
+          '1',
+          [
+            createItem('2'),
+            createItem('3'),
+            createItem('4'),
+          ]),
+      createItem('5'),
+    ]));
+
+    action = select(['2', '4', '5'], '4', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    action = bookmarks.actions.removeBookmark('1', '0', 0, nodeList);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    assertDeepEquals(['5'], normalizeSet(state.items));
+    assertEquals(null, state.anchor);
+  });
 });
 
 suite('closed folder state', function() {
@@ -155,7 +177,12 @@ suite('selected folder', function() {
 
   setup(function() {
     nodes = testTree(createFolder('1', [
-      createFolder('2', []),
+      createFolder(
+          '2',
+          [
+            createFolder('3', []),
+            createFolder('4', []),
+          ]),
     ]));
 
     state = '1';
@@ -176,6 +203,30 @@ suite('selected folder', function() {
     action = bookmarks.actions.changeFolderOpen('1', false);
     state = bookmarks.SelectedFolderState.updateSelectedFolder(
         state, action, nodes);
+    assertEquals('1', state);
+  });
+
+  test('selects ancestor when selected folder is deleted', function() {
+    action = bookmarks.actions.selectFolder('3');
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+
+    // Delete the selected folder:
+    action = bookmarks.actions.removeBookmark('3', '2', 0, nodes);
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+
+    assertEquals('2', state);
+
+    action = bookmarks.actions.selectFolder('4');
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+
+    // Delete an ancestor of the selected folder:
+    action = bookmarks.actions.removeBookmark('2', '1', 0, nodes);
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+
     assertEquals('1', state);
   });
 });
@@ -224,13 +275,20 @@ suite('node state', function() {
   });
 
   test('updates when a node is deleted', function() {
-    action = bookmarks.actions.removeBookmark('3', '1', 1);
+    action = bookmarks.actions.removeBookmark('3', '1', 1, state);
     state = bookmarks.NodeState.updateNodes(state, action);
 
     assertDeepEquals(['2', '4'], state['1'].children);
 
-    // TODO(tsergeant): Deleted nodes should be removed from the nodes map
-    // entirely.
+    assertDeepEquals(['2', '4'], state['1'].children);
+    assertEquals(undefined, state['3']);
+  });
+
+  test('removes all children of deleted nodes', function() {
+    action = bookmarks.actions.removeBookmark('1', '0', 0, state);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertDeepEquals(['0', '5'], Object.keys(state).sort());
   });
 
   test('updates when a node is moved', function() {
@@ -313,5 +371,22 @@ suite('search state', function() {
     assertDeepEquals(['3'], bookmarks.util.getDisplayedList(selectedState));
     assertEquals('', selectedState.search.term);
     assertDeepEquals([], selectedState.search.results);
+  });
+
+  test('removes deleted nodes', function() {
+    var action;
+
+    action = bookmarks.actions.setSearchTerm('test');
+    state = bookmarks.reduceAction(state, action);
+
+    action = bookmarks.actions.setSearchResults(['1', '3', '2']);
+    state = bookmarks.reduceAction(state, action);
+
+    action = bookmarks.actions.removeBookmark('2', '1', 0, state.nodes);
+    state = bookmarks.reduceAction(state, action);
+
+    // 2 and 3 should be removed, since 2 was deleted and 3 was a descendant of
+    // 2.
+    assertDeepEquals(['1'], state.search.results);
   });
 });

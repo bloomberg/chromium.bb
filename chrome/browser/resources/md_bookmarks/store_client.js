@@ -38,7 +38,8 @@ cr.define('bookmarks', function() {
      *   watch('item', (state) => state.nodes[this.itemId]);
      *
      * Note that object identity is used to determine if the value has changed
-     * before updating the UI, rather than Polymer-style deep equality.
+     * before updating the UI, rather than Polymer-style deep equality. If the
+     * getter function returns |undefined|, no changes will propagate to the UI.
      *
      * Typechecking is supressed because this conflicts with
      * Object.prototype.watch, which is a Gecko-only method that is recognized
@@ -73,7 +74,7 @@ cr.define('bookmarks', function() {
         // Avoid poking Polymer unless something has actually changed. Reducers
         // must return new objects rather than mutating existing objects, so
         // any real changes will pass through correctly.
-        if (oldValue == newValue)
+        if (oldValue == newValue || newValue == undefined)
           return;
 
         this[watch.localProperty] = newValue;

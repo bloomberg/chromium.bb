@@ -44,12 +44,15 @@ cr.define('bookmarks.actions', function() {
    * @param {string} id
    * @param {string} parentId
    * @param {number} index
+   * @param {NodeList} nodes
    * @return {!Action}
    */
-  function removeBookmark(id, parentId, index) {
+  function removeBookmark(id, parentId, index, nodes) {
+    var descendants = bookmarks.util.getDescendants(nodes, id);
     return {
       name: 'remove-bookmark',
       id: id,
+      descendants: descendants,
       parentId: parentId,
       index: index,
     };
