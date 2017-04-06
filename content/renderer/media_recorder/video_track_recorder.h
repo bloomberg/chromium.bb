@@ -54,6 +54,7 @@ class CONTENT_EXPORT VideoTrackRecorder
                           std::unique_ptr<std::string> encoded_alpha,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
+  using OnErrorCB = base::Closure;
 
   static CodecId GetPreferredCodecId();
 
@@ -74,8 +75,10 @@ class CONTENT_EXPORT VideoTrackRecorder
   void InitializeEncoder(CodecId codec,
                          const OnEncodedVideoCB& on_encoded_video_callback,
                          int32_t bits_per_second,
+                         bool allow_vea_encoder,
                          const scoped_refptr<media::VideoFrame>& frame,
                          base::TimeTicks capture_time);
+  void OnError();
 
   // TODO(emircan): Remove after refactor, see http://crbug.com/700433.
   bool CanEncodeAlphaChannelForTesting();
@@ -89,7 +92,8 @@ class CONTENT_EXPORT VideoTrackRecorder
   // Inner class to encode using whichever codec is configured.
   scoped_refptr<Encoder> encoder_;
 
-  base::Callback<void(const scoped_refptr<media::VideoFrame>& frame,
+  base::Callback<void(bool allow_vea_encoder,
+                      const scoped_refptr<media::VideoFrame>& frame,
                       base::TimeTicks capture_time)>
       initialize_encoder_callback_;
 

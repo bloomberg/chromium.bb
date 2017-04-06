@@ -413,6 +413,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
  public:
   VEAEncoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+      const VideoTrackRecorder::OnErrorCB& on_error_callback,
       int32_t bits_per_second,
       media::VideoCodecProfile codec,
       const gfx::Size& size);
@@ -472,6 +473,9 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
   // Frames and corresponding timestamps in encode as FIFO.
   std::queue<VideoParamsAndTimestamp> frames_in_encode_;
+
+  // This callback can be exercised on any thread.
+  const VideoTrackRecorder::OnErrorCB on_error_callback_;
 };
 
 // Class encapsulating all libvpx interactions for VP8/VP9 encoding.
@@ -588,6 +592,7 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
 
 VEAEncoder::VEAEncoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+    const VideoTrackRecorder::OnErrorCB& on_error_callback,
     int32_t bits_per_second,
     media::VideoCodecProfile codec,
     const gfx::Size& size)
@@ -597,7 +602,8 @@ VEAEncoder::VEAEncoder(
               RenderThreadImpl::current()->GetGpuFactories()->GetTaskRunner()),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       codec_(codec),
-      error_notified_(false) {
+      error_notified_(false),
+      on_error_callback_(on_error_callback) {
   DCHECK(gpu_factories_);
   DCHECK_GE(size.width(), kVEAEncoderMinResolutionWidth);
   DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
@@ -670,8 +676,7 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
 void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
-
-  // TODO(emircan): Notify the owner via a callback.
+  on_error_callback_.Run();
   error_notified_ = true;
 }
 
@@ -1247,7 +1252,10 @@ VideoTrackRecorder::VideoTrackRecorder(
 
   // InitializeEncoder() will be called on Render Main thread.
   MediaStreamVideoSink::ConnectToTrack(
-      track_, media::BindToCurrentLoop(initialize_encoder_callback_), false);
+      track_,
+      media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
+                                          true /* allow_vea_encoder */)),
+      false);
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {
@@ -1279,7 +1287,8 @@ void VideoTrackRecorder::OnVideoFrameForTesting(
 
   if (!encoder_) {
     DCHECK(!initialize_encoder_callback_.is_null());
-    initialize_encoder_callback_.Run(frame, timestamp);
+    initialize_encoder_callback_.Run(true /* allow_vea_encoder */, frame,
+                                     timestamp);
   }
 
   encoder_->StartFrameEncode(frame, timestamp);
@@ -1289,6 +1298,7 @@ void VideoTrackRecorder::InitializeEncoder(
     CodecId codec,
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
+    bool allow_vea_encoder,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks capture_time) {
   DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
@@ -1304,11 +1314,15 @@ void VideoTrackRecorder::InitializeEncoder(
   const gfx::Size& input_size = frame->visible_rect().size();
   const auto& vea_supported_profile =
       GetCodecEnumerator()->CodecIdToVEAProfile(codec);
-  if (vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
+  if (allow_vea_encoder &&
+      vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
       input_size.width() >= kVEAEncoderMinResolutionWidth &&
       input_size.height() >= kVEAEncoderMinResolutionHeight) {
-    encoder_ = new VEAEncoder(on_encoded_video_callback, bits_per_second,
-                              vea_supported_profile, input_size);
+    encoder_ = new VEAEncoder(
+        on_encoded_video_callback,
+        media::BindToCurrentLoop(base::Bind(&VideoTrackRecorder::OnError,
+                                            weak_ptr_factory_.GetWeakPtr())),
+        bits_per_second, vea_supported_profile, input_size);
   } else {
     switch (codec) {
 #if BUILDFLAG(RTC_USE_H264)
@@ -1334,6 +1348,21 @@ void VideoTrackRecorder::InitializeEncoder(
   MediaStreamVideoSink::ConnectToTrack(
       track_,
       base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_),
+      false);
+}
+
+void VideoTrackRecorder::OnError() {
+  DVLOG(3) << __func__;
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  // InitializeEncoder() will be called to reinitialize encoder on Render Main
+  // thread.
+  MediaStreamVideoSink::DisconnectFromTrack();
+  encoder_ = nullptr;
+  MediaStreamVideoSink::ConnectToTrack(
+      track_,
+      media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
+                                          false /*allow_vea_encoder*/)),
       false);
 }
 
