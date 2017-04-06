@@ -560,6 +560,11 @@ define('media_router_bindings', [
     this.searchSinks = null;
 
     /**
+     * @type {function()}
+     */
+    this.provideSinks = null;
+
+    /**
      * @type {function(string, !bindings.InterfaceRequest): !Promise<boolean>}
      */
     this.createMediaRouteController = null;
@@ -619,6 +624,7 @@ define('media_router_bindings', [
       'enableMdnsDiscovery',
       'updateMediaSinks',
       'searchSinks',
+      'provideSinks',
       'createMediaRouteController',
       'setMediaRouteStatusObserver',
       'onBeforeInvokeHandler'
@@ -900,6 +906,16 @@ define('media_router_bindings', [
         });
   };
 
+  /**
+   * Notifies the provider manager that MediaRouter has discovered a list of
+   * sinks.
+   * @param {string} providerName
+   * @param {!Array<!mediaRouterMojom.MediaSink>} sinks
+   */
+  MediaRouteProvider.prototype.provideSinks = function(providerName, sinks) {
+    this.handlers_.onBeforeInvokeHandler();
+    this.handlers_.provideSinks(providerName, sinks);
+  };
 
   /**
    * Creates a controller for the given route and binds the given

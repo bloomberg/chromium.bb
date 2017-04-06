@@ -109,6 +109,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& search_input,
       const std::string& domain,
       const MediaSinkSearchResponseCallback& sink_callback) override;
+  void ProvideSinks(const std::string& provider_name,
+                    const std::vector<MediaSinkInternal>& sinks) override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -283,6 +285,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& search_input,
       const std::string& domain,
       const MediaSinkSearchResponseCallback& sink_callback);
+
+  void DoProvideSinks(const std::string& provider_name,
+                      const std::vector<MediaSinkInternal>& sinks);
 
   // Error handler callback for |binding_| and |media_route_provider_|.
   void OnConnectionError();

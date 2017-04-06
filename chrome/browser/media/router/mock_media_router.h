@@ -76,6 +76,8 @@ class MockMediaRouter : public MediaRouterBase {
            const std::string& search_input,
            const std::string& domain,
            const MediaSinkSearchResponseCallback& sink_callback));
+  MOCK_METHOD2(ProvideSinks,
+               void(const std::string&, const std::vector<MediaSinkInternal>&));
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
   std::unique_ptr<PresentationConnectionStateSubscription>

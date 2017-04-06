@@ -73,6 +73,8 @@ class MediaRouterAndroid : public MediaRouterBase {
       const std::string& search_input,
       const std::string& domain,
       const MediaSinkSearchResponseCallback& sink_callback) override;
+  void ProvideSinks(const std::string& provider_name,
+                    const std::vector<MediaSinkInternal>& sinks) override;
 
   // The methods called by the Java counterpart.
 

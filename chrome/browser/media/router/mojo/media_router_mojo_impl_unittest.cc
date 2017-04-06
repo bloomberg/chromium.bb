@@ -1204,6 +1204,25 @@ TEST_F(MediaRouterMojoImplTest, SearchSinks) {
   run_loop.RunUntilIdle();
 }
 
+TEST_F(MediaRouterMojoImplTest, ProvideSinks) {
+  std::vector<MediaSinkInternal> sinks;
+  MediaSink sink(kSinkId, kSinkName, MediaSink::IconType::CAST);
+  CastSinkExtraData extra_data;
+  EXPECT_TRUE(extra_data.ip_address.AssignFromIPLiteral("192.168.1.3"));
+  extra_data.capabilities = 2;
+  extra_data.cast_channel_id = 3;
+  MediaSinkInternal expected_sink(sink, extra_data);
+  sinks.push_back(expected_sink);
+  std::string provider_name = "cast";
+
+  EXPECT_CALL(mock_media_route_provider_, ProvideSinks(provider_name, sinks));
+
+  router()->ProvideSinks(provider_name, sinks);
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
 class MediaRouterMojoExtensionTest : public ::testing::Test {
  public:
   MediaRouterMojoExtensionTest() : process_manager_(nullptr) {}

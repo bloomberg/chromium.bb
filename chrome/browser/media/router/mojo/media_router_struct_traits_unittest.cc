@@ -57,12 +57,7 @@ TEST_F(MediaRouterStructTraitsTest, DialMediaSink) {
   MediaSinkInternal output;
   proxy->EchoMediaSink(dial_sink, &output);
 
-  EXPECT_EQ(sink_id, output.sink().id());
-  EXPECT_EQ(sink_name, output.sink().name());
-  EXPECT_EQ(icon_type, output.sink().icon_type());
-  EXPECT_EQ(ip_address, output.dial_data().ip_address.ToString());
-  EXPECT_EQ(model_name, output.dial_data().model_name);
-  EXPECT_EQ(app_url, output.dial_data().app_url);
+  EXPECT_EQ(dial_sink, output);
 }
 
 TEST_F(MediaRouterStructTraitsTest, CastMediaSink) {
@@ -85,13 +80,7 @@ TEST_F(MediaRouterStructTraitsTest, CastMediaSink) {
   MediaSinkInternal output;
   proxy->EchoMediaSink(cast_sink, &output);
 
-  EXPECT_EQ(sink_id, output.sink().id());
-  EXPECT_EQ(sink_name, output.sink().name());
-  EXPECT_EQ(icon_type, output.sink().icon_type());
-  EXPECT_EQ(ip_address, output.cast_data().ip_address.ToString());
-  EXPECT_EQ(model_name, output.cast_data().model_name);
-  EXPECT_EQ(2, output.cast_data().capabilities);
-  EXPECT_EQ(3, output.cast_data().cast_channel_id);
+  EXPECT_EQ(cast_sink, output);
 }
 
 TEST_F(MediaRouterStructTraitsTest, GenericMediaSink) {
@@ -107,11 +96,7 @@ TEST_F(MediaRouterStructTraitsTest, GenericMediaSink) {
   MediaSinkInternal output;
   proxy->EchoMediaSink(generic_sink, &output);
 
-  EXPECT_EQ(sink_id, output.sink().id());
-  EXPECT_EQ(sink_name, output.sink().name());
-  EXPECT_EQ(icon_type, output.sink().icon_type());
-  EXPECT_FALSE(output.is_cast_sink());
-  EXPECT_FALSE(output.is_dial_sink());
+  EXPECT_EQ(generic_sink, output);
 }
 
 }  // namespace media_router

@@ -97,6 +97,8 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     const std::string& media_source,
                     mojom::SinkSearchCriteriaPtr& search_criteria,
                     const SearchSinksCallback& callback));
+  MOCK_METHOD2(ProvideSinks,
+               void(const std::string&, const std::vector<MediaSinkInternal>&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);

@@ -398,6 +398,16 @@ void MediaRouterMojoImpl::SearchSinks(
                         search_input, domain, sink_callback));
 }
 
+void MediaRouterMojoImpl::ProvideSinks(
+    const std::string& provider_name,
+    const std::vector<MediaSinkInternal>& sinks) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  SetWakeReason(MediaRouteProviderWakeReason::PROVIDE_SINKS);
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoProvideSinks,
+                        base::Unretained(this), provider_name, sinks));
+}
+
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -700,6 +710,13 @@ void MediaRouterMojoImpl::DoSearchSinks(
   sink_search_criteria->domain = domain;
   media_route_provider_->SearchSinks(
       sink_id, source_id, std::move(sink_search_criteria), sink_callback);
+}
+
+void MediaRouterMojoImpl::DoProvideSinks(
+    const std::string& provider_name,
+    const std::vector<MediaSinkInternal>& sinks) {
+  DVLOG_WITH_INSTANCE(1) << "DoProvideSinks";
+  media_route_provider_->ProvideSinks(provider_name, sinks);
 }
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
