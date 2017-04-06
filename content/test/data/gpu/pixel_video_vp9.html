@@ -21,11 +21,16 @@ var video;
 function main()
 {
   video = document.getElementById("video");
-  video.addEventListener('canplaythrough', waitForFinish, true);
+  if (video.readyState >= 4) {
+    waitForFinish();
+  } else {
+    video.addEventListener('canplaythrough', waitForFinish, true);
+  }
 }
 
 function waitForFinish()
 {
+  console.log("readyState" + video.readyState);
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");

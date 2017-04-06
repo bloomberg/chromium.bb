@@ -21,7 +21,11 @@ var video;
 function main()
 {
   video = document.getElementById("video");
-  video.addEventListener('canplaythrough', waitForFinish, true);
+  if (video.readyState >= 4) {
+    waitForFinish();
+  } else {
+    video.addEventListener('canplaythrough', waitForFinish, true);
+  }
 }
 
 function waitForFinish()
