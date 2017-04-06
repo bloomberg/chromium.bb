@@ -14,9 +14,7 @@ import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +26,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.ArrayList;
@@ -481,21 +480,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                 assert mMessageInlineLinkRangeStart < mMessageInlineLinkRangeEnd;
                 assert mMessageInlineLinkRangeEnd < mMessageMainText.length();
 
-                spannedMessage.setSpan(
-                        new ClickableSpan() {
-                            @Override
-                            public void onClick(View view) {
-                                mInfoBarView.onLinkClicked();
-                            }
-
-                            @Override
-                            public void updateDrawState(TextPaint ds) {
-                                super.updateDrawState(ds);
-                                ds.setUnderlineText(false);
-                            }
-                        },
-                        mMessageInlineLinkRangeStart, mMessageInlineLinkRangeEnd,
-                        Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                spannedMessage.setSpan(createClickableSpan(), mMessageInlineLinkRangeStart,
+                        mMessageInlineLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             }
 
             fullString.append(spannedMessage);
@@ -507,15 +493,20 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
             int spanStart = fullString.length();
 
             fullString.append(mMessageLinkText);
-            fullString.setSpan(new ClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    mInfoBarView.onLinkClicked();
-                }
-            }, spanStart, fullString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            fullString.setSpan(createClickableSpan(), spanStart, fullString.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         return fullString;
+    }
+
+    private NoUnderlineClickableSpan createClickableSpan() {
+        return new NoUnderlineClickableSpan() {
+            @Override
+            public void onClick(View view) {
+                mInfoBarView.onLinkClicked();
+            }
+        };
     }
 
     /**
