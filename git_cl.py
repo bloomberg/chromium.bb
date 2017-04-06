@@ -2517,62 +2517,54 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     or CQ status, assuming adherence to a common workflow.
 
     Returns None if no issue for this branch, or one of the following keywords:
-      * 'error'    - error from review tool (including deleted issues)
-      * 'unsent'   - no reviewers added
-      * 'waiting'  - waiting for review
-      * 'reply'    - waiting for owner to reply to review
-      * 'not lgtm' - Code-Review disapproval from at least one valid reviewer
-      * 'lgtm'     - Code-Review approval from at least one valid reviewer
-      * 'commit'   - in the commit queue
-      * 'closed'   - abandoned
+      * 'error'   - error from review tool (including deleted issues)
+      * 'unsent'  - no reviewers added
+      * 'waiting' - waiting for review
+      * 'reply'   - waiting for uploader to reply to review
+      * 'lgtm'    - Code-Review label has been set
+      * 'commit'  - in the commit queue
+      * 'closed'  - successfully submitted or abandoned
     """
     if not self.GetIssue():
       return None
 
     try:
-      data = self._GetChangeDetail(['DETAILED_LABELS', 'CURRENT_REVISION'])
+      data = self._GetChangeDetail([
+          'DETAILED_LABELS', 'CURRENT_REVISION', 'SUBMITTABLE'])
     except (httplib.HTTPException, GerritChangeNotExists):
       return 'error'
 
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'closed'
 
-    cq_label = data['labels'].get('Commit-Queue', {})
-    if cq_label:
-      votes = cq_label.get('all', [])
-      highest_vote = 0
-      for v in votes:
-        highest_vote = max(highest_vote, v.get('value', 0))
-      vote_value = str(highest_vote)
-      if vote_value != '0':
-        # Add a '+' if the value is not 0 to match the values in the label.
-        # The cq_label does not have negatives.
-        vote_value = '+' + vote_value
-      vote_text = cq_label.get('values', {}).get(vote_value, '')
-      if vote_text.lower() == 'commit':
-        return 'commit'
+    if data['labels'].get('Commit-Queue', {}).get('approved'):
+      # The section will have an "approved" subsection if anyone has voted
+      # the maximum value on the label.
+      return 'commit'
 
-    lgtm_label = data['labels'].get('Code-Review', {})
-    if lgtm_label:
-      if 'rejected' in lgtm_label:
-        return 'not lgtm'
-      if 'approved' in lgtm_label:
-        return 'lgtm'
+    if data['labels'].get('Code-Review', {}).get('approved'):
+      return 'lgtm'
 
     if not data.get('reviewers', {}).get('REVIEWER', []):
       return 'unsent'
 
-    messages = data.get('messages', [])
     owner = data['owner'].get('_account_id')
-    while messages:
-      last_message_author = messages.pop().get('author', {})
+    messages = sorted(data.get('messages', []), key=lambda m: m.get('updated'))
+    last_message_author = messages.pop().get('author', {})
+    while last_message_author:
       if last_message_author.get('email') == COMMIT_BOT_EMAIL:
         # Ignore replies from CQ.
+        last_message_author = messages.pop().get('author', {})
         continue
-      if last_message_author.get('_account_id') != owner:
+      if last_message_author.get('_account_id') == owner:
+        # Most recent message was by owner.
+        return 'waiting'
+      else:
         # Some reply from non-owner.
         return 'reply'
-    return 'waiting'
+
+    # Somehow there are no messages even though there are reviewers.
+    return 'unsent'
 
   def GetMostRecentPatchset(self):
     data = self._GetChangeDetail(['CURRENT_REVISION'])
@@ -3919,9 +3911,10 @@ def CMDbaseurl(parser, args):
 def color_for_status(status):
   """Maps a Changelist status to color, for CMDstatus and other tools."""
   return {
-    'unsent': Fore.RED,
+    'unsent': Fore.YELLOW,
     'waiting': Fore.BLUE,
     'reply': Fore.YELLOW,
+    'not lgtm': Fore.RED,
     'lgtm': Fore.GREEN,
     'commit': Fore.MAGENTA,
     'closed': Fore.CYAN,
@@ -4175,12 +4168,13 @@ def CMDstatus(parser, args):
   """Show status of changelists.
 
   Colors are used to tell the state of the CL unless --fast is used:
-    - Red      not sent for review or broken
     - Blue     waiting for review
-    - Yellow   waiting for you to reply to review
+    - Yellow   waiting for you to reply to review, or not yet sent
     - Green    LGTM'ed
+    - Red      'not LGTM'ed
     - Magenta  in the commit queue
     - Cyan     was committed, branch can be deleted
+    - White    error, or unknown status
 
   Also see 'git cl comments'.
   """
