@@ -49,6 +49,7 @@ Label::Label(const base::string16& text)
 Label::Label(const base::string16& text, int text_context, int text_style)
     : context_menu_contents_(this) {
   Init(text, style::GetFont(text_context, text_style));
+  SetLineHeight(style::GetLineHeight(text_context, text_style));
 }
 
 Label::Label(const base::string16& text, const CustomFont& font)

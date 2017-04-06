@@ -234,6 +234,7 @@ gfx::Size LabelButton::GetPreferredSize() const {
 
   // Use a temporary label copy for sizing to avoid calculation side-effects.
   Label label(GetText(), {label_->font_list()});
+  label.SetLineHeight(label_->line_height());
   label.SetShadows(label_->shadows());
 
   if (style_ == STYLE_BUTTON && PlatformStyle::kDefaultLabelButtonHasBoldFont) {

@@ -21,6 +21,16 @@ struct FontRenderParams;
 
 class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
+// The size of the font returned by CreateDefault() on a "default" platform
+// configuration. This allows UI that wants to target a particular size of font
+// to obtain that size for the majority of users, while still compensating for a
+// user preference for a larger or smaller font.
+#if defined(OS_MACOSX)
+  static constexpr int kDefaultBaseFontSize = 13;
+#else
+  static constexpr int kDefaultBaseFontSize = 12;
+#endif
+
   // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)

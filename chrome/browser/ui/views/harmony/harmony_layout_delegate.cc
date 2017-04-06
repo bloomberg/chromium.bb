@@ -96,3 +96,8 @@ int HarmonyLayoutDelegate::GetDialogPreferredWidth(DialogWidth width) const {
   NOTREACHED();
   return 0;
 }
+
+const views::TypographyProvider& HarmonyLayoutDelegate::GetTypographyProvider()
+    const {
+  return typography_provider_;
+}

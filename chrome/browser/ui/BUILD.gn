@@ -1502,6 +1502,8 @@ split_static_library("ui") {
       "views/harmony/chrome_typography.h",
       "views/harmony/harmony_layout_delegate.cc",
       "views/harmony/harmony_layout_delegate.h",
+      "views/harmony/harmony_typography_provider.cc",
+      "views/harmony/harmony_typography_provider.h",
       "views/harmony/layout_delegate.cc",
       "views/harmony/layout_delegate.h",
       "views/location_bar/location_bar_bubble_delegate_view.cc",

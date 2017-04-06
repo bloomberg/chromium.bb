@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
@@ -228,4 +229,43 @@ TEST(LayoutDelegateTest, FontSizeRelativeToBase) {
   EXPECT_EQ(twelve - 1,
             GetFont(CONTEXT_DEPRECATED_SMALL, kStyle).GetFontSize());
 #endif
+}
+
+// Ensure that line height can be overridden by Chrome's TypographyProvider for
+// for the standard set of styles. This varies by platform and test machine
+// configuration. Generally, for a particular platform configuration, there
+// should be a consistent increase in line height when compared to the height of
+// a given font.
+TEST(LayoutDelegateTest, TypographyLineHeight) {
+  constexpr int kStyle = views::style::STYLE_PRIMARY;
+
+  // Only MD overrides the default line spacing.
+  ui::test::MaterialDesignControllerTestAPI md_test_api(
+      ui::MaterialDesignController::MATERIAL_NORMAL);
+  md_test_api.SetSecondaryUiMaterial(true);
+
+  ChromeViewsDelegate views_delegate;
+
+  constexpr struct {
+    int context;
+    int min;
+    int max;
+  } kExpectedIncreases[] = {{CONTEXT_HEADLINE, 4, 8},
+                            {views::style::CONTEXT_DIALOG_TITLE, 2, 4},
+                            {CONTEXT_BODY_TEXT_LARGE, 3, 4},
+                            {CONTEXT_BODY_TEXT_SMALL, 5, 5}};
+
+  for (size_t i = 0; i < arraysize(kExpectedIncreases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Testing index: " << i);
+    const auto& increase = kExpectedIncreases[i];
+    const gfx::FontList& font = views::style::GetFont(increase.context, kStyle);
+    int line_spacing = views::style::GetLineHeight(increase.context, kStyle);
+    EXPECT_GE(increase.max, line_spacing - font.GetHeight());
+    EXPECT_LE(increase.min, line_spacing - font.GetHeight());
+  }
+
+  // Buttons should specify zero line height (i.e. use the font's height) so
+  // buttons have flexibility to configure their own spacing.
+  EXPECT_EQ(0,
+            views::style::GetLineHeight(views::style::CONTEXT_BUTTON, kStyle));
 }

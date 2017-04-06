@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_LAYOUT_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_LAYOUT_DELEGATE_H_
 
+#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
 
 class HarmonyLayoutDelegate : public LayoutDelegate {
@@ -25,8 +26,11 @@ class HarmonyLayoutDelegate : public LayoutDelegate {
   bool IsHarmonyMode() const override;
   int GetDialogPreferredWidth(DialogWidth width) const override;
   bool ShouldShowWindowIcon() const override;
+  const views::TypographyProvider& GetTypographyProvider() const override;
 
  private:
+  const HarmonyTypographyProvider typography_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(HarmonyLayoutDelegate);
 };
 
