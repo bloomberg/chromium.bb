@@ -152,7 +152,8 @@ class CC_EXPORT LayerTreeHostImpl
   ~LayerTreeHostImpl() override;
 
   // InputHandler implementation
-  void BindToClient(InputHandlerClient* client) override;
+  void BindToClient(InputHandlerClient* client,
+                    bool wheel_scroll_latching_enabled) override;
   InputHandler::ScrollStatus ScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
@@ -853,6 +854,11 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<PendingTreeDurationHistogramTimer>
       pending_tree_duration_timer_;
 
+  // The id of the scroll node to which scroll animations must latch.
+  // This gets reset at ScrollAnimatedBegin, and updated the first time that a
+  // scroll animation is created in ScrollAnimated.
+  int scroll_animating_latched_node_id_;
+
   // These callbacks are stored here to be transfered to the main thread when we
   // begin main frame. These callbacks must only be called on the main thread.
   std::vector<base::Closure> completed_image_decode_callbacks_;
@@ -861,6 +867,8 @@ class CC_EXPORT LayerTreeHostImpl
   // thread.
   bool has_scrolled_by_wheel_;
   bool has_scrolled_by_touch_;
+
+  bool touchpad_and_wheel_scroll_latching_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

@@ -244,8 +244,10 @@ enum ScrollingThreadStatus {
 
 namespace ui {
 
-InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
-                                     InputHandlerProxyClient* client)
+InputHandlerProxy::InputHandlerProxy(
+    cc::InputHandler* input_handler,
+    InputHandlerProxyClient* client,
+    bool touchpad_and_wheel_scroll_latching_enabled)
     : client_(client),
       input_handler_(input_handler),
       deferred_fling_cancel_time_seconds_(0),
@@ -262,14 +264,16 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       has_fling_animation_started_(false),
       smooth_scroll_enabled_(false),
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
-      touchpad_and_wheel_scroll_latching_enabled_(false),
+      touchpad_and_wheel_scroll_latching_enabled_(
+          touchpad_and_wheel_scroll_latching_enabled),
       touch_start_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
       tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
   DCHECK(client);
-  input_handler_->BindToClient(this);
+  input_handler_->BindToClient(this,
+                               touchpad_and_wheel_scroll_latching_enabled_);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
       input_handler_->CreateScrollElasticityHelper();
   if (scroll_elasticity_helper) {

@@ -240,8 +240,10 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_likely_to_require_a_draw_(false),
       has_valid_compositor_frame_sink_(false),
       mutator_(nullptr),
+      scroll_animating_latched_node_id_(ScrollTree::kInvalidNodeId),
       has_scrolled_by_wheel_(false),
-      has_scrolled_by_touch_(false) {
+      has_scrolled_by_touch_(false),
+      touchpad_and_wheel_scroll_latching_enabled_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -2542,9 +2544,11 @@ float LayerTreeHostImpl::CurrentBrowserControlsShownRatio() const {
   return active_tree_->CurrentBrowserControlsShownRatio();
 }
 
-void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
+void LayerTreeHostImpl::BindToClient(InputHandlerClient* client,
+                                     bool wheel_scroll_latching_enabled) {
   DCHECK(input_handler_client_ == NULL);
   input_handler_client_ = client;
+  touchpad_and_wheel_scroll_latching_enabled_ = wheel_scroll_latching_enabled;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
@@ -2869,8 +2873,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   // this does not currently go through the scroll customization machinery
   // that ScrollBy uses for non-animated wheel scrolls.
   scroll_status = ScrollBegin(&scroll_state, WHEEL);
-  scroll_node = scroll_tree.CurrentlyScrollingNode();
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
+    scroll_animating_latched_node_id_ = ScrollTree::kInvalidNodeId;
     ScrollStateData scroll_state_end_data;
     scroll_state_end_data.is_ending = true;
     ScrollState scroll_state_end(scroll_state_end_data);
@@ -2985,6 +2989,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       if (!scroll_node->scrollable)
         continue;
 
+      if (touchpad_and_wheel_scroll_latching_enabled_ &&
+          scroll_animating_latched_node_id_ != ScrollTree::kInvalidNodeId &&
+          scroll_node->id != scroll_animating_latched_node_id_) {
+        continue;
+      }
+
       bool scrolls_main_viewport_scroll_layer =
           viewport()->MainScrollLayer() &&
           viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
@@ -3000,15 +3010,19 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
             viewport()->ScrollAnimated(pending_delta, delayed_by);
         // Viewport::ScrollAnimated returns pending_delta as long as it starts
         // an animation.
-        if (scrolled == pending_delta)
+        if (scrolled == pending_delta) {
+          scroll_animating_latched_node_id_ = scroll_node->id;
           return scroll_status;
+        }
         break;
       }
 
       gfx::Vector2dF scroll_delta =
           ComputeScrollDelta(scroll_node, pending_delta);
-      if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by))
+      if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
+        scroll_animating_latched_node_id_ = scroll_node->id;
         return scroll_status;
+      }
 
       pending_delta -= scroll_delta;
     }

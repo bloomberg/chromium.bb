@@ -552,6 +552,58 @@ class LayerTreeHostImplTimelinesTest : public LayerTreeHostImplTest {
   }
 };
 
+class TestInputHandlerClient : public InputHandlerClient {
+ public:
+  TestInputHandlerClient()
+      : page_scale_factor_(0.f),
+        min_page_scale_factor_(-1.f),
+        max_page_scale_factor_(-1.f) {}
+  ~TestInputHandlerClient() override {}
+
+  // InputHandlerClient implementation.
+  void WillShutdown() override {}
+  void Animate(base::TimeTicks time) override {}
+  void MainThreadHasStoppedFlinging() override {}
+  void ReconcileElasticOverscrollAndRootScroll() override {}
+  void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) override {
+    DCHECK(total_scroll_offset.x() <= max_scroll_offset.x());
+    DCHECK(total_scroll_offset.y() <= max_scroll_offset.y());
+    last_set_scroll_offset_ = total_scroll_offset;
+    max_scroll_offset_ = max_scroll_offset;
+    scrollable_size_ = scrollable_size;
+    page_scale_factor_ = page_scale_factor;
+    min_page_scale_factor_ = min_page_scale_factor;
+    max_page_scale_factor_ = max_page_scale_factor;
+  }
+  void DeliverInputForBeginFrame() override {}
+
+  gfx::ScrollOffset last_set_scroll_offset() { return last_set_scroll_offset_; }
+
+  gfx::ScrollOffset max_scroll_offset() const { return max_scroll_offset_; }
+
+  gfx::SizeF scrollable_size() const { return scrollable_size_; }
+
+  float page_scale_factor() const { return page_scale_factor_; }
+
+  float min_page_scale_factor() const { return min_page_scale_factor_; }
+
+  float max_page_scale_factor() const { return max_page_scale_factor_; }
+
+ private:
+  gfx::ScrollOffset last_set_scroll_offset_;
+  gfx::ScrollOffset max_scroll_offset_;
+  gfx::SizeF scrollable_size_;
+  float page_scale_factor_;
+  float min_page_scale_factor_;
+  float max_page_scale_factor_;
+};
+
 TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   // Note: It is not possible to disable the renderer once it has been set,
   // so we do not need to test that disabling the renderer notifies us
@@ -5456,6 +5508,106 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
   }
 }
 
+TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
+  // Enable wheel scroll latching flag.
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client, true);
+
+  // Scroll a child layer beyond its maximum scroll range and make sure the
+  // parent layer isn't scrolled.
+  gfx::Size surface_size(100, 100);
+  gfx::Size content_size(150, 150);
+
+  LayerImpl* root =
+      CreateBasicVirtualViewportLayers(surface_size, surface_size);
+  root->test_properties()->force_render_surface = true;
+
+  root->test_properties()->force_render_surface = true;
+  std::unique_ptr<LayerImpl> grand_child =
+      CreateScrollableLayer(13, content_size, root);
+
+  std::unique_ptr<LayerImpl> child =
+      CreateScrollableLayer(12, content_size, root);
+  LayerImpl* grand_child_layer = grand_child.get();
+  child->test_properties()->AddChild(std::move(grand_child));
+
+  LayerImpl* child_layer = child.get();
+  root->test_properties()->AddChild(std::move(child));
+  host_impl_->active_tree()->SetElementIdsForTesting();
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->DidBecomeActive();
+
+  grand_child_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(grand_child_layer->id(),
+                                                     gfx::ScrollOffset(0, 30));
+  child_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->id(),
+                                                     gfx::ScrollOffset(0, 50));
+
+  host_impl_->SetViewportSize(surface_size);
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10);
+
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, -100)).thread);
+
+  begin_frame_args.frame_time = start_time;
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::ScrollOffset(0, 30), grand_child_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(200);
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::ScrollOffset(0, 0), grand_child_layer->CurrentScrollOffset());
+  EXPECT_EQ(gfx::ScrollOffset(0, 50), child_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  // Second ScrollAnimated should still latch to the grand_child_layer.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, -100)).thread);
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(450);
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::ScrollOffset(0, 0), grand_child_layer->CurrentScrollOffset());
+  EXPECT_EQ(gfx::ScrollOffset(0, 50), child_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseCompositorFrameSink();
+  host_impl_ = nullptr;
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   // Scroll a child layer beyond its maximum scroll range and make sure the
   // the scroll doesn't bubble up to the parent layer.
@@ -6001,58 +6153,6 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
             inner_viewport_scroll_layer->MaxScrollOffset());
 }
 
-class TestInputHandlerClient : public InputHandlerClient {
- public:
-  TestInputHandlerClient()
-      : page_scale_factor_(0.f),
-        min_page_scale_factor_(-1.f),
-        max_page_scale_factor_(-1.f) {}
-  ~TestInputHandlerClient() override {}
-
-  // InputHandlerClient implementation.
-  void WillShutdown() override {}
-  void Animate(base::TimeTicks time) override {}
-  void MainThreadHasStoppedFlinging() override {}
-  void ReconcileElasticOverscrollAndRootScroll() override {}
-  void UpdateRootLayerStateForSynchronousInputHandler(
-      const gfx::ScrollOffset& total_scroll_offset,
-      const gfx::ScrollOffset& max_scroll_offset,
-      const gfx::SizeF& scrollable_size,
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) override {
-    DCHECK(total_scroll_offset.x() <= max_scroll_offset.x());
-    DCHECK(total_scroll_offset.y() <= max_scroll_offset.y());
-    last_set_scroll_offset_ = total_scroll_offset;
-    max_scroll_offset_ = max_scroll_offset;
-    scrollable_size_ = scrollable_size;
-    page_scale_factor_ = page_scale_factor;
-    min_page_scale_factor_ = min_page_scale_factor;
-    max_page_scale_factor_ = max_page_scale_factor;
-  }
-  void DeliverInputForBeginFrame() override {}
-
-  gfx::ScrollOffset last_set_scroll_offset() { return last_set_scroll_offset_; }
-
-  gfx::ScrollOffset max_scroll_offset() const { return max_scroll_offset_; }
-
-  gfx::SizeF scrollable_size() const { return scrollable_size_; }
-
-  float page_scale_factor() const { return page_scale_factor_; }
-
-  float min_page_scale_factor() const { return min_page_scale_factor_; }
-
-  float max_page_scale_factor() const { return max_page_scale_factor_; }
-
- private:
-  gfx::ScrollOffset last_set_scroll_offset_;
-  gfx::ScrollOffset max_scroll_offset_;
-  gfx::SizeF scrollable_size_;
-  float page_scale_factor_;
-  float min_page_scale_factor_;
-  float max_page_scale_factor_;
-};
-
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   TestInputHandlerClient scroll_watcher;
   host_impl_->SetViewportSize(gfx::Size(10, 20));
@@ -6062,7 +6162,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   clip_layer->SetBounds(gfx::Size(10, 20));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->BindToClient(&scroll_watcher);
+  host_impl_->BindToClient(&scroll_watcher, false);
 
   gfx::Vector2dF initial_scroll_delta(10.f, 10.f);
   scroll_layer->layer_tree_impl()

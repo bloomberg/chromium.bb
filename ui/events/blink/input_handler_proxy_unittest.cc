@@ -200,7 +200,8 @@ class MockInputHandler : public cc::InputHandler {
 
   bool ScrollingShouldSwitchtoMainThread() override { return false; }
 
-  void BindToClient(cc::InputHandlerClient* client) override {}
+  void BindToClient(cc::InputHandlerClient* client,
+                    bool touchpad_and_wheel_scroll_latching_enabled) override {}
 
   void MouseDown() override {}
   void MouseUp() override {}
@@ -353,8 +354,11 @@ const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
 class TestInputHandlerProxy : public InputHandlerProxy {
  public:
   TestInputHandlerProxy(cc::InputHandler* input_handler,
-                        InputHandlerProxyClient* client)
-      : InputHandlerProxy(input_handler, client) {}
+                        InputHandlerProxyClient* client,
+                        bool touchpad_and_wheel_scroll_latching_enabled)
+      : InputHandlerProxy(input_handler,
+                          client,
+                          touchpad_and_wheel_scroll_latching_enabled) {}
   void RecordMainThreadScrollingReasonsForTest(blink::WebGestureDevice device,
                                                uint32_t reasons) {
     RecordMainThreadScrollingReasons(device, reasons);
@@ -374,8 +378,7 @@ class InputHandlerProxyTest
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
         expected_disposition_(InputHandlerProxy::DID_HANDLE) {
     input_handler_.reset(
-        new TestInputHandlerProxy(
-            &mock_input_handler_, &mock_client_));
+        new TestInputHandlerProxy(&mock_input_handler_, &mock_client_, false));
     scroll_result_did_scroll_.did_scroll = true;
     scroll_result_did_not_scroll_.did_scroll = false;
 
@@ -473,10 +476,6 @@ class InputHandlerProxyTest
     input_handler_->smooth_scroll_enabled_ = value;
   }
 
-  void SetTouchpadAndWheelScrollLatchingEnabled(bool value) {
-    input_handler_->touchpad_and_wheel_scroll_latching_enabled_ = value;
-  }
-
   base::HistogramTester& histogram_tester() {
     return histogram_tester_;
   }
@@ -507,7 +506,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   void SetUp() override {
     event_disposition_recorder_.clear();
     input_handler_proxy_ = base::MakeUnique<TestInputHandlerProxy>(
-        &mock_input_handler_, &mock_client_);
+        &mock_input_handler_, &mock_client_, false);
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
           base::MakeUnique<CompositorThreadEventQueue>();
@@ -969,7 +968,16 @@ TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
 }
 
 TEST_P(InputHandlerProxyTest, GestureFlingTouchpadScrollLatchingEnabled) {
-  SetTouchpadAndWheelScrollLatchingEnabled(true);
+  // Reset the input_handler_ with wheel scroll latching enabled.
+  input_handler_.reset(
+      new TestInputHandlerProxy(&mock_input_handler_, &mock_client_, true));
+  if (install_synchronous_handler_) {
+    EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
+        .Times(1);
+    input_handler_->SetOnlySynchronouslyAnimateRootFlings(
+        &mock_synchronous_input_handler_);
+  }
+
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   VERIFY_AND_RESET_MOCKS();
@@ -2927,8 +2935,7 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   testing::StrictMock<MockInputHandlerProxyClientWithDidAnimateForInput>
       mock_client;
   input_handler_.reset(
-        new TestInputHandlerProxy(
-            &mock_input_handler_, &mock_client));
+      new TestInputHandlerProxy(&mock_input_handler_, &mock_client, false));
   if (install_synchronous_handler_) {
     EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
         .Times(1);
@@ -2962,7 +2969,7 @@ TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
 
   // When adding a SynchronousInputHandler, immediately request an
   // UpdateRootLayerStateForSynchronousInputHandler() call.
@@ -2988,7 +2995,7 @@ TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 
@@ -3013,7 +3020,7 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 

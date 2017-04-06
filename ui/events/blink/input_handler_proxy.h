@@ -52,9 +52,9 @@ class InputHandlerProxy
       public SynchronousInputHandlerProxy,
       public NON_EXPORTED_BASE(blink::WebGestureCurveTarget) {
  public:
-
   InputHandlerProxy(cc::InputHandler* input_handler,
-                    InputHandlerProxyClient* client);
+                    InputHandlerProxyClient* client,
+                    bool touchpad_and_wheel_scroll_latching_enabled);
   ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
@@ -62,9 +62,6 @@ class InputHandlerProxy
   }
 
   void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
-  void set_touchpad_and_wheel_scroll_latching_enabled(bool value) {
-    touchpad_and_wheel_scroll_latching_enabled_ = value;
-  }
 
   enum EventDisposition {
     DID_HANDLE,
@@ -240,7 +237,7 @@ class InputHandlerProxy
 
   bool smooth_scroll_enabled_;
   bool uma_latency_reporting_enabled_;
-  bool touchpad_and_wheel_scroll_latching_enabled_;
+  const bool touchpad_and_wheel_scroll_latching_enabled_;
 
   // The merged result of the last touch start with previous touch starts.
   // This value will get returned for subsequent TouchMove events to allow

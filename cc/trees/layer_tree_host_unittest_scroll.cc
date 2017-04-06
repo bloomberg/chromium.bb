@@ -1319,7 +1319,7 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
 void BindInputHandlerOnCompositorThread(
     const base::WeakPtr<InputHandler>& input_handler,
     ThreadCheckingInputHandlerClient* client) {
-  input_handler->BindToClient(client);
+  input_handler->BindToClient(client, false);
 }
 
 TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
@@ -1876,7 +1876,7 @@ class LayerTreeHostScrollTestElasticOverscroll
 
   void BindInputHandler(base::WeakPtr<InputHandler> input_handler) {
     DCHECK(task_runner_provider()->IsImplThread());
-    input_handler->BindToClient(&input_handler_client_);
+    input_handler->BindToClient(&input_handler_client_, false);
     scroll_elasticity_helper_ = input_handler->CreateScrollElasticityHelper();
     DCHECK(scroll_elasticity_helper_);
   }
