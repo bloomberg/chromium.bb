@@ -31,6 +31,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -985,6 +986,23 @@ void UserSessionManager::StartCrosSession() {
 }
 
 void UserSessionManager::PrepareProfile() {
+  const base::FilePath profile_path =
+      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash());
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+          .WithPriority(base::TaskPriority::USER_BLOCKING)
+          .MayBlock(),
+      base::Bind(&arc::IsArcCompatibleFilesystem, profile_path),
+      base::Bind(&UserSessionManager::PrepareProfileAfterFilesystemCheck,
+                 AsWeakPtr()));
+}
+
+void UserSessionManager::PrepareProfileAfterFilesystemCheck(
+    bool arc_compatible_filesystem) {
   const bool is_demo_session =
       DemoAppLauncher::IsDemoAppSession(user_context_.GetAccountId());
 
@@ -993,12 +1011,13 @@ void UserSessionManager::PrepareProfile() {
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
       base::Bind(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
-                 user_context_, is_demo_session),
+                 user_context_, is_demo_session, arc_compatible_filesystem),
       base::string16(), std::string(), std::string());
 }
 
 void UserSessionManager::OnProfileCreated(const UserContext& user_context,
                                           bool is_incognito_profile,
+                                          bool arc_compatible_filesystem,
                                           Profile* profile,
                                           Profile::CreateStatus status) {
   CHECK(profile);
@@ -1006,7 +1025,7 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
   switch (status) {
     case Profile::CREATE_STATUS_CREATED:
       // Profile created but before initializing extensions and promo resources.
-      InitProfilePreferences(profile, user_context);
+      InitProfilePreferences(profile, user_context, arc_compatible_filesystem);
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
       // Profile is created, extensions and promo resources are initialized.
@@ -1026,7 +1045,11 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
 
 void UserSessionManager::InitProfilePreferences(
     Profile* profile,
-    const UserContext& user_context) {
+    const UserContext& user_context,
+    bool arc_compatible_filesystem) {
+  profile->GetPrefs()->SetBoolean(prefs::kArcCompatibleFilesystemChosen,
+                                  arc_compatible_filesystem);
+
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP &&

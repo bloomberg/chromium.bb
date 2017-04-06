@@ -30,6 +30,7 @@ extern const char kArcLocationServiceEnabled[];
 extern const char kArcPackages[];
 extern const char kArcSetNotificationsEnabledDeferred[];
 extern const char kArcSignedIn[];
+extern const char kArcCompatibleFilesystemChosen[];
 #endif
 extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];

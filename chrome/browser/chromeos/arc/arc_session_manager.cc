@@ -179,6 +179,7 @@ void ArcSessionManager::RegisterProfilePrefs(
   // AD-managed device.
   registry->RegisterStringPref(prefs::kArcActiveDirectoryPlayUserId,
                                std::string());
+  registry->RegisterBooleanPref(prefs::kArcCompatibleFilesystemChosen, false);
 }
 
 // static

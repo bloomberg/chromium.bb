@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace base {
+class FilePath;
+}
+
 namespace arc {
 
 // Returns true if ARC is allowed to run for the given profile.
@@ -60,6 +64,10 @@ void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
 // Returns whether all ARC related OptIn preferences (i.e.
 // ArcBackupRestoreEnabled and ArcLocationServiceEnabled) are managed.
 bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile);
+
+// Returns whether ARC can run on the filesystem mounted at |path|.
+// This function should run only on threads where IO operations are allowed.
+bool IsArcCompatibleFilesystem(const base::FilePath& path);
 
 }  // namespace arc
 

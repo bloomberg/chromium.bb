@@ -4,7 +4,13 @@
 
 #include "chrome/browser/chromeos/arc/arc_util.h"
 
+#include <linux/magic.h>
+#include <sys/statfs.h>
+
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/sys_info.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -19,6 +25,9 @@
 namespace arc {
 
 namespace {
+
+constexpr char kLsbReleaseArcVersionKey[] = "CHROMEOS_ARC_ANDROID_SDK_VERSION";
+constexpr char kAndroidMSdkVersion[] = "23";
 
 // Let IsAllowedForProfile() return "false" for any profile.
 bool g_disallow_for_testing = false;
@@ -92,6 +101,30 @@ bool IsArcAllowedForProfile(const Profile* profile) {
     return false;
   }
 
+  // Do not allow newer version of ARC on old filesystem.
+  // Check this condition only on real Chrome OS devices. Test runs on Linux
+  // workstation does not have expected /etc/lsb-release field nor profile
+  // creation step.
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // chromeos::UserSessionManager::PrepareProfile does the actual file system
+    // check and stores the result to prefs, so that it survives crash-restart.
+    const bool is_filesystem_compatible =
+        profile->GetPrefs()->GetBoolean(prefs::kArcCompatibleFilesystemChosen);
+    std::string arc_sdk_version;
+    const bool is_M = base::SysInfo::GetLsbReleaseValue(
+                          kLsbReleaseArcVersionKey, &arc_sdk_version) &&
+                      arc_sdk_version == kAndroidMSdkVersion;
+    // To run ARC we want to make sure either
+    // - Underlying file system is compatible with ARC, or
+    // - SDK version is M.
+    if (!is_filesystem_compatible && !is_M) {
+      VLOG(1)
+          << "Users with SDK version (" << arc_sdk_version
+          << ") are not supported when they postponed to migrate to dircrypto.";
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -139,6 +172,16 @@ bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {
              prefs::kArcBackupRestoreEnabled) &&
          profile->GetPrefs()->IsManagedPreference(
              prefs::kArcLocationServiceEnabled);
+}
+
+bool IsArcCompatibleFilesystem(const base::FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // If it can be verified it is not on ecryptfs, then it is ok.
+  struct statfs statfs_buf;
+  if (statfs(path.value().c_str(), &statfs_buf) < 0)
+    return false;
+  return statfs_buf.f_type != ECRYPTFS_SUPER_MAGIC;
 }
 
 }  // namespace arc
