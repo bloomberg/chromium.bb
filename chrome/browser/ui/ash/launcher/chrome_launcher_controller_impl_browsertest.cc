@@ -876,33 +876,46 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   int base_shelf_item_count = shelf_model()->item_count();
   ExtensionTestMessageListener completed_listener("Completed", false);
   LoadAndLaunchPlatformApp("app_icon", "Launched");
+
   ASSERT_TRUE(completed_listener.WaitUntilSatisfied());
 
   // Now wait until the WebContent has decoded the icons and chrome has
   // processed it. This needs to be in a loop since the renderer runs in a
   // different process.
-  while (test_observer.icon_updates() < 3) {
+  while (test_observer.icon_updates() < 4) {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
 
-  // This test creates one app window and one panel window.
+  // This test creates one app window, one app window with custom icon and one
+  // panel window.
   int shelf_item_count = shelf_model()->item_count();
-  ASSERT_EQ(base_shelf_item_count + 2, shelf_item_count);
+  ASSERT_EQ(base_shelf_item_count + 3, shelf_item_count);
   // The Panel will be the last item, the app second-to-last.
-  const ash::ShelfItem& app_item =
+  const ash::ShelfItem& app_item = shelf_model()->items()[shelf_item_count - 3];
+  const ash::ShelfItem& app_custom_icon_item =
       shelf_model()->items()[shelf_item_count - 2];
   const ash::ShelfItem& panel_item =
       shelf_model()->items()[shelf_item_count - 1];
+
   // Icons for Apps are set by the AppWindowLauncherController, so
   // image_set_by_controller() should be set.
   const ash::ShelfItemDelegate* app_item_delegate =
       GetShelfItemDelegate(app_item.id);
-  EXPECT_TRUE(app_item_delegate->image_set_by_controller());
+  ASSERT_TRUE(app_item_delegate);
+  EXPECT_FALSE(app_item_delegate->image_set_by_controller());
+
+  const ash::ShelfItemDelegate* app_custom_icon_item_delegate =
+      GetShelfItemDelegate(app_custom_icon_item.id);
+  ASSERT_TRUE(app_custom_icon_item_delegate);
+  EXPECT_TRUE(app_custom_icon_item_delegate->image_set_by_controller());
+
   // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
   EXPECT_EQ(nullptr, GetShelfItemDelegate(panel_item.id));
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
-  EXPECT_EQ(ash::GetShelfConstant(ash::SHELF_SIZE), app_item.image.height());
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALL, app_item.image.height());
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
+            app_custom_icon_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
 }
 

@@ -561,6 +561,10 @@ base::string16 AppWindow::GetTitle() const {
   return title;
 }
 
+bool AppWindow::HasCustomIcon() const {
+  return window_icon_url_.is_valid() || app_icon_url_.is_valid();
+}
+
 void AppWindow::SetAppIconUrl(const GURL& url) {
   // Avoid using any previous icons that were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
@@ -595,7 +599,8 @@ void AppWindow::UpdateAppIcon(const gfx::Image& image) {
   // Set the showInShelf=true window icon and add the app_icon_image_
   // as a badge. If the image is empty, set the default app icon placeholder
   // as the base image.
-  if (window_icon_url_.is_valid() && !app_icon_image_->image().IsEmpty()) {
+  if (window_icon_url_.is_valid() && app_icon_image_ &&
+      !app_icon_image_->image().IsEmpty()) {
     gfx::Image base_image =
         !image.IsEmpty()
             ? image

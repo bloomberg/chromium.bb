@@ -360,6 +360,10 @@ class AppWindow : public content::WebContentsDelegate,
   // unblock resource requests.
   void NotifyRenderViewReady();
 
+  // Returns true if window has custom icon in case either |window_icon_url_| or
+  // |app_icon_url_| is set. Custom icon may be not loaded yet.
+  bool HasCustomIcon() const;
+
   // Whether the app window wants to be alpha enabled.
   bool requested_alpha_enabled() const { return requested_alpha_enabled_; }
 

@@ -15,7 +15,16 @@ chrome.app.runtime.onLaunched.addListener(function() {
       chrome.app.window.create(
         'main.html', { type: "shell" },
         function (win) {
-          chrome.test.sendMessage("Completed");
+          // Create the shell window which is shown in shelf; it should use
+          // another custom app icon.
+          chrome.app.window.create(
+            'main.html', { id: "win_with_icon",
+                           type: "shell",
+                           icon: "icon48.png",
+                           showInShelf: true },
+            function (win) {
+              chrome.test.sendMessage("Completed");
+            });
         });
     });
 });
