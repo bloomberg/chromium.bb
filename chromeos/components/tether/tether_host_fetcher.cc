@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
@@ -34,11 +35,11 @@ TetherHostFetcher::TetherHostFetchRequest::~TetherHostFetchRequest() {}
 TetherHostFetcher::TetherHostFetcher(
     const std::string& user_id,
     const std::string& user_private_key,
-    std::unique_ptr<Delegate> delegate,
+    cryptauth::CryptAuthService* cryptauth_service,
     cryptauth::CryptAuthDeviceManager* device_manager)
     : user_id_(user_id),
       user_private_key_(user_private_key),
-      delegate_(std::move(delegate)),
+      cryptauth_service_(cryptauth_service),
       device_manager_(device_manager),
       weak_ptr_factory_(this) {}
 
@@ -64,7 +65,7 @@ void TetherHostFetcher::StartLoadingDevicesIfNeeded() {
 
   remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
       device_manager_->GetTetherHosts(), user_id_, user_private_key_,
-      delegate_->CreateSecureMessageDelegate());
+      cryptauth_service_->CreateSecureMessageDelegate());
   remote_device_loader_->Load(
       base::Bind(&TetherHostFetcher::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));

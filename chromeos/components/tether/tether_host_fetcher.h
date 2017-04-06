@@ -16,8 +16,8 @@
 
 namespace cryptauth {
 class CryptAuthDeviceManager;
+class CryptAuthService;
 class RemoteDeviceLoader;
-class SecureMessageDelegate;
 }  // namespace cryptauth
 
 namespace chromeos {
@@ -28,15 +28,9 @@ namespace tether {
 // synced via CryptAuth.
 class TetherHostFetcher {
  public:
-  class Delegate {
-   public:
-    virtual std::unique_ptr<cryptauth::SecureMessageDelegate>
-    CreateSecureMessageDelegate() = 0;
-  };
-
   TetherHostFetcher(const std::string& user_id,
                     const std::string& user_private_key,
-                    std::unique_ptr<Delegate> delegate,
+                    cryptauth::CryptAuthService* cryptauth_service,
                     cryptauth::CryptAuthDeviceManager* device_manager);
   virtual ~TetherHostFetcher();
 
@@ -78,7 +72,8 @@ class TetherHostFetcher {
 
   const std::string user_id_;
   const std::string user_private_key_;
-  std::unique_ptr<Delegate> delegate_;
+
+  cryptauth::CryptAuthService* cryptauth_service_;
   cryptauth::CryptAuthDeviceManager* device_manager_;
 
   std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
