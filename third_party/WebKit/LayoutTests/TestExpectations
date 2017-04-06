@@ -2672,3 +2672,5 @@ crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
+
+crbug.com/708934 fast/backgrounds/background-image-relative-url-in-iframe.html [ Failure Pass ]
