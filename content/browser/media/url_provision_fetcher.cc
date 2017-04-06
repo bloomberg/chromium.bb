@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/bind_to_current_loop.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 
 using net::URLFetcher;
@@ -38,6 +39,8 @@ void URLProvisionFetcher::Retrieve(
   request_->SetUploadData("", "");
   request_->AddExtraRequestHeader("User-Agent: Widevine CDM v1.0");
   request_->AddExtraRequestHeader("Content-Type: application/json");
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES);
 
   DCHECK(context_getter_);
   request_->SetRequestContext(context_getter_);
