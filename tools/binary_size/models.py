@@ -31,10 +31,12 @@ import match_util
 
 
 METADATA_GIT_REVISION = 'git_revision'
-METADATA_MAP_FILENAME = 'map_file_name'
-METADATA_ELF_FILENAME = 'elf_file_name'
+METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
+METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
+METADATA_GN_ARGS = 'gn_args'
+
 
 SECTION_TO_SECTION_NAME = {
     'b': '.bss',
@@ -49,7 +51,7 @@ class SizeInfo(object):
 
   Fields:
     section_sizes: A dict of section_name -> size.
-    symbols: A SymbolGroup (or SymbolDiff) with all symbols in it.
+    symbols: A SymbolGroup with all symbols in it.
     metadata: A dict.
   """
   __slots__ = (
@@ -63,6 +65,29 @@ class SizeInfo(object):
     self.section_sizes = section_sizes  # E.g. {'.text': 0}
     self.symbols = symbols  # List of symbols sorted by address per-section.
     self.metadata = metadata or {}
+
+
+class SizeInfoDiff(object):
+  """What you get when you Diff() two SizeInfo objects.
+
+  Fields:
+    section_sizes: A dict of section_name -> size delta.
+    symbols: A SymbolDiff with all symbols in it.
+    old_metadata: metadata of the "old" SizeInfo.
+    new_metadata: metadata of the "new" SizeInfo.
+  """
+  __slots__ = (
+      'section_sizes',
+      'symbols',
+      'old_metadata',
+      'new_metadata',
+  )
+
+  def __init__(self, section_sizes, symbols, old_metadata, new_metadata):
+    self.section_sizes = section_sizes
+    self.symbols = symbols
+    self.old_metadata = old_metadata
+    self.new_metadata = new_metadata
 
 
 class BaseSymbol(object):
@@ -547,9 +572,7 @@ class SymbolDiff(SymbolGroup):
 def Diff(new, old):
   """Diffs two SizeInfo or SymbolGroup objects.
 
-  When diffing SizeInfos, ret.section_sizes are the result of |new| - |old|, and
-  ret.symbols will be a SymbolDiff.
-
+  When diffing SizeInfos, a SizeInfoDiff is returned.
   When diffing SymbolGroups, a SymbolDiff is returned.
 
   Returns:
@@ -561,7 +584,7 @@ def Diff(new, old):
     section_sizes = {
         k:new.section_sizes[k] - v for k, v in old.section_sizes.iteritems()}
     symbol_diff = Diff(new.symbols, old.symbols)
-    return SizeInfo(section_sizes, symbol_diff)
+    return SizeInfoDiff(section_sizes, symbol_diff, old.metadata, new.metadata)
 
   assert isinstance(new, SymbolGroup) and isinstance(old, SymbolGroup)
   symbols_by_key = collections.defaultdict(list)

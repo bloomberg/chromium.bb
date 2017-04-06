@@ -39,14 +39,15 @@ class Describer(object):
                            if k in relevant_names or k.startswith('.data'))
     total_bytes = sum(v for k, v in section_sizes.iteritems()
                       if k in section_names and k != '.bss')
+    yield ''
     yield 'Section Sizes (Total={:,} bytes):'.format(total_bytes)
     for name in section_names:
       size = section_sizes[name]
       if name == '.bss':
-        yield '{}: {:,} bytes (not included in totals)'.format(name, size)
+        yield '    {}: {:,} bytes (not included in totals)'.format(name, size)
       else:
         percent = float(size) / total_bytes if total_bytes else 0
-        yield '{}: {:,} bytes ({:.1%})'.format(name, size, percent)
+        yield '    {}: {:,} bytes ({:.1%})'.format(name, size, percent)
 
     if self.verbose:
       yield ''
@@ -54,7 +55,7 @@ class Describer(object):
       section_names = sorted(k for k in section_sizes.iterkeys()
                              if k not in section_names)
       for name in section_names:
-        yield '{}: {:,} bytes'.format(name, section_sizes[name])
+        yield '    {}: {:,} bytes'.format(name, section_sizes[name])
 
   def _DescribeSymbol(self, sym):
     # SymbolGroups are passed here when we don't want to expand them.
@@ -138,22 +139,43 @@ class Describer(object):
     group_desc = self._DescribeSymbolGroup(diff, prefix_func=prefix_func)
     return itertools.chain((header_str,), group_desc)
 
-  def GenerateLines(self, obj):
-    if isinstance(obj, models.SizeInfo):
-      metadata_desc = 'Metadata: %s' % DescribeSizeInfoMetadata(obj)
-      section_desc = self._DescribeSectionSizes(obj.section_sizes)
-      group_desc = self.GenerateLines(obj.symbols)
-      return itertools.chain((metadata_desc,), section_desc, ('',), group_desc)
+  def _DescribeSizeInfoDiff(self, diff):
+    common_metadata = {k: v for k, v in diff.old_metadata.iteritems()
+                       if diff.new_metadata[k] == v}
+    old_metadata = {k: v for k, v in diff.old_metadata.iteritems()
+                    if k not in common_metadata}
+    new_metadata = {k: v for k, v in diff.new_metadata.iteritems()
+                    if k not in common_metadata}
+    metadata_desc = itertools.chain(
+        ('Common Metadata:',),
+        ('    %s' % line for line in DescribeMetadata(common_metadata)),
+        ('Old Metadata:',),
+        ('    %s' % line for line in DescribeMetadata(old_metadata)),
+        ('New Metadata:',),
+        ('    %s' % line for line in DescribeMetadata(new_metadata)))
+    section_desc = self._DescribeSectionSizes(diff.section_sizes)
+    group_desc = self.GenerateLines(diff.symbols)
+    return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
 
+  def _DescribeSizeInfo(self, size_info):
+    metadata_desc = itertools.chain(
+        ('Metadata:',),
+        ('    %s' % line for line in DescribeMetadata(size_info.metadata)))
+    section_desc = self._DescribeSectionSizes(size_info.section_sizes)
+    group_desc = self.GenerateLines(size_info.symbols)
+    return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
+
+  def GenerateLines(self, obj):
+    if isinstance(obj, models.SizeInfoDiff):
+      return self._DescribeSizeInfoDiff(obj)
+    if isinstance(obj, models.SizeInfo):
+      return self._DescribeSizeInfo(obj)
     if isinstance(obj, models.SymbolDiff):
       return self._DescribeSymbolDiff(obj)
-
     if isinstance(obj, models.SymbolGroup):
       return self._DescribeSymbolGroup(obj)
-
     if isinstance(obj, models.Symbol):
       return self._DescribeSymbol(obj)
-
     return (repr(obj),)
 
 
@@ -199,14 +221,17 @@ def _UtcToLocal(utc):
   return utc + offset
 
 
-def DescribeSizeInfoMetadata(size_info):
-  display_dict = size_info.metadata.copy()
+def DescribeMetadata(metadata):
+  display_dict = metadata.copy()
   timestamp = display_dict.get(models.METADATA_ELF_MTIME)
   if timestamp:
     timestamp_obj = datetime.datetime.utcfromtimestamp(timestamp)
     display_dict[models.METADATA_ELF_MTIME] = (
         _UtcToLocal(timestamp_obj).strftime('%Y-%m-%d %H:%M:%S'))
-  return ' '.join(sorted('%s=%s' % t for t in display_dict.iteritems()))
+  gn_args = display_dict.get(models.METADATA_GN_ARGS)
+  if gn_args:
+    display_dict[models.METADATA_GN_ARGS] = '; '.join(gn_args)
+  return sorted('%s=%s' % t for t in display_dict.iteritems())
 
 
 def GenerateLines(obj, verbose=False):

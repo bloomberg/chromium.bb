@@ -288,6 +288,19 @@ def _SectionSizesFromElf(elf_path, tool_prefix):
   return section_sizes
 
 
+def _ParseGnArgs(args_path):
+  """Returns a list of normalized "key=value" strings."""
+  args = {}
+  with open(args_path) as f:
+    for l in f:
+      # Strips #s even if within string literal. Not a problem in practice.
+      parts = l.split('#')[0].split('=')
+      if len(parts) != 2:
+        continue
+      args[parts[0].strip()] = parts[1].strip()
+  return ["%s=%s" % x for x in sorted(args.iteritems())]
+
+
 def main(argv):
   parser = argparse.ArgumentParser(argv)
   parser.add_argument('elf_file', help='Path to input ELF file.')
@@ -322,6 +335,7 @@ def main(argv):
     timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
         args.elf_file))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
+    gn_args = _ParseGnArgs(os.path.join(lazy_paths.output_directory, 'args.gn'))
 
     def relative_to_out(path):
       return os.path.relpath(path, lazy_paths.VerifyOutputDirectory())
@@ -332,6 +346,7 @@ def main(argv):
         models.METADATA_ELF_FILENAME: relative_to_out(args.elf_file),
         models.METADATA_ELF_MTIME: timestamp,
         models.METADATA_ELF_BUILD_ID: build_id,
+        models.METADATA_GN_ARGS: gn_args,
     }
 
   size_info = Analyze(map_file_path, lazy_paths)
@@ -346,8 +361,8 @@ def main(argv):
 
     size_info.metadata = metadata
 
-  logging.info('Recording metadata: %s',
-               describe.DescribeSizeInfoMetadata(size_info))
+  logging.info('Recording metadata: \n  %s',
+               '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
   logging.info('Saving result to %s', args.output_file)
   file_format.SaveSizeInfo(size_info, args.output_file)
   logging.info('Done')

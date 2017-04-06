@@ -87,6 +87,8 @@ class IntegrationTest(unittest.TestCase):
   def test_ActualDiff(self):
     map1 = self._CloneSizeInfo()
     map2 = self._CloneSizeInfo()
+    map1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
+    map2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
     map1.symbols -= map1.symbols[0]
     map2.symbols -= map2.symbols[-1]
     map1.symbols[1].size -= 10
