@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace payments {
@@ -100,10 +101,15 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
           result_delegate,
       content::WebContents* web_contents) override;
 
+  // Shows a full dialog spinner with the "processing" label that doesn't offer
+  // a way of closing the dialog.
+  void ShowProcessingSpinner();
+
   ViewStack* view_stack_for_testing() { return &view_stack_; }
 
  private:
   void ShowInitialPaymentSheet();
+  void SetupSpinnerOverlay();
 
   // views::View
   gfx::Size GetPreferredSize() const override;
@@ -117,6 +123,11 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   PaymentRequest* request_;
   ControllerMap controller_map_;
   ViewStack view_stack_;
+
+  // A full dialog overlay that shows a spinner and the "processing" label. It's
+  // hidden until ShowProcessingSpinner is called.
+  views::View throbber_overlay_;
+  views::Throbber throbber_;
 
   // May be null.
   ObserverForTest* observer_for_testing_;

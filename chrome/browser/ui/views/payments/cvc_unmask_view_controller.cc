@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -193,6 +194,8 @@ void CvcUnmaskViewController::CvcConfirmed() {
     response.cvc = cvc;
     unmask_delegate_->OnUnmaskResponse(response);
   }
+
+  dialog()->ShowProcessingSpinner();
 }
 
 }  // namespace payments

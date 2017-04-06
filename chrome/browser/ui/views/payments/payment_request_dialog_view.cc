@@ -20,8 +20,13 @@
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 namespace chrome {
 
@@ -62,6 +67,8 @@ PaymentRequestDialogView::PaymentRequestDialogView(
 
   view_stack_.set_owned_by_client();
   AddChildView(&view_stack_);
+
+  SetupSpinnerOverlay();
 
   ShowInitialPaymentSheet();
 }
@@ -228,6 +235,11 @@ void PaymentRequestDialogView::EditorViewUpdated() {
     observer_for_testing_->OnEditorViewUpdated();
 }
 
+void PaymentRequestDialogView::ShowProcessingSpinner() {
+  throbber_.Start();
+  throbber_overlay_.SetVisible(true);
+}
+
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   view_stack_.Push(CreateViewAndInstallController(
                        base::MakeUnique<PaymentSheetViewController>(
@@ -236,6 +248,44 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
                    /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnDialogOpened();
+}
+
+void PaymentRequestDialogView::SetupSpinnerOverlay() {
+  throbber_.set_owned_by_client();
+
+  throbber_overlay_.set_owned_by_client();
+  throbber_overlay_.SetPaintToLayer();
+  throbber_overlay_.SetVisible(false);
+  // The throbber overlay has to have a solid white background to hide whatever
+  // would be under it.
+  throbber_overlay_.set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
+
+  std::unique_ptr<views::GridLayout> layout =
+      base::MakeUnique<views::GridLayout>(&throbber_overlay_);
+  views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
+  throbber_columns->AddPaddingColumn(0.5, 0);
+  throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
+                              views::GridLayout::Alignment::TRAILING, 0,
+                              views::GridLayout::SizeType::USE_PREF, 0, 0);
+  throbber_columns->AddPaddingColumn(0.5, 0);
+
+  views::ColumnSet* label_columns = layout->AddColumnSet(1);
+  label_columns->AddPaddingColumn(0.5, 0);
+  label_columns->AddColumn(views::GridLayout::Alignment::CENTER,
+                           views::GridLayout::Alignment::LEADING, 0,
+                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+  label_columns->AddPaddingColumn(0.5, 0);
+
+  layout->StartRow(0.5, 0);
+  layout->AddView(&throbber_);
+
+  layout->StartRow(0.5, 1);
+  layout->AddView(new views::Label(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_PROCESSING_MESSAGE)));
+
+  throbber_overlay_.SetLayoutManager(layout.release());
+  AddChildView(&throbber_overlay_);
 }
 
 gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
