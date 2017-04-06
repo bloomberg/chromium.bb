@@ -85,8 +85,8 @@ const char kDeveloperEmpty[] = "developer-empty";
 const char kInterpreterResourceUnavailable[] =
     "interpreter-resource-unavailable";
 
-constexpr std::array<const char* const, 3> kPrinterAttributes = {
-    kPrinterState, kPrinterStateReasons, kPrinterStateMessage};
+constexpr std::array<const char* const, 3> kPrinterAttributes{
+    {kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
 
 std::unique_ptr<ipp_t, void (*)(ipp_t*)> WrapIpp(ipp_t* ipp) {
   return std::unique_ptr<ipp_t, void (*)(ipp_t*)>(ipp, &ippDelete);
