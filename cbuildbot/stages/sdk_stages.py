@@ -18,7 +18,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
-from chromite.lib import retry_util
 from chromite.lib import toolchain
 
 
@@ -148,8 +147,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
     json_input = dict(version=PACKAGE_MANIFEST_VERSION, packages=data)
     osutils.WriteFile(manifest, json.dumps(json_input))
 
-  @staticmethod
-  def _SendPerfValues(buildroot, sdk_tarball, buildbot_uri_log, version,
+  def _SendPerfValues(self, buildroot, sdk_tarball, buildbot_uri_log, version,
                       platform_name):
     """Generate & upload perf data for the build"""
     perf_path = SdkPerfPath(buildroot)
@@ -184,10 +182,8 @@ class SDKPackageStage(generic_stages.BuilderStage):
     # the perf dashboard accepts this or CrOS+Chrome official versions.
     revision = int(version.replace('.', ''))
     perf_values = perf_uploader.LoadPerfValues(perf_path)
-    retry_util.RetryException(perf_uploader.PerfUploadingError, 3,
-                              perf_uploader.UploadPerfValues,
-                              perf_values, platform_name, test_name,
-                              revision=revision)
+    self._UploadPerfValues(perf_values, platform_name, test_name,
+                           revision=revision)
 
   def SendPerfValues(self, sdk_tarball):
     """Generate & upload perf data for the build"""

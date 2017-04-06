@@ -117,8 +117,10 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
     osutils.Touch(arm_tar, makedirs=True)
     osutils.Touch(x86_tar, makedirs=True)
 
+    self._Prepare('chromiumos-sdk')
+    stage = self.ConstructStage()
     # pylint: disable=protected-access
-    sdk_stages.SDKPackageStage._SendPerfValues(
+    stage._SendPerfValues(
         self.tempdir, sdk_tarball, 'http://some/log', '123.4.5.6', 'sdk-bot')
     # pylint: enable=protected-access
 
