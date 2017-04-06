@@ -395,12 +395,21 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
 }
 
+// Test that UpdateFaviconsAndFetch() is called with the appropriate parameters
+// when there is data in the database for neither the page URL nor the icon URL.
+TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
+  EXPECT_CALL(favicon_service_, UpdateFaviconMappingsAndFetch(
+                                    kPageURL, URLVector{kIconURL16x16}, FAVICON,
+                                    /*desired_size_in_dip=*/16, _, _));
+
+  RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
+}
+
 // Test that the FaviconHandler process finishes when:
 // - There is data in the database for neither the page URL nor the icon URL.
 // AND
 // - FaviconService::GetFaviconForPageURL() callback returns before
 //   FaviconHandler::OnUpdateFaviconURL() is called.
-// TODO(mastiz): Add test to verify UpdateFaviconMappingsAndFetch().
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
   EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
                                             ImageSizeIs(16, 16)));
@@ -423,15 +432,11 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
 }
 
 // Test that the FaviconHandler process finishes when:
-// - There is no data in the database for neither the page URL nor the icon URL.
+// - There is data in the database for neither the page URL nor the icon URL.
 // AND
 // - FaviconService::GetFaviconForPageURL() callback returns after
 //   FaviconHandler::OnUpdateFaviconURL() is called.
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesFaster) {
-  InSequence seq;
-  EXPECT_CALL(favicon_service_,
-              UpdateFaviconMappingsAndFetch(kPageURL, URLVector{kIconURL16x16},
-                                            FAVICON, _, _, _));
   EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
                                             ImageSizeIs(16, 16)));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _));
