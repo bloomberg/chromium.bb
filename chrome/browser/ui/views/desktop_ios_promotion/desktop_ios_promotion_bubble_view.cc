@@ -28,6 +28,15 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   int bubble_width = ManagePasswordsBubbleView::kDesiredBubbleWidth;
   views::GridLayout* layout = new views::GridLayout(this);
   layout->set_minimum_size(gfx::Size(bubble_width, 0));
+  layout->SetInsets(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN) +
+          desktop_ios_promotion::GetPromoImage(
+              GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_TextfieldDefaultColor))
+              .width(),
+      0, 0);
   SetLayoutManager(layout);
   send_sms_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE));
@@ -35,19 +44,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
       this, l10n_util::GetStringUTF16(IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS));
   constexpr int kLabelColumnSet = 1;
   views::ColumnSet* column_set = layout->AddColumnSet(kLabelColumnSet);
-  column_set->AddPaddingColumn(
-      0, LayoutDelegate::Get()->GetMetric(
-             LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN) +
-             desktop_ios_promotion::GetPromoImage(
-                 GetNativeTheme()->GetSystemColor(
-                     ui::NativeTheme::kColorId_TextfieldDefaultColor))
-                 .width() +
-             LayoutDelegate::Get()->GetMetric(
-                 LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
-
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::FIXED, bubble_width, 0);
-
   constexpr int kDoubleButtonColumnSet = 2;
   column_set = layout->AddColumnSet(kDoubleButtonColumnSet);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
