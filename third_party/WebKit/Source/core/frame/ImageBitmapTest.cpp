@@ -134,7 +134,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(),
             imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 
-  StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
+  RefPtr<StaticBitmapImage> emptyImage = imageBitmapOutsideCrop->bitmapImage();
   ASSERT_NE(emptyImage->imageForCurrentFrame(),
             imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 }

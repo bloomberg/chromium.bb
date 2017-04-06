@@ -84,7 +84,8 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   element->createImageBufferUsingSurfaceForTesting(WTF::wrapUnique(
       new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
   ASSERT_EQ(context, element->renderingContext());
-  ASSERT_TRUE(context->isAccelerated());
+  ASSERT_TRUE(context->isComposited());
+  ASSERT_TRUE(element->isAccelerated());
 
   // Force the page to paint.
   document().view()->updateAllLifecyclePhases();

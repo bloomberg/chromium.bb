@@ -251,4 +251,8 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 bool OffscreenCanvasRenderingContext2D::isPaintable() const {
   return this->imageBuffer();
 }
+
+bool OffscreenCanvasRenderingContext2D::isAccelerated() const {
+  return m_imageBuffer && m_imageBuffer->isAccelerated();
+}
 }

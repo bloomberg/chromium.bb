@@ -96,9 +96,7 @@ class CORE_EXPORT ImageBitmap final
   using WebType = sk_sp<SkImage>;
   static ImageBitmap* take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
-  StaticBitmapImage* bitmapImage() const {
-    return (m_image) ? m_image.get() : nullptr;
-  }
+  PassRefPtr<StaticBitmapImage> bitmapImage() const { return m_image; }
   PassRefPtr<Uint8Array> copyBitmapData(AlphaDisposition = DontPremultiplyAlpha,
                                         DataColorFormat = RGBAColorType);
   unsigned long width() const;

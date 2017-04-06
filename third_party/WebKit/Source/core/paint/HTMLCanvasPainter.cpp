@@ -27,7 +27,7 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo,
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
       canvas->renderingContext() &&
-      canvas->renderingContext()->isAccelerated()) {
+      canvas->renderingContext()->isComposited()) {
     if (WebLayer* layer = canvas->renderingContext()->platformLayer()) {
       IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
       recordForeignLayer(context, m_layoutHTMLCanvas,

@@ -284,7 +284,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
       !m_context->creationAttributes().alpha()) {
     // In the alpha false case, canvas is initially opaque even though there is
     // no ImageBuffer, so we need to trigger an invalidation.
-    didDraw(FloatRect(0, 0, size().width(), size().height()));
+    didDraw();
   }
 
   setNeedsCompositingUpdate();
@@ -293,7 +293,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
 }
 
 bool HTMLCanvasElement::shouldBeDirectComposited() const {
-  return (m_context && m_context->isAccelerated()) ||
+  return (m_context && m_context->isComposited()) ||
          (hasImageBuffer() && buffer()->isExpensiveToPaint()) ||
          (!!m_surfaceLayerBridge);
 }
@@ -326,6 +326,10 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect) {
     buffer()->didDraw(rect);
 }
 
+void HTMLCanvasElement::didDraw() {
+  didDraw(FloatRect(0, 0, size().width(), size().height()));
+}
+
 void HTMLCanvasElement::finalizeFrame() {
   if (hasImageBuffer())
     m_imageBuffer->finalizeFrame();
@@ -345,7 +349,7 @@ void HTMLCanvasElement::finalizeFrame() {
 void HTMLCanvasElement::didDisableAcceleration() {
   // We must force a paint invalidation on the canvas even if it's
   // content did not change because it layer was destroyed.
-  didDraw(FloatRect(0, 0, size().width(), size().height()));
+  didDraw();
 }
 
 void HTMLCanvasElement::restoreCanvasMatrixClipStack(
@@ -364,7 +368,7 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
     if (lb) {
       FloatRect mappedDirtyRect =
           mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
-      if (m_context->isAccelerated()) {
+      if (m_context->isComposited()) {
         // Accelerated 2D canvases need the dirty rect to be expressed relative
         // to the content box, as opposed to the layout box.
         mappedDirtyRect.move(-lb->contentBoxOffset());
@@ -373,13 +377,20 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
     } else {
       invalidationRect = m_dirtyRect;
     }
+
+    if (m_dirtyRect.isEmpty())
+      return;
+
     if (hasImageBuffer()) {
       m_imageBuffer->doPaintInvalidation(invalidationRect);
     }
   }
 
-  if (m_dirtyRect.isEmpty())
-    return;
+  if (m_context->getContextType() ==
+          CanvasRenderingContext::ContextImageBitmap &&
+      m_context->platformLayer()) {
+    m_context->platformLayer()->invalidate();
+  }
 
   notifyListenersCanvasChanged();
   m_didNotifyListenersForCurrentFrame = true;
@@ -390,9 +401,9 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
 
   LayoutBox* ro = layoutBox();
   // Canvas content updates do not need to be propagated as
-  // paint invalidations if the canvas is accelerated, since
+  // paint invalidations if the canvas is composited separately, since
   // the canvas contents are sent separately through a texture layer.
-  if (ro && (!m_context || !m_context->isAccelerated())) {
+  if (ro && (!m_context || !m_context->isComposited())) {
     // If ro->contentBoxRect() is larger than srcRect the canvas's image is
     // being stretched, so we need to account for color bleeding caused by the
     // interpollation filter.
@@ -500,7 +511,7 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const {
   if (placeholderFrame())
     return false;
   DCHECK(m_context);
-  if (!m_context->isAccelerated())
+  if (!m_context->isComposited())
     return true;
   if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
     return false;
@@ -1288,8 +1299,8 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     if (ExpensiveCanvasHeuristicParameters::
             DisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled() &&
-        hint == PreferNoAcceleration && m_context->isAccelerated() &&
-        hasImageBuffer()) {
+        hint == PreferNoAcceleration && hasImageBuffer() &&
+        buffer()->isAccelerated()) {
       buffer()->disableAcceleration();
     }
     RefPtr<Image> image = renderingContext()->getImage(hint, reason);

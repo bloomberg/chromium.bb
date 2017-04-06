@@ -134,6 +134,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // Used for rendering
   void didDraw(const FloatRect&);
+  void didDraw();
 
   void paint(GraphicsContext&, const LayoutRect&);
 

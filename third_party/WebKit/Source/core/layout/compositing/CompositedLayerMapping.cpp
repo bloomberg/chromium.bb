@@ -109,11 +109,11 @@ static IntRect backgroundRect(const LayoutObject& layoutObject) {
   return pixelSnappedIntRect(box.backgroundRect(BackgroundClipRect));
 }
 
-static inline bool isAcceleratedCanvas(const LayoutObject& layoutObject) {
+static inline bool isCompositedCanvas(const LayoutObject& layoutObject) {
   if (layoutObject.isCanvas()) {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject.node());
     if (CanvasRenderingContext* context = canvas->renderingContext())
-      return context->isAccelerated();
+      return context->isComposited();
   }
   return false;
 }
@@ -153,7 +153,7 @@ static WebLayer* platformLayerForPlugin(LayoutObject& layoutObject) {
 }
 
 static inline bool isAcceleratedContents(LayoutObject& layoutObject) {
-  return isAcceleratedCanvas(layoutObject) ||
+  return isCompositedCanvas(layoutObject) ||
          (layoutObject.isEmbeddedObject() &&
           toLayoutEmbeddedObject(layoutObject)
               .requiresAcceleratedCompositing()) ||
@@ -439,7 +439,7 @@ void CompositedLayerMapping::
 }
 
 void CompositedLayerMapping::updateContentsOpaque() {
-  if (isAcceleratedCanvas(layoutObject())) {
+  if (isCompositedCanvas(layoutObject())) {
     CanvasRenderingContext* context =
         toHTMLCanvasElement(layoutObject().node())->renderingContext();
     WebLayer* layer = context ? context->platformLayer() : nullptr;
@@ -809,7 +809,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
     m_graphicsLayer->setContentsToPlatformLayer(
         canvas->surfaceLayerBridge()->getWebLayer());
     layerConfigChanged = true;
-  } else if (isAcceleratedCanvas(layoutObject)) {
+  } else if (isCompositedCanvas(layoutObject)) {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject.node());
     if (CanvasRenderingContext* context = canvas->renderingContext())
       m_graphicsLayer->setContentsToPlatformLayer(context->platformLayer());
@@ -1753,7 +1753,7 @@ void CompositedLayerMapping::updateDrawsContent() {
 
   m_drawsBackgroundOntoContentLayer = false;
 
-  if (hasPaintedContent && isAcceleratedCanvas(layoutObject())) {
+  if (hasPaintedContent && isCompositedCanvas(layoutObject())) {
     CanvasRenderingContext* context =
         toHTMLCanvasElement(layoutObject().node())->renderingContext();
     // Content layer may be null if context is lost.
@@ -2674,7 +2674,7 @@ void CompositedLayerMapping::contentChanged(ContentChangeType changeType) {
     return;
   }
 
-  if (changeType == CanvasChanged && isAcceleratedCanvas(layoutObject())) {
+  if (changeType == CanvasChanged && isCompositedCanvas(layoutObject())) {
     m_graphicsLayer->setContentsNeedsDisplay();
     return;
   }

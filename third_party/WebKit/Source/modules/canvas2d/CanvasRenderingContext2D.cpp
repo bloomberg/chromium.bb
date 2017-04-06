@@ -172,6 +172,10 @@ bool CanvasRenderingContext2D::isAccelerated() const {
   return canvas()->buffer()->isAccelerated();
 }
 
+bool CanvasRenderingContext2D::isComposited() const {
+  return isAccelerated();
+}
+
 void CanvasRenderingContext2D::stop() {
   if (!isContextLost()) {
     // Never attempt to restore the context because the page is being torn down.
@@ -825,7 +829,7 @@ void CanvasRenderingContext2D::drawTextInternal(
   // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
   // need to fall out of display list mode when drawing text to an opaque
   // canvas. crbug.com/583809
-  if (!creationAttributes().alpha() && !isAccelerated()) {
+  if (!creationAttributes().alpha() && !isComposited()) {
     canvas()->disableDeferral(
         DisableDeferralReasonSubPixelTextAntiAliasingSupport);
   }

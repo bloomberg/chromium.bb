@@ -624,6 +624,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // CanvasRenderingContext implementation.
   bool is3d() const override { return true; }
+  bool isComposited() const override { return true; }
   bool isAccelerated() const override { return true; }
   void setIsHidden(bool) override;
   bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;

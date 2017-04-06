@@ -122,7 +122,8 @@ class CORE_EXPORT CanvasRenderingContext
                                      SnapshotReason) const = 0;
   virtual ImageData* toImageData(SnapshotReason reason) { return nullptr; }
   virtual ContextType getContextType() const = 0;
-  virtual bool isAccelerated() const { return false; }
+  virtual bool isComposited() const = 0;
+  virtual bool isAccelerated() const = 0;
   virtual bool shouldAntialias() const { return false; }
   virtual void setIsHidden(bool) = 0;
   virtual bool isContextLost() const { return true; }
@@ -132,6 +133,7 @@ class CORE_EXPORT CanvasRenderingContext
   }
   virtual bool isPaintable() const = 0;
   virtual void didDraw(const SkIRect& dirtyRect);
+  virtual void didDraw();
 
   // Return true if the content is updated.
   virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) {

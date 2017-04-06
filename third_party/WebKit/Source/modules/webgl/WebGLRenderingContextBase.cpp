@@ -5162,8 +5162,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
     // float/integer/sRGB internal format.
     // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is
     // upgraded to handle more formats.
-    if (!canvas->renderingContext() ||
-        !canvas->renderingContext()->isAccelerated() ||
+    if (!canvas->isAccelerated() ||
         !canUseTexImageByGPU(functionID, internalformat, type)) {
       // 2D canvas has only FrontBuffer.
       texImageImpl(functionID, target, level, internalformat, xoffset, yoffset,

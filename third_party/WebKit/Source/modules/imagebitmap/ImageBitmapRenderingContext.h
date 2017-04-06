@@ -13,6 +13,7 @@
 namespace blink {
 
 class ImageBitmap;
+class ImageLayerBridge;
 
 class MODULES_EXPORT ImageBitmapRenderingContext final
     : public CanvasRenderingContext {
@@ -34,6 +35,8 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
     }
   };
 
+  DECLARE_TRACE();
+
   // Script API
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
 
@@ -43,20 +46,18 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   }
   void setIsHidden(bool) override {}
   bool isContextLost() const override { return false; }
-  bool paint(GraphicsContext&, const IntRect&) override;
   void setCanvasGetContextResult(RenderingContext&) final;
-  PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final {
-    return m_image.get();
-  }
+  PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final;
+  bool isComposited() const final { return true; }
+  bool isAccelerated() const final;
 
-  // TODO(junov): Implement GPU accelerated rendering using a layer bridge
-  WebLayer* platformLayer() const override { return nullptr; }
+  WebLayer* platformLayer() const final;
   // TODO(junov): handle lost contexts when content is GPU-backed
   void loseContext(LostContextMode) override {}
 
   void stop() override;
 
-  bool isPaintable() const final { return m_image.get(); }
+  bool isPaintable() const final;
 
   virtual ~ImageBitmapRenderingContext();
 
@@ -65,7 +66,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
                               const CanvasContextCreationAttributes&,
                               Document&);
 
-  RefPtr<Image> m_image;
+  Member<ImageLayerBridge> m_imageLayerBridge;
 };
 
 DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,

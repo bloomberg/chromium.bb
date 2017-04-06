@@ -900,7 +900,7 @@ String AXLayoutObject::imageDataUrl(const IntSize& maxSize) const {
   if (!imageBitmap)
     return String();
 
-  StaticBitmapImage* bitmapImage = imageBitmap->bitmapImage();
+  RefPtr<StaticBitmapImage> bitmapImage = imageBitmap->bitmapImage();
   if (!bitmapImage)
     return String();
 

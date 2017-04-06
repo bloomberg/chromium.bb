@@ -8,6 +8,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/gpu/ImageLayerBridge.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -17,7 +18,9 @@ ImageBitmapRenderingContext::ImageBitmapRenderingContext(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributes& attrs,
     Document& document)
-    : CanvasRenderingContext(canvas, nullptr, attrs) {}
+    : CanvasRenderingContext(canvas, nullptr, attrs),
+      m_imageLayerBridge(
+          new ImageLayerBridge(attrs.alpha() ? NonOpaque : Opaque)) {}
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() {}
 
@@ -29,50 +32,19 @@ void ImageBitmapRenderingContext::setCanvasGetContextResult(
 void ImageBitmapRenderingContext::transferFromImageBitmap(
     ImageBitmap* imageBitmap,
     ExceptionState& exceptionState) {
-  if (!imageBitmap) {
-    m_image.release();
-    return;
-  }
-
-  if (imageBitmap->isNeutered()) {
+  if (imageBitmap && imageBitmap->isNeutered()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "The input ImageBitmap has been detached");
     return;
   }
 
-  m_image = imageBitmap->bitmapImage();
-  if (!m_image)
-    return;
+  m_imageLayerBridge->setImage(imageBitmap ? imageBitmap->bitmapImage()
+                                           : nullptr);
 
-  sk_sp<SkImage> skImage = m_image->imageForCurrentFrame();
-  if (skImage->isTextureBacked()) {
-    // TODO(junov): crbug.com/585607 Eliminate this readback and use an
-    // ExternalTextureLayer
-    sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(skImage->width(), skImage->height());
-    if (!surface) {
-      // silent failure
-      m_image.clear();
-      return;
-    }
-    surface->getCanvas()->drawImage(skImage, 0, 0);
-    m_image = StaticBitmapImage::create(surface->makeImageSnapshot());
-  }
-  didDraw(skImage->bounds());
-  imageBitmap->close();
-}
+  didDraw();
 
-bool ImageBitmapRenderingContext::paint(GraphicsContext& gc, const IntRect& r) {
-  if (!m_image)
-    return true;
-
-  // With impl-side painting, it is unsafe to use a gpu-backed SkImage
-  DCHECK(!m_image->imageForCurrentFrame()->isTextureBacked());
-  gc.drawImage(m_image.get(), r, nullptr, creationAttributes().alpha()
-                                              ? SkBlendMode::kSrcOver
-                                              : SkBlendMode::kSrc);
-
-  return true;
+  if (imageBitmap)
+    imageBitmap->close();
 }
 
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::create(
@@ -85,7 +57,29 @@ CanvasRenderingContext* ImageBitmapRenderingContext::Factory::create(
 }
 
 void ImageBitmapRenderingContext::stop() {
-  m_image.clear();
+  m_imageLayerBridge->dispose();
+}
+
+PassRefPtr<Image> ImageBitmapRenderingContext::getImage(AccelerationHint,
+                                                        SnapshotReason) const {
+  return m_imageLayerBridge->image();
+}
+
+WebLayer* ImageBitmapRenderingContext::platformLayer() const {
+  return m_imageLayerBridge->platformLayer();
+}
+
+bool ImageBitmapRenderingContext::isPaintable() const {
+  return !!m_imageLayerBridge->image();
+}
+
+DEFINE_TRACE(ImageBitmapRenderingContext) {
+  visitor->trace(m_imageLayerBridge);
+  CanvasRenderingContext::trace(visitor);
+}
+
+bool ImageBitmapRenderingContext::isAccelerated() const {
+  return m_imageLayerBridge->isAccelerated();
 }
 
 }  // blink

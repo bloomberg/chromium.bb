@@ -981,8 +981,9 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
 #if USE_IOSURFACE_FOR_2D_CANVAS
       DCHECK(!releasedMailboxInfo->m_imageInfo);
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
-      if (syncToken.HasData()) {
-        contextGL()->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
+      gpu::gles2::GLES2Interface* gl = contextGL();
+      if (syncToken.HasData() && gl) {
+        gl->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
       }
       GrTexture* texture = releasedMailboxInfo->m_image->getTexture();
       if (texture) {
@@ -992,7 +993,6 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
           texture->textureParamsModified();
           // Break the mailbox association to avoid leaking mailboxes every time
           // skia recycles a texture.
-          gpu::gles2::GLES2Interface* gl = contextGL();
           if (gl)
             gl->ProduceTextureDirectCHROMIUM(
                 0, GL_TEXTURE_2D, releasedMailboxInfo->m_mailbox.name);

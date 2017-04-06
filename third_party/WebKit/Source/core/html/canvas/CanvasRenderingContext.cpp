@@ -168,6 +168,11 @@ void CanvasRenderingContext::didDraw(const SkIRect& dirtyRect) {
   needsFinalizeFrame();
 }
 
+void CanvasRenderingContext::didDraw() {
+  canvas()->didDraw();
+  needsFinalizeFrame();
+}
+
 void CanvasRenderingContext::needsFinalizeFrame() {
   if (!m_finalizeFrameScheduled) {
     m_finalizeFrameScheduled = true;
@@ -178,7 +183,6 @@ void CanvasRenderingContext::needsFinalizeFrame() {
 void CanvasRenderingContext::didProcessTask() {
   Platform::current()->currentThread()->removeTaskObserver(this);
   m_finalizeFrameScheduled = false;
-
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
   if (canvas())

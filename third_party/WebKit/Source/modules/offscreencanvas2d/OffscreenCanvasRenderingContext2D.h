@@ -43,6 +43,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   ~OffscreenCanvasRenderingContext2D() override;
   ContextType getContextType() const override { return Context2d; }
   bool is2d() const override { return true; }
+  bool isComposited() const override { return false; }
+  bool isAccelerated() const override;
   void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
   void setIsHidden(bool) final { NOTREACHED(); }
   void stop() final { NOTREACHED(); }

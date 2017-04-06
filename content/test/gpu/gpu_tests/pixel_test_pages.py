@@ -306,14 +306,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_transferToImageBitmap_main.html',
       base_name + '_OffscreenCanvasTransferToImageBitmap',
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transferToImageBitmap_worker.html',
       base_name + '_OffscreenCanvasTransferToImageBitmapWorker',
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
