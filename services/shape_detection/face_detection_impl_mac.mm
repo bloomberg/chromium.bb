@@ -47,19 +47,21 @@ FaceDetectionImplMac::FaceDetectionImplMac(
 
 FaceDetectionImplMac::~FaceDetectionImplMac() {}
 
-void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
+void FaceDetectionImplMac::Detect(mojo::ScopedSharedBufferHandle frame_data,
+                                  uint32_t width,
+                                  uint32_t height,
                                   const DetectCallback& callback) {
   media::ScopedResultCallback<DetectCallback> scoped_callback(
       base::Bind(&RunCallbackWithFaces, callback),
       base::Bind(&RunCallbackWithNoFaces));
 
-  base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
+  base::scoped_nsobject<CIImage> ci_image =
+      CreateCIImageFromSharedMemory(std::move(frame_data), width, height);
   if (!ci_image)
     return;
 
   NSArray* const features = [detector_ featuresInImage:ci_image];
 
-  const int height = bitmap.height();
   shape_detection::mojom::FaceDetectionResultPtr faces =
       shape_detection::mojom::FaceDetectionResult::New();
   for (CIFaceFeature* const f in features) {

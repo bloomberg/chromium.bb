@@ -18,10 +18,11 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.mojo.system.SharedBufferHandle;
+import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.TextDetection;
 import org.chromium.shape_detection.mojom.TextDetectionResult;
-import org.chromium.skia.mojom.ColorType;
 
 import java.nio.ByteBuffer;
 
@@ -40,7 +41,8 @@ public class TextDetectionImpl implements TextDetection {
     }
 
     @Override
-    public void detect(org.chromium.skia.mojom.Bitmap bitmapData, DetectResponse callback) {
+    public void detect(
+            SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
         if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     mContext, new UserRecoverableErrorHandler.Silent())) {
             Log.e(TAG, "Google Play Services not available");
@@ -57,21 +59,9 @@ public class TextDetectionImpl implements TextDetection {
             return;
         }
 
-        // TODO(junwei.fu): Consider supporting other bitmap pixel formats,
-        // https://crbug.com/684921.
-        if (bitmapData.colorType != ColorType.RGBA_8888
-                && bitmapData.colorType != ColorType.BGRA_8888) {
-            Log.e(TAG, "Unsupported bitmap pixel format");
-            callback.call(new TextDetectionResult[0]);
-            return;
-        }
-
-        int width = bitmapData.width;
-        int height = bitmapData.height;
         final long numPixels = (long) width * height;
         // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
-        if (bitmapData.pixelData == null || width <= 0 || height <= 0
-                || numPixels > (Long.MAX_VALUE / 4)) {
+        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
             callback.call(new TextDetectionResult[0]);
             return;
         }
@@ -79,7 +69,7 @@ public class TextDetectionImpl implements TextDetection {
         // Mapping |frameData| will fail if the intended mapped size is larger
         // than its actual capacity, which is limited by the appropriate
         // mojo::edk::Configuration entry.
-        ByteBuffer imageBuffer = ByteBuffer.wrap(bitmapData.pixelData);
+        ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
         if (imageBuffer.capacity() <= 0) {
             callback.call(new TextDetectionResult[0]);
             return;
