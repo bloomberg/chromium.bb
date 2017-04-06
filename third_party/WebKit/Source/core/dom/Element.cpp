@@ -2086,12 +2086,9 @@ void Element::rebuildShadowRootLayoutTree(Text*& nextTextSibling) {
 void Element::rebuildPseudoElementLayoutTree(PseudoId pseudoId,
                                              Text* nextTextSibling) {
   if (PseudoElement* element = pseudoElement(pseudoId)) {
-    if (pseudoId == PseudoIdFirstLetter && updateFirstLetter(element))
-      return;
     if (element->needsReattachLayoutTree() ||
-        element->childNeedsReattachLayoutTree()) {
+        element->childNeedsReattachLayoutTree())
       element->rebuildLayoutTree(nextTextSibling);
-    }
   } else {
     createPseudoElementIfNeeded(pseudoId);
   }
