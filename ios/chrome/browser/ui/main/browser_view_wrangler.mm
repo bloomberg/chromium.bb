@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/physical_web/start_physical_web_discovery.h"
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"

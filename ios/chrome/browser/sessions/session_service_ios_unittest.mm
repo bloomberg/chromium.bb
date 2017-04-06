@@ -13,7 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -63,8 +63,7 @@ class SessionServiceTest : public PlatformTest {
     EXPECT_TRUE(base::PathExists(plist_path));
 
     NSString* path = base::SysUTF8ToNSString(plist_path.value());
-    return [service loadWindowFromPath:path
-                       forBrowserState:chrome_browser_state_.get()];
+    return [service loadWindowFromPath:path];
   }
 
   ios::ChromeBrowserState* chrome_browser_state() {

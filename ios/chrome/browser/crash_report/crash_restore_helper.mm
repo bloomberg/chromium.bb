@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -262,8 +262,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _sessionRestored = YES;
   _infoBarBridge.reset();
   SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
-      loadWindowFromPath:[self sessionBackupPath]
-         forBrowserState:[_tabModel browserState]];
+      loadWindowFromPath:[self sessionBackupPath]];
   if (sessionWindow) {
     breakpad_helper::WillStartCrashRestoration();
     return [_tabModel restoreSessionWindow:sessionWindow];
@@ -285,8 +284,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _sessionRestored = YES;
 
   SessionWindowIOS* window = [[SessionServiceIOS sharedService]
-      loadWindowFromPath:[self sessionBackupPath]
-         forBrowserState:[_tabModel browserState]];
+      loadWindowFromPath:[self sessionBackupPath]];
   DCHECK(window);
   NSArray* sessions = window.sessions;
   if (!sessions.count)

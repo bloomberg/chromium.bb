@@ -11,6 +11,8 @@ source_set("sessions") {
     "ios_chrome_tab_restore_service_client.mm",
     "ios_chrome_tab_restore_service_factory.cc",
     "ios_chrome_tab_restore_service_factory.h",
+    "session_service_ios.h",
+    "session_service_ios.mm",
     "session_window_ios.h",
     "session_window_ios.mm",
   ]
@@ -36,8 +38,6 @@ source_set("sessions_non_arc") {
   sources = [
     "NSCoder+Compatibility.h",
     "NSCoder+Compatibility.mm",
-    "session_service.h",
-    "session_service.mm",
     "session_util.h",
     "session_util.mm",
     "tab_restore_service_delegate_impl_ios.h",
@@ -75,23 +75,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "session_service_ios_unittest.mm",
     "session_window_ios_unittest.mm",
-  ]
-  deps = [
-    ":sessions",
-    ":unit_tests_non_arc",
-    "//base",
-    "//ios/web",
-    "//testing/gtest",
-  ]
-  libs = [ "Foundation.framework" ]
-}
-
-source_set("unit_tests_non_arc") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "session_service_unittest.mm",
   ]
   deps = [
     ":resources_unit_tests",
@@ -104,10 +89,11 @@ source_set("unit_tests_non_arc") {
     "//testing/gtest",
     "//third_party/ocmock",
   ]
+  libs = [ "Foundation.framework" ]
 }
 
 bundle_data("resources_unit_tests") {
-  visibility = [ ":unit_tests_non_arc" ]
+  visibility = [ ":unit_tests" ]
   testonly = true
   sources = [
     "//ios/chrome/test/data/sessions/corrupted.plist",

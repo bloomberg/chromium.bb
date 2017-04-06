@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/crash_restore_helper.h"
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

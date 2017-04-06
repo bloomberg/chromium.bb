@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 
 // Testing subclass of SessionService that immediately consumes and archives
 // to nowhere session windows passed into its

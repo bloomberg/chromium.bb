@@ -46,17 +46,6 @@ TEST_F(SessionWindowIOSTest, InitWithSessions) {
   EXPECT_EQ(0u, session_window.selectedIndex);
 }
 
-TEST_F(SessionWindowIOSTest, ClearSessions) {
-  SessionWindowIOS* session_window = CreateSessionWindowForTest(0u);
-
-  ASSERT_EQ(2u, [session_window.sessions count]);
-  ASSERT_EQ(0u, session_window.selectedIndex);
-
-  [session_window clearSessions];
-  EXPECT_EQ(0u, [session_window.sessions count]);
-  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), session_window.selectedIndex);
-}
-
 TEST_F(SessionWindowIOSTest, CodingEncoding) {
   SessionWindowIOS* original_session_window = CreateSessionWindowForTest(1u);
 

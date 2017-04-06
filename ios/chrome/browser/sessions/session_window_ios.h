@@ -20,9 +20,6 @@
                    selectedIndex:(NSUInteger)selectedIndex
     NS_DESIGNATED_INITIALIZER;
 
-// Clears all added sessions.
-- (void)clearSessions;
-
 // The serialized session objects.
 @property(nonatomic, readonly) NSArray<CRWSessionStorage*>* sessions;
 

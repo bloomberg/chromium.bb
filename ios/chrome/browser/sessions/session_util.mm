@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/web/public/browser_state.h"
 
 namespace session_util {

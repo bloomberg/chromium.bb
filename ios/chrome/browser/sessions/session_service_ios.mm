@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/sessions/session_service.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 
 #import <UIKit/UIKit.h>
 
+#include "base/critical_closure.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
-#include "base/mac/foundation_util.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -23,6 +22,10 @@
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/web_thread.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
 // |catch| so as to allow exception-expecting C++ code to build properly when
@@ -33,63 +36,34 @@
 #undef try
 #undef catch
 
-const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
-
-@interface SessionWindowUnarchiver ()
-
-// Register compatibility aliases to support loading serialised sessions
-// informations when the serialised classes are renamed.
-+ (void)registerCompatibilityAliases;
-
-@end
-
-@implementation SessionWindowUnarchiver
-
-@synthesize browserState = _browserState;
-
-- (instancetype)initForReadingWithData:(NSData*)data
-                          browserState:(ios::ChromeBrowserState*)browserState {
-  if (self = [super initForReadingWithData:data]) {
-    _browserState = browserState;
-  }
-  return self;
+namespace {
+const NSTimeInterval kSaveDelay = 2.5;     // Value taken from Desktop Chrome.
+NSString* const kRootObjectKey = @"root";  // Key for the root object.
 }
 
-- (instancetype)initForReadingWithData:(NSData*)data {
-  return [self initForReadingWithData:data browserState:nullptr];
-}
-
-+ (void)initialize {
-  [super initialize];
-  [self registerCompatibilityAliases];
-}
+@implementation NSKeyedUnarchiver (CrLegacySessionCompatibility)
 
 // When adding a new compatibility alias here, create a new crbug to track its
 // removal and mark it with a release at least one year after the introduction
 // of the alias.
-+ (void)registerCompatibilityAliases {
+- (void)cr_registerCompatibilityAliases {
   // TODO(crbug.com/661633): those aliases where introduced between M57 and
   // M58, so remove them after M67 has shipped to stable.
-  [SessionWindowUnarchiver
-          setClass:[CRWSessionCertificatePolicyCacheStorage class]
+  [self setClass:[CRWSessionCertificatePolicyCacheStorage class]
       forClassName:@"SessionCertificatePolicyManager"];
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"SessionController"];
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"CRWSessionController"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
-                       forClassName:@"SessionEntry"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
-                       forClassName:@"CRWSessionEntry"];
-  [SessionWindowUnarchiver setClass:[SessionWindowIOS class]
-                       forClassName:@"SessionWindow"];
+  [self setClass:[CRWSessionStorage class] forClassName:@"SessionController"];
+  [self setClass:[CRWSessionStorage class]
+      forClassName:@"CRWSessionController"];
+  [self setClass:[CRWNavigationItemStorage class] forClassName:@"SessionEntry"];
+  [self setClass:[CRWNavigationItemStorage class]
+      forClassName:@"CRWSessionEntry"];
+  [self setClass:[SessionWindowIOS class] forClassName:@"SessionWindow"];
 
   // TODO(crbug.com/661633): this alias was introduced between M58 and M59, so
   // remove it after M68 has shipped to stable.
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"CRWNavigationManagerStorage"];
-  [SessionWindowUnarchiver
-          setClass:[CRWSessionCertificatePolicyCacheStorage class]
+  [self setClass:[CRWSessionStorage class]
+      forClassName:@"CRWNavigationManagerStorage"];
+  [self setClass:[CRWSessionCertificatePolicyCacheStorage class]
       forClassName:@"CRWSessionCertificatePolicyManager"];
 }
 
@@ -101,7 +75,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 
   // Maps save directories to the pending SessionWindow for the delayed
   // save behavior.
-  base::scoped_nsobject<NSMutableDictionary> _pendingWindows;
+  NSMutableDictionary<NSString*, SessionWindowIOS*>* _pendingWindows;
 }
 
 // Saves the session corresponding to |directory| on the background
@@ -122,8 +96,8 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _pendingWindows.reset([[NSMutableDictionary alloc] init]);
-    auto* pool = web::WebThread::GetBlockingPool();
+    _pendingWindows = [NSMutableDictionary dictionary];
+    base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
     _taskRunner = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   }
   return self;
@@ -138,27 +112,20 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 - (void)performSaveToDirectoryInBackground:(NSString*)directory {
   DCHECK(directory);
   DCHECK([_pendingWindows objectForKey:directory] != nil);
-  UIBackgroundTaskIdentifier identifier = [[UIApplication sharedApplication]
-      beginBackgroundTaskWithExpirationHandler:^{
-      }];
-  DCHECK(identifier != UIBackgroundTaskInvalid);
 
   // Put the window into a local var so it can be retained for the block, yet
   // we can remove it from the dictionary to allow queuing another save.
-  SessionWindowIOS* localWindow =
-      [[_pendingWindows objectForKey:directory] retain];
+  SessionWindowIOS* localWindow = [_pendingWindows objectForKey:directory];
   [_pendingWindows removeObjectForKey:directory];
 
   _taskRunner->PostTask(
-      FROM_HERE, base::BindBlock(^{
+      FROM_HERE, base::MakeCriticalClosure(base::BindBlockArc(^{
         @try {
           [self performSaveWindow:localWindow toDirectory:directory];
         } @catch (NSException* e) {
           // Do nothing.
         }
-        [localWindow release];
-        [[UIApplication sharedApplication] endBackgroundTask:identifier];
-      }));
+      })));
 }
 
 // Saves a SessionWindowIOS in a given directory. In case the directory doesn't
@@ -176,14 +143,17 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
                                                error:&error];
     DCHECK(result);
     if (!result) {
-      DLOG(ERROR) << "Error creating destination dir: "
+      DLOG(ERROR) << "Error creating destination directory: "
+                  << base::SysNSStringToUTF8(directory) << ": "
                   << base::SysNSStringToUTF8([error description]);
       return;
     }
   } else {
     DCHECK(isDir);
     if (!isDir) {
-      DLOG(ERROR) << "Destination Directory already exists and is a file";
+      DLOG(ERROR) << "Error creating destination directory: "
+                  << base::SysNSStringToUTF8(directory) << ": "
+                  << "file exists and is not a directory.";
       return;
     }
   }
@@ -192,19 +162,21 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   if (filename) {
     BOOL result = [NSKeyedArchiver archiveRootObject:window toFile:filename];
     DCHECK(result);
-    if (!result)
+    if (!result) {
       DLOG(ERROR) << "Error writing session file to " << filename;
+      return;
+    }
+
     // Encrypt the session file (mostly for Incognito, but can't hurt to
     // always do it).
-    NSDictionary* attributeDict =
-        [NSDictionary dictionaryWithObject:NSFileProtectionComplete
-                                    forKey:NSFileProtectionKey];
     NSError* error = nil;
-    BOOL success = [[NSFileManager defaultManager] setAttributes:attributeDict
-                                                    ofItemAtPath:filename
-                                                           error:&error];
+    BOOL success = [[NSFileManager defaultManager]
+        setAttributes:@{NSFileProtectionKey : NSFileProtectionComplete}
+         ofItemAtPath:filename
+                error:&error];
     if (!success) {
-      DLOG(ERROR) << "Error encrypting session file"
+      DLOG(ERROR) << "Error encrypting session file: "
+                  << base::SysNSStringToUTF8(filename) << ": "
                   << base::SysNSStringToUTF8([error description]);
     }
   }
@@ -215,17 +187,12 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
         immediately:(BOOL)immediately {
   NSString* stashPath =
       base::SysUTF8ToNSString(browserState->GetStatePath().value());
-  // If there's an existing session window for |stashPath|, clear it before it's
-  // replaced.
-  SessionWindowIOS* pendingSession = base::mac::ObjCCast<SessionWindowIOS>(
-      [_pendingWindows objectForKey:stashPath]);
-  [pendingSession clearSessions];
-  // Set |window| as the pending save for |stashPath|.
+  BOOL hadPendingSession = [_pendingWindows objectForKey:stashPath] != nil;
   [_pendingWindows setObject:window forKey:stashPath];
   if (immediately) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSaveToDirectoryInBackground:stashPath];
-  } else if (!pendingSession) {
+  } else if (!hadPendingSession) {
     // If there wasn't previously a delayed save pending for |stashPath|,
     // enqueue one now.
     [self performSelector:@selector(performSaveToDirectoryInBackground:)
@@ -239,40 +206,46 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   NSString* stashPath =
       base::SysUTF8ToNSString(browserState->GetStatePath().value());
   SessionWindowIOS* window =
-      [self loadWindowFromPath:[self sessionFilePathForDirectory:stashPath]
-               forBrowserState:browserState];
+      [self loadWindowFromPath:[self sessionFilePathForDirectory:stashPath]];
   return window;
 }
 
-- (SessionWindowIOS*)loadWindowFromPath:(NSString*)path
-                        forBrowserState:(ios::ChromeBrowserState*)browserState {
-  SessionWindowIOS* window = nil;
+- (SessionWindowIOS*)loadWindowFromPath:(NSString*)sessionPath {
   @try {
-    NSData* data = [NSData dataWithContentsOfFile:path];
-    if (data) {
-      base::scoped_nsobject<SessionWindowUnarchiver> unarchiver([
-          [SessionWindowUnarchiver alloc] initForReadingWithData:data
-                                                    browserState:browserState]);
-      window = [[[unarchiver decodeObjectForKey:@"root"] retain] autorelease];
-    }
+    NSData* data = [NSData dataWithContentsOfFile:sessionPath];
+    if (!data)
+      return nil;
+
+    NSKeyedUnarchiver* unarchiver =
+        [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+
+    // Register compatibility aliases to support legacy saved sessions.
+    [unarchiver cr_registerCompatibilityAliases];
+    return [unarchiver decodeObjectForKey:kRootObjectKey];
   } @catch (NSException* exception) {
-    DLOG(ERROR) << "Error loading session file.";
+    DLOG(ERROR) << "Error loading session file: "
+                << base::SysNSStringToUTF8(sessionPath) << ": "
+                << base::SysNSStringToUTF8([exception reason]);
+    return nil;
   }
-  return window;
 }
 
 // Deletes the file containing the commands for the last session in the given
 // browserState directory.
 - (void)deleteLastSession:(NSString*)directory {
-  NSString* sessionFile = [self sessionFilePathForDirectory:directory];
+  NSString* sessionPath = [self sessionFilePathForDirectory:directory];
   _taskRunner->PostTask(
-      FROM_HERE, base::BindBlock(^{
+      FROM_HERE, base::BindBlockArc(^{
         base::ThreadRestrictions::AssertIOAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];
-        if (![fileManager fileExistsAtPath:sessionFile])
+        if (![fileManager fileExistsAtPath:sessionPath])
           return;
-        if (![fileManager removeItemAtPath:sessionFile error:nil])
-          CHECK(false) << "Unable to delete session file.";
+
+        NSError* error = nil;
+        if (![fileManager removeItemAtPath:sessionPath error:nil])
+          CHECK(false) << "Unable to delete session file: "
+                       << base::SysNSStringToUTF8(sessionPath) << ": "
+                       << base::SysNSStringToUTF8([error description]);
       }));
 }
 

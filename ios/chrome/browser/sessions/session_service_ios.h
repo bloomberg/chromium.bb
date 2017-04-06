@@ -2,33 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_H_
-#define IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_H_
+#ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_IOS_H_
+#define IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_IOS_H_
 
 #import <Foundation/Foundation.h>
-
-#include "base/mac/scoped_nsobject.h"
 
 namespace ios {
 class ChromeBrowserState;
 }
 
 @class SessionWindowIOS;
-
-// Trivial NSKeyedUnarchiver subclass that can be configured with a
-// ChromeBrowserState instance that decoding classes can use.
-@interface SessionWindowUnarchiver : NSKeyedUnarchiver
-
-// The BrowserState set on the unarchiver at init; a weak pointer.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
-
-// Inits exactly as initForReadingWithData: does, additionally setting
-// |browserState| on the receiver.
-- (instancetype)initForReadingWithData:(NSData*)data
-                          browserState:(ios::ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
-
-@end
 
 // A singleton service for saving the current session. Can either save on a
 // delay or immediately. Saving is always performed on a separate thread.
@@ -58,8 +41,7 @@ class ChromeBrowserState;
 
 // Loads the window from the given backup file on disk on the main thread.
 // Returns nil if unable to read the sessions.
-- (SessionWindowIOS*)loadWindowFromPath:(NSString*)path
-                        forBrowserState:(ios::ChromeBrowserState*)browserState;
+- (SessionWindowIOS*)loadWindowFromPath:(NSString*)sessionPath;
 
 // Returns the path of the session file.
 - (NSString*)sessionFilePathForDirectory:(NSString*)directory;
@@ -77,4 +59,4 @@ class ChromeBrowserState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_H_
+#endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_SERVICE_IOS_H_

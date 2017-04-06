@@ -49,11 +49,6 @@ BOOL IsIndexValidForSessionCount(NSUInteger index, NSUInteger session_count) {
   return self;
 }
 
-- (void)clearSessions {
-  _sessions = @[];
-  _selectedIndex = NSNotFound;
-}
-
 #pragma mark - NSCoding
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
