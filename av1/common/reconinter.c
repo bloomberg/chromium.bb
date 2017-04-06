@@ -900,9 +900,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_MOTION_VAR
   const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
-#if !CONFIG_CB4X4
+#if !CONFIG_CB4X4 || CONFIG_SUB8X8_MC
   const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
-#endif  // !CONFIG_CB4X4
+#endif  // !CONFIG_CB4X4 || CONFIG_SUB8X8_MC
 #else
   const MODE_INFO *mi = xd->mi[0];
 #endif  // CONFIG_MOTION_VAR
