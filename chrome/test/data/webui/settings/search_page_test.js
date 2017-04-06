@@ -101,7 +101,9 @@ cr.define('settings_search_page', function() {
 
       // Tests the UI when Hotword 'alwaysOn' is true.
       test('HotwordAlwaysOn', function() {
-        return browserProxy.whenCalled('getHotwordInfo').then(function() {
+        return browserProxy.whenCalled('getSearchEnginesList').then(function() {
+          return browserProxy.whenCalled('getHotwordInfo');
+        }).then(function() {
           Polymer.dom.flush();
           assertTrue(page.hotwordInfo_.allowed);
           assertTrue(page.hotwordInfo_.alwaysOn);
@@ -123,7 +125,9 @@ cr.define('settings_search_page', function() {
 
       // Tests the UI when Hotword 'alwaysOn' is false.
       test('HotwordNotAlwaysOn', function() {
-        return browserProxy.whenCalled('getHotwordInfo').then(function() {
+        return browserProxy.whenCalled('getSearchEnginesList').then(function() {
+          return browserProxy.whenCalled('getHotwordInfo');
+        }).then(function() {
           browserProxy.setHotwordInfo({
             allowed: true,
             enabled: false,

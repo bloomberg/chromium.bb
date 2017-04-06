@@ -54,16 +54,14 @@ Polymer({
     // Omnibox search engine
     var updateSearchEngines = function(searchEngines) {
       this.set('searchEngines_', searchEngines.defaults);
+      this.requestHotwordInfoUpdate_();
     }.bind(this);
     this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
     cr.addWebUIListener('search-engines-changed', updateSearchEngines);
 
-    // Hotword (OK Google)
+    // Hotword (OK Google) listener
     cr.addWebUIListener(
         'hotword-info-update', this.hotwordInfoUpdate_.bind(this));
-    this.browserProxy_.getHotwordInfo().then(function(hotwordInfo) {
-      this.hotwordInfoUpdate_(hotwordInfo);
-    }.bind(this));
 
     // Google Now cards in the launcher
     cr.addWebUIListener(
@@ -99,6 +97,13 @@ Polymer({
     // Do not set the pref directly, allow Chrome to run the setup app instead.
     this.browserProxy_.setHotwordSearchEnabled(
         !!this.hotwordSearchEnablePref_.value);
+  },
+
+  /** @private */
+  requestHotwordInfoUpdate_: function() {
+    this.browserProxy_.getHotwordInfo().then(function(hotwordInfo) {
+      this.hotwordInfoUpdate_(hotwordInfo);
+    }.bind(this));
   },
 
   /**
