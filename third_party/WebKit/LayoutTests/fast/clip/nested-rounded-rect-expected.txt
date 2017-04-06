@@ -1,9 +1,0 @@
-layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x38
-  LayoutBlockFlow {HTML} at (0,0) size 800x38
-    LayoutBlockFlow {BODY} at (8,8) size 784x22
-layer at (8,8) size 784x22
-  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 784x22
-layer at (8,8) size 22x22 clip at (9,9) size 20x20
-  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 22x22 [bgcolor=#D3D3D3] [border: (1px solid #000000)]
