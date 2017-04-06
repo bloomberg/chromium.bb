@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +15,13 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
+
+const char kHistogramNavigationDelaySpecified[] =
+    "DelayNavigationThrottle.Delay.Specified";
+const char kHistogramNavigationDelayActual[] =
+    "DelayNavigationThrottle.Delay.Actual";
+const char kHistogramNavigationDelayDelta[] =
+    "DelayNavigationThrottle.Delay.Delta";
 
 base::TimeDelta GetNavigationDelayFromParams() {
   double delay_probability = base::GetFieldTrialParamByFeatureAsDouble(
@@ -100,6 +108,8 @@ DelayNavigationThrottle::~DelayNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 DelayNavigationThrottle::WillStartRequest() {
+  UMA_HISTOGRAM_TIMES(kHistogramNavigationDelaySpecified, navigation_delay_);
+  delay_start_time_ = base::TimeTicks::Now();
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DelayNavigationThrottle::OnDelayComplete,
@@ -109,5 +119,9 @@ DelayNavigationThrottle::WillStartRequest() {
 }
 
 void DelayNavigationThrottle::OnDelayComplete() {
+  base::TimeDelta actual_delay = base::TimeTicks::Now() - delay_start_time_;
+  base::TimeDelta delay_delta = actual_delay - navigation_delay_;
+  UMA_HISTOGRAM_TIMES(kHistogramNavigationDelayActual, actual_delay);
+  UMA_HISTOGRAM_TIMES(kHistogramNavigationDelayDelta, delay_delta.magnitude());
   navigation_handle()->Resume();
 }

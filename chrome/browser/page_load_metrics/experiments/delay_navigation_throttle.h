@@ -60,6 +60,9 @@ class DelayNavigationThrottle : public content::NavigationThrottle {
   const scoped_refptr<base::TaskRunner> task_runner_;
   const base::TimeDelta navigation_delay_;
 
+  // The time we added a delay to this navigation.
+  base::TimeTicks delay_start_time_;
+
   // This has to be the last member of the class.
   base::WeakPtrFactory<DelayNavigationThrottle> weak_ptr_factory_;
 
