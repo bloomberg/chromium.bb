@@ -329,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, MultiBrowser) {
 }
 
 // Tests that tab scrubbing works correctly for a full-screen browser.
-IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
+// TODO(crbug.com/708612): Re-enable the test after the bug is fixed.
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, DISABLED_FullScreenBrowser) {
   AddTabs(browser(), 6);
   browser()->tab_strip_model()->ActivateTabAt(4, false);
 
