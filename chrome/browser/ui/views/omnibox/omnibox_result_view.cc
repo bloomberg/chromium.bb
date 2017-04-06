@@ -128,15 +128,15 @@ TextStyle GetTextStyle(int type) {
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
       return {ui::ResourceBundle::BaseFont,
-              {NativeTheme::kColorId_ResultsTableNormalText,
-               NativeTheme::kColorId_ResultsTableHoveredText,
-               NativeTheme::kColorId_ResultsTableSelectedText},
+              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTableNormalText,
-               NativeTheme::kColorId_ResultsTableHoveredText,
-               NativeTheme::kColorId_ResultsTableSelectedText},
+              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
       return {ui::ResourceBundle::LargeFont,
