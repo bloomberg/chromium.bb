@@ -666,27 +666,6 @@ TEST_F(BookmarkBarControllerTest, TestDragShouldLockBarVisibility) {
   EXPECT_FALSE([bar_ dragShouldLockBarVisibility]);
 }
 
-TEST_F(BookmarkBarControllerTest, TagMap) {
-  int64_t ids[] = {1, 3, 4, 40, 400, 4000, 800000000, 2, 123456789};
-  std::vector<int32_t> tags;
-
-  // Generate some tags
-  for (unsigned int i = 0; i < arraysize(ids); i++) {
-    tags.push_back([bar_ menuTagFromNodeId:ids[i]]);
-  }
-
-  // Confirm reverse mapping.
-  for (unsigned int i = 0; i < arraysize(ids); i++) {
-    EXPECT_EQ(ids[i], [bar_ nodeIdFromMenuTag:tags[i]]);
-  }
-
-  // Confirm uniqueness.
-  std::sort(tags.begin(), tags.end());
-  for (unsigned int i=0; i<(tags.size()-1); i++) {
-    EXPECT_NE(tags[i], tags[i+1]);
-  }
-}
-
 // Confirm openBookmark: forwards the request to the controller's delegate
 TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   GURL gurl("http://walla.walla.ding.dong.com");

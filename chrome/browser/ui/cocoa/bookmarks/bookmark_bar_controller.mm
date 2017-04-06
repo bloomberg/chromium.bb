@@ -230,7 +230,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // then show the no items label.
 - (void)reconfigureBookmarkBar;
 
-- (void)clearMenuTagMap;
 - (int)preferredHeight;
 - (void)addButtonsToView;
 - (BOOL)setManagedBookmarksButtonVisibility;
@@ -1086,11 +1085,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   browser_->OpenURL(params);
 }
 
-- (void)clearMenuTagMap {
-  seedId_ = 0;
-  menuTagMap_.clear();
-}
-
 - (int)preferredHeight {
   DCHECK(![self isAnimationRunning]);
 
@@ -1110,15 +1104,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Return an appropriate width for the given bookmark button cell.
 - (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
   return std::min([cell cellSize].width, bookmarks::kDefaultBookmarkWidth);
-}
-
-- (IBAction)openBookmarkMenuItem:(id)sender {
-  int64_t tag = [self nodeIdFromMenuTag:[sender tag]];
-  const BookmarkNode* node =
-      bookmarks::GetBookmarkNodeByID(bookmarkModel_, tag);
-  WindowOpenDisposition disposition =
-      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  [self openURL:node->url() disposition:disposition];
 }
 
 // For the given root node of the bookmark bar, show or hide (as
@@ -1810,7 +1795,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [button removeFromSuperview];
   }
   [buttons_ removeAllObjects];
-  [self clearMenuTagMap];
   displayedButtonCount_ = 0;
 
   // Make sure there are no stale pointers in the pasteboard.  This
@@ -1911,18 +1895,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
   [self updateTheme:[[[self view] window] themeProvider]];
   [self reconfigureBookmarkBar];
-}
-
-// Given a NSMenuItem tag, return the appropriate bookmark node id.
-- (int64_t)nodeIdFromMenuTag:(int32_t)tag {
-  return menuTagMap_[tag];
-}
-
-// Create and return a new tag for the given node id.
-- (int32_t)menuTagFromNodeId:(int64_t)menuid {
-  int tag = seedId_++;
-  menuTagMap_[tag] = menuid;
-  return tag;
 }
 
 // Adapt appearance of buttons to the current theme. Called after
