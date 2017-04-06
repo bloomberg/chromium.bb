@@ -121,15 +121,8 @@ Polymer({
     var index = this.words_.indexOf(word);
     if (index == -1) {
       this.languageSettingsPrivate.addSpellcheckWord(word);
-      this.push('words_', word);
-      index = this.words_.length - 1;
+      this.unshift('words_', word);
     }
-
-    // Scroll to the word (usually the bottom, or to the index if the word
-    // is already present).
-    this.async(function(){
-      this.root.querySelector('#list').scrollToIndex(index);
-    });
   },
 
   /**
