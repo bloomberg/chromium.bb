@@ -61,11 +61,9 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // actually received on the IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-#if defined(OS_ANDROID)
   // Register Mojo interfaces that must be bound on the UI thread.
   static void RegisterUIThreadMojoInterfaces(
       service_manager::BinderRegistry* registry);
-#endif
 
  private:
   explicit GpuProcessHostUIShim(int host_id);

@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
+#include "content/browser/field_trial_recorder.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -21,9 +22,9 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/common/gpu_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "ui/gfx/swap_result.h"
 
 #if defined(OS_ANDROID)
@@ -55,14 +56,6 @@ template <typename Interface>
 void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
-}
-
-// Binder which posts each request to the UI thread.
-template <typename Interface>
-void BindJavaInterfaceOnUIThread(mojo::InterfaceRequest<Interface> request) {
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
-      ->PostTask(FROM_HERE, base::Bind(&BindJavaInterface<Interface>,
-                                       base::Passed(&request)));
 }
 #endif
 
@@ -144,13 +137,23 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   g_hosts_by_id.Pointer()->Remove(host_id_);
 }
 
-#if defined(OS_ANDROID)
 // static
 void GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(
     service_manager::BinderRegistry* registry) {
-  registry->AddInterface(base::Bind(
-      &BindJavaInterfaceOnUIThread<media::mojom::AndroidOverlayProvider>));
-}
+  auto task_runner = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+
+  registry->AddInterface(base::Bind(&FieldTrialRecorder::Create), task_runner);
+  registry->AddInterface(
+      base::Bind(
+          &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
+          base::Unretained(
+              memory_instrumentation::CoordinatorImpl::GetInstance())),
+      task_runner);
+#if defined(OS_ANDROID)
+  registry->AddInterface(
+      base::Bind(&BindJavaInterface<media::mojom::AndroidOverlayProvider>),
+      task_runner);
 #endif
+}
 
 }  // namespace content

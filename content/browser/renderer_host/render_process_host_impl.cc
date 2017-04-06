@@ -135,7 +135,6 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"

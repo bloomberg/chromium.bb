@@ -11,16 +11,18 @@
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/common/gpu_host_messages.h"
+#include "content/common/field_trial_recorder.mojom.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
@@ -130,7 +132,10 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
 void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
                                                 const std::string& group_name) {
-  Send(new GpuHostMsg_FieldTrialActivated(trial_name));
+  mojom::FieldTrialRecorderPtr field_trial_recorder;
+  GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                &field_trial_recorder);
+  field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
 void GpuChildThread::CreateGpuMainService(

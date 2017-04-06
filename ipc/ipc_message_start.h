@@ -21,7 +21,6 @@ enum IPCMessageStart {
   NaClMsgStart,
   UtilityMsgStart,
   GpuChannelMsgStart,
-  GpuMsgStart,
   MediaMsgStart,
   ServiceMsgStart,
   PpapiMsgStart,

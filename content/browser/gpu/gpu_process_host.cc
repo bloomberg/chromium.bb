@@ -38,7 +38,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
@@ -66,7 +65,6 @@
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -326,16 +324,7 @@ void HostLoadedShader(int host_id,
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl() {
-    registry_.AddInterface(
-        base::Bind(
-            &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
-            base::Unretained(
-                memory_instrumentation::CoordinatorImpl::GetInstance())),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI));
-#if defined(OS_ANDROID)
     GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(&registry_);
-#endif
   }
 
  private:
@@ -680,11 +669,7 @@ void GpuProcessHost::AddFilter(IPC::MessageFilter* filter) {
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
-  IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
-    IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
-  IPC_END_MESSAGE_MAP()
-
+  RouteOnUIThread(message);
   return true;
 }
 
@@ -808,13 +793,6 @@ void GpuProcessHost::OnDestroyingVideoSurfaceAck() {
     base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
 }
 #endif
-
-void GpuProcessHost::OnFieldTrialActivated(const std::string& trial_name) {
-  // Activate the trial in the browser process to match its state in the
-  // GPU process. This is done by calling FindFullName which finalizes the group
-  // and activates the trial.
-  base::FieldTrialList::FindFullName(trial_name);
-}
 
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",

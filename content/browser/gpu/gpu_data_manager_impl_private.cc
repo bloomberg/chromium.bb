@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/gpu_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"

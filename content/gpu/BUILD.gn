@@ -53,6 +53,7 @@ target(link_target_type, "gpu_sources") {
     "//content:export",
     "//content/child",
     "//content/common",
+    "//content/common:mojo_bindings",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//gpu:gpu",
