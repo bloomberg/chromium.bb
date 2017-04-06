@@ -2654,7 +2654,7 @@ crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failu
 crbug.com/703503 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Failure Pass ]
 crbug.com/703518 inspector/tracing/worker-js-frames.html [ Failure Pass ]
 crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Failure Pass ]
-crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Failure Pass ]
+crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Failure Pass Timeout ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
