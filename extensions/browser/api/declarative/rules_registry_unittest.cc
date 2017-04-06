@@ -7,10 +7,9 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api_test_utils.h"
@@ -29,8 +28,7 @@ namespace extensions {
 using api_test_utils::ParseDictionary;
 
 TEST(RulesRegistryTest, FillOptionalIdentifiers) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   std::string error;
   scoped_refptr<RulesRegistry> registry =
@@ -148,8 +146,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
 }
 
 TEST(RulesRegistryTest, FillOptionalPriority) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   std::string error;
   scoped_refptr<RulesRegistry> registry =
@@ -185,8 +182,7 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
 
 // Test verifies 2 rules defined in the manifest appear in the registry.
 TEST(RulesRegistryTest, TwoRulesInManifest) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Create extension
   std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(
@@ -266,8 +262,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
 // Tests verifies that rules defined in the manifest cannot be deleted but
 // programmatically added rules still can be deleted.
 TEST(RulesRegistryTest, DeleteRuleInManifest) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Create extension
   std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(

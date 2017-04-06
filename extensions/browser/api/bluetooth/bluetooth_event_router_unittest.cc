@@ -9,10 +9,9 @@
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -41,8 +40,7 @@ namespace bluetooth = api::bluetooth;
 class BluetoothEventRouterTest : public ExtensionsTest {
  public:
   BluetoothEventRouterTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
+      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
         router_(new BluetoothEventRouter(browser_context())) {
     router_->SetAdapterForTest(mock_adapter_);
   }
@@ -55,9 +53,7 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  // Note: |ui_thread_| must be declared before |router_|.
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
   std::unique_ptr<BluetoothEventRouter> router_;
 };

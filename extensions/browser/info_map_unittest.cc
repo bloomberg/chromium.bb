@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/info_map.h"
+
+#include "base/path_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace keys = extensions::manifest_keys;
 
@@ -19,14 +17,10 @@ namespace extensions {
 
 class InfoMapTest : public testing::Test {
  public:
-  InfoMapTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {}
+  InfoMapTest() = default;
 
  private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 // Returns a barebones test Extension object with the given name.

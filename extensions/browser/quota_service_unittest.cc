@@ -6,18 +6,16 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -102,11 +100,7 @@ class FrozenMockFunction : public MockFunction {
 class QuotaServiceTest : public testing::Test {
  public:
   QuotaServiceTest()
-      : extension_a_("a"),
-        extension_b_("b"),
-        extension_c_("c"),
-        loop_(),
-        ui_thread_(BrowserThread::UI, &loop_) {}
+      : extension_a_("a"), extension_b_("b"), extension_c_("c") {}
   void SetUp() override { service_.reset(new QuotaService()); }
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
@@ -118,8 +112,7 @@ class QuotaServiceTest : public testing::Test {
   std::string extension_b_;
   std::string extension_c_;
   std::unique_ptr<QuotaService> service_;
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 class QuotaLimitHeuristicTest : public testing::Test {
