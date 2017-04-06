@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.offlinepages.downloads;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
@@ -235,10 +238,21 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
                 new Observer() {
                     @Override
                     public void onItemsLoaded() {
-                        bridge.openItem(id.id, null);
+                        bridge.openItem(id.id, getComponentName());
                         bridge.destroyServiceDelegate();
                     }
                 });
+    }
+
+    private static ComponentName getComponentName() {
+        if (!ApplicationStatus.hasVisibleActivities()) return null;
+
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity instanceof ChromeTabbedActivity) {
+            return activity.getComponentName();
+        }
+
+        return null;
     }
 
     @CalledByNative
