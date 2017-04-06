@@ -11,11 +11,11 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 
 /** Utility methods for chromoting code. */
@@ -63,7 +63,7 @@ public abstract class ChromotingUtil {
 
         if (typedValue.resourceId != 0) {
             // Attribute is a resource.
-            return ApiCompatibilityUtils.getColor(context.getResources(), typedValue.resourceId);
+            return ContextCompat.getColor(context, typedValue.resourceId);
         } else if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT
                 && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
             // Attribute is a raw color value.
