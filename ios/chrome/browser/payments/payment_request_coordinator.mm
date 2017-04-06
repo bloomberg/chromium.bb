@@ -208,9 +208,17 @@ class FullCardRequester
                                       CVC:(const base::string16&)cvc {
   web::PaymentResponse paymentResponse;
 
+  // If the merchant specified the card network as part of the "basic-card"
+  // payment method, return "basic-card" as the method_name. Otherwise, return
+  // the name of the network directly.
+  std::string basic_card_type =
+      autofill::data_util::GetPaymentRequestData(card.type())
+          .basic_card_payment_type;
   paymentResponse.method_name =
-      base::ASCIIToUTF16(autofill::data_util::GetPaymentRequestData(card.type())
-                             .basic_card_payment_type);
+      _paymentRequest->basic_card_specified_networks().find(basic_card_type) !=
+              _paymentRequest->basic_card_specified_networks().end()
+          ? base::ASCIIToUTF16("basic-card")
+          : base::ASCIIToUTF16(basic_card_type);
 
   paymentResponse.details = GetBasicCardResponseFromAutofillCreditCard(
       card, cvc, _paymentRequest->billing_profiles(),

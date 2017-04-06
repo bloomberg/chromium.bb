@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -83,20 +84,17 @@ void PaymentRequest::PopulateProfileCache() {
 }
 
 void PaymentRequest::PopulateCreditCardCache() {
-  for (const auto& method_data : web_payment_request_.method_data) {
-    for (const std::string& supported_method : method_data.supported_methods) {
-      supported_card_networks_.push_back(supported_method);
-    }
+  if (!payments::data_util::ParseBasicCardSupportedNetworks(
+          web_payment_request_.method_data, &supported_card_networks_,
+          &basic_card_specified_networks_)) {
+    // TODO(crbug.com/709036): close the UI and reject the promise since the
+    // data is invalid.
+    return;
   }
 
   const std::vector<autofill::CreditCard*>& credit_cards_to_suggest =
       personal_data_manager_->GetCreditCardsToSuggest();
   credit_card_cache_.reserve(credit_cards_to_suggest.size());
-
-  // TODO(crbug.com/602666): Update the following logic to allow basic card
-  // payment. https://w3c.github.io/webpayments-methods-card/
-  // new PaymentRequest([{supportedMethods: ['basic-card'],
-  //                      data: {supportedNetworks:['visa']}]}], ...);
 
   for (const auto* credit_card : credit_cards_to_suggest) {
     std::string spec_card_type =

@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -100,6 +101,10 @@ class PaymentRequest {
     return supported_card_networks_;
   }
 
+  const std::set<std::string>& basic_card_specified_networks() const {
+    return basic_card_specified_networks_;
+  }
+
   // Adds |credit_card| to the list of cached credit cards and returns a pointer
   // to the cached copy.
   virtual autofill::CreditCard* AddCreditCard(
@@ -178,8 +183,13 @@ class PaymentRequest {
   std::vector<autofill::CreditCard*> credit_cards_;
   autofill::CreditCard* selected_credit_card_;
 
-  // A vector of supported basic card networks.
+  // A vector of supported basic card networks. This encompasses everything that
+  // the merchant supports and should be used for support checks.
   std::vector<std::string> supported_card_networks_;
+  // A subset of |supported_card_networks_| which is only the networks that have
+  // been specified as part of the "basic-card" supported method. Callers should
+  // use |supported_card_networks_| for merchant support checks.
+  std::set<std::string> basic_card_specified_networks_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<web::PaymentShippingOption*> shipping_options_;
