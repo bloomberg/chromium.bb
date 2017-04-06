@@ -44,6 +44,13 @@ class BookmarkNode;
 @property(nonatomic, readwrite, assign) int startingChildIndex;
 @property(nonatomic, readwrite, assign) BOOL drawFolderArrow;
 
+// Returns the width of a cell for the given node and image for
+// display on the bookmark bar (meaning no arrow for folder
+// nodes). Used for laying out bookmark bar without creating
+// live cells.
++ (CGFloat)cellWidthForNode:(const bookmarks::BookmarkNode*)node
+                      image:(NSImage*)image;
+
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const bookmarks::BookmarkNode*)node
                    text:(NSString*)text
@@ -87,6 +94,8 @@ class BookmarkNode;
 - (void)setTextColor:(NSColor*)color;
 
 - (BOOL)isFolderButtonCell;
+- (void)setBookmarkNode:(const bookmarks::BookmarkNode*)node
+                  image:(NSImage*)image;
 
 @end
 
