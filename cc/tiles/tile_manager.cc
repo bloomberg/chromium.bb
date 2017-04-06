@@ -1360,6 +1360,67 @@ scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
       base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr())));
 }
 
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+TileManager::ActivationStateAsValue() {
+  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  state->SetString("tree_priority",
+                   TreePriorityToString(global_state_.tree_priority));
+  state->SetInteger("soft_memory_limit",
+                    global_state_.soft_memory_limit_in_bytes);
+  state->SetInteger("hard_memory_limit",
+                    global_state_.soft_memory_limit_in_bytes);
+  state->SetInteger("pending_required_for_activation_callback_id",
+                    pending_required_for_activation_callback_id_);
+  state->SetInteger("current_memory_usage",
+                    resource_pool_->memory_usage_bytes());
+  state->SetInteger("current_resource_usage", resource_pool_->resource_count());
+
+  // Use a custom tile_as_value, instead of Tile::AsValueInto, since we don't
+  // need all of the state that would be captured by other functions.
+  auto tile_as_value = [](const PrioritizedTile& prioritized_tile,
+                          base::trace_event::TracedValue* value) {
+    Tile* tile = prioritized_tile.tile();
+    TilePriority priority = prioritized_tile.priority();
+
+    value->SetInteger("id", tile->id());
+    value->SetString("content_rect", tile->content_rect().ToString());
+    value->SetDouble("contents_scale", tile->contents_scale());
+    value->SetBoolean("is_ready_to_draw", tile->draw_info().IsReadyToDraw());
+    value->SetString("resolution", TileResolutionToString(priority.resolution));
+    value->SetString("priority_bin",
+                     TilePriorityBinToString(priority.priority_bin));
+    value->SetDouble("distance_to_visible", priority.distance_to_visible);
+    value->SetBoolean("required_for_activation",
+                      tile->required_for_activation());
+    value->SetBoolean("required_for_draw", tile->required_for_draw());
+  };
+
+  std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
+      client_->BuildRasterQueue(global_state_.tree_priority,
+                                RasterTilePriorityQueue::Type::ALL));
+  state->BeginArray("raster_tiles");
+  for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
+    state->BeginDictionary();
+    tile_as_value(raster_priority_queue->Top(), state.get());
+    state->EndDictionary();
+  }
+  state->EndArray();
+
+  std::unique_ptr<RasterTilePriorityQueue> required_priority_queue(
+      client_->BuildRasterQueue(
+          global_state_.tree_priority,
+          RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
+  state->BeginArray("activation_tiles");
+  for (; !required_priority_queue->IsEmpty(); required_priority_queue->Pop()) {
+    state->BeginDictionary();
+    tile_as_value(required_priority_queue->Top(), state.get());
+    state->EndDictionary();
+  }
+  state->EndArray();
+
+  return std::move(state);
+}
+
 TileManager::MemoryUsage::MemoryUsage()
     : memory_bytes_(0), resource_count_(0) {}
 

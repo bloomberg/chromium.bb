@@ -229,6 +229,11 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   // CheckerImageTrackerClient implementation.
   void NeedsInvalidationForCheckerImagedTiles() override;
 
+  // This method can only be used for debugging information, since it performs a
+  // non trivial amount of work.
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+  ActivationStateAsValue();
+
  protected:
   friend class Tile;
   // Must be called by tile during destruction.
