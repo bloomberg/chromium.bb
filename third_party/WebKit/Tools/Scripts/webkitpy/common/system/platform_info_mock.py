@@ -47,9 +47,6 @@ class MockPlatformInfo(object):
     def is_highdpi(self):
         return self._is_highdpi
 
-    def is_cygwin(self):
-        return self.os_name == 'cygwin'
-
     def is_freebsd(self):
         return self.os_name == 'freebsd'
 

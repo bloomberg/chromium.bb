@@ -167,10 +167,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Windows and Mac to skip some tests.
         self._platform = SystemHost().platform
 
-        # FIXME: Remove this when we fix test-webkitpy to work
-        # properly on cygwin (bug 63846).
-        self.should_test_processes = not self._platform.is_win()
-
     def test_basic(self):
         options, args = parse_args(
             extra_args=['--json-test-results', '/tmp/json_test_results.json'],
@@ -228,23 +224,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_max_locked_shards(self):
         # Tests for the default of using one locked shard even in the case of more than one child process.
-        if not self.should_test_processes:
-            return
         _, regular_output, _ = logging_run(['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
         self.assertTrue(any('1 locked' in line for line in regular_output.buflist))
 
     def test_child_processes_2(self):
-        if self.should_test_processes:
-            _, regular_output, _ = logging_run(
-                ['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
-            self.assertTrue(any(['Running 2 ' in line for line in regular_output.buflist]))
+        _, regular_output, _ = logging_run(
+            ['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
+        self.assertTrue(any(['Running 2 ' in line for line in regular_output.buflist]))
 
     def test_child_processes_min(self):
-        if self.should_test_processes:
-            _, regular_output, _ = logging_run(
-                ['--debug-rwt-logging', '--child-processes', '2', '-i', 'passes/virtual_passes', 'passes'],
-                tests_included=True, shared_port=False)
-            self.assertTrue(any(['Running 1 ' in line for line in regular_output.buflist]))
+        _, regular_output, _ = logging_run(
+            ['--debug-rwt-logging', '--child-processes', '2', '-i', 'passes/virtual_passes', 'passes'],
+            tests_included=True, shared_port=False)
+        self.assertTrue(any(['Running 1 ' in line for line in regular_output.buflist]))
 
     def test_dryrun(self):
         tests_run = get_tests_run(['--dry-run'])
@@ -269,13 +261,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertRaises(BaseException, logging_run,
                           ['failures/expected/exception.html', '--child-processes', '1'], tests_included=True)
 
-        if self.should_test_processes:
-            self.assertRaises(
-                BaseException,
-                logging_run,
-                ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
-                tests_included=True,
-                shared_port=False)
+        self.assertRaises(
+            BaseException,
+            logging_run,
+            ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
+            tests_included=True,
+            shared_port=False)
 
     def test_device_failure(self):
         # Test that we handle a device going offline during a test properly.
@@ -295,11 +286,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, _, _ = logging_run(['failures/expected/keyboard.html', '--child-processes', '1'], tests_included=True)
         self.assertEqual(details.exit_code, test_run_results.INTERRUPTED_EXIT_STATUS)
 
-        if self.should_test_processes:
-            _, regular_output, _ = logging_run(
-                ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'],
-                tests_included=True, shared_port=False)
-            self.assertTrue(any(['Interrupted, exiting' in line for line in regular_output.buflist]))
+        _, regular_output, _ = logging_run(
+            ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'],
+            tests_included=True, shared_port=False)
+        self.assertTrue(any(['Interrupted, exiting' in line for line in regular_output.buflist]))
 
     def test_no_tests_found(self):
         details, err, _ = logging_run(['resources'], tests_included=True)
@@ -996,10 +986,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # child process (e.g., on win32) and we need to make sure that works and we still
         # see the verbose log output. However, we can't use logging_run() because using
         # output_capture to capture stdout and stderr latter results in a nonpicklable host.
-
-        # Test is flaky on Windows: https://bugs.webkit.org/show_bug.cgi?id=98559
-        if not self.should_test_processes:
-            return
 
         options, parsed_args = parse_args(['--verbose', '--fully-parallel', '--child-processes',
                                            '2', 'passes/text.html', 'passes/image.html'], tests_included=True)

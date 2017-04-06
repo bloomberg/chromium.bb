@@ -237,7 +237,7 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
     def test_maybe_make_directory__failure(self):
         # FIXME: os.chmod() doesn't work on Windows to set directories
         # as readonly, so we skip this test for now.
-        if sys.platform in ('win32', 'cygwin'):
+        if sys.platform == 'win32':
             return
 
         fs = FileSystem()

@@ -29,7 +29,6 @@
 import functools
 import json
 import optparse
-import tempfile
 import unittest
 
 from webkitpy.common.system.executive import ScriptError
@@ -380,8 +379,6 @@ class PortTest(unittest.TestCase):
     def test_http_server_supports_ipv6(self):
         port = self.make_port()
         self.assertTrue(port.http_server_supports_ipv6())
-        port.host.platform.os_name = 'cygwin'
-        self.assertFalse(port.http_server_supports_ipv6())
         port.host.platform.os_name = 'win'
         self.assertFalse(port.http_server_supports_ipv6())
 
@@ -516,9 +513,7 @@ class PortTest(unittest.TestCase):
 
     def test_apache_config_file_name_for_platform(self):
         port = self.make_port()
-        # pylint: disable=protected-access
-        port._apache_version = lambda: '2.2'
-        self._assert_config_file_for_platform(port, 'cygwin', 'cygwin-httpd.conf')
+        port._apache_version = lambda: '2.2'  # pylint: disable=protected-access
         self._assert_config_file_for_platform(port, 'linux', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'arch', 'arch-httpd-2.2.conf')
         self._assert_config_file_for_linux_distribution(port, 'debian', 'debian-httpd-2.2.conf')
@@ -526,7 +521,6 @@ class PortTest(unittest.TestCase):
         self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
 
         self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
-        # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
         self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd-2.2.conf')
 

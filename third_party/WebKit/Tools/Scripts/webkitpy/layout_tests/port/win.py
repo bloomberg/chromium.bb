@@ -159,19 +159,12 @@ class WinPort(base.Port):
 
         # FIXME: This is a temporary hack to get the cr-win bot online until
         # someone from the cr-win port can take a look.
+        # TODO(qyearsley): Remove this in a separate CL.
         apache_envvars = ['SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP']
         for key, value in self.host.environ.copy().items():
             if key not in env and key in apache_envvars:
                 env[key] = value
 
-        # Put the cygwin directory first in the path to find cygwin1.dll.
-        env['PATH'] = '%s;%s' % (self.path_from_chromium_base('third_party', 'cygwin', 'bin'), env['PATH'])
-        # Configure the cygwin directory so that pywebsocket finds proper
-        # python executable to run cgi program.
-        env['CYGWIN_PATH'] = self.path_from_chromium_base('third_party', 'cygwin', 'bin')
-        if self.get_option('register_cygwin'):
-            setup_mount = self.path_from_chromium_base('third_party', 'cygwin', 'setup_mount.bat')
-            self._executive.run_command([setup_mount])  # Paths are all absolute, so this does not require a cwd.
         return env
 
     def check_build(self, needs_http, printer):

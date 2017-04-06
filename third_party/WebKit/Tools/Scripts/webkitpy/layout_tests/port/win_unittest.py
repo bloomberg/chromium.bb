@@ -48,19 +48,6 @@ class WinPortTest(port_testcase.PortTestCase):
         orig_environ = port.host.environ.copy()
         env = output.assert_outputs(self, port.setup_environ_for_server)
         self.assertEqual(orig_environ['PATH'], port.host.environ.get('PATH'))
-        self.assertNotEqual(env['PATH'], port.host.environ.get('PATH'))
-
-    def test_setup_environ_for_server_cygpath(self):
-        port = self.make_port()
-        env = port.setup_environ_for_server()
-        self.assertEqual(env['CYGWIN_PATH'], '/mock-checkout/third_party/cygwin/bin')
-
-    def test_setup_environ_for_server_register_cygwin(self):
-        port = self.make_port(options=optparse.Values({'register_cygwin': True, 'results_directory': '/'}))
-        port._executive = MockExecutive(should_log=True)
-        expected_logs = "MOCK run_command: ['/mock-checkout/third_party/cygwin/setup_mount.bat'], cwd=None\n"
-        output = output_capture.OutputCapture()
-        output.assert_outputs(self, port.setup_environ_for_server, expected_logs=expected_logs)
 
     def assert_name(self, port_name, os_version_string, expected):
         port = self.make_port(port_name=port_name, os_version=os_version_string)

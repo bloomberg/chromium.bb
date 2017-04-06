@@ -40,7 +40,7 @@ class TestApacheHTTP(unittest.TestCase):
 
     def test_start_cmd(self):
         # Fails on win - see https://bugs.webkit.org/show_bug.cgi?id=84726
-        if sys.platform in ('cygwin', 'win32'):
+        if sys.platform == 'win32':
             return
 
         def fake_pid(_):

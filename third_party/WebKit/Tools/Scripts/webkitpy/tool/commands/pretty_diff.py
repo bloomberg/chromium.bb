@@ -86,9 +86,5 @@ class PrettyDiff(Command):
                                              changed_files=changed_files)
 
     def _open_pretty_diff(self, file_path):
-        if self._tool.platform.is_cygwin():
-            assert file_path.endswith('.html')
-            self._tool.executive.run_command(['cygstart', file_path])
-            return
         url = 'file://%s' % urllib.quote(file_path)
         self._tool.user.open_url(url)

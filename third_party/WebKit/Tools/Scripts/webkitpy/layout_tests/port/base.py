@@ -45,7 +45,7 @@ from webkitpy.common import find_files
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.path import cygpath, abspath_to_uri
+from webkitpy.common.system.path import abspath_to_uri
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models import test_run_results
@@ -439,14 +439,9 @@ class Port(object):
 
         diff_filename = self._filesystem.join(str(tempdir), 'diff.png')
 
-        # image_diff needs native win paths as arguments, so we need to convert them if running under cygwin.
-        native_expected_filename = self._convert_path(expected_filename)
-        native_actual_filename = self._convert_path(actual_filename)
-        native_diff_filename = self._convert_path(diff_filename)
-
         executable = self._path_to_image_diff()
         # Although we are handed 'old', 'new', image_diff wants 'new', 'old'.
-        command = [executable, '--diff', native_actual_filename, native_expected_filename, native_diff_filename]
+        command = [executable, '--diff', actual_filename, expected_filename, diff_filename]
 
         result = None
         err_str = None
@@ -456,7 +451,7 @@ class Port(object):
                 # The images are the same.
                 result = None
             elif exit_code == 1:
-                result = self._filesystem.read_binary_file(native_diff_filename)
+                result = self._filesystem.read_binary_file(diff_filename)
             else:
                 err_str = 'Image diff returned an exit code of %s. See http://crbug.com/278596' % exit_code
         except OSError as error:
@@ -1092,12 +1087,6 @@ class Port(object):
                 'PATH',
                 'GYP_DEFINES',  # Required to locate win sdk.
             ]
-        if self.host.platform.is_cygwin():
-            variables_to_copy += [
-                'HOMEDRIVE',
-                'HOMEPATH',
-                '_NT_SYMBOL_PATH',
-            ]
 
         for variable in variables_to_copy:
             if variable in self.host.environ:
@@ -1175,10 +1164,8 @@ class Port(object):
             self._wpt_server = None
 
     def http_server_supports_ipv6(self):
-        # Apache < 2.4 on win32 does not support IPv6, nor does cygwin apache.
-        if self.host.platform.is_cygwin() or self.host.platform.is_win():
-            return False
-        return True
+        # Apache < 2.4 on win32 does not support IPv6.
+        return not self.host.platform.is_win()
 
     def stop_http_server(self):
         """Shuts down the http server if it is running."""
@@ -1390,8 +1377,6 @@ class Port(object):
         return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*', r'\1', config)
 
     def _apache_config_file_name_for_platform(self):
-        if self.host.platform.is_cygwin():
-            return 'cygwin-httpd.conf'  # CYGWIN is the only platform to still use Apache 1.3.
         if self.host.platform.is_linux():
             distribution = self.host.platform.linux_distribution()
 
@@ -1572,13 +1557,6 @@ class Port(object):
     def should_run_pixel_test_first(self, test_input):
         return any(test_input.test_name.startswith(
             directory) for directory in self._options.image_first_tests)
-
-    def _convert_path(self, path):
-        """Handles filename conversion for subprocess command line args."""
-        # See note above in diff_image() for why we need this.
-        if sys.platform == 'cygwin':
-            return cygpath(path)
-        return path
 
     def _build_path(self, *comps):
         return self._build_path_with_target(self._options.target, *comps)

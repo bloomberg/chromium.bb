@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import csv
+import ctypes
 import errno
 import logging
 import multiprocessing
@@ -37,8 +38,6 @@ import subprocess
 import sys
 import threading
 import time
-
-from webkitpy.common.system.filesystem import FileSystem
 
 
 _log = logging.getLogger(__name__)
@@ -94,55 +93,37 @@ class Executive(object):
         # multiple threads). See http://bugs.python.org/issue2320 .
         # Note that close_fds isn't supported on Windows, but this bug only
         # shows up on Mac and Linux.
-        return sys.platform not in ('win32', 'cygwin')
+        return sys.platform != 'win32'
 
     def cpu_count(self):
         return multiprocessing.cpu_count()
 
     def kill_process(self, pid):
         """Attempts to kill the given pid.
+
         Will fail silently if pid does not exist or insufficient permissions.
         """
+        # According to http://docs.python.org/library/os.html
+        # os.kill isn't available on Windows.
         if sys.platform == 'win32':
-            # We only use taskkill.exe on windows (not cygwin) because subprocess.pid
-            # is a CYGWIN pid and taskkill.exe expects a windows pid.
-            # Thankfully os.kill on CYGWIN handles either pid type.
             command = ['taskkill.exe', '/f', '/t', '/pid', pid]
-            # taskkill will exit 128 if the process is not found.  We should log.
+            # taskkill will exit 128 if the process is not found. We should log.
             self.run_command(command, error_handler=self.ignore_error)
             return
 
-        # According to http://docs.python.org/library/os.html
-        # os.kill isn't available on Windows. python 2.5.5 os.kill appears
-        # to work in cygwin, however it occasionally raises EAGAIN.
-        retries_left = 10 if sys.platform == 'cygwin' else 1
-        while retries_left > 0:
-            try:
-                retries_left -= 1
-                os.kill(pid, signal.SIGKILL)
-                _ = os.waitpid(pid, os.WNOHANG)
-            except OSError as error:
-                if error.errno == errno.EAGAIN:
-                    if retries_left <= 0:
-                        _log.warning('Failed to kill pid %s.  Too many EAGAIN errors.', pid)
-                    continue
-                if error.errno == errno.ESRCH:  # The process does not exist.
-                    return
-                if error.errno == errno.EPIPE:  # The process has exited already on cygwin
-                    return
-                if error.errno == errno.ECHILD:
-                    # Can't wait on a non-child process, but the kill worked.
-                    return
-                if error.errno == errno.EACCES and sys.platform == 'cygwin':
-                    # Cygwin python sometimes can't kill native processes.
-                    return
-                raise
+        try:
+            os.kill(pid, signal.SIGKILL)
+            os.waitpid(pid, os.WNOHANG)
+        except OSError as error:
+            if error.errno == errno.ESRCH:
+                # The process does not exist.
+                return
+            if error.errno == errno.ECHILD:
+                # Can't wait on a non-child process, but the kill worked.
+                return
+            raise
 
     def _win32_check_running_pid(self, pid):
-        # importing ctypes at the top-level seems to cause weird crashes at
-        # exit under cygwin on apple's win port. Only win32 needs cygwin, so
-        # we import it here instead. See https://bugs.webkit.org/show_bug.cgi?id=91682
-        import ctypes
 
         class PROCESSENTRY32(ctypes.Structure):
             _fields_ = [('dwSize', ctypes.c_ulong),
@@ -192,7 +173,7 @@ class Executive(object):
 
     def _running_processes(self):
         processes = []
-        if sys.platform in ('win32', 'cygwin'):
+        if sys.platform == 'win32':
             tasklist_process = self.popen(['tasklist', '/fo', 'csv'],
                                           stdout=self.PIPE, stderr=self.PIPE)
             stdout, _ = tasklist_process.communicate()
@@ -228,7 +209,7 @@ class Executive(object):
 
     def process_dump(self):
         ps_process = None
-        if sys.platform in ('win32', 'cygwin'):
+        if sys.platform in 'win32':
             ps_process = self.popen(
                 ['wmic', 'process', 'get',
                  'ProcessId,ParentProcessId,CommandLine'],
@@ -383,11 +364,6 @@ class Executive(object):
         return 'utf-8'
 
     def _should_encode_child_process_arguments(self):
-        # Cygwin's Python's os.execv doesn't support unicode command
-        # arguments, and neither does Cygwin's execv itself.
-        if sys.platform == 'cygwin':
-            return True
-
         # Win32 Python 2.x uses CreateProcessA rather than CreateProcessW
         # to launch subprocesses, so we have to encode arguments using the
         # current code page.
@@ -421,7 +397,7 @@ class Executive(object):
         return self.map(_run_command_thunk, command_lines_and_cwds, processes)
 
     def map(self, thunk, arglist, processes=None):
-        if sys.platform in ('cygwin', 'win32') or len(arglist) == 1:
+        if sys.platform == 'win32' or len(arglist) == 1:
             return map(thunk, arglist)
         pool = multiprocessing.Pool(processes=(processes or multiprocessing.cpu_count()))
         try:

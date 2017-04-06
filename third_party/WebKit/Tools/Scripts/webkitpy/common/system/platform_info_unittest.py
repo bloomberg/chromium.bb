@@ -122,13 +122,6 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertTrue(info.is_win())
         self.assertFalse(info.is_freebsd())
 
-        info = self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7600'))
-        self.assertEqual(info.os_name, 'win')
-        self.assertFalse(info.is_linux())
-        self.assertFalse(info.is_mac())
-        self.assertTrue(info.is_win())
-        self.assertFalse(info.is_freebsd())
-
         info = self.make_info(fake_sys('freebsd8'))
         self.assertEqual(info.os_name, 'freebsd')
         self.assertFalse(info.is_linux())
@@ -168,14 +161,6 @@ class TestPlatformInfo(unittest.TestCase):
                           executive=fake_executive('5.0.1234'))
         self.assertRaises(AssertionError, self.make_info, fake_sys('win32'),
                           executive=fake_executive('6.1.1234'))
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('10.1.1234')).os_version, 'future')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('10.0.1234')).os_version, '10')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.3.1234')).os_version, '8.1')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.2.1234')).os_version, '8')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7601')).os_version, '7sp1')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7600')).os_version, '7sp0')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.0.1234')).os_version, 'vista')
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('5.1.1234')).os_version, 'xp')
 
     def _assert_file_implies_linux_distribution(self, file_path, distribution):
         info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({file_path: ''}))
@@ -186,9 +171,6 @@ class TestPlatformInfo(unittest.TestCase):
         self._assert_file_implies_linux_distribution('/etc/debian_version', 'debian')
         self._assert_file_implies_linux_distribution('/etc/redhat-release', 'redhat')
         self._assert_file_implies_linux_distribution('/etc/mock-release', 'unknown')
-
-        info = self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7600'))
-        self.assertIsNone(info.linux_distribution())
 
     def test_display_name(self):
         info = self.make_info(fake_sys('darwin'))
@@ -215,3 +197,7 @@ class TestPlatformInfo(unittest.TestCase):
 
         info = self.make_info(fake_sys('freebsd9'))
         self.assertIsNone(info.total_bytes_memory())
+
+    def test_unsupported_platform(self):
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('cygwin'))

@@ -39,7 +39,7 @@ class TestCrashService(unittest.TestCase):
 
     def test_start_cmd(self):
         # Fails on win - see https://bugs.webkit.org/show_bug.cgi?id=84726
-        if sys.platform in ('cygwin', 'win32'):
+        if sys.platform == 'win32':
             return
 
         host = MockHost()
@@ -55,7 +55,6 @@ class TestCrashService(unittest.TestCase):
         test_port._path_to_crash_service = lambda: "/mock/crash_service"
 
         host.platform.is_win = lambda: True
-        host.platform.is_cygwin = lambda: False
 
         server = CrashService(test_port, "/mock/crash_dumps_dir")
         server._check_that_all_ports_are_available = lambda: True

@@ -92,7 +92,6 @@ class ServerProcess(object):
         self._reset()
 
         # See comment in imports for why we need the win32 APIs and can't just use select.
-        # FIXME: there should be a way to get win32 vs. cygwin from platform_info.
         self._use_win32_apis = sys.platform == 'win32'
 
     def name(self):
@@ -154,9 +153,9 @@ class ServerProcess(object):
         """
         # FIXME: Linux and Mac set the returncode to -signal.SIGINT if a
         # subprocess is killed with a ctrl^C.  Previous comments in this
-        # routine said that supposedly Windows returns 0xc000001d, but that's not what
-        # -1073741510 evaluates to. Figure out what the right value is
-        # for win32 and cygwin here ...
+        # routine said that supposedly Windows returns 0xc000001d, but that's
+        # not what -1073741510 evaluates to. Figure out what the right value
+        # is for win32 here ...
         if self._proc.returncode in (-1073741510, -signal.SIGINT):
             raise KeyboardInterrupt
 
