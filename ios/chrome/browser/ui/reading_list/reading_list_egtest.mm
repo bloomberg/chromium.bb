@@ -35,6 +35,7 @@
 #import "ios/web/public/test/http_server_util.h"
 #import "ios/web/public/test/response_providers/delayed_response_provider.h"
 #import "ios/web/public/test/response_providers/html_response_provider.h"
+#include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -59,12 +60,27 @@ const size_t kNumberUnreadEntries = 2;
 const CFTimeInterval kSnackbarAppearanceTimeout = 5;
 const CFTimeInterval kSnackbarDisappearanceTimeout =
     MDCSnackbarMessageDurationMax + 1;
-const CFTimeInterval kLoadOfflineTimeout = 5;
+const CFTimeInterval kDelayForSlowWebServer = 4;
+const CFTimeInterval kLoadOfflineTimeout = kDelayForSlowWebServer + 1;
 const CFTimeInterval kLongPressDuration = 1.0;
 const CFTimeInterval kDistillationTimeout = 5;
 const CFTimeInterval kServerOperationDelay = 1;
 const char kReadHeader[] = "Read";
 const char kUnreadHeader[] = "Unread";
+
+// Overrides the NetworkChangeNotifier to enable distillation even if the device
+// does not have network.
+class WifiNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  WifiNetworkChangeNotifier() : net::NetworkChangeNotifier() {}
+
+  ConnectionType GetCurrentConnectionType() const override {
+    return CONNECTION_WIFI;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WifiNetworkChangeNotifier);
+};
 
 // Returns the string concatenated |n| times.
 std::string operator*(const std::string& s, unsigned int n) {
@@ -250,6 +266,10 @@ void AddCurrentPageToReadingList() {
   GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarDisappearanceTimeout,
                                                   wait_for_disappearance),
              @"Snackbar did not disappear.");
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_WIFI);
+  }
 }
 
 // Wait until one element is distilled.
@@ -381,6 +401,9 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
 - (void)testSavingToReadingListAndLoadDistilled {
+  auto network_change_disabler =
+      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   GURL distillablePageURL(web::test::HttpServer::MakeUrl(kDistillableURL));
   GURL nonDistillablePageURL(
@@ -426,6 +449,9 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
+  auto network_change_disabler =
+      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   std::string pageTitle(kDistillableTitle);
@@ -462,6 +488,9 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
+  auto network_change_disabler =
+      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
@@ -503,6 +532,9 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
+  auto network_change_disabler =
+      base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
+  auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
   // Open http://potato
@@ -521,7 +553,7 @@ void AssertIsShowingDistillablePage(bool online) {
 
   web::test::SetUpHttpServer(base::MakeUnique<web::DelayedResponseProvider>(
       base::MakeUnique<HtmlResponseProvider>(ResponsesForDistillationServer()),
-      5));
+      kDelayForSlowWebServer));
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
