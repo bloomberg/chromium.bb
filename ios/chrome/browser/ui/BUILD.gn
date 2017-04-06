@@ -409,6 +409,7 @@ source_set("eg_tests") {
 }
 
 source_set("perf_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "omnibox_perftest.mm",
