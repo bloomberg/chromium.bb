@@ -41,7 +41,8 @@ void CompositorFrameSinkHolder::SetResourceReleaseCallback(
 // cc::mojom::MojoCompositorFrameSinkClient overrides:
 
 void CompositorFrameSinkHolder::DidReceiveCompositorFrameAck() {
-  // TODO(staraz): Implement this
+  if (surface_)
+    surface_->DidReceiveCompositorFrameAck();
 }
 
 void CompositorFrameSinkHolder::OnBeginFrame(const cc::BeginFrameArgs& args) {
@@ -62,10 +63,7 @@ void CompositorFrameSinkHolder::ReclaimResources(
 
 void CompositorFrameSinkHolder::WillDrawSurface(
     const cc::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  if (surface_)
-    surface_->WillDraw();
-}
+    const gfx::Rect& damage_rect) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // cc::ExternalBeginFrameSourceClient overrides:

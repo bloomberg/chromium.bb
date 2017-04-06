@@ -329,8 +329,9 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   surface->Commit();  // Move callback from pending callbacks to current ones.
   RunAllPendingInMessageLoop();
 
-  // Surface should add itself as observer during WillDraw().
-  surface->WillDraw();
+  // Surface should add itself as observer during
+  // DidReceiveCompositorFrameAck().
+  surface->DidReceiveCompositorFrameAck();
   EXPECT_EQ(1u, source.num_observers());
 
   cc::BeginFrameArgs args(source.CreateBeginFrameArgs(BEGINFRAME_FROM_HERE));

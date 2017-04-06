@@ -191,8 +191,9 @@ class Surface : public ui::ContextFactoryObserver,
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
-  // Call this to indicate that surface is being scheduled for a draw.
-  void WillDraw();
+  // Call this to indicate that the previous CompositorFrame is processed and
+  // the surface is being scheduled for a draw.
+  void DidReceiveCompositorFrameAck();
 
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
