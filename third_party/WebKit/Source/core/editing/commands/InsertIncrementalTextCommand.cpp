@@ -45,19 +45,6 @@ size_t computeCommonSuffixLength(const String& str1, const String& str2) {
   return maxCommonSuffixLength;
 }
 
-// If current position is at grapheme boundary, return 0; otherwise, return the
-// distance to its nearest left grapheme boundary.
-size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
-  const Position& adjustedPosition = previousPositionOf(
-      nextPositionOf(position, PositionMoveType::GraphemeCluster),
-      PositionMoveType::GraphemeCluster);
-  DCHECK_EQ(position.anchorNode(), adjustedPosition.anchorNode());
-  DCHECK_GE(position.computeOffsetInContainerNode(),
-            adjustedPosition.computeOffsetInContainerNode());
-  return static_cast<size_t>(position.computeOffsetInContainerNode() -
-                             adjustedPosition.computeOffsetInContainerNode());
-}
-
 size_t computeCommonGraphemeClusterPrefixLength(const Position& selectionStart,
                                                 const String& oldText,
                                                 const String& newText) {
@@ -76,19 +63,6 @@ size_t computeCommonGraphemeClusterPrefixLength(const Position& selectionStart,
   const size_t diff = computeDistanceToLeftGraphemeBoundary(position);
   DCHECK_GE(commonPrefixLength, diff);
   return commonPrefixLength - diff;
-}
-
-// If current position is at grapheme boundary, return 0; otherwise, return the
-// distance to its nearest right grapheme boundary.
-size_t computeDistanceToRightGraphemeBoundary(const Position& position) {
-  const Position& adjustedPosition = nextPositionOf(
-      previousPositionOf(position, PositionMoveType::GraphemeCluster),
-      PositionMoveType::GraphemeCluster);
-  DCHECK_EQ(position.anchorNode(), adjustedPosition.anchorNode());
-  DCHECK_GE(adjustedPosition.computeOffsetInContainerNode(),
-            position.computeOffsetInContainerNode());
-  return static_cast<size_t>(adjustedPosition.computeOffsetInContainerNode() -
-                             position.computeOffsetInContainerNode());
 }
 
 size_t computeCommonGraphemeClusterSuffixLength(const Position& selectionStart,

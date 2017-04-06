@@ -543,32 +543,6 @@ void InputMethodController::cancelComposition() {
   dispatchCompositionEndEvent(frame(), emptyString);
 }
 
-// If current position is at grapheme boundary, return 0; otherwise, return the
-// distance to its nearest left grapheme boundary.
-static size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
-  const Position& adjustedPosition = previousPositionOf(
-      nextPositionOf(position, PositionMoveType::GraphemeCluster),
-      PositionMoveType::GraphemeCluster);
-  DCHECK_EQ(position.anchorNode(), adjustedPosition.anchorNode());
-  DCHECK_GE(position.computeOffsetInContainerNode(),
-            adjustedPosition.computeOffsetInContainerNode());
-  return static_cast<size_t>(position.computeOffsetInContainerNode() -
-                             adjustedPosition.computeOffsetInContainerNode());
-}
-
-// If current position is at grapheme boundary, return 0; otherwise, return the
-// distance to its nearest right grapheme boundary.
-static size_t computeDistanceToRightGraphemeBoundary(const Position& position) {
-  const Position& adjustedPosition = nextPositionOf(
-      previousPositionOf(position, PositionMoveType::GraphemeCluster),
-      PositionMoveType::GraphemeCluster);
-  DCHECK_EQ(position.anchorNode(), adjustedPosition.anchorNode());
-  DCHECK_GE(adjustedPosition.computeOffsetInContainerNode(),
-            position.computeOffsetInContainerNode());
-  return static_cast<size_t>(adjustedPosition.computeOffsetInContainerNode() -
-                             position.computeOffsetInContainerNode());
-}
-
 void InputMethodController::setComposition(
     const String& text,
     const Vector<CompositionUnderline>& underlines,

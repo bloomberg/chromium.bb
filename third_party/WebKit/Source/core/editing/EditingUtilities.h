@@ -418,6 +418,18 @@ String stringWithRebalancedWhitespace(const String&,
 const String& nonBreakingSpaceString();
 
 // -------------------------------------------------------------------------
+// Distance calculation functions
+// -------------------------------------------------------------------------
+
+// If current position is at grapheme boundary, return 0; otherwise, return the
+// distance to its nearest left grapheme boundary.
+size_t computeDistanceToLeftGraphemeBoundary(const Position&);
+
+// If current position is at grapheme boundary, return 0; otherwise, return the
+// distance to its nearest right grapheme boundary.
+size_t computeDistanceToRightGraphemeBoundary(const Position&);
+
+// -------------------------------------------------------------------------
 // Events
 // -------------------------------------------------------------------------
 
