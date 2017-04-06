@@ -64,6 +64,20 @@ class CORE_EXPORT SelectorQuery {
   // https://dom.spec.whatwg.org/#dom-parentnode-queryselector
   Element* queryFirst(ContainerNode& rootNode) const;
 
+  struct QueryStats {
+    unsigned totalCount;
+    unsigned fastId;
+    unsigned fastClass;
+    unsigned fastTagName;
+    unsigned fastScan;
+    unsigned slowScan;
+    unsigned slowTraversingShadowTreeScan;
+  };
+  // Used by unit tests to get information about what paths were taken during
+  // the last query. Always reset between queries. This system is disabled in
+  // non DCHECK builds to avoid the overhead on the query process.
+  static QueryStats lastQueryStats();
+
  private:
   explicit SelectorQuery(CSSSelectorList);
 

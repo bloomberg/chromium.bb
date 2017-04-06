@@ -101,7 +101,7 @@ class CORE_EXPORT ContainerNode : public Node {
   Element* querySelector(const AtomicString& selectors,
                          ExceptionState& = ASSERT_NO_EXCEPTION);
   StaticElementList* querySelectorAll(const AtomicString& selectors,
-                                      ExceptionState&);
+                                      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   Node* insertBefore(Node* newChild,
                      Node* refChild,

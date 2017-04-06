@@ -45,6 +45,27 @@ namespace blink {
 
 using namespace HTMLNames;
 
+#if DCHECK_IS_ON()
+static SelectorQuery::QueryStats& currentQueryStats() {
+  DEFINE_STATIC_LOCAL(SelectorQuery::QueryStats, stats, ());
+  return stats;
+}
+
+SelectorQuery::QueryStats SelectorQuery::lastQueryStats() {
+  return currentQueryStats();
+}
+
+#define QUERY_STATS_INCREMENT(name) \
+  (void)(currentQueryStats().totalCount++, currentQueryStats().name++);
+#define QUERY_STATS_RESET() (void)(currentQueryStats() = {});
+
+#else
+
+#define QUERY_STATS_INCREMENT(name)
+#define QUERY_STATS_RESET()
+
+#endif
+
 struct SingleElementSelectorQueryTrait {
   typedef Element* OutputType;
   static const bool shouldOnlyMatchFirstElement = true;
@@ -84,12 +105,14 @@ inline bool selectorMatches(const CSSSelector& selector,
 }
 
 bool SelectorQuery::matches(Element& targetElement) const {
+  QUERY_STATS_RESET();
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
   return selectorListMatches(targetElement, targetElement);
 }
 
 Element* SelectorQuery::closest(Element& targetElement) const {
+  QUERY_STATS_RESET();
   if (m_selectors.isEmpty())
     return nullptr;
   if (m_needsUpdatedDistribution)
@@ -104,6 +127,7 @@ Element* SelectorQuery::closest(Element& targetElement) const {
 }
 
 StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const {
+  QUERY_STATS_RESET();
   NthIndexCache nthIndexCache(rootNode.document());
   HeapVector<Member<Element>> result;
   execute<AllElementsSelectorQueryTrait>(rootNode, result);
@@ -111,6 +135,7 @@ StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const {
 }
 
 Element* SelectorQuery::queryFirst(ContainerNode& rootNode) const {
+  QUERY_STATS_RESET();
   NthIndexCache nthIndexCache(rootNode.document());
   Element* matchedElement = nullptr;
   execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
@@ -124,6 +149,7 @@ static void collectElementsByClassName(
     const CSSSelector* selector,
     typename SelectorQueryTrait::OutputType& output) {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+    QUERY_STATS_INCREMENT(fastClass);
     if (!hasClassName(element, className))
       continue;
     if (selector && !selectorMatches(*selector, element, rootNode))
@@ -156,6 +182,7 @@ static void collectElementsByTagName(
     typename SelectorQueryTrait::OutputType& output) {
   DCHECK_EQ(tagName.namespaceURI(), starAtom);
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+    QUERY_STATS_INCREMENT(fastTagName);
     if (matchesTagName(tagName, element)) {
       SelectorQueryTrait::appendElement(output, element);
       if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -276,6 +303,7 @@ void SelectorQuery::executeForTraverseRoot(
   const CSSSelector& selector = *m_selectors[0];
 
   for (Element& element : ElementTraversal::descendantsOf(traverseRoot)) {
+    QUERY_STATS_INCREMENT(fastScan);
     if (selectorMatches(selector, element, rootNode)) {
       SelectorQueryTrait::appendElement(output, element);
       if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -298,6 +326,7 @@ void SelectorQuery::executeSlow(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+    QUERY_STATS_INCREMENT(slowScan);
     if (!selectorListMatches(rootNode, element))
       continue;
     SelectorQueryTrait::appendElement(output, element);
@@ -358,6 +387,7 @@ void SelectorQuery::executeSlowTraversingShadowTree(
        node; node = nextTraversingShadowTree(*node, &rootNode)) {
     if (!node->isElementNode())
       continue;
+    QUERY_STATS_INCREMENT(slowTraversingShadowTreeScan);
     Element* element = toElement(node);
     if (!selectorListMatches(rootNode, *element))
       continue;
@@ -419,6 +449,7 @@ void SelectorQuery::execute(
       for (const auto& element : elements) {
         if (!element->isDescendantOf(&rootNode))
           continue;
+        QUERY_STATS_INCREMENT(fastId);
         if (selectorMatches(selector, *element, rootNode)) {
           SelectorQueryTrait::appendElement(output, *element);
           if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -432,6 +463,7 @@ void SelectorQuery::execute(
       return;
     if (!element->isDescendantOf(&rootNode))
       return;
+    QUERY_STATS_INCREMENT(fastId);
     if (selectorMatches(selector, *element, rootNode))
       SelectorQueryTrait::appendElement(output, *element);
     return;
