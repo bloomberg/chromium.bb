@@ -135,7 +135,6 @@ source_set("chromeos") {
     "//ui/views/controls/webview",
     "//ui/web_dialogs",
     "//url",
-    "//v8",
   ]
 
   data_deps = [
