@@ -20,6 +20,10 @@
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "aom/aom_integer.h"
 
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#define WARP_NEIGHBORS_WITH_OBMC 0
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1877,7 +1877,8 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                   4);
 
 #if CONFIG_WARPED_MOTION
-      if (above_mbmi->motion_mode == WARPED_CAUSAL) {
+      if (above_mbmi->motion_mode == WARPED_CAUSAL &&
+          WARP_NEIGHBORS_WITH_OBMC) {
         assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                                  0, cm->global_motion,
@@ -1981,7 +1982,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
 #if CONFIG_WARPED_MOTION
-      if (left_mbmi->motion_mode == WARPED_CAUSAL) {
+      if (left_mbmi->motion_mode == WARPED_CAUSAL && WARP_NEIGHBORS_WITH_OBMC) {
         assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                                  0, cm->global_motion,
@@ -2156,7 +2157,7 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
           }
       } else {
 #if CONFIG_WARPED_MOTION
-        if (mbmi->motion_mode == WARPED_CAUSAL) {
+        if (mbmi->motion_mode == WARPED_CAUSAL && WARP_NEIGHBORS_WITH_OBMC) {
           assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                                    0, cm->global_motion,
@@ -2287,7 +2288,7 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
           }
       } else {
 #if CONFIG_WARPED_MOTION
-        if (mbmi->motion_mode == WARPED_CAUSAL) {
+        if (mbmi->motion_mode == WARPED_CAUSAL && WARP_NEIGHBORS_WITH_OBMC) {
           assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                                    0, cm->global_motion,
