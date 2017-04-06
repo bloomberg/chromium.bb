@@ -124,12 +124,14 @@ ContentDecryptionModule::MessageType GetMessageType(RequestType request_type) {
   return ContentDecryptionModule::LICENSE_REQUEST;
 }
 
-CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status) {
+CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status,
+                                              bool is_key_release) {
   switch (key_status) {
     case KeyStatus::KEY_STATUS_USABLE:
       return CdmKeyInformation::USABLE;
     case KeyStatus::KEY_STATUS_EXPIRED:
-      return CdmKeyInformation::EXPIRED;
+      return is_key_release ? CdmKeyInformation::RELEASED
+                            : CdmKeyInformation::EXPIRED;
     case KeyStatus::KEY_STATUS_OUTPUT_NOT_ALLOWED:
       return CdmKeyInformation::OUTPUT_RESTRICTED;
     case KeyStatus::KEY_STATUS_PENDING:
@@ -256,6 +258,13 @@ bool AreMediaDrmApisAvailable() {
   return true;
 }
 
+bool IsPersistentLicenseTypeSupportedByMediaDrm() {
+  return MediaDrmBridge::IsAvailable() &&
+         // In development. See http://crbug.com/493521
+         base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
+         base::android::BuildInfo::GetInstance()->sdk_int() >= 23;
+}
+
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
@@ -281,15 +290,9 @@ bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
 // static
 bool MediaDrmBridge::IsPersistentLicenseTypeSupported(
     const std::string& key_system) {
-  if (!MediaDrmBridge::IsAvailable())
-    return false;
-
-  if (!base::FeatureList::IsEnabled(kMediaDrmPersistentLicense)) {
-    return false;
-  }
-
-  NOTIMPLEMENTED() << "In development. See http://crbug.com/493521";
-  return false;
+  // TODO(yucliu): Check |key_system| if persistent license is supported by
+  // MediaDrm.
+  return IsPersistentLicenseTypeSupportedByMediaDrm();
 }
 
 // static
@@ -460,11 +463,20 @@ void MediaDrmBridge::LoadSession(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  DCHECK(base::FeatureList::IsEnabled(kMediaDrmPersistentLicense));
+  DCHECK(IsPersistentLicenseTypeSupportedByMediaDrm());
 
-  NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                  "LoadSession() is not supported.");
+  if (session_type != CdmSessionType::PERSISTENT_LICENSE_SESSION) {
+    promise->reject(
+        CdmPromise::NOT_SUPPORTED_ERROR, 0,
+        "LoadSession() is only supported for 'persistent-license'.");
+    return;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_session_id =
+      StringToJavaBytes(env, session_id);
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  Java_MediaDrmBridge_loadSession(env, j_media_drm_, j_session_id, promise_id);
 }
 
 void MediaDrmBridge::UpdateSession(
@@ -477,9 +489,8 @@ void MediaDrmBridge::UpdateSession(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_response =
       base::android::ToJavaByteArray(env, response.data(), response.size());
-  ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8_t*>(session_id.data()),
-      session_id.size());
+  ScopedJavaLocalRef<jbyteArray> j_session_id =
+      StringToJavaBytes(env, session_id);
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   Java_MediaDrmBridge_updateSession(env, j_media_drm_, j_session_id, j_response,
                                     promise_id);
@@ -492,9 +503,8 @@ void MediaDrmBridge::CloseSession(
   DVLOG(2) << __func__;
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8_t*>(session_id.data()),
-      session_id.size());
+  ScopedJavaLocalRef<jbyteArray> j_session_id =
+      StringToJavaBytes(env, session_id);
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   Java_MediaDrmBridge_closeSession(env, j_media_drm_, j_session_id, promise_id);
 }
@@ -505,9 +515,12 @@ void MediaDrmBridge::RemoveSession(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
-  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                  "RemoveSession() is not supported.");
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_session_id =
+      StringToJavaBytes(env, session_id);
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  Java_MediaDrmBridge_removeSession(env, j_media_drm_, j_session_id,
+                                    promise_id);
 }
 
 CdmContext* MediaDrmBridge::GetCdmContext() {
@@ -698,7 +711,8 @@ void MediaDrmBridge::OnSessionKeysChange(
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jbyteArray>& j_session_id,
     const JavaParamRef<jobjectArray>& j_keys_info,
-    bool has_additional_usable_key) {
+    bool has_additional_usable_key,
+    bool is_key_release) {
   DVLOG(2) << __func__;
 
   CdmKeysInfo cdm_keys_info;
@@ -718,7 +732,7 @@ void MediaDrmBridge::OnSessionKeysChange(
 
     jint j_status_code = Java_KeyStatus_getStatusCode(env, j_key_status);
     CdmKeyInformation::KeyStatus key_status =
-        ConvertKeyStatus(static_cast<KeyStatus>(j_status_code));
+        ConvertKeyStatus(static_cast<KeyStatus>(j_status_code), is_key_release);
 
     DVLOG(2) << __func__ << "Key status change: "
              << base::HexEncode(&key_id[0], key_id.size()) << ", "
@@ -916,8 +930,7 @@ void MediaDrmBridge::ProcessProvisionResponse(bool success,
 
   JNIEnv* env = AttachCurrentThread();
 
-  ScopedJavaLocalRef<jbyteArray> j_response = base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8_t*>(response.data()), response.size());
+  ScopedJavaLocalRef<jbyteArray> j_response = StringToJavaBytes(env, response);
 
   Java_MediaDrmBridge_processProvisionResponse(env, j_media_drm_, success,
                                                j_response);

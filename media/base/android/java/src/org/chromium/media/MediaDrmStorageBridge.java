@@ -42,6 +42,18 @@ class MediaDrmStorageBridge {
             mKeySetId = keySetId;
             mMimeType = mime;
         }
+
+        byte[] emeId() {
+            return mEmeId;
+        }
+
+        byte[] keySetId() {
+            return mKeySetId;
+        }
+
+        String mimeType() {
+            return mMimeType;
+        }
     }
 
     MediaDrmStorageBridge(long nativeMediaDrmStorageBridge) {

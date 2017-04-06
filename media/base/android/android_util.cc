@@ -18,6 +18,13 @@ std::string JavaBytesToString(JNIEnv* env, jbyteArray j_byte_array) {
   return std::string(byte_vector.begin(), byte_vector.end());
 }
 
+base::android::ScopedJavaLocalRef<jbyteArray> StringToJavaBytes(
+    JNIEnv* env,
+    const std::string& str) {
+  return base::android::ToJavaByteArray(
+      env, reinterpret_cast<const uint8_t*>(str.data()), str.size());
+}
+
 JavaObjectPtr CreateJavaObjectPtr(jobject object) {
   JavaObjectPtr j_object_ptr(new base::android::ScopedJavaGlobalRef<jobject>());
   j_object_ptr->Reset(base::android::AttachCurrentThread(), object);

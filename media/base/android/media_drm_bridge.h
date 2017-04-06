@@ -214,12 +214,17 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const base::android::JavaParamRef<jobject>& j_media_drm,
       const base::android::JavaParamRef<jbyteArray>& j_session_id);
 
+  // Called when key statuses of session are changed. |is_key_release| is set to
+  // true when releasing keys. Some of the MediaDrm key status codes should be
+  // mapped to CDM key status differently (e.g. EXPIRE -> RELEASED).
   void OnSessionKeysChange(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_media_drm,
       const base::android::JavaParamRef<jbyteArray>& j_session_id,
+      // List<KeyStatus>
       const base::android::JavaParamRef<jobjectArray>& j_keys_info,
-      bool has_additional_usable_key);
+      bool has_additional_usable_key,
+      bool is_key_release);
 
   // |expiry_time_ms| is the new expiration time for the keys in the session.
   // The time is in milliseconds, relative to the Unix epoch. A time of 0

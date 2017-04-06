@@ -87,6 +87,13 @@ class MediaDrmSessionManager {
             return new SessionId(drmId, drmId, null /* keySetId */);
         }
 
+        /**
+         * Create session ID used to report session doesn't exist.
+         */
+        static SessionId createNoExistSessionId() {
+            return createTemporarySessionId(new byte[0]);
+        }
+
         private SessionId(byte[] emeId, byte[] drmId, byte[] keySetId) {
             assert emeId != null;
             assert drmId != null || keySetId != null;
@@ -165,6 +172,16 @@ class MediaDrmSessionManager {
 
             return new PersistentInfo(mSessionId.emeId(), mSessionId.keySetId(), mMimeType);
         }
+
+        private static SessionInfo fromPersistentInfo(PersistentInfo persistentInfo) {
+            assert persistentInfo != null;
+            assert persistentInfo.emeId() != null;
+            assert persistentInfo.keySetId() != null;
+
+            SessionId sessionId = new SessionId(
+                    persistentInfo.emeId(), null /* drmId */, persistentInfo.keySetId());
+            return new SessionInfo(sessionId, persistentInfo.mimeType(), MediaDrm.KEY_TYPE_OFFLINE);
+        }
     }
 
     // Maps from DRM/EME session ID to SessionInfo. SessionInfo contains
@@ -189,6 +206,20 @@ class MediaDrmSessionManager {
     }
 
     /**
+     * Set drm ID. It should only be called for persistent license session
+     * without an opened drm session.
+     */
+    void setDrmId(SessionId sessionId, byte[] drmId) {
+        SessionInfo info = get(sessionId);
+
+        assert info != null;
+        assert info.sessionId().isEqual(sessionId);
+
+        sessionId.setDrmId(drmId);
+        mDrmSessionInfoMap.put(ByteBuffer.wrap(drmId), info);
+    }
+
+    /**
      * Set key set ID. It should only be called for persistent license session.
      */
     void setKeySetId(SessionId sessionId, byte[] keySetId, Callback<Boolean> callback) {
@@ -199,6 +230,50 @@ class MediaDrmSessionManager {
         sessionId.setKeySetId(keySetId);
 
         mStorage.saveInfo(get(sessionId).toPersistentInfo(), callback);
+    }
+
+    /**
+     * Mark key as released. It should only be called for persistent license
+     * session.
+     */
+    void markKeyReleased(SessionId sessionId) {
+        SessionInfo info = get(sessionId);
+
+        assert info != null;
+        assert info.keyType() == MediaDrm.KEY_TYPE_OFFLINE;
+
+        info.setKeyType(MediaDrm.KEY_TYPE_RELEASE);
+    }
+
+    /**
+     * Load |emeId|'s session data from persistent storage.
+     */
+    void load(byte[] emeId, final Callback<SessionId> callback) {
+        mStorage.loadInfo(emeId, new Callback<PersistentInfo>() {
+            @Override
+            public void onResult(PersistentInfo persistentInfo) {
+                if (persistentInfo == null) {
+                    callback.onResult(null);
+                    return;
+                }
+
+                // Loading same persistent license into different sessions isn't
+                // supported.
+                assert getSessionIdByEmeId(persistentInfo.emeId()) == null;
+
+                SessionInfo info = SessionInfo.fromPersistentInfo(persistentInfo);
+                mEmeSessionInfoMap.put(ByteBuffer.wrap(persistentInfo.emeId()), info);
+                callback.onResult(info.sessionId());
+            }
+        });
+    }
+
+    /**
+     * Remove persistent license info from persistent storage.
+     */
+    void clearPersistentSessionInfo(SessionId sessionId, Callback<Boolean> callback) {
+        sessionId.setKeySetId(null);
+        mStorage.clearInfo(sessionId.emeId(), callback);
     }
 
     /**

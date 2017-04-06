@@ -15,6 +15,11 @@ using JavaObjectPtr =
 // Converts jbyteArray (byte[] in Java) into std::string.
 std::string JavaBytesToString(JNIEnv* env, jbyteArray j_byte_array);
 
+// Converts std::string to jbyteArray (byte[] in Java).
+base::android::ScopedJavaLocalRef<jbyteArray> StringToJavaBytes(
+    JNIEnv* env,
+    const std::string& str);
+
 // A helper method to create a JavaObjectPtr.
 JavaObjectPtr CreateJavaObjectPtr(jobject object);
 
