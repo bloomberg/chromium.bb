@@ -20,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -166,8 +167,40 @@ void GoogleURLTracker::StartFetchIfDesirable() {
     return;
 
   already_fetched_ = true;
-  fetcher_ = net::URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
-                                     net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("google_url_tracker", R"(
+        semantics {
+          sender: "Google URL Tracker"
+          description:
+            "When the user's default search engine is Google, or Google "
+            "services are used to resolve navigation errors, the browser needs "
+            "to know the ideal origin for requests to Google services. In "
+            "these cases the browser makes a request to a global Google "
+            "service that returns this origin, potentially taking into account "
+            "the user's cookies or IP address."
+          trigger: "Browser startup or network change."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "To disable this check, users can change the default search engine "
+            "to something other than Google, and disable 'Use a web service to "
+            "help resolve navigation errors' in Chromium's settings under "
+            "Privacy.\nAlternately, running Chromium with "
+            "--google-base-url=\"https://www.google.com/\" will disable this, "
+            "and force Chromium to use the specified URL for Google service "
+            "requests.\nFinally, running Chromium with "
+            "--disable-background-networking will disable this, as well as "
+            "various other features that make network requests automatically."
+          policy_exception_justification:
+            "Not implemented."
+        })");
+  fetcher_ =
+      net::URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
+                              net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(),
       data_use_measurement::DataUseUserData::GOOGLE_URL_TRACKER);
