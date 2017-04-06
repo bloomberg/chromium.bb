@@ -458,14 +458,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     //  time the prepare a script algorithm started."
     m_pendingScript = PendingScript::create(m_element.get(), m_resource.get());
     m_asyncExecType = ScriptRunner::Async;
-    LocalFrame* frame = m_element->document().frame();
-    if (frame) {
-      ScriptState* scriptState = toScriptStateForMainWorld(frame);
-      if (scriptState)
-        ScriptStreamer::startStreaming(
-            m_pendingScript.get(), ScriptStreamer::Async, frame->settings(),
-            scriptState, frame->frameScheduler()->loadingTaskRunner());
-    }
+    m_pendingScript->startStreamingIfPossible(&m_element->document(),
+                                              ScriptStreamer::Async);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     contextDocument->scriptRunner()->queueScriptForExecution(this,

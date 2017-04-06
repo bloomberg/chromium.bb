@@ -104,6 +104,7 @@ class CORE_EXPORT PendingScript final
   bool isReady() const;
   bool errorOccurred() const;
 
+  void startStreamingIfPossible(Document*, ScriptStreamer::Type);
   void dispose();
 
  private:

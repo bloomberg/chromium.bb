@@ -26,7 +26,12 @@
 #include "core/dom/PendingScript.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "core/dom/Document.h"
 #include "core/dom/ScriptElementBase.h"
+#include "core/dom/TaskRunnerHelper.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/CurrentTime.h"
@@ -271,6 +276,21 @@ void PendingScript::onPurgeMemory() {
     return;
   m_streamer->cancel();
   m_streamer = nullptr;
+}
+
+void PendingScript::startStreamingIfPossible(
+    Document* document,
+    ScriptStreamer::Type streamerType) {
+  if (!document->frame())
+    return;
+
+  ScriptState* scriptState = toScriptStateForMainWorld(document->frame());
+  if (!scriptState)
+    return;
+
+  ScriptStreamer::startStreaming(
+      this, streamerType, document->frame()->settings(), scriptState,
+      TaskRunnerHelper::get(TaskType::Networking, document));
 }
 
 }  // namespace blink

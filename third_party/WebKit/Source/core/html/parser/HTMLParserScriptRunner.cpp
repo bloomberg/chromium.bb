@@ -554,16 +554,8 @@ void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
   // Callers will attempt to run the m_parserBlockingScript if possible before
   // returning control to the parser.
   if (!parserBlockingScript()->isReady()) {
-    if (m_document->frame()) {
-      ScriptState* scriptState = toScriptStateForMainWorld(m_document->frame());
-      if (scriptState) {
-        ScriptStreamer::startStreaming(
-            m_parserBlockingScript, ScriptStreamer::ParsingBlocking,
-            m_document->frame()->settings(), scriptState,
-            TaskRunnerHelper::get(TaskType::Networking, m_document));
-      }
-    }
-
+    m_parserBlockingScript->startStreamingIfPossible(
+        m_document, ScriptStreamer::ParsingBlocking);
     m_parserBlockingScript->watchForLoad(this);
   }
 }
@@ -574,14 +566,9 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
   if (!pendingScript)
     return;
 
-  if (m_document->frame() && !pendingScript->isReady()) {
-    ScriptState* scriptState = toScriptStateForMainWorld(m_document->frame());
-    if (scriptState) {
-      ScriptStreamer::startStreaming(
-          pendingScript, ScriptStreamer::Deferred,
-          m_document->frame()->settings(), scriptState,
-          TaskRunnerHelper::get(TaskType::Networking, m_document));
-    }
+  if (!pendingScript->isReady()) {
+    pendingScript->startStreamingIfPossible(m_document,
+                                            ScriptStreamer::Deferred);
   }
 
   DCHECK(pendingScript->resource());
