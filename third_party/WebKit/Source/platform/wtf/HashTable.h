@@ -729,18 +729,18 @@ class HashTable final
   void reserveCapacityForSize(unsigned size);
 
   template <typename IncomingValueType>
-  AddResult add(IncomingValueType&& value) {
-    return add<IdentityTranslatorType>(Extractor::extract(value),
-                                       std::forward<IncomingValueType>(value));
+  AddResult insert(IncomingValueType&& value) {
+    return insert<IdentityTranslatorType>(
+        Extractor::extract(value), std::forward<IncomingValueType>(value));
   }
 
-  // A special version of add() that finds the object by hashing and comparing
-  // with some other type, to avoid the cost of type conversion if the object
-  // is already in the table.
+  // A special version of insert() that finds the object by hashing and
+  // comparing with some other type, to avoid the cost of type conversion if the
+  // object is already in the table.
   template <typename HashTranslator, typename T, typename Extra>
-  AddResult add(T&& key, Extra&&);
+  AddResult insert(T&& key, Extra&&);
   template <typename HashTranslator, typename T, typename Extra>
-  AddResult addPassingHashCode(T&& key, Extra&&);
+  AddResult insertPassingHashCode(T&& key, Extra&&);
 
   iterator find(KeyPeekInType key) { return find<IdentityTranslatorType>(key); }
   const_iterator find(KeyPeekInType key) const {
@@ -1229,7 +1229,7 @@ typename HashTable<Key,
                    KeyTraits,
                    Allocator>::AddResult
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    add(T&& key, Extra&& extra) {
+    insert(T&& key, Extra&& extra) {
   DCHECK(!accessForbidden());
   DCHECK(Allocator::isAllocationAllowed());
   if (!m_table)
@@ -1325,7 +1325,7 @@ typename HashTable<Key,
                    KeyTraits,
                    Allocator>::AddResult
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    addPassingHashCode(T&& key, Extra&& extra) {
+    insertPassingHashCode(T&& key, Extra&& extra) {
   DCHECK(!accessForbidden());
   DCHECK(Allocator::isAllocationAllowed());
   if (!m_table)
@@ -1833,7 +1833,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   // table.  It might be more efficient to copy the table slots, but it's not
   // clear that efficiency is needed.
   for (const auto& element : other)
-    add(element);
+    insert(element);
 }
 
 template <typename Key,

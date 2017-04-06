@@ -284,7 +284,7 @@ class LinkedHashSet {
                          IncomingValueType&& newValue);
   template <typename IncomingValueType>
   AddResult insertBefore(iterator it, IncomingValueType&& newValue) {
-    return m_impl.template add<NodeHashFunctions>(
+    return m_impl.template insert<NodeHashFunctions>(
         std::forward<IncomingValueType>(newValue), it.getNode());
   }
 
@@ -814,7 +814,7 @@ template <typename IncomingValueType>
 typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult
 LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
     IncomingValueType&& value) {
-  return m_impl.template add<NodeHashFunctions>(
+  return m_impl.template insert<NodeHashFunctions>(
       std::forward<IncomingValueType>(value), &m_anchor);
 }
 
@@ -822,8 +822,9 @@ template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
 typename LinkedHashSet<T, U, V, W>::iterator
 LinkedHashSet<T, U, V, W>::addReturnIterator(IncomingValueType&& value) {
-  typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(
-      std::forward<IncomingValueType>(value), &m_anchor);
+  typename ImplType::AddResult result =
+      m_impl.template insert<NodeHashFunctions>(
+          std::forward<IncomingValueType>(value), &m_anchor);
   return makeIterator(result.storedValue);
 }
 
@@ -831,8 +832,9 @@ template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
 typename LinkedHashSet<T, U, V, W>::AddResult
 LinkedHashSet<T, U, V, W>::appendOrMoveToLast(IncomingValueType&& value) {
-  typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(
-      std::forward<IncomingValueType>(value), &m_anchor);
+  typename ImplType::AddResult result =
+      m_impl.template insert<NodeHashFunctions>(
+          std::forward<IncomingValueType>(value), &m_anchor);
   Node* node = result.storedValue;
   if (!result.isNewEntry) {
     node->unlink();
@@ -845,8 +847,9 @@ template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
 typename LinkedHashSet<T, U, V, W>::AddResult
 LinkedHashSet<T, U, V, W>::prependOrMoveToFirst(IncomingValueType&& value) {
-  typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(
-      std::forward<IncomingValueType>(value), m_anchor.m_next);
+  typename ImplType::AddResult result =
+      m_impl.template insert<NodeHashFunctions>(
+          std::forward<IncomingValueType>(value), m_anchor.m_next);
   Node* node = result.storedValue;
   if (!result.isNewEntry) {
     node->unlink();

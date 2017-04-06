@@ -922,7 +922,7 @@ ListHashSet<T, inlineCapacity, U, V>::insert(IncomingValueType&& value) {
   // because it lets it take lvalues by reference, but for our purposes it's
   // inconvenient, since it constrains us to be const, whereas the allocator
   // actually changes when it does allocations.
-  auto result = m_impl.template add<BaseTranslator>(
+  auto result = m_impl.template insert<BaseTranslator>(
       std::forward<IncomingValueType>(value), *this->getAllocator());
   if (result.isNewEntry)
     appendNode(*result.storedValue);
@@ -943,7 +943,7 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult
 ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(
     IncomingValueType&& value) {
   createAllocatorIfNeeded();
-  auto result = m_impl.template add<BaseTranslator>(
+  auto result = m_impl.template insert<BaseTranslator>(
       std::forward<IncomingValueType>(value), *this->getAllocator());
   Node* node = *result.storedValue;
   if (!result.isNewEntry)
@@ -958,7 +958,7 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult
 ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(
     IncomingValueType&& value) {
   createAllocatorIfNeeded();
-  auto result = m_impl.template add<BaseTranslator>(
+  auto result = m_impl.template insert<BaseTranslator>(
       std::forward<IncomingValueType>(value), *this->getAllocator());
   Node* node = *result.storedValue;
   if (!result.isNewEntry)
@@ -974,7 +974,7 @@ ListHashSet<T, inlineCapacity, U, V>::insertBefore(
     iterator it,
     IncomingValueType&& newValue) {
   createAllocatorIfNeeded();
-  auto result = m_impl.template add<BaseTranslator>(
+  auto result = m_impl.template insert<BaseTranslator>(
       std::forward<IncomingValueType>(newValue), *this->getAllocator());
   if (result.isNewEntry)
     insertNodeBefore(it.getNode(), *result.storedValue);

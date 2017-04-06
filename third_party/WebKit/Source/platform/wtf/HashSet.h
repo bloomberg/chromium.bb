@@ -254,7 +254,7 @@ template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
 inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::insert(
     IncomingValueType&& value) {
-  return m_impl.add(std::forward<IncomingValueType>(value));
+  return m_impl.insert(std::forward<IncomingValueType>(value));
 }
 
 template <typename Value,
@@ -267,7 +267,7 @@ HashSet<Value, HashFunctions, Traits, Allocator>::addWithTranslator(T&& value) {
   // Forward only the first argument, because the second argument isn't actually
   // used in HashSetTranslatorAdapter.
   return m_impl
-      .template addPassingHashCode<HashSetTranslatorAdapter<HashTranslator>>(
+      .template insertPassingHashCode<HashSetTranslatorAdapter<HashTranslator>>(
           std::forward<T>(value), value);
 }
 

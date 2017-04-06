@@ -523,7 +523,7 @@ template <typename IncomingKeyType, typename IncomingMappedType>
 typename HashMap<T, U, V, W, X, Y>::AddResult
 HashMap<T, U, V, W, X, Y>::inlineAdd(IncomingKeyType&& key,
                                      IncomingMappedType&& mapped) {
-  return m_impl.template add<HashMapTranslator<ValueTraits, HashFunctions>>(
+  return m_impl.template insert<HashMapTranslator<ValueTraits, HashFunctions>>(
       std::forward<IncomingKeyType>(key),
       std::forward<IncomingMappedType>(mapped));
 }
