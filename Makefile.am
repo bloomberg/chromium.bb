@@ -219,7 +219,11 @@ libsession_helper_la_SOURCES =			\
 	libweston/launcher-weston-launch.c	\
 	libweston/launcher-direct.c
 libsession_helper_la_CFLAGS = $(AM_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS) $(COMPOSITOR_CFLAGS)
-libsession_helper_la_LIBADD = libweston-@LIBWESTON_MAJOR@.la $(LIBDRM_LIBS)
+libsession_helper_la_LIBADD = libweston-@LIBWESTON_MAJOR@.la
+
+if ENABLE_DRM_COMPOSITOR
+libsession_helper_la_LIBADD += $(LIBDRM_LIBS)
+endif
 
 if ENABLE_DBUS
 if HAVE_SYSTEMD_LOGIN
@@ -252,7 +256,11 @@ weston_launch_CFLAGS=				\
 	$(PAM_CFLAGS)				\
 	$(SYSTEMD_LOGIN_CFLAGS)			\
 	$(LIBDRM_CFLAGS)
-weston_launch_LDADD = $(PAM_LIBS) $(SYSTEMD_LOGIN_LIBS) $(LIBDRM_LIBS)
+weston_launch_LDADD = $(PAM_LIBS) $(SYSTEMD_LOGIN_LIBS)
+
+if ENABLE_DRM_COMPOSITOR
+weston_launch_LDADD += $(LIBDRM_LIBS)
+endif
 
 if ENABLE_SETUID_INSTALL
 install-exec-hook:
