@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/custom_button.h"
 
 class Profile;
 
@@ -23,16 +23,18 @@ class Label;
 }
 
 // KeywordHintView is used by the location bar view to display a hint to the
-// user when the selected url has a corresponding keyword.
+// user that pressing Tab will enter tab to search mode. The view is also
+// clickable, which has the same effect as pressing tab.
 //
 // Internally KeywordHintView uses two labels to render the text, and draws
 // the tab image itself.
 //
 // NOTE: This should really be called LocationBarKeywordHintView, but I
 // couldn't bring myself to use such a long name.
-class KeywordHintView : public views::View {
+class KeywordHintView : public views::CustomButton {
  public:
-  KeywordHintView(Profile* profile,
+  KeywordHintView(views::ButtonListener* listener,
+                  Profile* profile,
                   const gfx::FontList& font_list,
                   const gfx::FontList& bubble_font_list,
                   int tab_key_height,

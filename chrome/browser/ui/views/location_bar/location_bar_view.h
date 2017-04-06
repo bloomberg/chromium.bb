@@ -27,6 +27,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 
 class CommandUpdater;
@@ -67,7 +68,8 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
-                        public zoom::ZoomEventManagerObserver {
+                        public zoom::ZoomEventManagerObserver,
+                        public views::ButtonListener {
  public:
   class Delegate {
    public:
@@ -235,6 +237,9 @@ class LocationBarView : public LocationBar,
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   using ContentSettingViews = std::vector<ContentSettingImageView*>;

@@ -43,6 +43,8 @@ enum class KeywordModeEntryMethod {
   SPACE_IN_MIDDLE = 2,
   KEYBOARD_SHORTCUT = 3,
   QUESTION_MARK = 4,
+  CLICK_ON_VIEW = 5,
+  TAP_ON_VIEW = 6,
   NUM_ITEMS,
 };
 

@@ -54,13 +54,15 @@ gfx::Size TabKeyBubbleView::GetPreferredSize() const {
 
 }  // namespace
 
-KeywordHintView::KeywordHintView(Profile* profile,
+KeywordHintView::KeywordHintView(views::ButtonListener* listener,
+                                 Profile* profile,
                                  const gfx::FontList& font_list,
                                  const gfx::FontList& bubble_font_list,
                                  int bubble_height,
                                  SkColor text_color,
                                  SkColor background_color)
-    : profile_(profile),
+    : CustomButton(listener),
+      profile_(profile),
       leading_label_(nullptr),
       tab_key_view_(nullptr),
       trailing_label_(nullptr),

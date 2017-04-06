@@ -213,7 +213,7 @@ void LocationBarView::Init() {
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
   keyword_hint_view_ = new KeywordHintView(
-      profile(), font_list, bubble_font_list, location_height,
+      this, profile(), font_list, bubble_font_list, location_height,
       GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
   AddChildView(keyword_hint_view_);
 
@@ -707,6 +707,15 @@ bool LocationBarView::RefreshZoomView() {
 
 void LocationBarView::OnDefaultZoomLevelChanged() {
   RefreshZoomView();
+}
+
+void LocationBarView::ButtonPressed(views::Button* sender,
+                                    const ui::Event& event) {
+  DCHECK_EQ(keyword_hint_view_, sender);
+  DCHECK(event.IsMouseEvent() || event.IsGestureEvent());
+  omnibox_view_->model()->AcceptKeyword(
+      event.IsMouseEvent() ? KeywordModeEntryMethod::CLICK_ON_VIEW
+                           : KeywordModeEntryMethod::TAP_ON_VIEW);
 }
 
 bool LocationBarView::RefreshSaveCreditCardIconView() {
