@@ -12,7 +12,7 @@
 
 namespace blink {
 namespace {
-const UChar32 kInvalidCodePoint = WTF::Unicode::kMaxCodepoint + 1;
+const UChar32 kUnsetCodePoint = WTF::Unicode::kMaxCodepoint + 1;
 }  // namespace
 
 #define FOR_EACH_FORWARD_GRAPHEME_BOUNDARY_STATE(V)                    \
@@ -52,12 +52,12 @@ std::ostream& operator<<(
 }
 
 ForwardGraphemeBoundaryStateMachine::ForwardGraphemeBoundaryStateMachine()
-    : m_prevCodePoint(kInvalidCodePoint),
+    : m_prevCodePoint(kUnsetCodePoint),
       m_internalState(InternalState::CountRIS) {}
 
 TextSegmentationMachineState
 ForwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit) {
-  DCHECK_EQ(m_prevCodePoint, kInvalidCodePoint);
+  DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
   DCHECK_EQ(m_boundaryOffset, 0);
   switch (m_internalState) {
     case InternalState::CountRIS:
@@ -106,7 +106,7 @@ ForwardGraphemeBoundaryStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
                    << " is returned. InternalState: " << m_internalState;
       return finish();
     case InternalState::StartForward:
-      DCHECK_EQ(m_prevCodePoint, kInvalidCodePoint);
+      DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
       DCHECK_EQ(m_boundaryOffset, 0);
       DCHECK_EQ(m_pendingCodeUnit, 0);
       if (U16_IS_TRAIL(codeUnit)) {
@@ -122,7 +122,7 @@ ForwardGraphemeBoundaryStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
       m_boundaryOffset = 1;
       return moveToNextState(InternalState::Search);
     case InternalState::StartForwardWaitTrailSurrgate:
-      DCHECK_EQ(m_prevCodePoint, kInvalidCodePoint);
+      DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
       DCHECK_EQ(m_boundaryOffset, 0);
       DCHECK_NE(m_pendingCodeUnit, 0);
       if (U16_IS_TRAIL(codeUnit)) {
@@ -135,7 +135,7 @@ ForwardGraphemeBoundaryStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
       m_boundaryOffset = 1;
       return finish();
     case InternalState::Search:
-      DCHECK_NE(m_prevCodePoint, kInvalidCodePoint);
+      DCHECK_NE(m_prevCodePoint, kUnsetCodePoint);
       DCHECK_NE(m_boundaryOffset, 0);
       DCHECK_EQ(m_pendingCodeUnit, 0);
       if (U16_IS_LEAD(codeUnit)) {
@@ -150,7 +150,7 @@ ForwardGraphemeBoundaryStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
       m_boundaryOffset += 1;
       return staySameState();
     case InternalState::SearchWaitTrailSurrogate:
-      DCHECK_NE(m_prevCodePoint, kInvalidCodePoint);
+      DCHECK_NE(m_prevCodePoint, kUnsetCodePoint);
       DCHECK_NE(m_boundaryOffset, 0);
       DCHECK_NE(m_pendingCodeUnit, 0);
       if (!U16_IS_TRAIL(codeUnit))
@@ -209,7 +209,7 @@ void ForwardGraphemeBoundaryStateMachine::reset() {
   m_pendingCodeUnit = 0;
   m_boundaryOffset = 0;
   m_precedingRISCount = 0;
-  m_prevCodePoint = kInvalidCodePoint;
+  m_prevCodePoint = kUnsetCodePoint;
   m_internalState = InternalState::CountRIS;
 }
 
