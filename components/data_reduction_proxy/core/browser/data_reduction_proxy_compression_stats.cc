@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -20,6 +21,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
 #include "components/data_reduction_proxy/core/browser/data_use_group.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
@@ -367,6 +369,14 @@ void DataReductionProxyCompressionStats::Init() {
       base::Bind(
           &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
           weak_factory_.GetWeakPtr()));
+
+  if (!base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown)) {
+    // If the user is moved out of the experiment make sure that data usage
+    // reporting is not enabled and the map is cleared.
+    SetDataUsageReportingEnabled(false);
+    DeleteHistoricalDataUsage();
+  }
+
   if (data_usage_reporting_enabled_.GetValue()) {
     current_data_usage_load_status_ = LOADING;
     service_->LoadCurrentDataUsageBucket(base::Bind(
@@ -679,6 +689,15 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
   data_usage_map_last_updated_ =
       base::Time::FromInternalValue(data_usage->last_updated_timestamp());
   current_data_usage_load_status_ = LOADED;
+}
+
+void DataReductionProxyCompressionStats::SetDataUsageReportingEnabled(
+    bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (data_usage_reporting_enabled_.GetValue() != enabled) {
+    data_usage_reporting_enabled_.SetValue(enabled);
+    OnDataUsageReportingPrefChanged();
+  }
 }
 
 void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
@@ -1195,6 +1214,7 @@ void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
 void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     const HistoricalDataUsageCallback& get_data_usage_callback,
     const base::Time& now) {
+#if !defined(OS_ANDROID)
   if (current_data_usage_load_status_ != LOADED) {
     // If current data usage has not yet loaded, we return an empty array. The
     // extension can retry after a slight delay.
@@ -1204,10 +1224,13 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
         base::MakeUnique<std::vector<DataUsageBucket>>());
     return;
   }
+#endif
 
-  PersistDataUsage();
+  if (current_data_usage_load_status_ == LOADED)
+    PersistDataUsage();
 
-  if (!DataUsageStore::AreInSameInterval(data_usage_map_last_updated_, now)) {
+  if (!data_usage_map_last_updated_.is_null() &&
+      !DataUsageStore::AreInSameInterval(data_usage_map_last_updated_, now)) {
     data_usage_map_.clear();
     data_usage_map_last_updated_ = base::Time();
 
@@ -1229,7 +1252,19 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
           weak_factory_.GetWeakPtr()));
     }
   } else {
+// Don't delete the historical data on Android, but clear the map.
+#if defined(OS_ANDROID)
+    DCHECK(current_data_usage_load_status_ != LOADING);
+
+    if (current_data_usage_load_status_ == LOADED)
+      PersistDataUsage();
+
+    data_usage_map_.clear();
+    data_usage_map_last_updated_ = base::Time();
+    data_usage_map_is_dirty_ = false;
+#else
     DeleteHistoricalDataUsage();
+#endif
     current_data_usage_load_status_ = NOT_LOADED;
   }
 }

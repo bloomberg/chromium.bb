@@ -12,5 +12,9 @@ namespace features {
 const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the site breakdown on the Data Reduction Proxy settings page.
+const base::Feature kDataReductionSiteBreakdown{
+    "DataReductionProxySiteBreakdown", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy

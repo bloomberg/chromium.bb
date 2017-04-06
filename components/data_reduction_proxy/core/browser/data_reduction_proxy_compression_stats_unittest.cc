@@ -1120,6 +1120,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DisableDataUsageRecording) {
   DisableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
+#if !defined(OS_ANDROID)
   // Data usage on disk must be deleted.
   auto expected_data_usage1 =
       base::MakeUnique<std::vector<data_reduction_proxy::DataUsageBucket>>(
@@ -1135,6 +1136,26 @@ TEST_F(DataReductionProxyCompressionStatsTest, DisableDataUsageRecording) {
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier2)),
                          now);
+#else
+  // For Android don't delete data usage.
+  auto expected_data_usage =
+      base::MakeUnique<std::vector<data_reduction_proxy::DataUsageBucket>>(
+          kNumExpectedBuckets);
+  data_reduction_proxy::PerConnectionDataUsage* connection_usage =
+      expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
+  data_reduction_proxy::PerSiteDataUsage* site_usage =
+      connection_usage->add_site_usage();
+  site_usage->set_hostname("www.foo.com");
+  site_usage->set_data_used(1000);
+  site_usage->set_original_size(1250);
+
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
+
+  GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
+                                    base::Unretained(&verifier)),
+                         now);
+#endif
+
   base::RunLoop().RunUntilIdle();
 }
 

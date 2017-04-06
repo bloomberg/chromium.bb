@@ -21,6 +21,12 @@ namespace data_reduction_proxy {
 class DataStore;
 class DataUsageBucket;
 
+// Time interval for each DataUsageBucket.
+constexpr int kDataUsageBucketLengthInMinutes = 15;
+
+// Number of days for which to maintain data usage history.
+constexpr int kDataUsageHistoryNumDays = 60;
+
 // Store for detailed data usage stats. Data usage from every
 // |kDataUsageBucketLengthMins| interval is stored in a DataUsageBucket.
 class DataUsageStore {

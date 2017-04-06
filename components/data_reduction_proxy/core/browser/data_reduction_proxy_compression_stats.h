@@ -125,6 +125,11 @@ class DataReductionProxyCompressionStats {
   // for the last stored interval.
   void OnCurrentDataUsageLoaded(std::unique_ptr<DataUsageBucket> data_usage);
 
+  // Sets the value of |prefs::kDataUsageReportingEnabled| to |enabled|.
+  // Initializes data usage statistics in memory when pref is enabled and
+  // persists data usage to memory when pref is disabled.
+  void SetDataUsageReportingEnabled(bool enabled);
+
  private:
   // Enum to track the state of loading data usage from storage.
   enum CurrentDataUsageLoadStatus { NOT_LOADED = 0, LOADING = 1, LOADED = 2 };

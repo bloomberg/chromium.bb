@@ -1730,6 +1730,12 @@ const FeatureEntry kFeatureEntries[] = {
          data_reduction_proxy::features::kDataReductionMainMenu,
          kDataReductionMainMenuFeatureVariations,
          "DataReductionProxyMainMenu")},
+    {"enable-data-reduction-proxy-site-breakdown",
+     flag_descriptions::kEnableDataReductionProxySiteBreakdownName,
+     flag_descriptions::kEnableDataReductionProxySiteBreakdownDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         data_reduction_proxy::features::kDataReductionSiteBreakdown)},
 #endif  // OS_ANDROID
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhost,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,

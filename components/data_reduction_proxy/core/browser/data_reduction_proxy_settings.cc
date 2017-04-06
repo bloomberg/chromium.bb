@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -15,6 +16,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -103,6 +105,12 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   UpdateConfigValues();
   RecordDataReductionInit();
   data_reduction_proxy_service_->InitializeLoFiPrefs();
+
+  if (base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown) &&
+      spdy_proxy_auth_enabled_.GetValue()) {
+    data_reduction_proxy_service_->compression_stats()
+        ->SetDataUsageReportingEnabled(true);
+  }
 }
 
 void DataReductionProxySettings::OnServiceInitialized() {
@@ -139,9 +147,14 @@ bool DataReductionProxySettings::IsDataReductionProxyManaged() {
 
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(data_reduction_proxy_service_->compression_stats());
   if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
     spdy_proxy_auth_enabled_.SetValue(enabled);
     OnProxyEnabledPrefChange();
+    if (base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown)) {
+      data_reduction_proxy_service_->compression_stats()
+          ->SetDataUsageReportingEnabled(enabled);
+    }
   }
 }
 
@@ -150,6 +163,13 @@ int64_t DataReductionProxySettings::GetDataReductionLastUpdateTime() {
   DCHECK(data_reduction_proxy_service_->compression_stats());
   return
       data_reduction_proxy_service_->compression_stats()->GetLastUpdateTime();
+}
+
+void DataReductionProxySettings::ClearDataSavingStatistics() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(data_reduction_proxy_service_->compression_stats());
+  data_reduction_proxy_service_->compression_stats()
+      ->ClearDataSavingStatistics();
 }
 
 int64_t DataReductionProxySettings::GetTotalHttpContentLengthSaved() {

@@ -11,6 +11,7 @@ namespace data_reduction_proxy {
 namespace features {
 
 extern const base::Feature kDataReductionMainMenu;
+extern const base::Feature kDataReductionSiteBreakdown;
 
 }  // namespace features
 }  // namespace data_reduction_proxy

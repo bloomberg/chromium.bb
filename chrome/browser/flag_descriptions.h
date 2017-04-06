@@ -1310,6 +1310,14 @@ extern const char kEnableDataReductionProxyMainMenuName[];
 // main menu rather than under settings on Android
 extern const char kEnableDataReductionProxyMainMenuDescription[];
 
+// An about:flags experiment title to enable the site breakdown on the Data
+// Saver settings page.
+extern const char kEnableDataReductionProxySiteBreakdownName[];
+
+// Describes an about:flags experiment to enable the site breakdown on the Data
+// Saver settings page.
+extern const char kEnableDataReductionProxySiteBreakdownDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 // Name of about:flags option for LCD text.

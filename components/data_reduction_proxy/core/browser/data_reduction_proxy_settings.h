@@ -90,8 +90,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       DataReductionProxyIOData* io_data,
       std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service);
 
-  base::WeakPtr<DataReductionProxyCompressionStats> compression_stats();
-
   // Sets the |register_synthetic_field_trial_| callback and runs to register
   // the DataReductionProxyEnabled and the DataReductionProxyLoFiEnabled
   // synthetic field trial.
@@ -138,6 +136,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
   int64_t GetDataReductionLastUpdateTime();
+
+  // Clears all data saving statistics.
+  void ClearDataSavingStatistics();
 
   // Returns the difference between the total original size of all HTTP content
   // received from the network and the actual size of the HTTP content received.
