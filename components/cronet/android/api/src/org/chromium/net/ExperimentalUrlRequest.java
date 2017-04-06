@@ -6,17 +6,25 @@ package org.chromium.net;
 import java.util.concurrent.Executor;
 
 /**
- * {@link UrlRequest} that exposes experimental features. Created using
- * {@link ExperimentalUrlRequest.Builder}. Every instance of {@link UrlRequest} can
- * be casted to an instance of this class.
+ * {@link UrlRequest} that exposes experimental features. To obtain an
+ * instance of this class, cast a {@code UrlRequest} to this type. Every
+ * instance of {@code UrlRequest} can be cast to an instance of this class,
+ * as they are backed by the same implementation and hence perform identically.
+ * Instances of this class are not meant for general use, but instead only
+ * to access experimental features. Experimental features may be deprecated in the
+ * future. Use at your own risk.
  *
  * {@hide since this class exposes experimental features that should be hidden}.
  */
 public abstract class ExperimentalUrlRequest extends UrlRequest {
     /**
-     * Builder for building {@link UrlRequest}. Created by
-     * {@link ExperimentalCronetEngine#newUrlRequestBuilder}. A reference to this class
-     * can also be obtained through downcasting of {@link UrlRequest.Builder}.
+     * {@link UrlRequest#Builder} that exposes experimental features. To obtain an
+     * instance of this class, cast a {@code UrlRequest.Builder} to this type. Every
+     * instance of {@code UrlRequest.Builder} can be cast to an instance of this class,
+     * as they are backed by the same implementation and hence perform identically.
+     * Instances of this class are not meant for general use, but instead only
+     * to access experimental features. Experimental features may be deprecated in the
+     * future. Use at your own risk.
      */
     public abstract static class Builder extends UrlRequest.Builder {
         /**

@@ -5,18 +5,25 @@
 package org.chromium.net;
 
 /**
- * {@link BidirectionalStream} that exposes experimental features.
- * Created using {@link Builder}. Every instance of {@link BidirectionalStream} can be casted
- * to an instance of this class.
+ * {@link BidirectionalStream} that exposes experimental features. To obtain an
+ * instance of this class, cast a {@code BidirectionalStream} to this type. Every
+ * instance of {@code BidirectionalStream} can be cast to an instance of this class,
+ * as they are backed by the same implementation and hence perform identically.
+ * Instances of this class are not meant for general use, but instead only
+ * to access experimental features. Experimental features may be deprecated in the
+ * future. Use at your own risk.
  *
  * {@hide prototype}
  */
 public abstract class ExperimentalBidirectionalStream extends BidirectionalStream {
     /**
-     * Builder for {@link ExperimentalBidirectionalStream}s. Allows configuring stream before
-     * constructing it via {@link Builder#build}. Created by
-     * {@link ExperimentalCronetEngine#newBidirectionalStreamBuilder}. A reference to this class
-     * can also be obtained through downcasting of {@link BidirectionalStream.Builder}.
+     * {@link BidirectionalStream#Builder} that exposes experimental features. To obtain an
+     * instance of this class, cast a {@code BidirectionalStream.Builder} to this type. Every
+     * instance of {@code BidirectionalStream.Builder} can be cast to an instance of this class,
+     * as they are backed by the same implementation and hence perform identically.
+     * Instances of this class are not meant for general use, but instead only
+     * to access experimental features. Experimental features may be deprecated in the
+     * future. Use at your own risk.
      */
     public abstract static class Builder extends BidirectionalStream.Builder {
         /**
