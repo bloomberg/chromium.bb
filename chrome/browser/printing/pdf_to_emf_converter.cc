@@ -596,10 +596,7 @@ void PdfConverterUtilityProcessHostClient::SendStartMessage(
 void PdfConverterUtilityProcessHostClient::SendStopMessage() {
   Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop());
 }
-/*void PdfToPostScriptUtilityProcessHostClient::OnPageDone(bool success) {
-  PdfConverterUtilityProcessHostClient::OnPageDone(success, 0.0f);
-}
-*/
+
 // Pdf Converter Impl and subclasses
 PdfConverterImpl::PdfConverterImpl() : weak_ptr_factory_(this) {}
 
