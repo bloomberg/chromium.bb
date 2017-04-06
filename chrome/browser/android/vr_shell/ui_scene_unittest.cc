@@ -28,6 +28,14 @@ namespace vr_shell {
 
 namespace {
 
+base::TimeTicks usToTicks(uint64_t us) {
+  return base::TimeTicks::FromInternalValue(us);
+}
+
+base::TimeDelta usToDelta(uint64_t us) {
+  return base::TimeDelta::FromInternalValue(us);
+}
+
 void addElement(UiScene* scene, int id) {
   auto element = base::MakeUnique<ContentRectangle>();
   element->id = id;
@@ -41,8 +49,9 @@ void addAnimation(UiScene* scene,
   std::unique_ptr<easing::Easing> easing = base::MakeUnique<easing::Linear>();
   std::vector<float> from = {};
   std::vector<float> to = {1, 1, 1, 1};
-  auto animation = base::MakeUnique<Animation>(
-      animation_id, property, std::move(easing), from, to, 0, 1);
+  auto animation =
+      base::MakeUnique<Animation>(animation_id, property, std::move(easing),
+                                  from, to, usToTicks(0), usToDelta(1));
   scene->AddAnimation(element_id, std::move(animation));
 }
 
@@ -126,7 +135,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   const gvr::Vec3f origin({0, 0, 0});
   const gvr::Vec3f point({1, 0, 0});
 
-  scene.UpdateTransforms(0);
+  scene.UpdateTransforms(usToTicks(0));
   auto new_origin = MatrixVectorMul(child->TransformMatrix(), origin);
   auto new_point = MatrixVectorMul(child->TransformMatrix(), point);
   EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 10, 0}), new_origin);
@@ -147,7 +156,7 @@ TEST(UiScene, Opacity) {
   element->opacity = 0.5;
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(0);
+  scene.UpdateTransforms(usToTicks(0));
   EXPECT_EQ(scene.GetUiElementById(0)->computed_opacity, 0.5f);
   EXPECT_EQ(scene.GetUiElementById(1)->computed_opacity, 0.25f);
 }
@@ -166,7 +175,7 @@ TEST(UiScene, LockToFov) {
   element->lock_to_fov = false;
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(0);
+  scene.UpdateTransforms(usToTicks(0));
   EXPECT_EQ(scene.GetUiElementById(0)->computed_lock_to_fov, true);
   EXPECT_EQ(scene.GetUiElementById(1)->computed_lock_to_fov, true);
 }
@@ -198,7 +207,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   element->y_anchoring = GetParam().y_anchoring;
   scene.AddUiElement(std::move(element));
 
-  scene.UpdateTransforms(0);
+  scene.UpdateTransforms(usToTicks(0));
   const ContentRectangle* child = scene.GetUiElementById(1);
   EXPECT_NEAR(child->GetCenter().x, GetParam().expected_x, TOLERANCE);
   EXPECT_NEAR(child->GetCenter().y, GetParam().expected_y, TOLERANCE);
@@ -420,25 +429,25 @@ TEST(UiScene, AddAnimationFromDictionary) {
   from->SetInteger("a", 303);
   dict.Set("from", std::move(from));
 
-  scene.AddAnimationFromDict(dict, 10000000);
+  scene.AddAnimationFromDict(dict, usToTicks(10000000));
   const auto* element = scene.GetUiElementById(0);
   const auto* animation = element->animations[0].get();
   EXPECT_NE(animation, nullptr);
 
   EXPECT_EQ(animation->id, 10);
 
-  EXPECT_FLOAT_EQ(animation->to[0], 200);
-  EXPECT_FLOAT_EQ(animation->to[1], 201);
-  EXPECT_FLOAT_EQ(animation->to[2], 202);
-  EXPECT_FLOAT_EQ(animation->to[3], 203);
+  EXPECT_FLOAT_EQ(200, animation->to[0]);
+  EXPECT_FLOAT_EQ(201, animation->to[1]);
+  EXPECT_FLOAT_EQ(202, animation->to[2]);
+  EXPECT_FLOAT_EQ(203, animation->to[3]);
 
-  EXPECT_FLOAT_EQ(animation->from[0], 300);
-  EXPECT_FLOAT_EQ(animation->from[1], 301);
-  EXPECT_FLOAT_EQ(animation->from[2], 302);
-  EXPECT_FLOAT_EQ(animation->from[3], 303);
+  EXPECT_FLOAT_EQ(300, animation->from[0]);
+  EXPECT_FLOAT_EQ(301, animation->from[1]);
+  EXPECT_FLOAT_EQ(302, animation->from[2]);
+  EXPECT_FLOAT_EQ(303, animation->from[3]);
 
-  EXPECT_EQ(animation->start, 22345000);
-  EXPECT_EQ(animation->duration, 54321000);
+  EXPECT_EQ(usToTicks(22345000), animation->start);
+  EXPECT_EQ(usToDelta(54321000), animation->duration);
 }
 
 }  // namespace vr_shell

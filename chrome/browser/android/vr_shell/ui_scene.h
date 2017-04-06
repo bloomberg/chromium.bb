@@ -14,6 +14,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class TimeTicks;
 }
 
 namespace vr_shell {
@@ -50,7 +51,7 @@ class UiScene {
 
   // Add an animation according to a dictionary passed from the UI HTML.
   void AddAnimationFromDict(const base::DictionaryValue& dict,
-                            int64_t time_in_micro);
+                            const base::TimeTicks& current_time);
 
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
@@ -58,11 +59,11 @@ class UiScene {
   // Update the positions of all elements in the scene, according to active
   // animations and time.  The units of time are arbitrary, but must match the
   // unit used in animations.
-  void UpdateTransforms(int64_t time_in_micro);
+  void UpdateTransforms(const base::TimeTicks& current_time);
 
   // Handle a batch of commands passed from the UI HTML.
   void HandleCommands(std::unique_ptr<base::ListValue> commands,
-                      int64_t time_in_micro);
+                      const base::TimeTicks& current_time);
 
   const std::vector<std::unique_ptr<ContentRectangle>>& GetUiElements() const;
 

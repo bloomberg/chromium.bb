@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
 
@@ -100,7 +101,7 @@ ContentRectangle::ContentRectangle() = default;
 
 ContentRectangle::~ContentRectangle() = default;
 
-void ContentRectangle::Animate(int64_t time) {
+void ContentRectangle::Animate(const base::TimeTicks& time) {
   for (auto& it : animations) {
     Animation& animation = *it;
     if (time < animation.start)
@@ -150,7 +151,8 @@ void ContentRectangle::Animate(int64_t time) {
         continue;
       }
       double value = animation.easing->CalculateValue(
-          static_cast<double>(time - animation.start) / animation.duration);
+          (time - animation.start).InMillisecondsF() /
+          animation.duration.InMillisecondsF());
       values[i] =
           animation.from[i] + (value * (animation.to[i] - animation.from[i]));
     }

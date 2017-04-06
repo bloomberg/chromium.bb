@@ -127,12 +127,6 @@ enum class ViewerType {
   VIEWER_TYPE_MAX,
 };
 
-int64_t TimeInMicroseconds() {
-  return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::steady_clock::now().time_since_epoch())
-      .count();
-}
-
 void RunVRDisplayInfoCallback(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     device::mojom::VRDisplayInfoPtr info) {
@@ -719,6 +713,8 @@ void VrShellGl::SendGesture(InputTarget input_target,
 void VrShellGl::DrawFrame(int16_t frame_index) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
 
+  base::TimeTicks current_time = base::TimeTicks::Now();
+
   // Reset the viewport list to just the pair of viewports for the
   // primary buffer each frame. Head-locked viewports get added by
   // DrawVrShell if needed.
@@ -808,7 +804,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 
   // Update the render position of all UI elements (including desktop).
-  scene_->UpdateTransforms(TimeInMicroseconds());
+  scene_->UpdateTransforms(current_time);
 
   {
     // TODO(crbug.com/704690): Acquire controller state in a way that's timely
@@ -1253,7 +1249,7 @@ void VrShellGl::ForceExitVr() {
 }
 
 void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
-  scene_->HandleCommands(std::move(commands), TimeInMicroseconds());
+  scene_->HandleCommands(std::move(commands), base::TimeTicks::Now());
 }
 
 void VrShellGl::SendVSync(base::TimeDelta time,

@@ -13,6 +13,10 @@
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
+namespace base {
+class TimeTicks;
+}
+
 namespace vr_shell {
 
 class Animation;
@@ -87,7 +91,7 @@ struct ContentRectangle : public WorldRectangle {
   ContentRectangle();
   ~ContentRectangle();
 
-  void Animate(int64_t time);
+  void Animate(const base::TimeTicks& time);
 
   // Indicates whether the element should be visually rendered.
   bool IsVisible() const;

@@ -15,8 +15,8 @@ Animation::Animation(int id,
                      std::unique_ptr<easing::Easing> easing,
                      std::vector<float> from,
                      std::vector<float> to,
-                     int64_t start,
-                     int64_t duration)
+                     const base::TimeTicks& start,
+                     const base::TimeDelta& duration)
     : id(id),
       property(property),
       easing(std::move(easing)),

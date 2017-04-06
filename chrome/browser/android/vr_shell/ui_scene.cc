@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
@@ -229,7 +230,7 @@ void UiScene::AddAnimation(int element_id,
 }
 
 void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
-                                   int64_t time_in_micro) {
+                                   const base::TimeTicks& current_time) {
   int animation_id;
   int element_id;
   Animation::Property property;
@@ -261,8 +262,9 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
     ParseEndpointToFloats(property, *from_dict, &from);
   }
 
-  int64_t start = time_in_micro + (start_time_ms * 1000.0);
-  int64_t duration = duration_ms * 1000.0;
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(start_time_ms);
+  base::TimeTicks start = current_time + delay;
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(duration_ms);
 
   ContentRectangle* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
@@ -285,7 +287,7 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 }
 
 void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
-                             int64_t time_in_micro) {
+                             const base::TimeTicks& time) {
   for (auto& item : *commands) {
     base::DictionaryValue* dict;
     CHECK(item->GetAsDictionary(&dict));
@@ -309,7 +311,7 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
         break;
       }
       case Command::ADD_ANIMATION:
-        AddAnimationFromDict(*data, time_in_micro);
+        AddAnimationFromDict(*data, time);
         break;
       case Command::REMOVE_ANIMATION: {
         int element_id, animation_id;
@@ -327,10 +329,10 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
   }
 }
 
-void UiScene::UpdateTransforms(int64_t time_in_micro) {
+void UiScene::UpdateTransforms(const base::TimeTicks& time) {
   for (auto& element : ui_elements_) {
     // Process all animations before calculating object transforms.
-    element->Animate(time_in_micro);
+    element->Animate(time);
     element->dirty = true;
   }
   for (auto& element : ui_elements_) {
