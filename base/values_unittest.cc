@@ -1519,4 +1519,11 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_list.GetList(7, NULL));
 }
 
+TEST(ValuesTest, SelfSwap) {
+  base::Value test(1);
+  using namespace std;
+  swap(test, test);
+  EXPECT_TRUE(test.GetInt() == 1);
+}
+
 }  // namespace base

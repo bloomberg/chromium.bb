@@ -185,7 +185,6 @@ Value& Value::operator=(const Value& that) {
 }
 
 Value& Value::operator=(Value&& that) noexcept {
-  DCHECK(this != &that) << "attempt to self move assign.";
   InternalCleanup();
   InternalMoveConstructFrom(std::move(that));
 
