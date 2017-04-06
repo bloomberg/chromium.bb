@@ -79,7 +79,8 @@ v8::Local<v8::Object> WindowProxy::globalProxyIfNotDetached() {
 }
 
 v8::Local<v8::Object> WindowProxy::releaseGlobalProxy() {
-  DCHECK(m_lifecycle != Lifecycle::ContextIsInitialized);
+  DCHECK(m_lifecycle == Lifecycle::ContextIsUninitialized ||
+         m_lifecycle == Lifecycle::GlobalObjectIsDetached);
 
   // Make sure the global object was detached from the proxy by calling
   // clearForNavigation().
@@ -92,6 +93,8 @@ v8::Local<v8::Object> WindowProxy::releaseGlobalProxy() {
 }
 
 void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
+  DCHECK_EQ(m_lifecycle, Lifecycle::ContextIsUninitialized);
+
   CHECK(m_globalProxy.isEmpty());
   m_globalProxy.set(m_isolate, globalProxy);
 
@@ -101,7 +104,7 @@ void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
   // Without this, existing script references to a swapped in RemoteDOMWindow
   // would be broken until that RemoteDOMWindow was vended again through an
   // interface like window.frames.
-  initializeIfNeeded();
+  initialize();
 }
 
 // Create a new environment and setup the global object.
