@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_SERVICE_H_
 #define COMPONENTS_CRYPTAUTH_CRYPTAUTH_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
