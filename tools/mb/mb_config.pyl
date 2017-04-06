@@ -580,11 +580,12 @@
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
 
-      # This is 'release_bot' rather than 'release_trybot' because
+      # These are 'release_bot' rather than 'release_trybot' because
       # 'release_trybot' includes 'dcheck_always_on', which might cause
       # some layout test results to be different than for normal release
       # builds (and we only store baselines for release builds).
       'linux_layout_tests_slimming_paint_v2': 'release_bot',
+      'linux_layout_tests_layout_ng': 'release_bot',
 
       'linux_nacl_sdk_build': 'release_bot',
       'linux_nacl_sdk': 'release_bot',
