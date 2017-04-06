@@ -115,7 +115,6 @@ bool WebstoreStandaloneInstaller::EnsureUniqueInstall(
   }
 
   ActiveInstallData install_data(id_);
-  InitInstallData(&install_data);
   scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
   return true;
 }
@@ -157,11 +156,6 @@ WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
             &error);
   }
   return localized_extension_for_display_.get();
-}
-
-void WebstoreStandaloneInstaller::InitInstallData(
-    ActiveInstallData* install_data) const {
-  // Default implementation sets no properties.
 }
 
 std::string WebstoreStandaloneInstaller::GetJsonPostData() {

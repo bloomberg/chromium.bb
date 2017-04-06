@@ -87,10 +87,6 @@ class WebstoreStandaloneInstaller
 
   // Template Method's hooks to be implemented by subclasses.
 
-  // Called when this install is about to be registered with the InstallTracker.
-  // Allows subclasses to set properties of the install data.
-  virtual void InitInstallData(ActiveInstallData* install_data) const;
-
   // Gives subclasses an opportunity to provide extra post data in the form of
   // serialized JSON to the webstore data request before sending. The default
   // implementation returns an empty string.
