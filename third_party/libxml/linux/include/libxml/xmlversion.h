@@ -327,7 +327,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Unicode related interfaces are compiled in
  */
-#if 1
+#if 0
 #define LIBXML_UNICODE_ENABLED
 #endif
 
@@ -388,7 +388,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * the string suffix used by dynamic modules (usually shared libraries)
  */
-#define LIBXML_MODULE_EXTENSION ".so" 
+#define LIBXML_MODULE_EXTENSION "" 
 #endif
 
 /**

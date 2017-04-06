@@ -291,7 +291,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether ISO-8859-* support is made available in case iconv is not
  */
-#if 1
+#if 0
 #define LIBXML_ISO8859X_ENABLED
 #endif
 
@@ -327,7 +327,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Unicode related interfaces are compiled in
  */
-#if 1
+#if 0
 #define LIBXML_UNICODE_ENABLED
 #endif
 
