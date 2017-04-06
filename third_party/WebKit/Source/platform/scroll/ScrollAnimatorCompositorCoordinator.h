@@ -5,6 +5,7 @@
 #ifndef ScrollAnimatorCompositorCoordinator_h
 #define ScrollAnimatorCompositorCoordinator_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
@@ -14,9 +15,8 @@
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

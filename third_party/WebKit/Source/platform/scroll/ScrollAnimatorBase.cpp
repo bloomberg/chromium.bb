@@ -32,7 +32,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollableArea.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -35,14 +35,14 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/mac/ScrollAnimatorMac.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/platform/WebThemeEngine.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/RetainPtr.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebThemeEngine.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "wtf/HashSet.h"
-#include "wtf/RetainPtr.h"
-#include "wtf/StdLibExtras.h"
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual
 // overflow.

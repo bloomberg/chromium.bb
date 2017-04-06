@@ -27,8 +27,8 @@
 #define ScrollTypes_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebGestureEvent.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

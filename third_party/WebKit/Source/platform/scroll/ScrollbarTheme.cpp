@@ -37,12 +37,12 @@
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarBehavior.h"
-#include "wtf/Optional.h"
 
 #if !OS(MACOSX)
 #include "public/platform/WebThemeEngine.h"

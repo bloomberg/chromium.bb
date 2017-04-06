@@ -4,15 +4,15 @@
 
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 
+#include <memory>
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

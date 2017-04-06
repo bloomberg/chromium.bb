@@ -29,10 +29,10 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
-#include "wtf/MathExtras.h"
 
 #include <algorithm>
 
