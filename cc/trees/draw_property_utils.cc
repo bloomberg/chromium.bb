@@ -899,11 +899,17 @@ void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
 
 void UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
                                           PropertyTrees* property_trees,
-                                          bool can_render_to_separate_surface) {
+                                          bool can_render_to_separate_surface,
+                                          bool can_adjust_raster_scales) {
   bool render_surfaces_need_update = false;
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
+    property_trees->transform_tree.set_needs_update(true);
+    render_surfaces_need_update = true;
+  }
+  if (property_trees->can_adjust_raster_scales != can_adjust_raster_scales) {
+    property_trees->can_adjust_raster_scales = can_adjust_raster_scales;
     property_trees->transform_tree.set_needs_update(true);
     render_surfaces_need_update = true;
   }

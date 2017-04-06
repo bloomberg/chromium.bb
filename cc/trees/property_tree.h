@@ -650,6 +650,7 @@ class CC_EXPORT PropertyTrees final {
   ScrollTree scroll_tree;
   bool needs_rebuild;
   bool non_root_surfaces_enabled;
+  bool can_adjust_raster_scales;
   // Change tracking done on property trees needs to be preserved across commits
   // (when they are not rebuild). We cache a global bool which stores whether
   // we did any change tracking so that we can skip copying the change status

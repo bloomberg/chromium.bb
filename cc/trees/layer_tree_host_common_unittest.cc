@@ -218,6 +218,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
       LayerImpl* root_layer) {
     DCHECK(root_layer->layer_tree_impl());
     bool can_render_to_separate_surface = true;
+    bool can_adjust_raster_scales = true;
 
     const LayerImpl* page_scale_layer = nullptr;
     LayerImpl* inner_viewport_scroll_layer =
@@ -244,7 +245,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
     draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-        root_layer, property_trees, can_render_to_separate_surface);
+        root_layer, property_trees, can_render_to_separate_surface,
+        can_adjust_raster_scales);
     draw_property_utils::FindLayersThatNeedUpdates(
         root_layer->layer_tree_impl(), property_trees,
         update_layer_list_impl_.get());
@@ -264,6 +266,22 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         render_surface_layer_list_impl_.get());
     inputs.can_adjust_raster_scales = true;
     inputs.can_render_to_separate_surface = false;
+
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  }
+
+  void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
+      LayerImpl* root_layer) {
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
+    render_surface_layer_list_impl_.reset(new LayerImplList);
+
+    DCHECK(!root_layer->bounds().IsEmpty());
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root_layer, device_viewport_size,
+        render_surface_layer_list_impl_.get());
+    inputs.can_render_to_separate_surface = true;
+    inputs.can_adjust_raster_scales = false;
 
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -10821,6 +10839,39 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   EXPECT_EQ(scroll_root1.id, parent4->scroll_tree_index());
   EXPECT_EQ(scroll_root1.id, child9->scroll_tree_index());
   EXPECT_EQ(scroll_root1.id, grand_child12->scroll_tree_index());
+}
+
+TEST_F(LayerTreeHostCommonTest, CanAdjustRasterScaleTest) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* render_surface = AddChild<LayerImpl>(root);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface);
+
+  root->SetBounds(gfx::Size(50, 50));
+
+  render_surface->SetBounds(gfx::Size(10, 10));
+  render_surface->test_properties()->force_render_surface = true;
+  gfx::Transform transform;
+  transform.Scale(5.f, 5.f);
+  render_surface->test_properties()->transform = transform;
+
+  child->SetDrawsContent(true);
+  child->SetMasksToBounds(true);
+  child->SetBounds(gfx::Size(10, 10));
+
+  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
+
+  // Check surface draw properties.
+  EXPECT_EQ(gfx::Rect(10, 10),
+            render_surface->GetRenderSurface()->content_rect());
+  EXPECT_EQ(transform, render_surface->GetRenderSurface()->draw_transform());
+  EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
+            render_surface->GetRenderSurface()->DrawableContentRect());
+
+  // Check child layer draw properties.
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
+  EXPECT_EQ(gfx::Transform(), child->DrawTransform());
+  EXPECT_EQ(gfx::Rect(10, 10), child->clip_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), child->drawable_content_rect());
 }
 
 }  // namespace

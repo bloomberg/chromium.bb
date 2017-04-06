@@ -140,6 +140,10 @@ void LayerTreePixelTest::EndTest() {
   TryEndTest();
 }
 
+void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
+  settings->layer_transforms_should_scale_layer_contents = true;
+}
+
 void LayerTreePixelTest::TryEndTest() {
   if (!result_bitmap_)
     return;

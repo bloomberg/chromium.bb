@@ -487,7 +487,8 @@ void CalculateDrawPropertiesInternal(
           inputs->device_transform, inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees,
-          inputs->can_render_to_separate_surface);
+          inputs->can_render_to_separate_surface,
+          inputs->can_adjust_raster_scales);
 
       // Property trees are normally constructed on the main thread and
       // passed to compositor thread. Source to parent updates on them are not
@@ -533,7 +534,8 @@ void CalculateDrawPropertiesInternal(
           inputs->device_transform, inputs->root_layer->position());
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees,
-          inputs->can_render_to_separate_surface);
+          inputs->can_render_to_separate_surface,
+          inputs->can_adjust_raster_scales);
       break;
     }
   }

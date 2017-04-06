@@ -45,7 +45,8 @@ void CC_EXPORT UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
 void CC_EXPORT
 UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
                                      PropertyTrees* property_trees,
-                                     bool can_render_to_separate_surface);
+                                     bool can_render_to_separate_surface,
+                                     bool can_adjust_raster_scales);
 
 void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                          const PropertyTrees* property_trees,

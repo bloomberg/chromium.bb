@@ -72,7 +72,9 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_size);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeSettings settings;
+  settings.layer_transforms_should_scale_layer_contents = true;
+  LayerTestCommon::LayerImplTest impl(settings);
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(impl.host_impl()->active_tree(), 2);
   std::unique_ptr<LayerImpl> surface =

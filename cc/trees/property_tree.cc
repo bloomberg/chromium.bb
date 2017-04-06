@@ -847,9 +847,16 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
       transform_tree.Node(effect_node->transform_id);
   if (transform_node->in_subtree_of_page_scale_layer)
     layer_scale_factor *= transform_tree.page_scale_factor();
+
+  // Note: Copy requests currently expect transform to effect output size.
+  bool use_transform_for_contents_scale =
+      property_trees()->can_adjust_raster_scales ||
+      effect_node->has_copy_request;
   effect_node->surface_contents_scale =
-      MathUtil::ComputeTransform2dScaleComponents(
-          transform_tree.ToScreen(transform_node->id), layer_scale_factor);
+      use_transform_for_contents_scale
+          ? MathUtil::ComputeTransform2dScaleComponents(
+                transform_tree.ToScreen(transform_node->id), layer_scale_factor)
+          : gfx::Vector2dF(layer_scale_factor, layer_scale_factor);
 }
 
 EffectNode* EffectTree::FindNodeFromElementId(ElementId id) {
@@ -1600,6 +1607,7 @@ PropertyTreesCachedData::~PropertyTreesCachedData() {}
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
       non_root_surfaces_enabled(true),
+      can_adjust_raster_scales(true),
       changed(false),
       full_tree_damaged(false),
       sequence_number(0),
@@ -1630,6 +1638,7 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          is_main_thread == other.is_main_thread &&
          is_active == other.is_active &&
          non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
+         can_adjust_raster_scales == other.can_adjust_raster_scales &&
          sequence_number == other.sequence_number;
 }
 
@@ -1647,6 +1656,7 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   changed = from.changed;
   full_tree_damaged = from.full_tree_damaged;
   non_root_surfaces_enabled = from.non_root_surfaces_enabled;
+  can_adjust_raster_scales = from.can_adjust_raster_scales;
   sequence_number = from.sequence_number;
   is_main_thread = from.is_main_thread;
   is_active = from.is_active;
@@ -1678,6 +1688,7 @@ void PropertyTrees::clear() {
   full_tree_damaged = false;
   changed = false;
   non_root_surfaces_enabled = true;
+  can_adjust_raster_scales = true;
   sequence_number++;
 
 #if DCHECK_IS_ON()

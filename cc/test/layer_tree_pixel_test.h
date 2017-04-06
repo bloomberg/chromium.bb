@@ -50,6 +50,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   void SetupTree() override;
   void AfterTest() override;
   void EndTest() override;
+  void InitializeSettings(LayerTreeSettings* settings) override;
 
   void TryEndTest();
 
