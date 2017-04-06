@@ -118,7 +118,6 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetPendingItem() const override;
   NavigationItem* GetTransientItem() const override;
   void DiscardNonCommittedItems() override;
-  void LoadIfNecessary() override;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
   void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) override;

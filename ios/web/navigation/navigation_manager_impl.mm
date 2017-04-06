@@ -264,10 +264,6 @@ void NavigationManagerImpl::DiscardNonCommittedItems() {
   [session_controller_ discardNonCommittedItems];
 }
 
-void NavigationManagerImpl::LoadIfNecessary() {
-  // Nothing to do; iOS loads lazily.
-}
-
 void NavigationManagerImpl::LoadURLWithParams(
     const NavigationManager::WebLoadParams& params) {
   delegate_->LoadURLWithParams(params);

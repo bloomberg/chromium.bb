@@ -57,10 +57,6 @@ void TestNavigationManager::DiscardNonCommittedItems() {
   NOTREACHED();
 }
 
-void TestNavigationManager::LoadIfNecessary() {
-  NOTREACHED();
-}
-
 void TestNavigationManager::LoadURLWithParams(
     const NavigationManager::WebLoadParams& params) {
   NOTREACHED();

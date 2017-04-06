@@ -111,13 +111,6 @@ class NavigationManager {
   // Removes the transient and pending NavigationItems.
   virtual void DiscardNonCommittedItems() = 0;
 
-  // Currently a no-op, but present to be called in contexts where
-  // NavigationController::LoadIfNecessary() is called in the analogous
-  // //content-based context. In particular, likely will become more than
-  // a no-op if NavigationManager::SetNeedsReload() becomes necessary to
-  // match NavigationController::SetNeedsReload().
-  virtual void LoadIfNecessary() = 0;
-
   // Loads the URL with specified |params|.
   virtual void LoadURLWithParams(
       const NavigationManager::WebLoadParams& params) = 0;
