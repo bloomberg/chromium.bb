@@ -113,12 +113,12 @@ class TestEventHandler : public ui::EventHandler {
 
 class RootWindowTransformersTest : public test::AshTestBase {
  public:
-  RootWindowTransformersTest(){};
-  ~RootWindowTransformersTest() override{};
+  RootWindowTransformersTest() {}
+  ~RootWindowTransformersTest() override {}
 
   float GetStoredUIScale(int64_t id) {
     return display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
-  };
+  }
 
   std::unique_ptr<RootWindowTransformer>
   CreateCurrentRootWindowTransformerForMirroring() {
@@ -132,7 +132,7 @@ class RootWindowTransformersTest : public test::AshTestBase {
     return std::unique_ptr<RootWindowTransformer>(
         CreateRootWindowTransformerForMirroredDisplay(source_display_info,
                                                       mirror_display_info));
-  };
+  }
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowTransformersTest);
 };
@@ -141,19 +141,7 @@ class RootWindowTransformersTest : public test::AshTestBase {
 
 // using RootWindowTransformersTest = test::AshTestBase;
 
-#if defined(OS_WIN)
-// TODO(scottmg): RootWindow doesn't get resized on Windows
-// Ash. http://crbug.com/247916.
-#define MAYBE_RotateAndMagnify DISABLED_RotateAndMagniy
-#define MAYBE_TouchScaleAndMagnify DISABLED_TouchScaleAndMagnify
-#define MAYBE_ConvertHostToRootCoords DISABLED_ConvertHostToRootCoords
-#else
-#define MAYBE_RotateAndMagnify RotateAndMagniy
-#define MAYBE_TouchScaleAndMagnify TouchScaleAndMagnify
-#define MAYBE_ConvertHostToRootCoords ConvertHostToRootCoords
-#endif
-
-TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
+TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
   TestEventHandler event_handler;
@@ -295,7 +283,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
+TEST_F(RootWindowTransformersTest, TouchScaleAndMagnify) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
@@ -330,7 +318,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
+TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
   MagnificationController* magnifier = Shell::Get()->magnification_controller();

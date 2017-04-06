@@ -215,17 +215,17 @@ void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
 }
 
 void WmShellMus::LockCursor() {
-  // TODO: http::/crbug.com/637853
+  // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
 }
 
 void WmShellMus::UnlockCursor() {
-  // TODO: http::/crbug.com/637853
+  // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
 }
 
 bool WmShellMus::IsMouseEventsEnabled() {
-  // TODO: http::/crbug.com/637853
+  // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
   return true;
 }

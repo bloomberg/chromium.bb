@@ -11,6 +11,7 @@
 #include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/lock_state_controller_test_api.h"
@@ -76,10 +77,10 @@ class TabletPowerButtonControllerTest : public AshTestBase {
 
   void TearDown() override {
     generator_ = nullptr;
-    const bool is_mash = WmShell::Get()->IsRunningInMash();
+    const Config config = Shell::GetAshConfig();
     AshTestBase::TearDown();
-    // Mash shuts down dbus after each test.
-    if (!is_mash)
+    // Mash/mus shuts down dbus after each test.
+    if (config == Config::CLASSIC)
       chromeos::DBusThreadManager::Shutdown();
   }
 

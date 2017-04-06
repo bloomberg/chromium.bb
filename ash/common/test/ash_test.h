@@ -57,9 +57,8 @@ class WindowOwner {
 // real implementation. This class exists so that tests can be written to
 // ash/common and run in both mus and aura.
 //
-// The implementation of AshTestImpl that is used depends upon gn targets. To
-// use the aura backend depend on "//ash/test:ash_with_aura_test_support." The
-// mus backend is not provided as a separate link target.
+// TODO: this class is deprecated and should be removed.
+// http://crbug.com/707057.
 class AshTest : public testing::Test {
  public:
   AshTest();

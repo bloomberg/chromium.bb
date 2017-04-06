@@ -940,7 +940,8 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   // The tested behavior relies on the app list presenter delegate.
   test::TestAppListViewPresenterImpl app_list_presenter_impl;
 
-  app_list_presenter_impl.Show(display_manager()->first_display_id());
+  app_list_presenter_impl.Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_TRUE(app_list_presenter_impl.IsVisible());
 
   ToggleOverview();

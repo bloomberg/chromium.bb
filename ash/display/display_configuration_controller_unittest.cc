@@ -12,14 +12,7 @@
 
 namespace ash {
 
-class DisplayConfigurationControllerTest : public test::AshTestBase {
- public:
-  DisplayConfigurationControllerTest() {}
-  ~DisplayConfigurationControllerTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationControllerTest);
-};
+using DisplayConfigurationControllerTest = test::AshTestBase;
 
 TEST_F(DisplayConfigurationControllerTest, ErasesAnimatorOnAnimationEnded) {
   // TODO(wutao): needs display_configuration_controller

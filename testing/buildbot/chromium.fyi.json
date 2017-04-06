@@ -11790,6 +11790,16 @@
     "gtest_tests": [
       {
         "args": [
+          "--mus",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_mus_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_mus_unittests"
+      },
+      {
+        "args": [
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
         ],
