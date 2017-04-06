@@ -58,6 +58,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "rlz/features/features.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -356,9 +357,8 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PREF_HASH_SEED_BIN).as_string();
 #endif
-  return base::MakeUnique<ProfilePrefStoreManager>(
-      profile_path, GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
-      seed, legacy_device_id, g_browser_process->local_state());
+  return base::MakeUnique<ProfilePrefStoreManager>(profile_path, seed,
+                                                   legacy_device_id);
 }
 
 void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
@@ -391,6 +391,28 @@ void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
   factory->SetPrefModelAssociatorClient(
       ChromePrefModelAssociatorClient::GetInstance());
 }
+
+class ResetOnLoadObserverImpl : public prefs::mojom::ResetOnLoadObserver {
+ public:
+  explicit ResetOnLoadObserverImpl(const base::FilePath& profile_path)
+      : profile_path_(profile_path) {}
+
+  void OnResetOnLoad() override {
+    // A StartSyncFlare used to kick sync early in case of a reset event. This
+    // is done since sync may bring back the user's server value post-reset
+    // which could potentially cause a "settings flash" between the factory
+    // default and the re-instantiated server value. Starting sync ASAP
+    // minimizes the window before the server value is re-instantiated (this
+    // window can otherwise be as long as 10 seconds by default).
+    sync_start_util::GetFlareForSyncableService(profile_path_)
+        .Run(syncer::PREFERENCES);
+  }
+
+ private:
+  const base::FilePath profile_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResetOnLoadObserverImpl);
+};
 
 }  // namespace
 
@@ -428,8 +450,7 @@ std::unique_ptr<PrefService> CreateLocalState(
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& profile_path,
-    base::SequencedTaskRunner* pref_io_task_runner,
-    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
+    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
@@ -439,22 +460,18 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
   SCOPED_UMA_HISTOGRAM_TIMER("PrefService.CreateProfilePrefsTime");
 
-  // A StartSyncFlare used to kick sync early in case of a reset event. This is
-  // done since sync may bring back the user's server value post-reset which
-  // could potentially cause a "settings flash" between the factory default and
-  // the re-instantiated server value. Starting sync ASAP minimizes the window
-  // before the server value is re-instantiated (this window can otherwise be
-  // as long as 10 seconds by default).
-  const base::Closure start_sync_flare_for_prefs =
-      base::Bind(sync_start_util::GetFlareForSyncableService(profile_path),
-                 syncer::PREFERENCES);
-
+  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ResetOnLoadObserverImpl>(profile_path),
+      mojo::MakeRequest(&reset_on_load_observer));
   sync_preferences::PrefServiceSyncableFactory factory;
   scoped_refptr<PersistentPrefStore> user_pref_store(
       CreateProfilePrefStoreManager(profile_path)
           ->CreateProfilePrefStore(
-              pref_io_task_runner, start_sync_flare_for_prefs,
-              validation_delegate, connector, pref_registry));
+              GetTrackingConfiguration(), kTrackedPrefsReportingIDsCount,
+              content::BrowserThread::GetBlockingPool(),
+              std::move(reset_on_load_observer), std::move(validation_delegate),
+              connector, pref_registry));
   PrepareFactory(&factory, profile_path, policy_service,
                  supervised_user_settings, user_pref_store, extension_prefs,
                  async);
@@ -474,7 +491,9 @@ bool InitializePrefsFromMasterPrefs(
     const base::FilePath& profile_path,
     std::unique_ptr<base::DictionaryValue> master_prefs) {
   return CreateProfilePrefStoreManager(profile_path)
-      ->InitializePrefsFromMasterPrefs(std::move(master_prefs));
+      ->InitializePrefsFromMasterPrefs(GetTrackingConfiguration(),
+                                       kTrackedPrefsReportingIDsCount,
+                                       std::move(master_prefs));
 }
 
 base::Time GetResetTime(Profile* profile) {

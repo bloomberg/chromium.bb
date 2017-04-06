@@ -10,6 +10,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "services/preferences/persistent_pref_store_impl.h"
+#include "services/preferences/tracked/tracked_persistent_pref_store_factory.h"
 
 namespace prefs {
 namespace {
@@ -23,7 +24,7 @@ std::unique_ptr<PersistentPrefStoreImpl> CreateSimplePersistentPrefStore(
                         JsonPrefStore::GetTaskRunnerForFile(
                             config->pref_filename.DirName(), worker_pool),
                         nullptr),
-      nullptr, std::move(on_initialized));
+      std::move(on_initialized));
 }
 
 }  // namespace
@@ -35,6 +36,12 @@ std::unique_ptr<PersistentPrefStoreImpl> CreatePersistentPrefStore(
   if (configuration->is_simple_configuration()) {
     return CreateSimplePersistentPrefStore(
         std::move(configuration->get_simple_configuration()), worker_pool,
+        std::move(on_initialized));
+  }
+  if (configuration->is_tracked_configuration()) {
+    return base::MakeUnique<PersistentPrefStoreImpl>(
+        CreateTrackedPersistentPrefStore(
+            std::move(configuration->get_tracked_configuration()), worker_pool),
         std::move(on_initialized));
   }
   NOTREACHED();

@@ -119,7 +119,7 @@ class PersistentPrefStoreImplTest : public testing::Test {
     base::RunLoop run_loop;
     bool initialized = backing_pref_store->IsInitializationComplete();
     impl_ = base::MakeUnique<PersistentPrefStoreImpl>(
-        std::move(backing_pref_store), nullptr, run_loop.QuitClosure());
+        std::move(backing_pref_store), run_loop.QuitClosure());
     if (!initialized)
       run_loop.Run();
     pref_store_ = CreateConnection();

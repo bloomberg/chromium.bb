@@ -55,7 +55,7 @@ PrefHashFilter::PrefHashFilter(
     StoreContentsPair external_validation_hash_store_pair,
     const std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>&
         tracked_preferences,
-    const base::Closure& on_reset_on_load,
+    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
     prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count,
     bool report_super_mac_validity)
@@ -65,7 +65,7 @@ PrefHashFilter::PrefHashFilter(
               ? base::make_optional(
                     std::move(external_validation_hash_store_pair))
               : base::nullopt),
-      on_reset_on_load_(on_reset_on_load),
+      reset_on_load_observer_(std::move(reset_on_load_observer)),
       report_super_mac_validity_(report_super_mac_validity) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
@@ -248,10 +248,10 @@ void PrefHashFilter::FinalizeFilterOnLoad(
                                  base::Time::Now().ToInternalValue())));
     FilterUpdate(user_prefs::kPreferenceResetTime);
 
-    if (!on_reset_on_load_.is_null())
-      on_reset_on_load_.Run();
+    if (reset_on_load_observer_)
+      reset_on_load_observer_->OnResetOnLoad();
   }
-  on_reset_on_load_.Reset();
+  reset_on_load_observer_.reset();
 
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);
