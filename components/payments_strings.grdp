@@ -108,21 +108,23 @@
   </message>
 
   <!-- Credit Card form -->
-  <message name="IDS_PAYMENTS_CARD_NUMBER" desc="Title of the field representing the number (PAN) on a credit card." formatter_data="android_java">
-    Card Number
-  </message>
-  <message name="IDS_PAYMENTS_NAME_ON_CARD" desc="Title of the field representing the full name of a credit card holder." formatter_data="android_java">
-    Name on Card
-  </message>
-    <message name="IDS_PAYMENTS_EXP_MONTH" desc="Title of the field representing the expiration month of a credit card." formatter_data="android_java">
-    Expiration Month
-  </message>
-  <message name="IDS_PAYMENTS_EXP_YEAR" desc="Title of the field representing the expiration year of a credit card." formatter_data="android_java">
-    Expiration Year
-  </message>
-  <message name="IDS_PAYMENTS_BILLING_ADDRESS" desc="Title of the field representing the billing address of a credit card." formatter_data="android_java">
-    Billing Address
-  </message>
+  <if expr="is_ios">
+    <message name="IDS_PAYMENTS_CARD_NUMBER" desc="Title of the field representing the number (PAN) on a credit card.">
+      Card Number
+    </message>
+    <message name="IDS_PAYMENTS_NAME_ON_CARD" desc="Title of the field representing the full name of a credit card holder.">
+      Name on Card
+    </message>
+      <message name="IDS_PAYMENTS_EXP_MONTH" desc="Title of the field representing the expiration month of a credit card.">
+      Expiration Month
+    </message>
+    <message name="IDS_PAYMENTS_EXP_YEAR" desc="Title of the field representing the expiration year of a credit card.">
+      Expiration Year
+    </message>
+    <message name="IDS_PAYMENTS_BILLING_ADDRESS" desc="Title of the field representing the billing address of a credit card.">
+      Billing Address
+    </message>
+  </if>
 
   <!-- Validation -->
   <message name="IDS_PAYMENTS_VALIDATION_INVALID_NAME" desc="Message displayed to user when name validation fails.">
