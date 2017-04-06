@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_
-#define SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_
+#ifndef COMPONENTS_VIZ_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_
+#define COMPONENTS_VIZ_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_
 
 #include <stdint.h>
 
@@ -16,11 +16,11 @@
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
-#include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
+#include "components/viz/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace ui {
+namespace viz {
 
 class DisplayProvider;
 
@@ -32,10 +32,9 @@ class DisplayProvider;
 // will be true after the mus process split. For non-mus Chrome this will be
 // created in the browser process, at least until GPU implementations can be
 // unified.
-class MojoFrameSinkManager
-    : public cc::SurfaceObserver,
-      public display_compositor::GpuCompositorFrameSinkDelegate,
-      public cc::mojom::FrameSinkManager {
+class MojoFrameSinkManager : public cc::SurfaceObserver,
+                             public GpuCompositorFrameSinkDelegate,
+                             public cc::mojom::FrameSinkManager {
  public:
   MojoFrameSinkManager(DisplayProvider* display_provider,
                        cc::mojom::FrameSinkManagerRequest request,
@@ -79,7 +78,7 @@ class MojoFrameSinkManager
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
 
-  // display_compositor::GpuCompositorFrameSinkDelegate implementation.
+  // GpuCompositorFrameSinkDelegate implementation.
   void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,
                               bool destroy_compositor_frame_sink) override;
   void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id,
@@ -106,6 +105,6 @@ class MojoFrameSinkManager
   DISALLOW_COPY_AND_ASSIGN(MojoFrameSinkManager);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  //  SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_
+#endif  //  COMPONENTS_VIZ_FRAME_SINKS_MOJO_FRAME_SINK_MANAGER_H_

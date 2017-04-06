@@ -17,11 +17,6 @@ component("display_compositor") {
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
-    "gpu_compositor_frame_sink.cc",
-    "gpu_compositor_frame_sink.h",
-    "gpu_compositor_frame_sink_delegate.h",
-    "gpu_root_compositor_frame_sink.cc",
-    "gpu_root_compositor_frame_sink.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

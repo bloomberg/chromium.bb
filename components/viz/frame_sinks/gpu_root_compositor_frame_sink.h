@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_VIZ_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
+#define COMPONENTS_VIZ_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
@@ -11,8 +11,7 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/local_surface_id.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/display_compositor/display_compositor_export.h"
-#include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
+#include "components/viz/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -23,11 +22,11 @@ class Display;
 class SurfaceManager;
 }
 
-namespace display_compositor {
+namespace viz {
 
 class GpuCompositorFrameSinkDelegate;
 
-class DISPLAY_COMPOSITOR_EXPORT GpuRootCompositorFrameSink
+class GpuRootCompositorFrameSink
     : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSink),
       public NON_EXPORTED_BASE(cc::mojom::MojoCompositorFrameSinkPrivate),
@@ -105,6 +104,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuRootCompositorFrameSink
   DISALLOW_COPY_AND_ASSIGN(GpuRootCompositorFrameSink);
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_VIZ_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_

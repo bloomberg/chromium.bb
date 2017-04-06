@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
-#define COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
+#ifndef COMPONENTS_VIZ_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
+#define COMPONENTS_VIZ_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
 
 namespace cc {
 class FrameSinkId;
 }
 
-namespace display_compositor {
+namespace viz {
 
 class GpuCompositorFrameSinkDelegate {
  public:
@@ -25,6 +25,6 @@ class GpuCompositorFrameSinkDelegate {
   virtual ~GpuCompositorFrameSinkDelegate() {}
 };
 
-}  // namespace display_compositor
+}  // namespace viz
 
-#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
+#endif  // COMPONENTS_VIZ_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_

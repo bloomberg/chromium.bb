@@ -9,14 +9,18 @@
 #include "base/threading/thread.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_init.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
-#include "services/ui/surfaces/display_provider.h"
-#include "services/ui/surfaces/mojo_frame_sink_manager.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
 class ImageFactory;
+}
+
+namespace viz {
+class DisplayProvider;
+class MojoFrameSinkManager;
 }
 
 namespace ui {
@@ -85,8 +89,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       pending_frame_sink_manager_client_info_;
 
   // Provides mojo interfaces for creating and managing FrameSinks.
-  std::unique_ptr<MojoFrameSinkManager> frame_sink_manager_;
-  std::unique_ptr<DisplayProvider> display_provider_;
+  std::unique_ptr<viz::MojoFrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::DisplayProvider> display_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 

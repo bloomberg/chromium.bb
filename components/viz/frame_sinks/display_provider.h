@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_DISPLAY_PROVIDER_H_
-#define SERVICES_UI_SURFACES_DISPLAY_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_FRAME_SINKS_DISPLAY_PROVIDER_H_
+#define COMPONENTS_VIZ_FRAME_SINKS_DISPLAY_PROVIDER_H_
 
 #include <memory>
 
@@ -15,7 +15,7 @@ class Display;
 class FrameSinkId;
 }
 
-namespace ui {
+namespace viz {
 
 // Handles creating new cc::Displays and related classes for
 // MojoFrameSinkManager.
@@ -31,6 +31,6 @@ class DisplayProvider {
       std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) = 0;
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  //  SERVICES_UI_SURFACES_DISPLAY_PROVIDER_H_
+#endif  //  COMPONENTS_VIZ_FRAME_SINKS_DISPLAY_PROVIDER_H_

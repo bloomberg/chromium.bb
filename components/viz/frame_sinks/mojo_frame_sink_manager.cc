@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/mojo_frame_sink_manager.h"
+#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 
 #include <utility>
 
@@ -12,11 +12,11 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
-#include "components/display_compositor/gpu_compositor_frame_sink.h"
-#include "components/display_compositor/gpu_root_compositor_frame_sink.h"
-#include "services/ui/surfaces/display_provider.h"
+#include "components/viz/frame_sinks/display_provider.h"
+#include "components/viz/frame_sinks/gpu_compositor_frame_sink.h"
+#include "components/viz/frame_sinks/gpu_root_compositor_frame_sink.h"
 
-namespace ui {
+namespace viz {
 
 MojoFrameSinkManager::MojoFrameSinkManager(
     DisplayProvider* display_provider,
@@ -61,7 +61,7 @@ void MojoFrameSinkManager::CreateRootCompositorFrameSink(
   }
 
   compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<display_compositor::GpuRootCompositorFrameSink>(
+      base::MakeUnique<GpuRootCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(display),
           std::move(begin_frame_source), std::move(request),
           std::move(private_request), std::move(client),
@@ -77,7 +77,7 @@ void MojoFrameSinkManager::CreateCompositorFrameSink(
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
 
   compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<display_compositor::GpuCompositorFrameSink>(
+      base::MakeUnique<GpuCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(request),
           std::move(private_request), std::move(client));
 }
@@ -141,4 +141,4 @@ void MojoFrameSinkManager::OnPrivateConnectionLost(
     DestroyCompositorFrameSink(frame_sink_id);
 }
 
-}  // namespace ui
+}  // namespace viz

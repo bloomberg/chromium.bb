@@ -20,6 +20,7 @@ source_set("gpu") {
 
   deps = [
     "//cc",
+    "//components/viz/frame_sinks",
     "//gpu/ipc:command_buffer",
     "//gpu/ipc/common",
     "//gpu/ipc/service",

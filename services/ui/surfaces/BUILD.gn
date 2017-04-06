@@ -8,9 +8,6 @@ source_set("surfaces") {
   sources = [
     "display_output_surface.cc",
     "display_output_surface.h",
-    "display_provider.h",
-    "mojo_frame_sink_manager.cc",
-    "mojo_frame_sink_manager.h",
     "mus_display_provider.cc",
     "mus_display_provider.h",
   ]
@@ -21,6 +18,7 @@ source_set("surfaces") {
     "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//components/display_compositor",
+    "//components/viz/frame_sinks",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",

@@ -15,7 +15,6 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "components/display_compositor/gpu_root_compositor_frame_sink.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "services/ui/surfaces/display_output_surface.h"

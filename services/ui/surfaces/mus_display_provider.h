@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/frame_sinks/display_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
-#include "services/ui/surfaces/display_provider.h"
 
 namespace gpu {
 class ImageFactory;
@@ -23,7 +23,7 @@ class ImageFactory;
 namespace ui {
 
 // Mus implementation of DisplayProvider. This will be created in mus-gpu.
-class MusDisplayProvider : public NON_EXPORTED_BASE(DisplayProvider) {
+class MusDisplayProvider : public NON_EXPORTED_BASE(viz::DisplayProvider) {
  public:
   MusDisplayProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/display_compositor/gpu_root_compositor_frame_sink.h"
+#include "components/viz/frame_sinks/gpu_root_compositor_frame_sink.h"
 
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display.h"
 
-namespace display_compositor {
+namespace viz {
 
 GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
@@ -152,4 +152,4 @@ void GpuRootCompositorFrameSink::OnPrivateConnectionLost() {
                                      client_connection_lost_);
 }
 
-}  // namespace display_compositor
+}  // namespace viz

@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -210,7 +211,7 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
                                                      1 /* client_id */),
       image_factory);
 
-  frame_sink_manager_ = base::MakeUnique<MojoFrameSinkManager>(
+  frame_sink_manager_ = base::MakeUnique<viz::MojoFrameSinkManager>(
       display_provider_.get(), std::move(request), std::move(client));
 }
 
