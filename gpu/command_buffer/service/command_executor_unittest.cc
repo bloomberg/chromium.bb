@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -76,7 +77,7 @@ class CommandExecutorTest : public testing::Test {
   int32_t* buffer_;
   std::unique_ptr<gles2::MockGLES2Decoder> decoder_;
   std::unique_ptr<CommandExecutor> executor_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(CommandExecutorTest, ExecutorDoesNothingIfRingBufferIsEmpty) {
