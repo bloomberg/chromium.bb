@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/login_status.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
@@ -20,7 +21,6 @@ class AccountId;
 
 namespace ash {
 
-enum class LoginStatus;
 class SessionStateObserver;
 
 // Implements mojom::SessionController to cache session related info such as
@@ -96,7 +96,7 @@ class ASH_EXPORT SessionController
   // Returns the ash notion of login status.
   // NOTE: Prefer GetSessionState() in new code because the concept of
   // SessionState more closes matches the state in chrome.
-  LoginStatus GetLoginStatus() const;
+  LoginStatus login_status() const { return login_status_; }
 
   // mojom::SessionController
   void SetClient(mojom::SessionControllerClientPtr client) override;
@@ -114,8 +114,14 @@ class ASH_EXPORT SessionController
   void SetSessionState(session_manager::SessionState state);
   void AddUserSession(mojom::UserSessionPtr user_session);
 
+  // Calculate login status based on session state and active user session.
+  LoginStatus CalculateLoginStatus() const;
+
   // Helper that returns login status when the session state is ACTIVE.
-  LoginStatus GetLoginStatusForActiveSession() const;
+  LoginStatus CalculateLoginStatusForActiveSession() const;
+
+  // Update the |login_status_| and notify observers.
+  void UpdateLoginStatus();
 
   // Bindings for mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;
@@ -138,6 +144,9 @@ class ASH_EXPORT SessionController
   // is managed by session manager code, starting at 1. 0u is an invalid id
   // to detect first active user session.
   uint32_t active_session_id_ = 0u;
+
+  // Last known login status. Used to track login status changes.
+  LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 
   base::ObserverList<ash::SessionStateObserver> observers_;
 

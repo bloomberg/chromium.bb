@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/login_status.h"
 #include "ash/common/session/session_state_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -125,32 +124,6 @@ void SessionController::RemoveSessionStateObserver(
   observers_.RemoveObserver(observer);
 }
 
-LoginStatus SessionController::GetLoginStatus() const {
-  using session_manager::SessionState;
-
-  // TODO(jamescook|xiyuan): There is not a 1:1 mapping of SessionState to
-  // LoginStatus. Fix the cases that don't match. http://crbug.com/701193
-  switch (state_) {
-    case SessionState::UNKNOWN:
-    case SessionState::OOBE:
-    case SessionState::LOGIN_PRIMARY:
-    case SessionState::LOGGED_IN_NOT_ACTIVE:
-      return LoginStatus::NOT_LOGGED_IN;
-
-    case SessionState::ACTIVE:
-      return GetLoginStatusForActiveSession();
-
-    case SessionState::LOCKED:
-      return LoginStatus::LOCKED;
-
-    case SessionState::LOGIN_SECONDARY:
-      // TODO: There is no LoginStatus for this.
-      return LoginStatus::USER;
-  }
-  NOTREACHED();
-  return LoginStatus::NOT_LOGGED_IN;
-}
-
 void SessionController::SetClient(mojom::SessionControllerClientPtr client) {
   client_ = std::move(client);
 }
@@ -176,6 +149,8 @@ void SessionController::UpdateUserSession(mojom::UserSessionPtr user_session) {
   *it = std::move(user_session);
   for (auto& observer : observers_)
     observer.UserSessionUpdated((*it)->account_id);
+
+  UpdateLoginStatus();
 }
 
 void SessionController::SetUserSessionOrder(
@@ -205,6 +180,8 @@ void SessionController::SetUserSessionOrder(
 
     for (auto& observer : observers_)
       observer.ActiveUserChanged(user_sessions_[0]->account_id);
+
+    UpdateLoginStatus();
   }
 }
 
@@ -228,6 +205,8 @@ void SessionController::SetSessionState(session_manager::SessionState state) {
   state_ = state;
   for (auto& observer : observers_)
     observer.SessionStateChanged(state_);
+
+  UpdateLoginStatus();
 }
 
 void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
@@ -239,7 +218,33 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
     observer.UserAddedToSession(account_id);
 }
 
-LoginStatus SessionController::GetLoginStatusForActiveSession() const {
+LoginStatus SessionController::CalculateLoginStatus() const {
+  using session_manager::SessionState;
+
+  // TODO(jamescook|xiyuan): There is not a 1:1 mapping of SessionState to
+  // LoginStatus. Fix the cases that don't match. http://crbug.com/701193
+  switch (state_) {
+    case SessionState::UNKNOWN:
+    case SessionState::OOBE:
+    case SessionState::LOGIN_PRIMARY:
+    case SessionState::LOGGED_IN_NOT_ACTIVE:
+      return LoginStatus::NOT_LOGGED_IN;
+
+    case SessionState::ACTIVE:
+      return CalculateLoginStatusForActiveSession();
+
+    case SessionState::LOCKED:
+      return LoginStatus::LOCKED;
+
+    case SessionState::LOGIN_SECONDARY:
+      // TODO: There is no LoginStatus for this.
+      return LoginStatus::USER;
+  }
+  NOTREACHED();
+  return LoginStatus::NOT_LOGGED_IN;
+}
+
+LoginStatus SessionController::CalculateLoginStatusForActiveSession() const {
   DCHECK(state_ == session_manager::SessionState::ACTIVE);
 
   if (user_sessions_.empty())  // Can be empty in tests.
@@ -271,6 +276,16 @@ LoginStatus SessionController::GetLoginStatusForActiveSession() const {
   }
   NOTREACHED();
   return LoginStatus::USER;
+}
+
+void SessionController::UpdateLoginStatus() {
+  const LoginStatus new_login_status = CalculateLoginStatus();
+  if (new_login_status == login_status_)
+    return;
+
+  login_status_ = new_login_status;
+  for (auto& observer : observers_)
+    observer.LoginStatusChanged(login_status_);
 }
 
 }  // namespace ash

@@ -133,15 +133,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
 
-  // Initialize session controller client and create fake sessions before
-  // creating shelf.
+  // Initialize session controller client and create fake user sessions. The
+  // fake user sessions makes ash into the logged in state.
   example_session_controller_client_ =
       base::MakeUnique<ExampleSessionControllerClient>(
           Shell::Get()->session_controller());
   example_session_controller_client_->Initialize();
-
-  ash::Shell::Get()->CreateShelfView();
-  ash::Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   display::Screen::GetScreen()->AddObserver(window_watcher_.get());

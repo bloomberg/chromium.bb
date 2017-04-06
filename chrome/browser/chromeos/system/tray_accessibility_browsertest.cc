@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -342,6 +343,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
 
   EXPECT_EQ(ash::LoginStatus::USER, GetLoginStatus());
 }
@@ -476,6 +479,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
 
@@ -594,6 +599,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
   session_manager::SessionManager::Get()->SessionStarted();
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
 
@@ -1417,7 +1424,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);
-  base::RunLoop().RunUntilIdle();  // Flush session state to ash.
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
   SetLoginStatus(ash::LoginStatus::USER);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());

@@ -66,7 +66,6 @@ const int LockStateController::kShutdownRequestDelayMs = 50;
 LockStateController::LockStateController(
     ShutdownController* shutdown_controller)
     : animator_(new SessionStateAnimatorImpl()),
-      login_status_(LoginStatus::NOT_LOGGED_IN),
       system_is_locked_(false),
       shutting_down_(false),
       shutdown_after_lock_(false),
@@ -189,12 +188,6 @@ void LockStateController::SetLockScreenDisplayedCallback(
 void LockStateController::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   Shell::Get()->shell_delegate()->Exit();
-}
-
-void LockStateController::OnLoginStateChanged(LoginStatus status) {
-  if (status != LoginStatus::LOCKED)
-    login_status_ = status;
-  system_is_locked_ = (status == LoginStatus::LOCKED);
 }
 
 void LockStateController::OnAppTerminating() {

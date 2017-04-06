@@ -15,19 +15,14 @@
 #include "ash/common/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "base/callback_forward.h"
-#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -39,23 +34,16 @@ namespace ash {
 class SystemTrayNotifier;
 }
 
-namespace user_manager {
-class User;
-}
-
 namespace chromeos {
 
 class SystemTrayDelegateChromeOS
     : public ui::ime::InputMethodMenuManager::Observer,
       public ash::SystemTrayDelegate,
-      public SessionManagerClient::Observer,
       public content::NotificationObserver,
       public input_method::InputMethodManager::Observer,
       public policy::CloudPolicyStore::Observer,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
-      public user_manager::UserManager::Observer,
-      public user_manager::UserManager::UserSessionStateObserver,
       public SupervisedUserServiceObserver,
       public input_method::InputMethodManager::ImeMenuObserver {
  public:
@@ -94,9 +82,6 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
 
-  // Overridden from user_manager::UserManager::UserSessionStateObserver:
-  void UserChangedChildStatus(user_manager::User* user) override;
-
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier();
 
@@ -119,10 +104,6 @@ class SystemTrayDelegateChromeOS
   // Notify observers if the current user has no more open browser or app
   // windows.
   void NotifyIfLastWindowClosed();
-
-  // Overridden from SessionManagerClient::Observer.
-  void ScreenIsLocked() override;
-  void ScreenIsUnlocked() override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

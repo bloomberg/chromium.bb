@@ -231,7 +231,7 @@ TEST_F(SessionControllerTest, GetLoginStatus) {
   for (const auto& test_case : kTestCases) {
     info.state = test_case.state;
     SetSessionInfo(info);
-    EXPECT_EQ(test_case.expected_status, controller()->GetLoginStatus())
+    EXPECT_EQ(test_case.expected_status, controller()->login_status())
         << "Test case state=" << static_cast<int>(test_case.state);
   }
 }
@@ -267,7 +267,7 @@ TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
     session->display_email = "user1@test.com";
     controller()->UpdateUserSession(std::move(session));
 
-    EXPECT_EQ(test_case.expected_status, controller()->GetLoginStatus())
+    EXPECT_EQ(test_case.expected_status, controller()->login_status())
         << "Test case user_type=" << static_cast<int>(test_case.user_type);
   }
 }

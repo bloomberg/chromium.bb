@@ -61,8 +61,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
@@ -142,13 +140,9 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   accessibility_subscription_ = accessibility_manager->RegisterCallback(
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged,
                  base::Unretained(this)));
-
-  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
-  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
-
   input_method::InputMethodManager::Get()->AddObserver(this);
   input_method::InputMethodManager::Get()->AddImeMenuObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
@@ -190,7 +184,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   // Unregister a11y status subscription.
   accessibility_subscription_.reset();
 
-  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
 
@@ -204,8 +197,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
       connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->RemoveObserver(this);
-
-  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
 ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
@@ -435,16 +426,6 @@ SystemTrayDelegateChromeOS::CreateRotationLockTrayItem(ash::SystemTray* tray) {
   return base::MakeUnique<ash::TrayRotationLock>(tray);
 }
 
-void SystemTrayDelegateChromeOS::UserChangedChildStatus(
-    user_manager::User* user) {
-  Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
-
-  // Returned user_profile might be NULL on restoring Users on browser start.
-  // At some point profile is not yet fully initiated.
-  if (session_started_ && user_profile && user_profile_ == user_profile)
-    ash::Shell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-}
-
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
   return ash::Shell::Get()->system_tray_notifier();
 }
@@ -597,15 +578,6 @@ void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
   GetSystemTrayNotifier()->NotifyLastWindowClosed();
 }
 
-// Overridden from SessionManagerClient::Observer.
-void SystemTrayDelegateChromeOS::ScreenIsLocked() {
-  ash::Shell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-}
-
-void SystemTrayDelegateChromeOS::ScreenIsUnlocked() {
-  ash::Shell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-}
-
 // content::NotificationObserver implementation.
 void SystemTrayDelegateChromeOS::Observe(
     int type,
@@ -629,7 +601,6 @@ void SystemTrayDelegateChromeOS::Observe(
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
       session_started_ = true;
-      ash::Shell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
       SetProfile(ProfileManager::GetActiveUserProfile());
       break;
     }

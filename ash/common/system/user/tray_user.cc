@@ -225,11 +225,11 @@ void TrayUser::UserAddedToSession(const AccountId& account_id) {
   UpdateLayoutOfItem();
 
   // Update the user item.
-  UpdateAvatarImage(Shell::Get()->session_controller()->GetLoginStatus());
+  UpdateAvatarImage(Shell::Get()->session_controller()->login_status());
 }
 
 void TrayUser::UserSessionUpdated(const AccountId& account_id) {
-  UpdateAvatarImage(Shell::Get()->session_controller()->GetLoginStatus());
+  UpdateAvatarImage(Shell::Get()->session_controller()->login_status());
 }
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {

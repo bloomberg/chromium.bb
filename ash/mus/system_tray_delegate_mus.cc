@@ -37,7 +37,7 @@ SystemTrayDelegateMus::~SystemTrayDelegateMus() {
 }
 
 LoginStatus SystemTrayDelegateMus::GetUserLoginStatus() const {
-  return Shell::Get()->session_controller()->GetLoginStatus();
+  return Shell::Get()->session_controller()->login_status();
 }
 
 NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()

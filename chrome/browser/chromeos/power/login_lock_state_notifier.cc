@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/power/login_lock_state_notifier.h"
 
-#include "ash/common/login_status.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -19,27 +16,11 @@ class LockStateControllerDelegate;
 
 namespace chromeos {
 
-namespace {
-
-ash::LoginStatus GetCurrentLoginStatus() {
-  if (ash::Shell::Get()->system_tray_delegate())
-    return ash::Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
-
-  return ash::LoginStatus::NOT_LOGGED_IN;
-}
-
-}  // namespace
-
 LoginLockStateNotifier::LoginLockStateNotifier() {
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                  content::NotificationService::AllSources());
-
-  // Tell the controller about the initial state.
-  ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
 
   const ScreenLocker* locker = ScreenLocker::default_screen_locker();
   bool locked = locker && locker->locked();
@@ -53,10 +34,6 @@ void LoginLockStateNotifier::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
-      break;
-    }
     case chrome::NOTIFICATION_APP_TERMINATING:
       ash::Shell::GetInstance()->OnAppTerminating();
       break;

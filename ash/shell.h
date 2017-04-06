@@ -272,10 +272,6 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   void SetDisplayWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 
-  // Called when the user logs in.
-  // TODO(jamescook): Merge this with WmShell::UpdateAfterLoginStatusChange()?
-  void OnLoginStateChanged(LoginStatus status);
-
   // Called when the application is exiting.
   void OnAppTerminating();
 
@@ -644,6 +640,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
 
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
+  void LoginStatusChanged(LoginStatus login_status) override;
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);

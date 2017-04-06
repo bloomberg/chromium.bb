@@ -13,6 +13,8 @@ class AccountId;
 
 namespace ash {
 
+enum class LoginStatus;
+
 class ASH_EXPORT SessionStateObserver {
  public:
   // Called when active user has changed.
@@ -24,8 +26,11 @@ class ASH_EXPORT SessionStateObserver {
   // Called when a user session is updated, such as avatar change.
   virtual void UserSessionUpdated(const AccountId& account_id) {}
 
-  // Called when session state is changed.
+  // Called when the session state is changed.
   virtual void SessionStateChanged(session_manager::SessionState state) {}
+
+  // Called when the login status is changed. |login_status| is the new status.
+  virtual void LoginStatusChanged(LoginStatus login_status) {}
 
  protected:
   virtual ~SessionStateObserver() {}

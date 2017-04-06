@@ -77,12 +77,6 @@ void TestSessionControllerClient::SetSessionState(
     session_manager::SessionState state) {
   session_info_->state = state;
   controller_->SetSessionInfo(session_info_->Clone());
-
-  // TODO(xiyuan): Remove after LoginStatus becomes part of SessionController.
-  Shell::Get()->UpdateAfterLoginStatusChange(
-      state == session_manager::SessionState::ACTIVE
-          ? LoginStatus::USER
-          : LoginStatus::NOT_LOGGED_IN);
 }
 
 void TestSessionControllerClient::CreatePredefinedUserSessions(int count) {

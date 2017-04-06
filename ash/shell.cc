@@ -328,11 +328,6 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
   wm_shell_->SetDisplayWorkAreaInsets(WmWindow::Get(contains), insets);
 }
 
-void Shell::OnLoginStateChanged(LoginStatus status) {
-  for (auto& observer : shell_observers_)
-    observer.OnLoginStateChanged(status);
-}
-
 void Shell::OnAppTerminating() {
   for (auto& observer : shell_observers_)
     observer.OnAppTerminating();
@@ -1246,13 +1241,14 @@ void Shell::SessionStateChanged(session_manager::SessionState state) {
       CreateKeyboard();
     }
   }
+}
 
-  // Only trigger an update in mash because with classic ash chrome calls
-  // UpdateAfterLoginStatusChange() directly.
-  if (wm_shell_->IsRunningInMash()) {
-    // TODO(jamescook): Should this call Shell::OnLoginStatusChanged() too?
-    UpdateAfterLoginStatusChange(session_controller_->GetLoginStatus());
-  }
+void Shell::LoginStatusChanged(LoginStatus login_status) {
+  UpdateAfterLoginStatusChange(login_status);
+
+  // TODO(xiyuan): Update OnLoginStateChanged -> OnLoginStatusChanged.
+  for (auto& observer : shell_observers_)
+    observer.OnLoginStateChanged(login_status);
 }
 
 void Shell::OnPrefServiceInitialized(
