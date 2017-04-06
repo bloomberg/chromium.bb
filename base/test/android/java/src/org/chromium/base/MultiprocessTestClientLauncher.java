@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -99,19 +101,39 @@ public final class MultiprocessTestClientLauncher {
     }
 
     private static class ClientServiceConnection implements ServiceConnection {
-        private final String[] mCommandLine;
-        private final FileDescriptorInfo[] mFilesToMap;
+        private final Bundle mSetupBundle;
         private final Object mConnectedLock = new Object();
+        private final CountDownLatch mPidReceived = new CountDownLatch(1);
         private final int mSlot;
         private ITestClient mService = null;
         @GuardedBy("mConnectedLock")
         private boolean mConnected;
         private int mPid;
+        private ITestController mTestController;
+        private final ITestCallback.Stub mCallback = new ITestCallback.Stub() {
+            public void childConnected(ITestController controller) {
+                mTestController = controller;
+                // This method can be called before onServiceConnected below has set the PID.
+                // Wait for mPid to be set before notifying.
+                try {
+                    mPidReceived.await();
+                } catch (InterruptedException ie) {
+                    Log.e(TAG, "Interrupted while waiting for connection PID.");
+                    return;
+                }
+                // Now we are fully initialized, notify clients.
+                synchronized (mConnectedLock) {
+                    mConnected = true;
+                    mConnectedLock.notifyAll();
+                }
+            }
+        };
 
         ClientServiceConnection(int slot, String[] commandLine, FileDescriptorInfo[] filesToMap) {
             mSlot = slot;
-            mCommandLine = commandLine;
-            mFilesToMap = filesToMap;
+            mSetupBundle = new Bundle();
+            mSetupBundle.putStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
+            mSetupBundle.putParcelableArray(ChildProcessConstants.EXTRA_FILES, filesToMap);
         }
 
         public void waitForConnection() {
@@ -130,11 +152,12 @@ public final class MultiprocessTestClientLauncher {
         public void onServiceConnected(ComponentName className, IBinder service) {
             try {
                 mService = ITestClient.Stub.asInterface(service);
-                mPid = mService.launch(mCommandLine, mFilesToMap);
-                synchronized (mConnectedLock) {
-                    mConnected = true;
-                    mConnectedLock.notifyAll();
+                if (!mService.bindToCaller()) {
+                    Log.e(TAG, "Failed to bind to child service");
+                    return;
                 }
+                mPid = mService.setupConnection(mSetupBundle, mCallback);
+                mPidReceived.countDown();
             } catch (RemoteException e) {
                 Log.e(TAG, "Connect failed");
             }
@@ -149,8 +172,8 @@ public final class MultiprocessTestClientLauncher {
             sConnectionAllocator.freeConnection(this);
         }
 
-        public ITestClient getService() {
-            return mService;
+        public ITestController getTestController() {
+            return mTestController;
         }
 
         public String getServiceClassName() {
@@ -228,7 +251,7 @@ public final class MultiprocessTestClientLauncher {
             return null;
         }
         try {
-            return connection.getService().waitForMainToReturn(timeoutMs);
+            return connection.getTestController().waitForMainToReturn(timeoutMs);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote call to waitForMainToReturn failed.");
             return null;
@@ -246,9 +269,9 @@ public final class MultiprocessTestClientLauncher {
         }
         try {
             if (wait) {
-                connection.getService().forceStopSynchronous(exitCode);
+                connection.getTestController().forceStopSynchronous(exitCode);
             } else {
-                connection.getService().forceStop(exitCode);
+                connection.getTestController().forceStop(exitCode);
             }
         } catch (RemoteException e) {
             // We expect this failure, since the forceStop's service implementation calls
