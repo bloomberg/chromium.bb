@@ -53,6 +53,10 @@ namespace chromeos {
 
 namespace {
 
+using ReloadKeyCallback =
+    base::Callback<void(const scoped_refptr<PublicKey>& public_key,
+                        const scoped_refptr<PrivateKey>& private_key)>;
+
 bool IsOwnerInTests(const std::string& user_id) {
   if (user_id.empty() ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -70,9 +74,7 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot,
-    const base::Callback<void(const scoped_refptr<PublicKey>& public_key,
-                              const scoped_refptr<PrivateKey>& private_key)>&
-        callback) {
+    const ReloadKeyCallback& callback) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   std::vector<uint8_t> public_key_data;
@@ -106,28 +108,39 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
                           base::Bind(callback, public_key, private_key));
 }
 
-void LoadPrivateKeyOnIOThread(
+void ContinueLoadPrivateKeyOnIOThread(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const std::string username_hash,
-    const base::Callback<void(const scoped_refptr<PublicKey>& public_key,
-                              const scoped_refptr<PrivateKey>& private_key)>&
-        callback) {
+    const ReloadKeyCallback& callback,
+    crypto::ScopedPK11Slot private_slot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  crypto::EnsureNSSInit();
-  crypto::ScopedPK11Slot public_slot =
-      crypto::GetPublicSlotForChromeOSUser(username_hash);
-  crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
-      username_hash, base::Callback<void(crypto::ScopedPK11Slot)>());
 
   scoped_refptr<base::TaskRunner> task_runner =
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
-                 base::Passed(std::move(public_slot)),
-                 base::Passed(std::move(private_slot)), callback));
+      base::Bind(
+          &LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
+          base::Passed(crypto::GetPublicSlotForChromeOSUser(username_hash)),
+          base::Passed(std::move(private_slot)), callback));
+}
+
+void LoadPrivateKeyOnIOThread(const scoped_refptr<OwnerKeyUtil>& owner_key_util,
+                              const std::string username_hash,
+                              const ReloadKeyCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  crypto::EnsureNSSInit();
+
+  auto continue_load_private_key_callback =
+      base::Bind(&ContinueLoadPrivateKeyOnIOThread, owner_key_util,
+                 username_hash, callback);
+
+  crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
+      username_hash, continue_load_private_key_callback);
+  if (private_slot)
+    continue_load_private_key_callback.Run(std::move(private_slot));
 }
 
 bool DoesPrivateKeyExistAsyncHelper(
