@@ -11,9 +11,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
+#include "core/events/Event.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControlElementTypes.h"
+#include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
@@ -53,6 +56,28 @@ class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
  private:
   WebRemotePlaybackAvailability m_availability =
       WebRemotePlaybackAvailability::Unknown;
+};
+
+class MockLayoutObject : public LayoutObject {
+ public:
+  MockLayoutObject() : LayoutObject(nullptr) {}
+
+  const char* name() const override { return "MockLayoutObject"; }
+  void layout() override {}
+  FloatRect localBoundingBoxRectForAccessibility() const override {
+    return FloatRect();
+  }
+
+  void setShouldDoFullPaintInvalidation(PaintInvalidationReason) {
+    m_fullPaintInvalidationCallCount++;
+  }
+
+  int fullPaintInvalidationCallCount() const {
+    return m_fullPaintInvalidationCallCount;
+  }
+
+ private:
+  int m_fullPaintInvalidationCallCount = 0;
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
@@ -499,6 +524,35 @@ TEST_F(MediaControlsTest, TimelineImmediatelyUpdatesCurrentTime) {
   timeline->setValueAsNumber(duration / 2, ASSERT_NO_EXCEPTION);
   timeline->dispatchInputEvent();
   EXPECT_EQ(duration / 2, currentTimeDisplay->currentValue());
+}
+
+TEST_F(MediaControlsTest, VolumeSliderPaintInvalidationOnInput) {
+  ensureSizing();
+
+  MediaControlVolumeSliderElement* volumeSlider =
+      static_cast<MediaControlVolumeSliderElement*>(getElementByShadowPseudoId(
+          mediaControls(), "-webkit-media-controls-volume-slider"));
+  ASSERT_NE(nullptr, volumeSlider);
+
+  HTMLElement* element = volumeSlider;
+
+  MockLayoutObject layoutObject;
+  LayoutObject* prevLayoutObject = volumeSlider->layoutObject();
+  volumeSlider->setLayoutObject(&layoutObject);
+
+  Event* event = Event::create(EventTypeNames::input);
+  element->defaultEventHandler(event);
+  EXPECT_EQ(1, layoutObject.fullPaintInvalidationCallCount());
+
+  event = Event::create(EventTypeNames::input);
+  element->defaultEventHandler(event);
+  EXPECT_EQ(2, layoutObject.fullPaintInvalidationCallCount());
+
+  event = Event::create(EventTypeNames::input);
+  element->defaultEventHandler(event);
+  EXPECT_EQ(3, layoutObject.fullPaintInvalidationCallCount());
+
+  volumeSlider->setLayoutObject(prevLayoutObject);
 }
 
 }  // namespace blink

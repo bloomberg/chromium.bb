@@ -886,6 +886,8 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event) {
     double volume = value().toDouble();
     mediaElement().setVolume(volume);
     mediaElement().setMuted(false);
+    if (LayoutObject* layoutObject = this->layoutObject())
+      layoutObject->setShouldDoFullPaintInvalidation();
   }
 }
 
