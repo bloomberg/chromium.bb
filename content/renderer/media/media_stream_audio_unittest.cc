@@ -6,6 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -16,6 +17,7 @@
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/bind_to_current_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
@@ -239,6 +241,9 @@ class FakeMediaStreamAudioSink : public MediaStreamAudioSink {
 }  // namespace
 
 class MediaStreamAudioTest : public ::testing::Test {
+ public:
+  void CallbackFunction() { callback_is_called_ = true; }
+
  protected:
   void SetUp() override {
     blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_id"),
@@ -268,6 +273,8 @@ class MediaStreamAudioTest : public ::testing::Test {
   blink::WebMediaStreamTrack blink_audio_track_;
 
   base::MessageLoop message_loop_;
+
+  bool callback_is_called_ = false;
 };
 
 // Tests that a simple source-->track-->sink connection and audio data flow
@@ -450,6 +457,33 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   EXPECT_TRUE(sink.is_audio_silent());
 
   MediaStreamAudioTrack::From(another_blink_track)->RemoveSink(&another_sink);
+  track()->RemoveSink(&sink);
+}
+
+// Tests that a callback is fired when initialization completes on a track.
+TEST_F(MediaStreamAudioTest, CallbackOnTrackInitialization) {
+  // Create a source, connect it to track, and connect the track to a
+  // sink.
+  blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
+  ASSERT_TRUE(source());
+  EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
+  ASSERT_TRUE(track());
+  FakeMediaStreamAudioSink sink;
+  ASSERT_TRUE(!sink.params().IsValid());
+  track()->AddSink(&sink);
+  // The test callback is not thread-safe, so needs to be called on the
+  // current thread, not the thread from which it is triggered.
+  track()->SetFormatConfiguredCallback(media::BindToCurrentLoop(base::Bind(
+      &MediaStreamAudioTest::CallbackFunction, base::Unretained(this))));
+  EXPECT_FALSE(callback_is_called_);
+  // Wait until valid parameters are propagated to the sink, and then confirm
+  // the parameters are correct at the track and the sink.
+  while (!sink.params().IsValid())
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  // Since the callback is waiting to run on this thread, we have to run
+  // an event loop.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_is_called_);
   track()->RemoveSink(&sink);
 }
 

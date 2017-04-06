@@ -82,7 +82,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
   // implementation of the content::MediaStreamAudioTrack interface, which
   // becomes associated with and owned by |track|. Returns true if the source
   // was successfully started.
-  bool ConnectToTrack(const blink::WebMediaStreamTrack& track);
+  virtual bool ConnectToTrack(const blink::WebMediaStreamTrack& track);
 
   // Returns the current format of the audio passing through this source to the
   // sinks. This can return invalid parameters if the source has not yet been

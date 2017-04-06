@@ -250,7 +250,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
       const StreamDeviceInfo& device,
       const blink::WebMediaConstraints& constraints,
       const MediaStreamSource::ConstraintsCallback& source_ready) override {
-    MediaStreamAudioSource* source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public MediaStreamAudioSource {
        public:
@@ -261,21 +260,46 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
           return false;
         }
       };
-      source = new FailedAtLifeAudioSource();
+      FailedAtLifeAudioSource* source = new FailedAtLifeAudioSource();
+      source->SetDeviceInfo(device);
+      return source;
     } else {
-      source = new MediaStreamAudioSource(true);
-    }
-    source->SetDeviceInfo(device);
+      class GeneratingAudioSource : public MediaStreamAudioSource {
+       public:
+        GeneratingAudioSource() : MediaStreamAudioSource(true) {
+          SetFormat(
+              media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
+                                     media::CHANNEL_LAYOUT_MONO, 8000, 8, 1));
+        }
+        ~GeneratingAudioSource() override {}
+        void InjectAudio() {
+          std::unique_ptr<media::AudioBus> data =
+              media::AudioBus::Create(GetAudioParameters());
+          DeliverDataToTracks(*data, base::TimeTicks());
+        }
+        bool ConnectToTrack(
+            const blink::WebMediaStreamTrack& blink_track) override {
+          bool result = MediaStreamAudioSource::ConnectToTrack(blink_track);
+          // Queue a task to inject an audio sample after other stuff finishes.
+          // RunUntilIdle is required for this task to complete.
+          // We assume that "source" will survive long enough that it's safe
+          // to use base::Unretained.
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE, base::Bind(&GeneratingAudioSource::InjectAudio,
+                                    base::Unretained(this)));
+          return result;
+        }
+      };
 
-    if (!create_source_that_fails_) {
-      // RunUntilIdle is required for this task to complete.
+      GeneratingAudioSource* source = new GeneratingAudioSource();
+      source->SetDeviceInfo(device);
+      // Queue a task to inform about the source being ready.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&UserMediaClientImplUnderTest::SignalSourceReady,
                      source_ready, source));
+      return source;
     }
-
-    return source;
   }
 
   MediaStreamVideoSource* CreateVideoSource(
@@ -362,7 +386,6 @@ class UserMediaClientImplTest : public ::testing::Test {
     user_media_client_impl_->RequestUserMediaForTest();
     FakeMediaStreamDispatcherRequestUserMediaComplete();
     StartMockedVideoSource();
-
     EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
               user_media_client_impl_->request_state());
 

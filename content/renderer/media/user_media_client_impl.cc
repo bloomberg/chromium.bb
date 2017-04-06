@@ -20,6 +20,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
@@ -31,6 +32,7 @@
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -722,8 +724,6 @@ void UserMediaClientImpl::OnAudioSourceStarted(
     if (result == MEDIA_DEVICE_OK)
       local_sources_.push_back((*it));
     pending_local_sources_.erase(it);
-
-    NotifyCurrentRequestInfoOfAudioSourceStarted(source, result, result_name);
     return;
   }
   NOTREACHED();
@@ -1311,10 +1311,18 @@ void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
 
   sources_.push_back(track.source());
   bool connected = native_source->ConnectToTrack(track);
-  if (!is_pending) {
-    OnTrackStarted(
-        native_source,
-        connected ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE, "");
+  if (!is_pending && !connected) {
+    // It's a failure, and it's final.
+    OnTrackStarted(native_source, MEDIA_DEVICE_TRACK_START_FAILURE, "");
+  } else {
+    // The request may succeed later.
+    // The track will be marked as connected once the configuration has
+    // propagated.
+    MediaStreamAudioTrack::From(track)->SetFormatConfiguredCallback(
+        media::BindToCurrentLoop(base::Bind(
+            &UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
+            AsWeakPtr(), native_source, content::MEDIA_DEVICE_OK,
+            blink::WebString())));
   }
 }
 
@@ -1392,7 +1400,9 @@ void UserMediaClientImpl::UserMediaRequestInfo::OnAudioSourceStarted(
   // ignore the notification.
   auto found = std::find(sources_waiting_for_callback_.begin(),
                          sources_waiting_for_callback_.end(), source);
-  if (found != sources_waiting_for_callback_.end())
+  // If the start failed, inform the request here.
+  if (found != sources_waiting_for_callback_.end() &&
+      result != content::MEDIA_DEVICE_OK)
     OnTrackStarted(source, result, result_name);
 }
 
