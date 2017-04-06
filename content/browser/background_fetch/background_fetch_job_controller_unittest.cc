@@ -30,96 +30,10 @@ namespace {
 
 const char kExampleTag[] = "my-example-tag";
 
-// Use the basic MockDownloadManager, but override it so that it implements the
-// functionality that the JobController requires.
-class MockDownloadManagerWithCallback : public MockDownloadManager {
- public:
-  MockDownloadManagerWithCallback() = default;
-  ~MockDownloadManagerWithCallback() override = default;
-
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
-    DownloadUrlMock(params.get());
-
-    auto download_item = base::MakeUnique<FakeDownloadItem>();
-    download_item->SetState(DownloadItem::DownloadState::IN_PROGRESS);
-    download_item->SetGuid(base::GenerateGUID());
-
-    // Post a task to invoke the callback included with the |params|. This is
-    // done asynchronously to match the semantics of the download manager.
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(params->callback(), download_item.get(),
-                                       DOWNLOAD_INTERRUPT_REASON_NONE));
-
-    // Post a task for automatically completing the download item if requested.
-    if (post_completion_task_enabled_) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&MockDownloadManagerWithCallback::MarkAsCompleted,
-                     base::Unretained(this), download_item.get()));
-    }
-
-    download_items_.insert(
-        std::make_pair(download_item->GetGuid(), std::move(download_item)));
-  }
-
-  DownloadItem* GetDownloadByGuid(const std::string& guid) override {
-    auto iter = download_items_.find(guid);
-    if (iter != download_items_.end())
-      return iter->second.get();
-
-    return nullptr;
-  }
-
-  // Returns a vector with pointers to all downloaded items. The lifetime of the
-  // returned pointers is scoped to the lifetime of this instance, which will be
-  // kept alive for the lifetime of the tests.
-  std::vector<FakeDownloadItem*> GetDownloadItems() {
-    std::vector<FakeDownloadItem*> download_items;
-    for (const auto& pair : download_items_)
-      download_items.push_back(pair.second.get());
-
-    return download_items;
-  }
-
-  // Will automatically mark downloads as completing shortly after they start.
-  void set_post_completion_task_enabled(bool enabled) {
-    post_completion_task_enabled_ = enabled;
-  }
-
- private:
-  // Marks the |download_item| as having completed.
-  void MarkAsCompleted(FakeDownloadItem* download_item) {
-    download_item->SetState(DownloadItem::DownloadState::COMPLETE);
-    download_item->NotifyDownloadUpdated();
-  }
-
-  // All ever-created download items for this manager. Owned by this instance.
-  std::unordered_map<std::string, std::unique_ptr<FakeDownloadItem>>
-      download_items_;
-
-  // Whether a task should be posted for automatically marking the download as
-  // having completed, avoiding complicated spinning for tests that don't care.
-  bool post_completion_task_enabled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadManagerWithCallback);
-};
-
 class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
  public:
-  BackgroundFetchJobControllerTest()
-      : data_manager_(browser_context()), download_manager_(nullptr) {}
+  BackgroundFetchJobControllerTest() : data_manager_(browser_context()) {}
   ~BackgroundFetchJobControllerTest() override = default;
-
-  void SetUp() override {
-    BackgroundFetchTestBase::SetUp();
-
-    download_manager_ = new MockDownloadManagerWithCallback();
-
-    // The download_manager_ ownership is given to the BrowserContext, and the
-    // BrowserContext will take care of deallocating it.
-    BrowserContext::SetDownloadManagerForTesting(browser_context(),
-                                                 download_manager_);
-  }
 
   // Creates a new Background Fetch registration, whose id will be stored in
   // the |*registration_id|, and registers it with the DataManager for the
@@ -157,6 +71,13 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     ASSERT_GE(out_initial_requests->size(), 1u);
     ASSERT_LE(out_initial_requests->size(),
               kMaximumBackgroundFetchParallelRequests);
+
+    // Provide fake responses for the given |request_data| pairs.
+    for (const auto& pair : request_data) {
+      CreateRequestWithProvidedResponse(pair.second, pair.first,
+                                        200 /* status_code */,
+                                        "" /* response_text */);
+    }
   }
 
   // Creates a new BackgroundFetchJobController instance.
@@ -175,7 +96,6 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
  protected:
   BackgroundFetchDataManager data_manager_;
-  MockDownloadManagerWithCallback* download_manager_;  // BrowserContext owned
   bool did_complete_job_ = false;
 
   // Closure that will be invoked when the JobController has completed all
@@ -227,29 +147,14 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
   EXPECT_EQ(controller->state(),
             BackgroundFetchJobController::State::INITIALIZED);
-  EXPECT_CALL(*download_manager_, DownloadUrlMock(_)).Times(1);
 
   controller->Start(initial_requests /* deliberate copy */);
   EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
-
-  // Allows for proper initialization of the FakeDownloadItems.
-  base::RunLoop().RunUntilIdle();
-
-  std::vector<FakeDownloadItem*> download_items =
-      download_manager_->GetDownloadItems();
-  ASSERT_EQ(download_items.size(), 1u);
 
   // Mark the single download item as finished, completing the job.
   {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
-
-    FakeDownloadItem* item = download_items[0];
-
-    EXPECT_EQ(DownloadItem::DownloadState::IN_PROGRESS, item->GetState());
-
-    item->SetState(DownloadItem::DownloadState::COMPLETE);
-    item->NotifyDownloadUpdated();
 
     run_loop.Run();
   }
@@ -281,16 +186,11 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   EXPECT_EQ(controller->state(),
             BackgroundFetchJobController::State::INITIALIZED);
 
-  // Enable automatically marking downloads as finished.
-  download_manager_->set_post_completion_task_enabled(true);
-
   // Continue spinning until the Job Controller has completed all the requests.
   // The Download Manager has been told to automatically mark them as finished.
   {
     base::RunLoop run_loop;
     job_completed_closure_ = run_loop.QuitClosure();
-
-    EXPECT_CALL(*download_manager_, DownloadUrlMock(_)).Times(5);
 
     controller->Start(initial_requests /* deliberate copy */);
     EXPECT_EQ(controller->state(),

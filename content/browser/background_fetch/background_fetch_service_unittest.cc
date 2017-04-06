@@ -6,12 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -22,105 +18,12 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/test/fake_download_item.h"
-#include "content/public/test/mock_download_manager.h"
 
 namespace content {
 namespace {
 
 const char kExampleTag[] = "my-background-fetch";
 const char kAlternativeTag[] = "my-alternative-fetch";
-
-// Faked download manager that will respond to known HTTP requests with a test-
-// defined response. See CreateRequestWithProvidedResponse().
-class RespondingDownloadManager : public MockDownloadManager {
- public:
-  RespondingDownloadManager() : weak_ptr_factory_(this) {}
-  ~RespondingDownloadManager() override = default;
-
-  // Responds to requests to |url| with the |status_code| and |response_text|.
-  void RegisterResponse(const GURL& url,
-                        int status_code,
-                        const std::string& response_text) {
-    DCHECK_EQ(registered_responses_.count(url), 0u);
-    registered_responses_[url] = std::make_pair(status_code, response_text);
-  }
-
-  // Called when the Background Fetch system starts a download, all information
-  // for which is contained in the |params|.
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
-    auto iter = registered_responses_.find(params->url());
-    if (iter == registered_responses_.end())
-      return;
-
-    std::unique_ptr<FakeDownloadItem> download_item =
-        base::MakeUnique<FakeDownloadItem>();
-
-    download_item->SetURL(params->url());
-    download_item->SetUrlChain({params->url()});
-    download_item->SetState(DownloadItem::DownloadState::IN_PROGRESS);
-    download_item->SetGuid(base::GenerateGUID());
-    download_item->SetStartTime(base::Time::Now());
-
-    // Asynchronously invoke the callback set on the |params|, and then continue
-    // dealing with the response in this class.
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(params->callback(), download_item.get(),
-                   DOWNLOAD_INTERRUPT_REASON_NONE),
-        base::Bind(&RespondingDownloadManager::DidStartDownload,
-                   weak_ptr_factory_.GetWeakPtr(), download_item.get()));
-
-    download_items_.push_back(std::move(download_item));
-  }
-
- private:
-  // Called when the download has been "started" by the download manager. This
-  // is where we finish the download by sending a single update.
-  void DidStartDownload(FakeDownloadItem* download_item) {
-    auto iter = registered_responses_.find(download_item->GetURL());
-    DCHECK(iter != registered_responses_.end());
-
-    const ResponseInfo& response_info = iter->second;
-
-    download_item->SetState(DownloadItem::DownloadState::COMPLETE);
-    download_item->SetEndTime(base::Time::Now());
-
-    base::FilePath response_path;
-    if (!temp_directory_.IsValid())
-      ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-
-    // Write the |response_info|'s response_text to a temporary file.
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory_.GetPath(),
-                                               &response_path));
-
-    ASSERT_NE(-1 /* error */,
-              base::WriteFile(response_path, response_info.second.c_str(),
-                              response_info.second.size()));
-
-    download_item->SetTargetFilePath(response_path);
-    download_item->SetReceivedBytes(response_info.second.size());
-
-    // Notify the Job Controller about the download having been updated.
-    download_item->NotifyDownloadUpdated();
-  }
-
-  using ResponseInfo =
-      std::pair<int /* status_code */, std::string /* response_text */>;
-
-  // Map of URL to the response information associated with that URL.
-  std::map<GURL, ResponseInfo> registered_responses_;
-
-  // Only used to guarantee the lifetime of the created FakeDownloadItems.
-  std::vector<std::unique_ptr<FakeDownloadItem>> download_items_;
-
-  // Temporary directory in which successfully downloaded files will be stored.
-  base::ScopedTempDir temp_directory_;
-
-  base::WeakPtrFactory<RespondingDownloadManager> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RespondingDownloadManager);
-};
 
 IconDefinition CreateIcon(std::string src,
                           std::string sizes,
@@ -214,35 +117,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     run_loop.Run();
   }
 
-  // Creates a ServiceWorkerFetchRequest instance for the given details and
-  // provides a faked response with |status_code| and |response_text| to the
-  // download manager, that will resolve the download with that information.
-  ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
-      const std::string& method,
-      const std::string& url_string,
-      int status_code,
-      const std::string& response_text) {
-    GURL url(url_string);
-
-    // Register the |status_code| and |response_text| with the download manager.
-    download_manager_->RegisterResponse(GURL(url_string), status_code,
-                                        response_text);
-
-    // Create a ServiceWorkerFetchRequest request with the same information.
-    return ServiceWorkerFetchRequest(url, method, ServiceWorkerHeaderMap(),
-                                     Referrer(), false /* is_reload */);
-  }
-
   // BackgroundFetchTestBase overrides:
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
-
-    download_manager_ = new RespondingDownloadManager();
-
-    // The |download_manager_| ownership is given to the BrowserContext, and the
-    // BrowserContext will take care of deallocating it.
-    BrowserContext::SetDownloadManagerForTesting(browser_context(),
-                                                 download_manager_);
 
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(
@@ -256,17 +133,15 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   }
 
   void TearDown() override {
-    service_.reset();
+    BackgroundFetchTestBase::TearDown();
 
-    EXPECT_CALL(*download_manager_, Shutdown()).Times(1);
+    service_.reset();
 
     context_->Shutdown();
     context_ = nullptr;
 
     // Give pending shutdown operations a chance to finish.
     base::RunLoop().RunUntilIdle();
-
-    BackgroundFetchTestBase::TearDown();
   }
 
  private:
@@ -305,8 +180,6 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
   scoped_refptr<BackgroundFetchContext> context_;
   std::unique_ptr<BackgroundFetchServiceImpl> service_;
-
-  RespondingDownloadManager* download_manager_;  // BrowserContext owned
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceTest);
 };

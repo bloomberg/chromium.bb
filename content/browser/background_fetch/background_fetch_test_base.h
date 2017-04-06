@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,7 @@
 namespace content {
 
 class BackgroundFetchRegistrationId;
+class MockDownloadManager;
 class ServiceWorkerRegistration;
 
 // Base class containing common functionality needed in unit tests written for
@@ -42,6 +44,15 @@ class BackgroundFetchTestBase : public ::testing::Test {
                             BackgroundFetchRegistrationId* registration_id)
       WARN_UNUSED_RESULT;
 
+  // Creates a ServiceWorkerFetchRequest instance for the given details and
+  // provides a faked response with |status_code| and |response_text| to the
+  // download manager, that will resolve the download with that information.
+  ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
+      const std::string& method,
+      const std::string& url_string,
+      int status_code,
+      const std::string& response_text);
+
   // Returns the embedded worker test helper instance, which can be used to
   // influence the behaviour of the Service Worker events.
   BackgroundFetchEmbeddedWorkerTestHelper* embedded_worker_test_helper() {
@@ -51,12 +62,19 @@ class BackgroundFetchTestBase : public ::testing::Test {
   // Returns the browser context that should be used for the tests.
   BrowserContext* browser_context() { return &browser_context_; }
 
+  // Returns the download manager used for the tests.
+  MockDownloadManager* download_manager();
+
   // Returns the origin that should be used for Background Fetch tests.
   const url::Origin& origin() const { return origin_; }
 
  private:
+  class RespondingDownloadManager;
+
   TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
+
+  RespondingDownloadManager* download_manager_;  // owned by |browser_context_|
 
   BackgroundFetchEmbeddedWorkerTestHelper embedded_worker_test_helper_;
 
