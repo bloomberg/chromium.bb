@@ -125,9 +125,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
         @Override
         public void onCounterFinished(String result) {
-            mCheckbox.setSummaryOn(result);
+            // The new dialog will always show the summary, the old one only when checked.
             if (ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
-                mCheckbox.setSummaryOff(result);
+                mCheckbox.setSummary(result);
+            } else {
+                mCheckbox.setSummaryOn(result);
             }
             if (mShouldAnnounceCounterResult) {
                 mCheckbox.announceForAccessibility(result);
@@ -144,8 +146,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         }
     }
 
-    private static final String PREF_HISTORY = "clear_history_checkbox";
-    private static final String PREF_COOKIES = "clear_cookies_checkbox";
+    @VisibleForTesting
+    public static final String PREF_HISTORY = "clear_history_checkbox";
+    @VisibleForTesting
+    public static final String PREF_COOKIES = "clear_cookies_checkbox";
     private static final String PREF_CACHE = "clear_cache_checkbox";
     private static final String PREF_PASSWORDS = "clear_passwords_checkbox";
     private static final String PREF_FORM_DATA = "clear_form_data_checkbox";
@@ -237,7 +241,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     /**
      * An option to be shown in the time period spiner.
      */
-    private static class TimePeriodSpinnerOption {
+    protected static class TimePeriodSpinnerOption {
         private int mTimePeriod;
         private String mTitle;
 
@@ -359,7 +363,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * Returns the Array of time periods. Options are displayed in the same order as they appear
      * in the array.
      */
-    private TimePeriodSpinnerOption[] getTimePeriodSpinnerOptions() {
+    protected TimePeriodSpinnerOption[] getTimePeriodSpinnerOptions() {
         Activity activity = getActivity();
 
         TimePeriodSpinnerOption[] options = new TimePeriodSpinnerOption[] {

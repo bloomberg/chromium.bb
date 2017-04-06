@@ -47,14 +47,17 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (!AreCountersEnabled())
     return nullptr;
 
-  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory ||
-      pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
+  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     return base::MakeUnique<browsing_data::HistoryCounter>(
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS),
         base::Bind(&GetUpdatedWebHistoryService,
                    base::Unretained(profile)),
         ProfileSyncServiceFactory::GetForProfile(profile));
+  }
+  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
+    // The history option on the basic tab doesn't use a counter.
+    return nullptr;
   }
 
   if (pref_name == browsing_data::prefs::kDeleteCache ||
@@ -65,6 +68,10 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (pref_name == browsing_data::prefs::kDeleteCookies &&
       IsSiteDataCounterEnabled()) {
     return base::MakeUnique<SiteDataCounter>(profile);
+  }
+  if (pref_name == browsing_data::prefs::kDeleteCookiesBasic) {
+    // The cookies option on the basic tab doesn't use a counter.
+    return nullptr;
   }
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {

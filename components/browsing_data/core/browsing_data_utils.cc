@@ -86,8 +86,10 @@ base::string16 GetCounterTextFromResult(
             ? IDS_DEL_PASSWORDS_COUNTER
             : IDS_DEL_DOWNLOADS_COUNTER,
         count);
-  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory ||
-             pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
+  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
+    // The basic tab doesn't show history counter results.
+    NOTREACHED();
+  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     // History counter.
     const browsing_data::HistoryCounter::HistoryResult* history_result =
         static_cast<const browsing_data::HistoryCounter::HistoryResult*>(
@@ -95,7 +97,6 @@ base::string16 GetCounterTextFromResult(
     browsing_data::BrowsingDataCounter::ResultInt local_item_count =
         history_result->Value();
     bool has_synced_visits = history_result->has_synced_visits();
-
     text = has_synced_visits
                ? l10n_util::GetPluralStringFUTF16(
                      IDS_DEL_BROWSING_HISTORY_COUNTER_SYNCED, local_item_count)
