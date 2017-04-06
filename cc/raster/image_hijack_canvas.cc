@@ -25,12 +25,14 @@ class ScopedDecodedImageLock {
                          sk_sp<const SkImage> image,
                          const SkRect& src_rect,
                          const SkMatrix& matrix,
-                         const SkPaint* paint)
+                         const SkPaint* paint,
+                         const gfx::ColorSpace& target_color_space)
       : image_decode_cache_(image_decode_cache),
         draw_image_(std::move(image),
                     RoundOutRect(src_rect),
                     paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
-                    matrix),
+                    matrix,
+                    target_color_space),
         decoded_draw_image_(
             image_decode_cache_->GetDecodedImageForDraw(draw_image_)) {
     DCHECK(draw_image_.image()->isLazyGenerated());
@@ -76,7 +78,8 @@ class ScopedImagePaint {
   static base::Optional<ScopedImagePaint> TryCreate(
       ImageDecodeCache* image_decode_cache,
       const SkMatrix& ctm,
-      const SkPaint& paint) {
+      const SkPaint& paint,
+      const gfx::ColorSpace& target_color_space) {
     SkShader* shader = paint.getShader();
     if (!shader)
       return base::Optional<ScopedImagePaint>();
@@ -93,7 +96,7 @@ class ScopedImagePaint {
     ScopedDecodedImageLock scoped_lock(
         image_decode_cache, sk_ref_sp(image),
         SkRect::MakeIWH(image->width(), image->height()), total_image_matrix,
-        &paint);
+        &paint, target_color_space);
     const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
     if (!decoded_image.image())
       return base::Optional<ScopedImagePaint>();
@@ -130,10 +133,12 @@ const SkImage* GetImageInPaint(const SkPaint& paint) {
 ImageHijackCanvas::ImageHijackCanvas(int width,
                                      int height,
                                      ImageDecodeCache* image_decode_cache,
-                                     const ImageIdFlatSet* images_to_skip)
+                                     const ImageIdFlatSet* images_to_skip,
+                                     const gfx::ColorSpace& target_color_space)
     : SkNWayCanvas(width, height),
       image_decode_cache_(image_decode_cache),
-      images_to_skip_(images_to_skip) {}
+      images_to_skip_(images_to_skip),
+      target_color_space_(target_color_space) {}
 
 void ImageHijackCanvas::onDrawPicture(const SkPicture* picture,
                                       const SkMatrix* matrix,
@@ -164,7 +169,8 @@ void ImageHijackCanvas::onDrawImage(const SkImage* image,
 
   ScopedDecodedImageLock scoped_lock(
       image_decode_cache_, sk_ref_sp(image),
-      SkRect::MakeIWH(image->width(), image->height()), ctm, paint);
+      SkRect::MakeIWH(image->width(), image->height()), ctm, paint,
+      target_color_space_);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
     return;
@@ -210,7 +216,7 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
   matrix.postConcat(getTotalMatrix());
 
   ScopedDecodedImageLock scoped_lock(image_decode_cache_, sk_ref_sp(image),
-                                     *src, matrix, paint);
+                                     *src, matrix, paint, target_color_space_);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
     return;
@@ -237,8 +243,8 @@ void ImageHijackCanvas::onDrawRect(const SkRect& r, const SkPaint& paint) {
   if (ShouldSkipImageInPaint(paint))
     return;
 
-  base::Optional<ScopedImagePaint> image_paint =
-      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  base::Optional<ScopedImagePaint> image_paint = ScopedImagePaint::TryCreate(
+      image_decode_cache_, getTotalMatrix(), paint, target_color_space_);
   if (!image_paint.has_value()) {
     SkNWayCanvas::onDrawRect(r, paint);
     return;
@@ -252,8 +258,8 @@ void ImageHijackCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
   if (ShouldSkipImageInPaint(paint))
     return;
 
-  base::Optional<ScopedImagePaint> image_paint =
-      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  base::Optional<ScopedImagePaint> image_paint = ScopedImagePaint::TryCreate(
+      image_decode_cache_, getTotalMatrix(), paint, target_color_space_);
   if (!image_paint.has_value()) {
     SkNWayCanvas::onDrawPath(path, paint);
     return;
@@ -267,8 +273,8 @@ void ImageHijackCanvas::onDrawOval(const SkRect& r, const SkPaint& paint) {
   if (ShouldSkipImageInPaint(paint))
     return;
 
-  base::Optional<ScopedImagePaint> image_paint =
-      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  base::Optional<ScopedImagePaint> image_paint = ScopedImagePaint::TryCreate(
+      image_decode_cache_, getTotalMatrix(), paint, target_color_space_);
   if (!image_paint.has_value()) {
     SkNWayCanvas::onDrawOval(r, paint);
     return;
@@ -286,8 +292,8 @@ void ImageHijackCanvas::onDrawArc(const SkRect& r,
   if (ShouldSkipImageInPaint(paint))
     return;
 
-  base::Optional<ScopedImagePaint> image_paint =
-      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  base::Optional<ScopedImagePaint> image_paint = ScopedImagePaint::TryCreate(
+      image_decode_cache_, getTotalMatrix(), paint, target_color_space_);
   if (!image_paint.has_value()) {
     SkNWayCanvas::onDrawArc(r, start_angle, sweep_angle, use_center, paint);
     return;
@@ -302,8 +308,8 @@ void ImageHijackCanvas::onDrawRRect(const SkRRect& rr, const SkPaint& paint) {
   if (ShouldSkipImageInPaint(paint))
     return;
 
-  base::Optional<ScopedImagePaint> image_paint =
-      ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
+  base::Optional<ScopedImagePaint> image_paint = ScopedImagePaint::TryCreate(
+      image_decode_cache_, getTotalMatrix(), paint, target_color_space_);
   if (!image_paint.has_value()) {
     SkNWayCanvas::onDrawRRect(rr, paint);
     return;

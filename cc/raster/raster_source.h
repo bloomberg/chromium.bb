@@ -68,7 +68,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // canvas_playback_rect can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::ColorSpace& canvas_color_space,
+                        const gfx::ColorSpace& target_color_space,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
                         const gfx::AxisTransform2d& raster_transform,
@@ -84,7 +84,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Note that this should only be called after the image decode controller has
   // been set, which happens during commit.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                const gfx::ColorSpace& canvas_color_space,
+                                const gfx::ColorSpace& target_color_space,
                                 const PlaybackSettings& settings) const;
 
   // Returns whether the given rect at given scale is of solid color in
@@ -108,6 +108,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // they were being using during raster at scale |raster_scale|.
   void GetDiscardableImagesInRect(const gfx::Rect& layer_rect,
                                   float contents_scale,
+                                  const gfx::ColorSpace& target_color_space,
                                   std::vector<DrawImage>* images) const;
 
   // Return true iff this raster source can raster the given rect in layer
@@ -167,7 +168,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
  private:
   void RasterCommon(SkCanvas* canvas,
-                    const gfx::ColorSpace& canvas_color_space,
                     SkPicture::AbortCallback* callback) const;
 
   void PrepareForPlaybackToCanvas(SkCanvas* canvas) const;

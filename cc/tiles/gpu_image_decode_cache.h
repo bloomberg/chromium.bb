@@ -233,10 +233,12 @@ class CC_EXPORT GpuImageDecodeCache
   struct ImageData : public base::RefCounted<ImageData> {
     ImageData(DecodedDataMode mode,
               size_t size,
+              const gfx::ColorSpace& target_color_space,
               const SkImage::DeferredTextureImageUsageParams& upload_params);
 
     const DecodedDataMode mode;
     const size_t size;
+    gfx::ColorSpace target_color_space;
     bool is_at_raster = false;
     SkImage::DeferredTextureImageUsageParams upload_params;
 
@@ -266,7 +268,23 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Uniquely identifies (without collisions) a specific DrawImage for use in
   // the |in_use_cache_|.
-  using InUseCacheKey = uint64_t;
+  struct InUseCacheKeyHash;
+  struct InUseCacheKey {
+    static InUseCacheKey FromDrawImage(const DrawImage& draw_image);
+    bool operator==(const InUseCacheKey& other) const;
+
+   private:
+    friend struct GpuImageDecodeCache::InUseCacheKeyHash;
+    explicit InUseCacheKey(const DrawImage& draw_image);
+
+    uint32_t image_id;
+    int mip_level;
+    SkFilterQuality filter_quality;
+    gfx::ColorSpace target_color_space;
+  };
+  struct InUseCacheKeyHash {
+    size_t operator()(const InUseCacheKey&) const;
+  };
 
   // All private functions should only be called while holding |lock_|. Some
   // functions also require the |context_| lock. These are indicated by
@@ -338,7 +356,8 @@ class CC_EXPORT GpuImageDecodeCache
 
   // |in_use_cache_| represents the in-use (short-lived) cache. Entries are
   // cleaned up as soon as their ref count reaches zero.
-  using InUseCache = std::unordered_map<InUseCacheKey, InUseCacheEntry>;
+  using InUseCache =
+      std::unordered_map<InUseCacheKey, InUseCacheEntry, InUseCacheKeyHash>;
   InUseCache in_use_cache_;
 
   size_t max_working_set_bytes_;

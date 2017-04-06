@@ -79,8 +79,9 @@ class CheckerImageTrackerTest : public testing::Test,
                         : kNonCheckerableImageDimension;
     sk_sp<SkImage> image =
         CreateDiscardableImage(gfx::Size(dimension, dimension));
+    gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
     return DrawImage(image, SkIRect::MakeWH(image->width(), image->height()),
-                     kNone_SkFilterQuality, SkMatrix::I());
+                     kNone_SkFilterQuality, SkMatrix::I(), target_color_space);
   }
 
   // CheckerImageTrackerClient implementation.

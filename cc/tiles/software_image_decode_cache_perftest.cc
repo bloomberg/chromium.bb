@@ -57,7 +57,8 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
         for (auto& scale : scales) {
           images.emplace_back(
               CreateImage(rect.width(), rect.height()), subrect, quality,
-              CreateMatrix(SkSize::Make(scale.first, scale.second)));
+              CreateMatrix(SkSize::Make(scale.first, scale.second)),
+              gfx::ColorSpace());
         }
       }
     }

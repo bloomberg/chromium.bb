@@ -47,6 +47,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   bool empty() const { return all_images_.empty(); }
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float contents_scale,
+                                  const gfx::ColorSpace& target_color_space,
                                   std::vector<DrawImage>* images) const;
   gfx::Rect GetRectForImage(ImageId image_id) const;
 

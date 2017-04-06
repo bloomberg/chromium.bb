@@ -39,7 +39,9 @@ TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {
   // will hit an error.
   testing::StrictMock<MockImageDecodeCache> image_decode_cache;
   ImageIdFlatSet images_to_skip;
-  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip);
+  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip,
+                           target_color_space);
 
   // Use an SkBitmap backed image to ensure that the image is not
   // lazy-generated.
@@ -72,7 +74,9 @@ TEST(ImageHijackCanvasTest, ImagesToSkipAreSkipped) {
   ImageIdFlatSet images_to_skip;
   sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
   images_to_skip.insert(image->uniqueID());
-  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip);
+  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip,
+                           target_color_space);
 
   SkPaint paint;
   canvas.drawImage(image, 0, 0, &paint);

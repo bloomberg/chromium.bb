@@ -488,8 +488,10 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
 void DisplayItemList::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
     float contents_scale,
+    const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) {
-  image_map_.GetDiscardableImagesInRect(rect, contents_scale, images);
+  image_map_.GetDiscardableImagesInRect(rect, contents_scale,
+                                        target_color_space, images);
 }
 
 gfx::Rect DisplayItemList::GetRectForImage(ImageId image_id) const {

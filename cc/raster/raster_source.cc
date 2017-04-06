@@ -63,7 +63,7 @@ RasterSource::~RasterSource() {}
 
 void RasterSource::PlaybackToCanvas(
     SkCanvas* raster_canvas,
-    const gfx::ColorSpace& canvas_color_space,
+    const gfx::ColorSpace& target_color_space,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
     const gfx::AxisTransform2d& raster_transform,
@@ -81,23 +81,31 @@ void RasterSource::PlaybackToCanvas(
   raster_canvas->translate(raster_transform.translation().x(),
                            raster_transform.translation().y());
   raster_canvas->scale(raster_transform.scale(), raster_transform.scale());
-  PlaybackToCanvas(raster_canvas, canvas_color_space, settings);
+  PlaybackToCanvas(raster_canvas, target_color_space, settings);
   raster_canvas->restore();
 }
 
-void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
-                                    const gfx::ColorSpace& canvas_color_space,
+void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
+                                    const gfx::ColorSpace& target_color_space,
                                     const PlaybackSettings& settings) const {
+  SkCanvas* raster_canvas = input_canvas;
+  std::unique_ptr<SkCanvas> color_transform_canvas;
+  if (target_color_space.IsValid()) {
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        input_canvas, target_color_space.ToSkColorSpace());
+    raster_canvas = color_transform_canvas.get();
+  }
+
   if (!settings.playback_to_shared_canvas)
     PrepareForPlaybackToCanvas(raster_canvas);
 
   if (settings.skip_images) {
     SkipImageCanvas canvas(raster_canvas);
-    RasterCommon(&canvas, canvas_color_space, nullptr);
+    RasterCommon(&canvas, nullptr);
   } else if (settings.use_image_hijack_canvas) {
     const SkImageInfo& info = raster_canvas->imageInfo();
     ImageHijackCanvas canvas(info.width(), info.height(), image_decode_cache_,
-                             &settings.images_to_skip);
+                             &settings.images_to_skip, target_color_space);
     // Before adding the canvas, make sure that the ImageHijackCanvas is aware
     // of the current transform and clip, which may affect the clip bounds.
     // Since we query the clip bounds of the current canvas to get the list of
@@ -107,9 +115,9 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
     canvas.setMatrix(raster_canvas->getTotalMatrix());
     canvas.addCanvas(raster_canvas);
 
-    RasterCommon(&canvas, canvas_color_space, nullptr);
+    RasterCommon(&canvas, nullptr);
   } else {
-    RasterCommon(raster_canvas, canvas_color_space, nullptr);
+    RasterCommon(raster_canvas, nullptr);
   }
 }
 
@@ -202,16 +210,8 @@ void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
   canvas->restore();
 }
 
-void RasterSource::RasterCommon(SkCanvas* input_canvas,
-                                const gfx::ColorSpace& target_color_space,
+void RasterSource::RasterCommon(SkCanvas* raster_canvas,
                                 SkPicture::AbortCallback* callback) const {
-  SkCanvas* raster_canvas = input_canvas;
-  std::unique_ptr<SkCanvas> color_transform_canvas;
-  if (target_color_space.IsValid()) {
-    color_transform_canvas = SkCreateColorSpaceXformCanvas(
-        input_canvas, target_color_space.ToSkColorSpace());
-    raster_canvas = color_transform_canvas.get();
-  }
   DCHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
@@ -225,8 +225,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
   if (!size_.IsEmpty()) {
     PrepareForPlaybackToCanvas(canvas);
-    // No target color space should be set for generating an SkPicture.
-    RasterCommon(canvas, gfx::ColorSpace(), nullptr);
+    RasterCommon(canvas, nullptr);
   }
 
   return recorder.finishRecordingAsPicture();
@@ -250,18 +249,20 @@ bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
   layer_rect.Intersect(gfx::Rect(size_));
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
   canvas.translate(-layer_rect.x(), -layer_rect.y());
-  // No target color space should be set for solid color analysis (the
-  // resulting solid color will be known to be sRGB).
-  RasterCommon(&canvas, gfx::ColorSpace(), &canvas);
+  // Note that because no color conversion is applied to solid color analysis,
+  // the resulting solid color will be known to be sRGB.
+  RasterCommon(&canvas, &canvas);
   return canvas.GetColorIfSolid(color);
 }
 
 void RasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
     float contents_scale,
+    const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) const {
   DCHECK_EQ(0u, images->size());
-  display_list_->GetDiscardableImagesInRect(layer_rect, contents_scale, images);
+  display_list_->GetDiscardableImagesInRect(layer_rect, contents_scale,
+                                            target_color_space, images);
 }
 
 gfx::Rect RasterSource::GetRectForImage(ImageId image_id) const {

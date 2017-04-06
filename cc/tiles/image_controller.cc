@@ -183,11 +183,17 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
   // Generate the next id.
   ImageDecodeRequestId id = s_next_image_decode_queue_id_++;
 
+  // TODO(ccameron): The target color space specified here should match the
+  // target color space that will be used at rasterization time. Leave this
+  // unspecified now, since that will match the rasterization-time color
+  // space while color correct rendering is disabled.
+  gfx::ColorSpace target_color_space;
+
   DCHECK(image);
   bool is_image_lazy = image->isLazyGenerated();
   auto image_bounds = image->bounds();
   DrawImage draw_image(std::move(image), image_bounds, kNone_SkFilterQuality,
-                       SkMatrix::I());
+                       SkMatrix::I(), target_color_space);
 
   // Get the tasks for this decode.
   scoped_refptr<TileTask> task;

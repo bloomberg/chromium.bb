@@ -140,6 +140,7 @@ class CC_PAINT_EXPORT DisplayItemList
   void GenerateDiscardableImagesMetadata();
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float contents_scale,
+                                  const gfx::ColorSpace& target_color_space,
                                   std::vector<DrawImage>* images);
   gfx::Rect GetRectForImage(ImageId image_id) const;
 

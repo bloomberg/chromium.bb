@@ -43,7 +43,11 @@ class DiscardableImageMapTest : public testing::Test {
       const DiscardableImageMap& image_map,
       const gfx::Rect& rect) {
     std::vector<DrawImage> draw_images;
-    image_map.GetDiscardableImagesInRect(rect, 1.f, &draw_images);
+    // Choose a not-SRGB-and-not-invalid target color space to verify that it
+    // is passed correctly to the resulting DrawImages.
+    gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
+    image_map.GetDiscardableImagesInRect(rect, 1.f, target_color_space,
+                                         &draw_images);
 
     std::vector<size_t> indices;
     image_map.images_rtree_.Search(rect, &indices);
@@ -56,8 +60,10 @@ class DiscardableImageMapTest : public testing::Test {
     }
 
     EXPECT_EQ(draw_images.size(), position_draw_images.size());
-    for (size_t i = 0; i < draw_images.size(); ++i)
+    for (size_t i = 0; i < draw_images.size(); ++i) {
       EXPECT_TRUE(draw_images[i].image() == position_draw_images[i].image);
+      EXPECT_EQ(draw_images[i].target_color_space(), target_color_space);
+    }
     return position_draw_images;
   }
 

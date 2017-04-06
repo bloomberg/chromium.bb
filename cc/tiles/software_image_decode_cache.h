@@ -45,8 +45,10 @@ class CC_EXPORT ImageDecodeCacheKey {
     // decodes are the same, so if we can use the original decode, return true.
     // If not, then we have to compare every field.
     return image_id_ == other.image_id_ &&
-           can_use_original_decode_ == other.can_use_original_decode_ &&
-           (can_use_original_decode_ ||
+           can_use_original_size_decode_ ==
+               other.can_use_original_size_decode_ &&
+           target_color_space_ == other.target_color_space_ &&
+           (can_use_original_size_decode_ ||
             (src_rect_ == other.src_rect_ &&
              target_size_ == other.target_size_ &&
              filter_quality_ == other.filter_quality_));
@@ -60,8 +62,13 @@ class CC_EXPORT ImageDecodeCacheKey {
   SkFilterQuality filter_quality() const { return filter_quality_; }
   gfx::Rect src_rect() const { return src_rect_; }
   gfx::Size target_size() const { return target_size_; }
+  const gfx::ColorSpace& target_color_space() const {
+    return target_color_space_;
+  }
 
-  bool can_use_original_decode() const { return can_use_original_decode_; }
+  bool can_use_original_size_decode() const {
+    return can_use_original_size_decode_;
+  }
   bool should_use_subrect() const { return should_use_subrect_; }
   size_t get_hash() const { return hash_; }
 
@@ -81,15 +88,17 @@ class CC_EXPORT ImageDecodeCacheKey {
   ImageDecodeCacheKey(uint32_t image_id,
                       const gfx::Rect& src_rect,
                       const gfx::Size& size,
+                      const gfx::ColorSpace& target_color_space,
                       SkFilterQuality filter_quality,
-                      bool can_use_original_decode,
+                      bool can_use_original_size_decode,
                       bool should_use_subrect);
 
   uint32_t image_id_;
   gfx::Rect src_rect_;
   gfx::Size target_size_;
+  gfx::ColorSpace target_color_space_;
   SkFilterQuality filter_quality_;
-  bool can_use_original_decode_;
+  bool can_use_original_size_decode_;
   bool should_use_subrect_;
   size_t hash_;
 };

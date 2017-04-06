@@ -865,7 +865,8 @@ void TileManager::ScheduleTasks(
     // the CheckerImageTracker as well. See crbug.com/691087.
     std::vector<DrawImage> images;
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
+        tile->enclosing_layer_rect(), tile->contents_scale(),
+        raster_color_space, &images);
     new_locked_images.insert(new_locked_images.end(), images.begin(),
                              images.end());
   }
@@ -969,7 +970,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   images.clear();
   if (!playback_settings.skip_images) {
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
+        tile->enclosing_layer_rect(), tile->contents_scale(), color_space,
+        &images);
     checker_image_tracker_.FilterImagesForCheckeringForTile(
         &images, &images_to_skip, prioritized_tile.tile()->tiling()->tree());
   }

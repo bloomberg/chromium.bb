@@ -1346,6 +1346,8 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
 }
 
 gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
+  if (!settings_.enable_color_correct_rasterization)
+    return gfx::ColorSpace();
   if (!sync_tree())
     return gfx::ColorSpace::CreateSRGB();
   return sync_tree()->raster_color_space();

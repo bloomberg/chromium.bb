@@ -215,10 +215,15 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     // raster the picture (using device clip bounds that are outset).
     image_rect.Inset(-1, -1);
 
+    // The true target color space will be assigned when it is known, in
+    // GetDiscardableImagesInRect.
+    gfx::ColorSpace target_color_space;
+
     (*image_id_to_rect_)[image->uniqueID()].Union(image_rect);
-    image_set_->push_back(std::make_pair(
-        DrawImage(std::move(image), src_irect, filter_quality, matrix),
-        image_rect));
+    image_set_->push_back(
+        std::make_pair(DrawImage(std::move(image), src_irect, filter_quality,
+                                 matrix, target_color_space),
+                       image_rect));
   }
 
   // Currently this function only handles extracting images from SkImageShaders
@@ -271,11 +276,15 @@ void DiscardableImageMap::EndGeneratingMetadata() {
 void DiscardableImageMap::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
     float contents_scale,
+    const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) const {
   std::vector<size_t> indices;
   images_rtree_.Search(rect, &indices);
-  for (size_t index : indices)
-    images->push_back(all_images_[index].first.ApplyScale(contents_scale));
+  for (size_t index : indices) {
+    images->push_back(all_images_[index]
+                          .first.ApplyScale(contents_scale)
+                          .ApplyTargetColorSpace(target_color_space));
+  }
 }
 
 gfx::Rect DiscardableImageMap::GetRectForImage(ImageId image_id) const {

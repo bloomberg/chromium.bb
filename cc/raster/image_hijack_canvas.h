@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/paint/image_id.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
+#include "ui/gfx/color_space.h"
 
 namespace cc {
 
@@ -21,7 +22,8 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
   ImageHijackCanvas(int width,
                     int height,
                     ImageDecodeCache* image_decode_cache,
-                    const ImageIdFlatSet* images_to_skip);
+                    const ImageIdFlatSet* images_to_skip,
+                    const gfx::ColorSpace& target_color_space);
 
  private:
   // Ensure that pictures are unpacked by this canvas, instead of being
@@ -57,6 +59,7 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
 
   ImageDecodeCache* image_decode_cache_;
   const ImageIdFlatSet* images_to_skip_;
+  const gfx::ColorSpace target_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageHijackCanvas);
 };

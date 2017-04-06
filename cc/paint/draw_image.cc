@@ -33,11 +33,13 @@ DrawImage::DrawImage()
 DrawImage::DrawImage(sk_sp<const SkImage> image,
                      const SkIRect& src_rect,
                      SkFilterQuality filter_quality,
-                     const SkMatrix& matrix)
+                     const SkMatrix& matrix,
+                     const gfx::ColorSpace& target_color_space)
     : image_(std::move(image)),
       src_rect_(src_rect),
       filter_quality_(filter_quality),
-      matrix_(matrix) {
+      matrix_(matrix),
+      target_color_space_(target_color_space) {
   matrix_is_decomposable_ = ExtractScale(matrix_, &scale_);
 }
 

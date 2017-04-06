@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
@@ -23,7 +24,8 @@ class CC_PAINT_EXPORT DrawImage {
   DrawImage(sk_sp<const SkImage> image,
             const SkIRect& src_rect,
             SkFilterQuality filter_quality,
-            const SkMatrix& matrix);
+            const SkMatrix& matrix,
+            const gfx::ColorSpace& target_color_space);
   DrawImage(const DrawImage& other);
   ~DrawImage();
 
@@ -33,11 +35,19 @@ class CC_PAINT_EXPORT DrawImage {
   SkFilterQuality filter_quality() const { return filter_quality_; }
   bool matrix_is_decomposable() const { return matrix_is_decomposable_; }
   const SkMatrix& matrix() const { return matrix_; }
+  const gfx::ColorSpace& target_color_space() const {
+    return target_color_space_;
+  }
 
   DrawImage ApplyScale(float scale) const {
     SkMatrix scaled_matrix = matrix_;
     scaled_matrix.preScale(scale, scale);
-    return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix);
+    return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix,
+                     target_color_space_);
+  }
+  DrawImage ApplyTargetColorSpace(const gfx::ColorSpace& target_color_space) {
+    return DrawImage(image_, src_rect_, filter_quality_, matrix_,
+                     target_color_space);
   }
 
  private:
@@ -47,6 +57,7 @@ class CC_PAINT_EXPORT DrawImage {
   SkMatrix matrix_;
   SkSize scale_;
   bool matrix_is_decomposable_;
+  gfx::ColorSpace target_color_space_;
 };
 
 }  // namespace cc

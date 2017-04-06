@@ -215,34 +215,45 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
+    gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f, &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
+                                       target_color_space, &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[0][0], images[0].image());
+    EXPECT_EQ(target_color_space, images[0].target_color_space());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
+    gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
     std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), 1.f,
-                                       &images);
+                                       target_color_space, &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[1][1], images[0].image());
+    EXPECT_EQ(target_color_space, images[0].target_color_space());
   }
   // Ensure there's no discardable pixel refs in the empty cell
   {
+    gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
     std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256), 1.f,
-                                       &images);
+                                       target_color_space, &images);
     EXPECT_EQ(0u, images.size());
   }
   // Layer sized iterators. These should find three pixel ref.
   {
+    gfx::ColorSpace target_color_space;
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), 1.f, &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), 1.f,
+                                       target_color_space, &images);
     EXPECT_EQ(3u, images.size());
     EXPECT_EQ(discardable_image[0][0], images[0].image());
     EXPECT_EQ(discardable_image[0][1], images[1].image());
     EXPECT_EQ(discardable_image[1][1], images[2].image());
+    EXPECT_EQ(target_color_space, images[0].target_color_space());
+    EXPECT_EQ(target_color_space, images[1].target_color_space());
+    EXPECT_EQ(target_color_space, images[2].target_color_space());
   }
 }
 
