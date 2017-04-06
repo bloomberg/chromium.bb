@@ -378,8 +378,12 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
 void Pointer::UpdateCursor() {
   DCHECK(focus_);
 
+  aura::Window* root_window = focus_->window()->GetRootWindow();
+  if (!root_window)
+    return;
+
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(focus_->window()->GetRootWindow());
+      aura::client::GetCursorClient(root_window);
   if (cursor_client)
     cursor_client->SetCursor(cursor_);
 }
