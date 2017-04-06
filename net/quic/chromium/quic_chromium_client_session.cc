@@ -670,11 +670,8 @@ int QuicChromiumClientSession::CryptoConnect(
   connect_timing_.connect_start = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   DCHECK(flow_controller());
-  crypto_stream_->CryptoConnect();
 
-  // Check if the connection is still open, issues during CryptoConnect like
-  // packet write error could cause the connection to be torn down.
-  if (!connection()->connected())
+  if (!crypto_stream_->CryptoConnect())
     return ERR_QUIC_HANDSHAKE_FAILED;
 
   if (IsCryptoHandshakeConfirmed()) {
@@ -686,20 +683,6 @@ int QuicChromiumClientSession::CryptoConnect(
   // we have established initial encryption.
   if (!require_confirmation_ && IsEncryptionEstablished())
     return OK;
-
-  callback_ = callback;
-  return ERR_IO_PENDING;
-}
-
-int QuicChromiumClientSession::ResumeCryptoConnect(
-    const CompletionCallback& callback) {
-  if (IsCryptoHandshakeConfirmed()) {
-    connect_timing_.connect_end = base::TimeTicks::Now();
-    return OK;
-  }
-
-  if (!connection()->connected())
-    return ERR_QUIC_HANDSHAKE_FAILED;
 
   callback_ = callback;
   return ERR_IO_PENDING;
