@@ -171,7 +171,8 @@ def build_gn_with_ninja_manually(tempdir, options):
   write_buildflag_header_manually(root_gen_dir, 'base/debug/debugging_flags.h',
       {
           'ENABLE_PROFILING': 'false',
-          'ENABLE_MEMORY_TASK_PROFILER': 'false'
+          'ENABLE_MEMORY_TASK_PROFILER': 'false',
+          'CAN_UNWIND_WITH_FRAME_POINTERS': 'false'
       })
 
   write_build_date_header(root_gen_dir)

@@ -195,8 +195,7 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
   if (profiling_mode == "") {
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::PSEUDO_STACK);
-#if HAVE_TRACE_STACK_FRAME_POINTERS && \
-    (BUILDFLAG(ENABLE_PROFILING) || !defined(NDEBUG))
+#if (BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS) || !defined(NDEBUG))
   } else if (profiling_mode == switches::kEnableHeapProfilingModeNative) {
     // We need frame pointers for native tracing to work, and they are
     // enabled in profiling and debug builds.
