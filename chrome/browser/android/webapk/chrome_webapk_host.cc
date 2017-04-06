@@ -42,12 +42,3 @@ jboolean CanLaunchRendererInWebApkProcess(
              chrome::android::kImprovedA2HS, kLaunchRendererInWebApkProcess) ==
          "true";
 }
-
-// static
-jboolean CanInstallFromUnknownSources(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
-  return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-             chrome::android::kImprovedA2HS.name,
-             base::FeatureList::OVERRIDE_ENABLE_FEATURE);
-}

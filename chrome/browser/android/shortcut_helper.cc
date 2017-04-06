@@ -161,12 +161,7 @@ void ShortcutHelper::InstallWebApkWithSkBitmap(
     const WebApkInstallService::FinishCallback& callback) {
   WebApkInstallService::Get(web_contents->GetBrowserContext())
       ->InstallAsync(info, icon_bitmap, callback);
-  // Don't record metric for users who install WebAPKs via "unsigned sources"
-  // flow.
-  if (ChromeWebApkHost::GetGooglePlayInstallState() ==
-      GooglePlayInstallState::SUPPORTED) {
-    webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
-  }
+  webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {

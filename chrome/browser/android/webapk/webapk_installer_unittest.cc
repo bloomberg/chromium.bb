@@ -62,31 +62,15 @@ class TestWebApkInstaller : public WebApkInstaller {
   TestWebApkInstaller(content::BrowserContext* browser_context,
                       const ShortcutInfo& shortcut_info,
                       const SkBitmap& shortcut_icon,
-                      bool can_use_google_play_install_service)
+                      bool can_install_webapks)
       : WebApkInstaller(browser_context, shortcut_info, shortcut_icon),
-        can_use_google_play_install_service_(
-            can_use_google_play_install_service) {}
+        can_install_webapks_(can_install_webapks) {}
 
-  void InstallDownloadedWebApk(
-      JNIEnv* env,
-      const base::android::ScopedJavaLocalRef<jstring>& file_path,
-      const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
-    PostTaskToRunSuccessCallback();
-  }
+  bool CanInstallWebApks() override { return can_install_webapks_; }
 
-  void UpdateUsingDownloadedWebApk(
-      JNIEnv* env,
-      const base::android::ScopedJavaLocalRef<jstring>& file_path) override {
-    PostTaskToRunSuccessCallback();
-  }
-
-  bool CanUseGooglePlayInstallService() override {
-    return can_use_google_play_install_service_;
-  }
-
-  void InstallOrUpdateWebApkFromGooglePlay(const std::string& package_name,
-                                           int version,
-                                           const std::string& token) override {
+  void InstallOrUpdateWebApk(const std::string& package_name,
+                             int version,
+                             const std::string& token) override {
     PostTaskToRunSuccessCallback();
   }
 
@@ -100,7 +84,7 @@ class TestWebApkInstaller : public WebApkInstaller {
  private:
   // Whether the Google Play Services can be used and the install delegate is
   // available.
-  bool can_use_google_play_install_service_;
+  bool can_install_webapks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
@@ -112,13 +96,12 @@ class WebApkInstallerRunner {
                         const GURL& best_primary_icon_url)
       : browser_context_(browser_context),
         best_primary_icon_url_(best_primary_icon_url),
-        can_use_google_play_install_service_(false) {}
+        can_install_webapks_(true) {}
 
   ~WebApkInstallerRunner() {}
 
-  void SetCanUseGooglePlayInstallService(
-      bool can_use_google_play_install_service) {
-    can_use_google_play_install_service_ = can_use_google_play_install_service;
+  void SetCanInstallWebApks(bool can_install_webapks) {
+    can_install_webapks_ = can_install_webapks;
   }
 
   void RunInstallWebApk() {
@@ -147,9 +130,8 @@ class WebApkInstallerRunner {
     info.best_primary_icon_url = best_primary_icon_url_;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer =
-        new TestWebApkInstaller(browser_context_, info, SkBitmap(),
-                                can_use_google_play_install_service_);
+    WebApkInstaller* installer = new TestWebApkInstaller(
+        browser_context_, info, SkBitmap(), can_install_webapks_);
     installer->SetTimeoutMs(100);
     return installer;
   }
@@ -181,9 +163,8 @@ class WebApkInstallerRunner {
   // The result of the installation process.
   WebApkInstallResult result_;
 
-  // Whether Google Play Service can be used and the install delegate is
-  // available.
-  bool can_use_google_play_install_service_;
+  // Whether the device supports installation of WebApks.
+  bool can_install_webapks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
@@ -372,26 +353,6 @@ TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
 }
 
-// Test that installation fails if the WebAPK download times out.
-TEST_F(WebApkInstallerTest, WebApkDownloadTimesOut) {
-  GURL download_url = test_server()->GetURL("/slow?1000");
-  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
-
-  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunInstallWebApk();
-  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
-}
-
-// Test that installation fails if the WebAPK download fails.
-TEST_F(WebApkInstallerTest, WebApkDownloadFails) {
-  GURL download_url = test_server()->GetURL("/nocontent");
-  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
-
-  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunInstallWebApk();
-  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
-}
-
 namespace {
 
 // Returns an HttpResponse which cannot be parsed as a webapk::WebApkResponse.
@@ -435,14 +396,6 @@ TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunUpdateWebApk();
-  EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
-}
-
-// Test installation succeeds using Google Play.
-TEST_F(WebApkInstallerTest, InstallFromGooglePlaySuccess) {
-  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->SetCanUseGooglePlayInstallService(true);
-  runner->RunInstallWebApk();
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
 }
 
@@ -516,4 +469,11 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
   EXPECT_EQ(icon_url_1.spec(), icons[1].src());
   EXPECT_EQ(icon_murmur2_hash_1, icons[1].hash());
   EXPECT_FALSE(icons[1].has_image_data());
+}
+
+TEST_F(WebApkInstallerTest, FailsWhenInstallDisabled) {
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->SetCanInstallWebApks(false);
+  runner->RunInstallWebApk();
+  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
 }

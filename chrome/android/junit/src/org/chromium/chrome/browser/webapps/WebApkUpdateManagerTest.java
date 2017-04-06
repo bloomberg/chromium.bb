@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 
 import org.junit.Before;
@@ -236,7 +235,7 @@ public class WebApkUpdateManagerTest {
         manifestData.name = NAME;
         manifestData.shortName = SHORT_NAME;
 
-        manifestData.iconUrlToMurmur2HashMap = new HashMap<String, String>();
+        manifestData.iconUrlToMurmur2HashMap = new HashMap<>();
         manifestData.iconUrlToMurmur2HashMap.put(ICON_URL, ICON_MURMUR2_HASH);
 
         manifestData.bestIconUrl = ICON_URL;
@@ -331,9 +330,6 @@ public class WebApkUpdateManagerTest {
         ChromeWebApkHost.initForTesting(true);
 
         registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION);
-        Settings.Secure.putInt(RuntimeEnvironment.application.getContentResolver(),
-                Settings.Secure.INSTALL_NON_MARKET_APPS, 1);
-
         mClock = new MockClock();
         WebappDataStorage.setClockForTests(mClock);
 

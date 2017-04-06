@@ -52,7 +52,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private final WebApkActivity mActivity;
 
     /** The WebappDataStorage with cached data about prior update requests. */
-    private WebappDataStorage mStorage;
+    private final WebappDataStorage mStorage;
 
     private WebApkUpdateDataFetcher mFetcher;
 

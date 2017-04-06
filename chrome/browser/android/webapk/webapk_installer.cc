@@ -10,8 +10,6 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -53,15 +51,6 @@ const char kProtoMimeType[] = "application/x-protobuf";
 // The default number of milliseconds to wait for the WebAPK download URL from
 // the WebAPK server.
 const int kWebApkDownloadUrlTimeoutMs = 60000;
-
-// The default number of milliseconds to wait for the WebAPK download to
-// complete.
-const int kDownloadTimeoutMs = 60000;
-
-const int kWorldReadableFilePermission = base::FILE_PERMISSION_READ_BY_USER |
-                                         base::FILE_PERMISSION_READ_BY_GROUP |
-                                         base::FILE_PERMISSION_READ_BY_OTHERS;
-const int kDefaultWebApkVersion = 1;
 
 // Returns the WebAPK server URL based on the command line.
 GURL GetServerUrl() {
@@ -177,38 +166,6 @@ scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
-// Creates a directory depending on the type of the task, and set permissions.
-// It also creates any parent directory along the path if doesn't exist,
-// and sets permissions as well.
-// The previously downloaded APKs are deleted in order to clean up unused cached
-// data.
-base::FilePath CreateSubDirAndSetPermissionsInBackground(
-    const base::StringPiece& output_dir_name,
-    const std::string& package_name) {
-  base::FilePath output_root_dir;
-  base::android::GetCacheDirectory(&output_root_dir);
-  base::FilePath webapk_dir = output_root_dir.AppendASCII("webapks");
-  // Creating different downloaded directory for install/update cases is
-  // to prevent deleting the APK which is still in use when an install and an
-  // update happen at the same time. However, it doesn't help the cases of when
-  // mutiple installs (or multiple updates) happen at the same time.
-  base::FilePath output_dir = webapk_dir.AppendASCII(output_dir_name);
-  int posix_permissions = kWorldReadableFilePermission |
-                          base::FILE_PERMISSION_WRITE_BY_USER |
-                          base::FILE_PERMISSION_EXECUTE_BY_USER |
-                          base::FILE_PERMISSION_EXECUTE_BY_OTHERS;
-  if (base::PathExists(output_dir))
-    base::DeleteFile(output_dir, true);
-
-  // Creates the directory to download and sets permissions.
-  if (!base::CreateDirectory(output_dir) ||
-      !base::SetPosixFilePermissions(webapk_dir, posix_permissions) ||
-      !base::SetPosixFilePermissions(output_dir, posix_permissions))
-    return base::FilePath();
-
-  return output_dir;
-}
-
 }  // anonymous namespace
 
 WebApkInstaller::~WebApkInstaller() {
@@ -267,8 +224,7 @@ void WebApkInstaller::UpdateAsyncForTesting(
 }
 
 void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
-  webapk_download_url_timeout_ms_ = timeout_ms;
-  download_timeout_ms_ = timeout_ms;
+  webapk_server_timeout_ms_ = timeout_ms;
 }
 
 void WebApkInstaller::OnInstallFinished(
@@ -294,30 +250,14 @@ bool WebApkInstaller::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void WebApkInstaller::InstallDownloadedWebApk(
-    JNIEnv* env,
-    const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
-    const base::android::ScopedJavaLocalRef<jstring>& java_package_name) {
-  Java_WebApkInstaller_installDownloadedWebApkAsync(
-      env, java_ref_, java_file_path, java_package_name);
-}
-
-void WebApkInstaller::UpdateUsingDownloadedWebApk(
-    JNIEnv* env,
-    const base::android::ScopedJavaLocalRef<jstring>& java_file_path) {
-  Java_WebApkInstaller_updateUsingDownloadedWebApkAsync(env, java_ref_,
-                                                        java_file_path);
-}
-
-bool WebApkInstaller::CanUseGooglePlayInstallService() {
+bool WebApkInstaller::CanInstallWebApks() {
   return ChromeWebApkHost::GetGooglePlayInstallState() ==
          GooglePlayInstallState::SUPPORTED;
 }
 
-void WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
-    const std::string& package_name,
-    int version,
-    const std::string& token) {
+void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
+                                            int version,
+                                            const std::string& token) {
   webapk_package_ = package_name;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -331,13 +271,12 @@ void WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
       base::android::ConvertUTF8ToJavaString(env, shortcut_info_.url.spec());
 
   if (task_type_ == WebApkInstaller::INSTALL) {
-    Java_WebApkInstaller_installWebApkFromGooglePlayAsync(
-        env, java_ref_, java_webapk_package, version, java_title, java_token,
-        java_url);
+    Java_WebApkInstaller_installWebApkAsync(env, java_ref_, java_webapk_package,
+                                            version, java_title, java_token,
+                                            java_url);
   } else {
-    Java_WebApkInstaller_updateAsyncFromGooglePlay(
-        env, java_ref_, java_webapk_package, version, java_title, java_token,
-        java_url);
+    Java_WebApkInstaller_updateAsync(env, java_ref_, java_webapk_package,
+                                     version, java_title, java_token, java_url);
   }
 }
 
@@ -366,10 +305,8 @@ WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context,
       shortcut_info_(shortcut_info),
       shortcut_icon_(shortcut_icon),
       server_url_(GetServerUrl()),
-      webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
-      download_timeout_ms_(kDownloadTimeoutMs),
+      webapk_server_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       relax_updates_(false),
-      webapk_version_(kDefaultWebApkVersion),
       task_type_(UNDEFINED),
       weak_ptr_factory_(this) {
   CreateJavaRef();
@@ -408,7 +345,6 @@ void WebApkInstaller::UpdateAsync(
     bool is_manifest_stale,
     const FinishCallback& finish_callback) {
   webapk_package_ = webapk_package;
-  webapk_version_ = webapk_version;
   finish_callback_ = finish_callback;
   task_type_ = UPDATE;
 
@@ -417,7 +353,7 @@ void WebApkInstaller::UpdateAsync(
       base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
                  icon_url_to_murmur2_hash, is_manifest_stale),
       base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), webapk_version));
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -456,15 +392,14 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (CanUseGooglePlayInstallService()) {
-    int version = 1;
-    base::StringToInt(response->version(), &version);
-    InstallOrUpdateWebApkFromGooglePlay(response->package_name(), version,
-                                        response->token());
+  if (!CanInstallWebApks()) {
+    OnResult(WebApkInstallResult::FAILURE);
     return;
   }
 
-  OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
+  int version = 1;
+  base::StringToInt(response->version(), &version);
+  InstallOrUpdateWebApk(response->package_name(), version, response->token());
 }
 
 void WebApkInstaller::OnGotIconMurmur2Hash(
@@ -497,9 +432,10 @@ void WebApkInstaller::SendCreateWebApkRequest(
 }
 
 void WebApkInstaller::SendUpdateWebApkRequest(
+    int webapk_version,
     std::unique_ptr<webapk::WebApk> webapk) {
   webapk->set_package_name(webapk_package_);
-  webapk->set_version(std::to_string(webapk_version_));
+  webapk->set_version(std::to_string(webapk_version));
 
   SendRequest(std::move(webapk), server_url_);
 }
@@ -507,8 +443,7 @@ void WebApkInstaller::SendUpdateWebApkRequest(
 void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
                                   const GURL& server_url) {
   timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(webapk_download_url_timeout_ms_),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(webapk_server_timeout_ms_),
       base::Bind(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
                  WebApkInstallResult::FAILURE));
 
@@ -522,96 +457,4 @@ void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
       net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
-}
-
-void WebApkInstaller::OnGotWebApkDownloadUrl(const GURL& download_url,
-                                             const std::string& package_name) {
-  webapk_package_ = package_name;
-
-  base::PostTaskAndReplyWithResult(
-      GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&CreateSubDirAndSetPermissionsInBackground,
-                 task_type_ == WebApkInstaller::INSTALL ? "install" : "update",
-                 package_name),
-      base::Bind(&WebApkInstaller::OnCreatedSubDirAndSetPermissions,
-                 weak_ptr_factory_.GetWeakPtr(), download_url));
-}
-
-void WebApkInstaller::OnCreatedSubDirAndSetPermissions(
-    const GURL& download_url,
-    const base::FilePath& output_dir) {
-  if (output_dir.empty()) {
-    OnResult(WebApkInstallResult::FAILURE);
-    return;
-  }
-
-  DownloadWebApk(output_dir.AppendASCII(webapk_package_ + ".apk"), download_url,
-                 true);
-}
-
-void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
-                                     const GURL& download_url,
-                                     bool retry_if_fails) {
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
-      base::Bind(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
-                 WebApkInstallResult::FAILURE));
-
-  downloader_.reset(new FileDownloader(
-      download_url, output_path, true, request_context_getter_,
-      base::Bind(&WebApkInstaller::OnWebApkDownloaded,
-                 weak_ptr_factory_.GetWeakPtr(), output_path, download_url,
-                 retry_if_fails),
-      NO_TRAFFIC_ANNOTATION_YET));
-}
-
-void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
-                                         const GURL& download_url,
-                                         bool retry_if_fails,
-                                         FileDownloader::Result result) {
-  timer_.Stop();
-
-  if (result != FileDownloader::DOWNLOADED) {
-    if (!retry_if_fails) {
-      OnResult(WebApkInstallResult::FAILURE);
-      return;
-    }
-
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebApkInstaller::DownloadWebApk,
-                   weak_ptr_factory_.GetWeakPtr(), file_path, download_url,
-                   false),
-        base::TimeDelta::FromSeconds(2));
-    return;
-  }
-
-  int posix_permissions = kWorldReadableFilePermission |
-                          base::FILE_PERMISSION_WRITE_BY_USER |
-                          base::FILE_PERMISSION_EXECUTE_BY_USER;
-  base::PostTaskAndReplyWithResult(
-      GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&base::SetPosixFilePermissions, file_path, posix_permissions),
-      base::Bind(&WebApkInstaller::OnWebApkMadeWorldReadable,
-                 weak_ptr_factory_.GetWeakPtr(), file_path));
-}
-
-void WebApkInstaller::OnWebApkMadeWorldReadable(
-    const base::FilePath& file_path,
-    bool change_permission_success) {
-  if (!change_permission_success) {
-    OnResult(WebApkInstallResult::FAILURE);
-    return;
-  }
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_file_path =
-      base::android::ConvertUTF8ToJavaString(env, file_path.value());
-  if (task_type_ == INSTALL) {
-    base::android::ScopedJavaLocalRef<jstring> java_package_name =
-        base::android::ConvertUTF8ToJavaString(env, webapk_package_);
-    InstallDownloadedWebApk(env, java_file_path, java_package_name);
-  } else if (task_type_ == UPDATE) {
-    UpdateUsingDownloadedWebApk(env, java_file_path);
-  }
 }

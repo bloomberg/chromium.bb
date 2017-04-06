@@ -28,8 +28,8 @@ enum class WebApkInstallResult {
   SUCCESS = 0,
   FAILURE = 1,
   // An install was initiated but it timed out. We did not get a response from
-  // Google Play (or the Android OS in the case of the "unknown sources" flow)
-  // so it is possible that the install will complete some time in the future.
+  // the install service so it is possible that the install will complete some
+  // time in the future.
   PROBABLE_FAILURE = 2
 };
 
