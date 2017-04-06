@@ -138,8 +138,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
   }
 };
 
-// flaky http://crbug.com/651844
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_CrossProcessClientRedirect) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 

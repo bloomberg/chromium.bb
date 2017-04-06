@@ -322,8 +322,12 @@ PageLoadTracker::~PageLoadTracker() {
     return;
 
   if (page_end_time_.is_null()) {
+    // page_end_time_ can be unset in some cases, such as when a navigation is
+    // aborted by a navigation that started before it. In these cases, set the
+    // end time to the current time.
     RecordInternalError(ERR_NO_PAGE_LOAD_END_TIME);
-    page_end_time_ = base::TimeTicks::Now();
+    NotifyPageEnd(END_OTHER, UserInitiatedInfo::NotUserInitiated(),
+                  base::TimeTicks::Now(), true);
   }
 
   if (!did_commit_) {
