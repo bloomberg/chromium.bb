@@ -39,16 +39,16 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkInstrumentation.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -39,8 +39,8 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

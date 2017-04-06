@@ -36,10 +36,10 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

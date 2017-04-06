@@ -28,8 +28,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 class Resource;

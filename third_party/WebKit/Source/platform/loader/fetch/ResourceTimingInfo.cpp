@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "platform/CrossThreadCopier.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

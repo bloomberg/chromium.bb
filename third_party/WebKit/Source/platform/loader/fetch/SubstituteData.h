@@ -28,9 +28,9 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

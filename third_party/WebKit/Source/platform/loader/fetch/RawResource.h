@@ -23,12 +23,12 @@
 #ifndef RawResource_h
 #define RawResource_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace blink {
 class FetchRequest;

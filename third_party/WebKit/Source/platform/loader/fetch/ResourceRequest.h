@@ -37,9 +37,9 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/RefCounted.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

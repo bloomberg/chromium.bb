@@ -31,10 +31,10 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

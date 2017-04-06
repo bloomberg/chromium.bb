@@ -26,7 +26,7 @@
 #ifndef ResourceLoadPriority_h
 #define ResourceLoadPriority_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

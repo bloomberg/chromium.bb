@@ -28,9 +28,9 @@
 
 #include "platform/HTTPNames.h"
 #include "platform/network/HTTPParsers.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 #include <memory>
 

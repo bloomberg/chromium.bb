@@ -26,12 +26,12 @@
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/AutoReset.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 

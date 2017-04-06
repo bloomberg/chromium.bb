@@ -30,13 +30,13 @@
 #include "platform/PlatformExport.h"
 #include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

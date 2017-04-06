@@ -35,7 +35,7 @@
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

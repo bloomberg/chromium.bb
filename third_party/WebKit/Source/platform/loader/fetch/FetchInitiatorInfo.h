@@ -26,9 +26,9 @@
 #ifndef FetchInitiatorInfo_h
 #define FetchInitiatorInfo_h
 
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

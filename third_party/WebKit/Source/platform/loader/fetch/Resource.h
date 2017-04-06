@@ -38,13 +38,13 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/ResourceStatus.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/Allocator.h"
-#include "wtf/AutoReset.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

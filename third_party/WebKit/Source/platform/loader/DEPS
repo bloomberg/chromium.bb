@@ -1,4 +1,7 @@
 include_rules = [
     "+components/link_header_util",  # for LinkHeader.cpp
-    "+net/base/net_errors.h"  # for fetch/ResourceError.h
+    "+net/base/net_errors.h",  # for fetch/ResourceError.h
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf/",
 ]

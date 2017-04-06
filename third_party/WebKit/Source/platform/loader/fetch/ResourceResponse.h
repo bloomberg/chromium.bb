@@ -34,12 +34,12 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 

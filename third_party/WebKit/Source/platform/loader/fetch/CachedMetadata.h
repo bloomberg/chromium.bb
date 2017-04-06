@@ -31,13 +31,13 @@
 #ifndef CachedMetadata_h
 #define CachedMetadata_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Assertions.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 #include <stdint.h>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

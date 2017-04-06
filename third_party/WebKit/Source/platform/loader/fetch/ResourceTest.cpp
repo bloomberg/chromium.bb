@@ -10,9 +10,9 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

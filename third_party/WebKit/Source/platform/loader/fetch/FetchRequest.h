@@ -33,8 +33,8 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 class SecurityOrigin;

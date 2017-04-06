@@ -5,7 +5,7 @@
 #ifndef ResourceLoadingLog_h
 #define ResourceLoadingLog_h
 
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=ResourceLoadingLog=N| where N is a

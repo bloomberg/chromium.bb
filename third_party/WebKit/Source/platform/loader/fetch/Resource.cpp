@@ -24,6 +24,10 @@
 
 #include "platform/loader/fetch/Resource.h"
 
+#include <stdint.h>
+#include <algorithm>
+#include <cassert>
+#include <memory>
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -41,20 +45,16 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include <algorithm>
-#include <cassert>
-#include <memory>
-#include <stdint.h>
 
 namespace blink {
 

@@ -27,7 +27,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

@@ -6,9 +6,9 @@
 
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

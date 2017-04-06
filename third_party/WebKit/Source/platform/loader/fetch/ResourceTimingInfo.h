@@ -35,11 +35,11 @@
 #include "platform/CrossThreadCopier.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

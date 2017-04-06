@@ -33,9 +33,9 @@
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

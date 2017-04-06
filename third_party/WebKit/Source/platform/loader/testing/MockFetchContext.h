@@ -9,7 +9,7 @@
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 #include <memory>
 

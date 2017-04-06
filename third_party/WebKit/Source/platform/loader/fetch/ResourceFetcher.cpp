@@ -47,12 +47,12 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 using blink::WebURLRequest;
 

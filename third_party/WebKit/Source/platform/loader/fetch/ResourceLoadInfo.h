@@ -27,7 +27,7 @@
 #define ResourceLoadInfo_h
 
 #include "platform/network/HTTPHeaderMap.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

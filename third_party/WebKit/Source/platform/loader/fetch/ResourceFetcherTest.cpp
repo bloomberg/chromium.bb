@@ -56,15 +56,15 @@
 #include "platform/testing/weburl_loader_mock.h"
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

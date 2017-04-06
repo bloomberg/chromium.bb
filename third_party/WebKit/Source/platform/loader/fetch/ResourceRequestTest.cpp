@@ -8,10 +8,10 @@
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

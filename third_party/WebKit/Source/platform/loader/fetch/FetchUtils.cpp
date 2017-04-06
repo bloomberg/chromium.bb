@@ -7,10 +7,10 @@
 #include "platform/HTTPNames.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
-#include "wtf/HashSet.h"
-#include "wtf/Threading.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
