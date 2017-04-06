@@ -17,7 +17,8 @@ class InvalidationServiceFactoryAndroid {
   static base::android::ScopedJavaLocalRef<jobject> GetForProfile(
       const base::android::JavaRef<jobject>& j_profile);
 
-  static base::android::ScopedJavaLocalRef<jobject> GetForTest();
+  static base::android::ScopedJavaLocalRef<jobject> GetForTest(
+      const base::android::JavaRef<jobject>& j_context);
 
   static bool Register(JNIEnv* env);
 };

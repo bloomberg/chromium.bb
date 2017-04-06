@@ -81,7 +81,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
                         return;
                     }
                     final ChromeSigninController chromeSigninController =
-                            ChromeSigninController.get();
+                            ChromeSigninController.get(appContext);
                     if (chromeSigninController.isSignedIn()) {
                         reply.onQueryFinished(nativeCreateSupervisedUserContentProvider());
                         return;

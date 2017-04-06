@@ -78,7 +78,7 @@ public abstract class AppHooks {
      * @return the created {@link AccountManagerDelegate}.
      */
     public AccountManagerDelegate createAccountManagerDelegate() {
-        return new SystemAccountManagerDelegate();
+        return new SystemAccountManagerDelegate(ContextUtils.getApplicationContext());
     }
 
     /**

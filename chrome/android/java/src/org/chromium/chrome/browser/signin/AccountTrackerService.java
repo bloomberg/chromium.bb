@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.content.Context;
 import android.os.AsyncTask;
 
 import org.chromium.base.Callback;
@@ -29,6 +30,8 @@ public class AccountTrackerService {
     private boolean mSystemAccountsChanged;
     private boolean mSyncForceRefreshedForTest;
 
+    private final Context mContext;
+
     private enum SystemAccountsSeedingStatus {
         SEEDING_NOT_STARTED,
         SEEDING_IN_PROGRESS,
@@ -50,15 +53,16 @@ public class AccountTrackerService {
     private final ObserverList<OnSystemAccountsSeededListener> mSystemAccountsSeedingObservers =
             new ObserverList<>();
 
-    public static AccountTrackerService get() {
+    public static AccountTrackerService get(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sAccountTrackerService == null) {
-            sAccountTrackerService = new AccountTrackerService();
+            sAccountTrackerService = new AccountTrackerService(context);
         }
         return sAccountTrackerService;
     }
 
-    private AccountTrackerService() {
+    private AccountTrackerService(Context context) {
+        mContext = context;
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
         mSystemAccountsChanged = false;
     }
@@ -107,13 +111,13 @@ public class AccountTrackerService {
         mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = false;
         final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
-        if (accountIdProvider.canBeUsed()) {
+        if (accountIdProvider.canBeUsed(mContext)) {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         } else {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
             return;
         }
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get(mContext).getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(final Account[] accounts) {
                 new AsyncTask<Void, Void, String[][]>() {
@@ -123,7 +127,7 @@ public class AccountTrackerService {
                         String[][] accountIdNameMap = new String[2][accounts.length];
                         for (int i = 0; i < accounts.length; ++i) {
                             accountIdNameMap[0][i] =
-                                    accountIdProvider.getAccountId(accounts[i].name);
+                                    accountIdProvider.getAccountId(mContext, accounts[i].name);
                             accountIdNameMap[1][i] = accounts[i].name;
                         }
                         return accountIdNameMap;
@@ -199,7 +203,7 @@ public class AccountTrackerService {
         }
 
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_VALIDATING;
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get(mContext).getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(final Account[] accounts) {
                 if (mSystemAccountsChanged

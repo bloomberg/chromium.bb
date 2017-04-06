@@ -74,7 +74,7 @@ class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserve
         if (!mPermissionManager.isNetworkAvailableForCrashUploads()) {
             return;
         }
-        MinidumpUploadService.tryUploadAllCrashDumps();
+        MinidumpUploadService.tryUploadAllCrashDumps(mContext);
         NetworkChangeNotifier.removeConnectionTypeObserver(this);
         sSingleton = null;
     }

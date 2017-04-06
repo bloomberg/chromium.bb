@@ -334,8 +334,7 @@ public class DeferredStartupHandler {
 
                 // Likewise, this is a good time to process and clean up any pending or stale crash
                 // reports left behind by previous runs.
-                CrashFileManager crashFileManager =
-                        new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
+                CrashFileManager crashFileManager = new CrashFileManager(mAppContext.getCacheDir());
                 crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
                 // Finally, uploading any pending crash reports.
@@ -360,7 +359,7 @@ public class DeferredStartupHandler {
                 File mostRecentMinidump = minidumps[0];
                 if (doesCrashMinidumpNeedLogcat(mostRecentMinidump)) {
                     AsyncTask.THREAD_POOL_EXECUTOR.execute(
-                            new LogcatExtractionRunnable(mostRecentMinidump));
+                            new LogcatExtractionRunnable(mAppContext, mostRecentMinidump));
 
                     // The JobScheduler will schedule uploads for all of the available minidumps
                     // once the logcat is attached. But if the JobScheduler API is not being used,
@@ -371,13 +370,13 @@ public class DeferredStartupHandler {
                         List<File> remainingMinidumps =
                                 Arrays.asList(minidumps).subList(1, minidumps.length);
                         for (File minidump : remainingMinidumps) {
-                            MinidumpUploadService.tryUploadCrashDump(minidump);
+                            MinidumpUploadService.tryUploadCrashDump(mAppContext, minidump);
                         }
                     }
                 } else if (MinidumpUploadService.shouldUseJobSchedulerForUploads()) {
-                    MinidumpUploadService.scheduleUploadJob();
+                    MinidumpUploadService.scheduleUploadJob(mAppContext);
                 } else {
-                    MinidumpUploadService.tryUploadAllCrashDumps();
+                    MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
                 }
             }
 

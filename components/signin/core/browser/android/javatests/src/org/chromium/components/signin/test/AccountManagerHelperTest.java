@@ -28,7 +28,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         Context context = getInstrumentation().getTargetContext();
         mAccountManager = new MockAccountManager(context, context);
         AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
-        mHelper = AccountManagerHelper.get();
+        mHelper = AccountManagerHelper.get(context);
     }
 
     @SmallTest

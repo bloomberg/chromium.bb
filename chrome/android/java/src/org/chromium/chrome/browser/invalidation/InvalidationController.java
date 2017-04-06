@@ -194,7 +194,8 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         }
 
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
-                ChromeSigninController.get().getSignedInUser(), typesToRegister);
+                ChromeSigninController.get(mContext).getSignedInUser(),
+                typesToRegister);
         registerIntent.setClass(
                 mContext, InvalidationClientService.getRegisteredClass());
         startServiceIfPossible(registerIntent);

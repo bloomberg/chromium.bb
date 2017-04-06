@@ -113,7 +113,7 @@ public class ProcessInitializationHandler {
         // only once and before AccountMangerHelper.get(...) is called to avoid using the
         // default AccountManagerDelegate.
         AccountManagerHelper.initializeAccountManagerHelper(
-                AppHooks.get().createAccountManagerDelegate());
+                application, AppHooks.get().createAccountManagerDelegate());
 
         // Set the unique identification generator for invalidations.  The
         // invalidations system can start and attempt to fetch the client ID

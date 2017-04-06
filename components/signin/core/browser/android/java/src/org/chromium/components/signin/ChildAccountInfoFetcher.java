@@ -69,8 +69,9 @@ public final class ChildAccountInfoFetcher {
     }
 
     private void fetch() {
+        Context context = ContextUtils.getApplicationContext();
         Log.d(TAG, "Checking child account status for %s", mAccount.name);
-        AccountManagerHelper.get().checkChildAccount(mAccount, new Callback<Boolean>() {
+        AccountManagerHelper.get(context).checkChildAccount(mAccount, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean isChildAccount) {
                 setIsChildAccount(isChildAccount);

@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -72,14 +72,15 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
     /**
      * Obtains the {@link MediaRouter} instance given the application context.
+     * @param applicationContext The context to get the Android media router service for.
      * @return Null if the media router API is not supported, the service instance otherwise.
      */
     @Nullable
-    public static MediaRouter getAndroidMediaRouter() {
+    public static MediaRouter getAndroidMediaRouter(Context applicationContext) {
         try {
             // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
             // so getting the MediaRouter instance will throw an exception.
-            return MediaRouter.getInstance(ContextUtils.getApplicationContext());
+            return MediaRouter.getInstance(applicationContext);
         } catch (NoSuchMethodError e) {
             return null;
         } catch (NoClassDefFoundError e) {
@@ -157,12 +158,14 @@ public class ChromeMediaRouter implements MediaRouteManager {
     /**
      * Initializes the media router and its providers.
      * @param nativeMediaRouterAndroid the handler for the native counterpart of this instance
+     * @param applicationContext the application context to use to obtain system APIs
      * @return an initialized {@link ChromeMediaRouter} instance
      */
     @CalledByNative
-    public static ChromeMediaRouter create(long nativeMediaRouterAndroid) {
+    public static ChromeMediaRouter create(long nativeMediaRouterAndroid,
+            Context applicationContext) {
         ChromeMediaRouter router = new ChromeMediaRouter(nativeMediaRouterAndroid);
-        MediaRouteProvider provider = sRouteProviderBuilder.create(router);
+        MediaRouteProvider provider = sRouteProviderBuilder.create(applicationContext, router);
         if (provider != null) router.addMediaRouteProvider(provider);
 
         return router;

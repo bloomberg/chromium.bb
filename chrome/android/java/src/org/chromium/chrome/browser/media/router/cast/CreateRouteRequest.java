@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 
 import com.google.android.gms.cast.ApplicationMetadata;
@@ -17,7 +18,6 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.MediaRoute;
@@ -164,11 +164,15 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Starts the process of launching the application on the Cast device.
+     * @param applicationContext application context
+     * implementation provided by the caller.
      */
-    public void start() {
+    public void start(Context applicationContext) {
+        assert applicationContext != null;
+
         if (mState != STATE_IDLE) throwInvalidState();
 
-        mApiClient = createApiClient(mCastListener);
+        mApiClient = createApiClient(mCastListener, applicationContext);
         mApiClient.connect();
         mState = STATE_CONNECTING_TO_API;
     }
@@ -229,13 +233,13 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         reportError();
     }
 
-    private GoogleApiClient createApiClient(Cast.Listener listener) {
+    private GoogleApiClient createApiClient(Cast.Listener listener, Context context) {
         Cast.CastOptions.Builder apiOptionsBuilder =
                 new Cast.CastOptions.Builder(mSink.getDevice(), listener)
                          // TODO(avayvod): hide this behind the flag or remove
                          .setVerboseLoggingEnabled(true);
 
-        return new GoogleApiClient.Builder(ContextUtils.getApplicationContext())
+        return new GoogleApiClient.Builder(context)
                 .addApi(Cast.API, apiOptionsBuilder.build())
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)

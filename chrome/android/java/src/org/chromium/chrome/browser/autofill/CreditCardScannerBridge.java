@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.content.Context;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
@@ -15,13 +17,14 @@ public class CreditCardScannerBridge implements CreditCardScanner.Delegate {
     private final CreditCardScanner mScanner;
 
     @CalledByNative
-    private static CreditCardScannerBridge create(long nativeScanner, WebContents webContents) {
-        return new CreditCardScannerBridge(nativeScanner, webContents);
+    private static CreditCardScannerBridge create(
+            long nativeScanner, Context context, WebContents webContents) {
+        return new CreditCardScannerBridge(nativeScanner, context, webContents);
     }
 
-    private CreditCardScannerBridge(long nativeScanner, WebContents webContents) {
+    private CreditCardScannerBridge(long nativeScanner, Context context, WebContents webContents) {
         mNativeScanner = nativeScanner;
-        mScanner = CreditCardScanner.create(webContents, this);
+        mScanner = CreditCardScanner.create(context, webContents, this);
     }
 
     @CalledByNative

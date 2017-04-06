@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/background_sync_launcher_android.h"
 
+#include "base/android/context_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BackgroundSyncLauncher_jni.h"
 
@@ -60,14 +61,16 @@ bool BackgroundSyncLauncherAndroid::ShouldDisableBackgroundSync() {
     return false;
   }
   return Java_BackgroundSyncLauncher_shouldDisableBackgroundSync(
-      base::android::AttachCurrentThread());
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
 }
 
 BackgroundSyncLauncherAndroid::BackgroundSyncLauncherAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_launcher_.Reset(Java_BackgroundSyncLauncher_create(env));
+  java_launcher_.Reset(Java_BackgroundSyncLauncher_create(
+      env, base::android::GetApplicationContext()));
 }
 
 BackgroundSyncLauncherAndroid::~BackgroundSyncLauncherAndroid() {

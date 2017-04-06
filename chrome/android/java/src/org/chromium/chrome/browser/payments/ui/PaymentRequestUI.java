@@ -1068,9 +1068,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         String message;
         if (!mShowDataSource) {
             message = mContext.getString(R.string.payments_card_and_address_settings);
-        } else if (ChromeSigninController.get().isSignedIn()) {
+        } else if (ChromeSigninController.get(mContext).isSignedIn()) {
             message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                    ChromeSigninController.get().getSignedInAccountName());
+                    ChromeSigninController.get(mContext).getSignedInAccountName());
         } else {
             message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
         }

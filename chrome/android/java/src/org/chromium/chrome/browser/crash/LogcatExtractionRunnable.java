@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.crash;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Patterns;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.minidump_uploader.CrashFileManager;
@@ -109,20 +109,22 @@ public class LogcatExtractionRunnable implements Runnable {
             "dalvik.", "java.", "javax.", "org.apache.", "org.json.", "org.w3c.dom.", "org.xml.",
             "org.xmlpull."};
 
+    private final Context mContext;
     private final File mMinidumpFile;
 
     /**
+     * @param context The application context for accessing the cache directory and firing intents.
      * @param minidump The minidump file that needs logcat output to be attached.
      */
-    public LogcatExtractionRunnable(File minidump) {
+    public LogcatExtractionRunnable(Context context, File minidump) {
+        mContext = context;
         mMinidumpFile = minidump;
     }
 
     @Override
     public void run() {
         Log.i(TAG, "Trying to extract logcat for minidump %s.", mMinidumpFile.getName());
-        CrashFileManager fileManager =
-                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
+        CrashFileManager fileManager = new CrashFileManager(mContext.getCacheDir());
         File fileToUpload = mMinidumpFile;
         try {
             List<String> logcat = getElidedLogcat();
@@ -135,10 +137,10 @@ public class LogcatExtractionRunnable implements Runnable {
         // Regardless of success, initiate the upload. That way, even if there are errors augmenting
         // the minidump with logcat data, the service can still upload the unaugmented minidump.
         if (MinidumpUploadService.shouldUseJobSchedulerForUploads()) {
-            MinidumpUploadService.scheduleUploadJob();
+            MinidumpUploadService.scheduleUploadJob(mContext);
         } else {
             try {
-                MinidumpUploadService.tryUploadCrashDump(fileToUpload);
+                MinidumpUploadService.tryUploadCrashDump(mContext, fileToUpload);
             } catch (SecurityException e) {
                 // For KitKat and below, there was a framework bug which causes us to not be able to
                 // find our own crash uploading service. Ignore a SecurityException here on older

@@ -40,7 +40,7 @@ public class AddFakeAccountToAppParameter extends BaseParameter {
                 ProcessInitializationHandler.getInstance().initializePreNative();
             }
         });
-        mSigninController = ChromeSigninController.get();
+        mSigninController = ChromeSigninController.get(instrumentation.getTargetContext());
         mSigninUtil = new ChromeSigninUtils(instrumentation);
     }
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.accounts.Account;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.Html;
@@ -12,7 +13,6 @@ import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.signin.AccountManagerHelper;
 
@@ -29,18 +29,20 @@ public abstract class IntentHelper {
      * Triggers a send email intent.  If no application has registered to receive these intents,
      * this will fail silently.  If an email is not specified and the device has exactly one
      * account and the account name matches the email format, the email is set to the account name.
-     *  @param email The email address to send to.
+     *
+     * @param context The context for issuing the intent.
+     * @param email The email address to send to.
      * @param subject The subject of the email.
      * @param body The body of the email.
      * @param chooserTitle The title of the activity chooser.
      * @param fileToAttach The file name of the attachment.
      */
-    @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
+    @SuppressWarnings("deprecation")  // Update usage of Html.fromHtml when API min is 24
     @CalledByNative
-    static void sendEmail(
-            String email, String subject, String body, String chooserTitle, String fileToAttach) {
+    static void sendEmail(Context context, String email, String subject, String body,
+            String chooserTitle, String fileToAttach) {
         if (TextUtils.isEmpty(email)) {
-            Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+            Account[] accounts = AccountManagerHelper.get(context).getGoogleAccounts();
             if (accounts != null && accounts.length == 1
                     && Patterns.EMAIL_ADDRESS.matcher(accounts[0].name).matches()) {
                 email = accounts[0].name;
@@ -70,7 +72,7 @@ public abstract class IntentHelper {
             Intent chooser = Intent.createChooser(send, chooserTitle);
             // we start this activity outside the main activity.
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(chooser);
+            context.startActivity(chooser);
         } catch (android.content.ActivityNotFoundException ex) {
             // If no app handles it, do nothing.
         }
@@ -79,14 +81,15 @@ public abstract class IntentHelper {
     /**
      * Opens date and time in Android settings.
      *
+     * @param context The context for issuing the intent.
      */
     @CalledByNative
-    static void openDateAndTimeSettings() {
+    static void openDateAndTimeSettings(Context context) {
         Intent intent = new Intent(android.provider.Settings.ACTION_DATE_SETTINGS);
 
         try {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(intent);
+            context.startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
             // If it doesn't work, avoid crashing.
         }

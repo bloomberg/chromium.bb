@@ -134,8 +134,9 @@ public class InvalidationControllerTest {
         delegate.setMasterSyncAutomatically(true);
         AndroidSyncSettings.overrideForTests(mContext, delegate);
 
-        ChromeSigninController.get().setSignedInAccountName("test@example.com");
-        AndroidSyncSettings.updateAccount(mContext, ChromeSigninController.get().getSignedInUser());
+        ChromeSigninController.get(mContext).setSignedInAccountName("test@example.com");
+        AndroidSyncSettings.updateAccount(
+                mContext, ChromeSigninController.get(mContext).getSignedInUser());
         AndroidSyncSettings.enableChromeSync(mContext);
     }
 

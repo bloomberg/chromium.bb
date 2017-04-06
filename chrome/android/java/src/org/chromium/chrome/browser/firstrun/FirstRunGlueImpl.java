@@ -70,7 +70,7 @@ public class FirstRunGlueImpl implements FirstRunGlue {
 
     @Override
     public boolean isDefaultAccountName(Context appContext, String accountName) {
-        List<String> accountNames = AccountManagerHelper.get().getGoogleAccountNames();
+        List<String> accountNames = AccountManagerHelper.get(appContext).getGoogleAccountNames();
         return accountNames != null
                 && accountNames.size() > 0
                 && TextUtils.equals(accountNames.get(0), accountName);

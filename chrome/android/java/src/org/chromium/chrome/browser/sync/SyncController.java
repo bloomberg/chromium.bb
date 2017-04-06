@@ -71,7 +71,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
 
     private SyncController(Context context) {
         mContext = context;
-        mChromeSigninController = ChromeSigninController.get();
+        mChromeSigninController = ChromeSigninController.get(mContext);
         AndroidSyncSettings.registerObserver(context, this);
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);

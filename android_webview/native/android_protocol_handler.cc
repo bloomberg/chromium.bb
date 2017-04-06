@@ -10,6 +10,7 @@
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/native/input_stream_impl.h"
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
@@ -36,6 +37,17 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+// Override resource context for reading resource and asset files. Used for
+// testing.
+JavaObjectWeakGlobalRef* g_resource_context = NULL;
+
+void ResetResourceContext(JavaObjectWeakGlobalRef* ref) {
+  if (g_resource_context)
+    delete g_resource_context;
+
+  g_resource_context = ref;
+}
 
 void* kPreviouslyFailedKey = &kPreviouslyFailedKey;
 
@@ -97,6 +109,12 @@ class ContentSchemeRequestInterceptor : public AndroidRequestInterceptorBase {
   bool ShouldHandleRequest(const net::URLRequest* request) const override;
 };
 
+static ScopedJavaLocalRef<jobject> GetResourceContext(JNIEnv* env) {
+  if (g_resource_context)
+    return g_resource_context->get(env);
+  return ScopedJavaLocalRef<jobject>(base::android::GetApplicationContext());
+}
+
 // AndroidStreamReaderURLRequestJobDelegateImpl -------------------------------
 
 AndroidStreamReaderURLRequestJobDelegateImpl::
@@ -116,7 +134,8 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(JNIEnv* env,
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, url.spec());
   ScopedJavaLocalRef<jobject> stream =
-      android_webview::Java_AndroidProtocolHandler_open(env, jurl);
+      android_webview::Java_AndroidProtocolHandler_open(
+          env, GetResourceContext(env), jurl);
 
   if (stream.is_null()) {
     DLOG(ERROR) << "Unable to open input stream for Android URL";
@@ -150,7 +169,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
       InputStreamImpl::FromInputStream(stream);
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
-          env, stream_impl->jobj(), url);
+          env, GetResourceContext(env), stream_impl->jobj(), url);
   if (returned_type.is_null())
     return false;
 
@@ -240,6 +259,23 @@ std::unique_ptr<net::URLRequestInterceptor>
 CreateAssetFileRequestInterceptor() {
   return std::unique_ptr<net::URLRequestInterceptor>(
       new AssetFileRequestInterceptor());
+}
+
+// Set a context object to be used for resolving resource queries. This can
+// be used to override the default application context and redirect all
+// resource queries to a specific context object, e.g., for the purposes of
+// testing.
+//
+// |context| should be a android.content.Context instance or NULL to enable
+// the use of the standard application context.
+static void SetResourceContextForTesting(JNIEnv* env,
+                                         const JavaParamRef<jclass>& /*clazz*/,
+                                         const JavaParamRef<jobject>& context) {
+  if (context) {
+    ResetResourceContext(new JavaObjectWeakGlobalRef(env, context));
+  } else {
+    ResetResourceContext(NULL);
+  }
 }
 
 static ScopedJavaLocalRef<jstring> GetAndroidAssetPath(

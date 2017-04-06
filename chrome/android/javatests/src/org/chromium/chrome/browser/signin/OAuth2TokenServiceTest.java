@@ -47,7 +47,7 @@ public class OAuth2TokenServiceTest {
     @Test
     @DisabledTest(message = "crbug.com/533417")
     public void testGetAccountsNoAccountsRegistered() {
-        String[] accounts = OAuth2TokenService.getAccounts();
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
         Assert.assertEquals("There should be no accounts registered", 0, accounts.length);
     }
 
@@ -60,11 +60,11 @@ public class OAuth2TokenServiceTest {
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
 
-        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
+        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames(mContext);
         Assert.assertEquals("There should be one registered account", 1, sysAccounts.length);
         Assert.assertEquals("The account should be " + account1, account1.name, sysAccounts[0]);
 
-        String[] accounts = OAuth2TokenService.getAccounts();
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
         Assert.assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
@@ -80,14 +80,14 @@ public class OAuth2TokenServiceTest {
         AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder2);
 
-        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
+        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames(mContext);
         Assert.assertEquals("There should be one registered account", 2, sysAccounts.length);
         Assert.assertTrue("The list should contain " + account1,
                 Arrays.asList(sysAccounts).contains(account1.name));
         Assert.assertTrue("The list should contain " + account2,
                 Arrays.asList(sysAccounts).contains(account2.name));
 
-        String[] accounts = OAuth2TokenService.getAccounts();
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
         Assert.assertEquals("There should be zero registered account", 0, accounts.length);
     }
 

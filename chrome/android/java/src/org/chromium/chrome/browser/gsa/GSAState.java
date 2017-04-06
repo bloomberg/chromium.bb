@@ -87,7 +87,7 @@ public class GSAState {
      * both are logged out is not considered a match.
      */
     public boolean doesGsaAccountMatchChrome() {
-        Account chromeUser = ChromeSigninController.get().getSignedInUser();
+        Account chromeUser = ChromeSigninController.get(mContext).getSignedInUser();
         return chromeUser != null && !TextUtils.isEmpty(mGsaAccount) && TextUtils.equals(
                 chromeUser.name, mGsaAccount);
     }

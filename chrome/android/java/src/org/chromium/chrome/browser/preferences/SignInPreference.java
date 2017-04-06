@@ -86,7 +86,7 @@ public class SignInPreference extends Preference
         String summary;
         String fragment;
 
-        Account account = ChromeSigninController.get().getSignedInUser();
+        Account account = ChromeSigninController.get(getContext()).getSignedInUser();
         if (account == null) {
             title = getContext().getString(R.string.sign_in_to_chrome);
             summary = getContext().getString(R.string.sign_in_to_chrome_summary);
@@ -112,7 +112,7 @@ public class SignInPreference extends Preference
         setFragment(fragment);
         updateSyncStatusIcon();
 
-        ChromeSigninController signinController = ChromeSigninController.get();
+        ChromeSigninController signinController = ChromeSigninController.get(getContext());
         boolean enabled = signinController.isSignedIn()
                 || SigninManager.get(getContext()).isSignInAllowed();
         if (mViewEnabled != enabled) {
@@ -150,7 +150,7 @@ public class SignInPreference extends Preference
 
     private void updateSyncStatusIcon() {
         if (SyncPreference.showSyncErrorIcon(getContext())
-                && ChromeSigninController.get().isSignedIn()) {
+                && ChromeSigninController.get(getContext()).isSignedIn()) {
             setWidgetLayoutResource(R.layout.sync_error_widget);
         } else {
             setWidgetLayoutResource(0);

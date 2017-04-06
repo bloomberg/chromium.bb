@@ -93,7 +93,7 @@ public class AndroidSyncSettings {
         mSyncContentResolverDelegate = syncContentResolverDelegate;
         mContractAuthority = getContractAuthority();
 
-        mAccount = ChromeSigninController.get().getSignedInUser();
+        mAccount = ChromeSigninController.get(context).getSignedInUser();
         updateSyncability();
         updateCachedSettings();
 
@@ -231,7 +231,7 @@ public class AndroidSyncSettings {
         StrictMode.setThreadPolicy(oldPolicy);
 
         // Disable the syncability of Chrome for all other accounts.
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get(mApplicationContext).getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();

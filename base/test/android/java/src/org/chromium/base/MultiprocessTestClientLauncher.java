@@ -180,12 +180,13 @@ public final class MultiprocessTestClientLauncher {
      * Spawns and connects to a child process.
      * May not be called from the main thread.
      *
+     * @param context context used to obtain the application context.
      * @param commandLine the child process command line argv.
      * @return the PID of the started process or 0 if the process could not be started.
      */
     @CalledByNative
-    private static int launchClient(
-            final String[] commandLine, final FileDescriptorInfo[] filesToMap) {
+    private static int launchClient(final Context context, final String[] commandLine,
+            final FileDescriptorInfo[] filesToMap) {
         if (ThreadUtils.runningOnUiThread()) {
             // This can't be called on the main thread as the native side will block until
             // onServiceConnected above is called, which cannot happen if the main thread is
@@ -197,11 +198,10 @@ public final class MultiprocessTestClientLauncher {
                 sConnectionAllocator.allocateConnection(commandLine, filesToMap);
         Intent intent = new Intent();
         String className = connection.getServiceClassName();
-        String packageName = ContextUtils.getApplicationContext().getPackageName();
-        intent.setComponent(new ComponentName(packageName, className));
-        if (!ContextUtils.getApplicationContext().bindService(
+        intent.setComponent(new ComponentName(context.getPackageName(), className));
+        if (!context.bindService(
                     intent, connection, Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT)) {
-            Log.e(TAG, "Failed to bind service: " + packageName + "." + className);
+            Log.e(TAG, "Failed to bind service: " + context.getPackageName() + "." + className);
             sConnectionAllocator.freeConnection(connection);
             return 0;
         }
@@ -215,13 +215,15 @@ public final class MultiprocessTestClientLauncher {
      * Blocks until the main method invoked by a previous call to launchClient terminates or until
      * the specified time-out expires.
      * Returns immediately if main has already returned.
+     * @param context context used to obtain the application context.
      * @param pid the process ID that was returned by the call to launchClient
      * @param timeoutMs the timeout in milliseconds after which the method returns even if main has
      *        not returned.
      * @return the return code returned by the main method or whether it timed-out.
      */
     @CalledByNative
-    private static MainReturnCodeResult waitForMainToReturn(int pid, int timeoutMs) {
+    private static MainReturnCodeResult waitForMainToReturn(
+            Context context, int pid, int timeoutMs) {
         ClientServiceConnection connection = sConnectionAllocator.getConnectionByPid(pid);
         if (connection == null) {
             Log.e(TAG, "waitForMainToReturn called on unknown connection for pid " + pid);
@@ -233,12 +235,12 @@ public final class MultiprocessTestClientLauncher {
             Log.e(TAG, "Remote call to waitForMainToReturn failed.");
             return null;
         } finally {
-            freeConnection(connection);
+            freeConnection(context, connection);
         }
     }
 
     @CalledByNative
-    private static boolean terminate(int pid, int exitCode, boolean wait) {
+    private static boolean terminate(Context context, int pid, int exitCode, boolean wait) {
         ClientServiceConnection connection = sConnectionAllocator.getConnectionByPid(pid);
         if (connection == null) {
             Log.e(TAG, "terminate called on unknown connection for pid " + pid);
@@ -254,13 +256,13 @@ public final class MultiprocessTestClientLauncher {
             // We expect this failure, since the forceStop's service implementation calls
             // System.exit().
         } finally {
-            freeConnection(connection);
+            freeConnection(context, connection);
         }
         return true;
     }
 
-    private static void freeConnection(ClientServiceConnection connection) {
-        ContextUtils.getApplicationContext().unbindService(connection);
+    private static void freeConnection(Context context, ClientServiceConnection connection) {
+        context.unbindService(connection);
         sConnectionAllocator.freeConnection(connection);
     }
 

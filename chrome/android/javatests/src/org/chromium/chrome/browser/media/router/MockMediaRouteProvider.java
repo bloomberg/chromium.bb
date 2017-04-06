@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.content.Context;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
@@ -23,6 +25,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     private static final String SINK_NAME1 = "test-sink-1";
     private static final String SINK_NAME2 = "test-sink-2";
 
+    private Context mApplicationContext;
     private MediaRouteManager mManager;
 
     private final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
@@ -43,7 +46,8 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         public static final MockMediaRouteProvider sProvider = new MockMediaRouteProvider();
 
         @Override
-        public MediaRouteProvider create(MediaRouteManager manager) {
+        public MediaRouteProvider create(Context applicationContext, MediaRouteManager manager) {
+            sProvider.mApplicationContext = applicationContext;
             sProvider.mManager = manager;
             return sProvider;
         }

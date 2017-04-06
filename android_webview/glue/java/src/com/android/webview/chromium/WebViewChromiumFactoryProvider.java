@@ -404,7 +404,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         final Context context = ContextUtils.getApplicationContext();
         // Future calls to PlatformServiceBridge.getInstance() rely on it having been created here.
-        PlatformServiceBridge.getOrCreateInstance();
+        PlatformServiceBridge.getOrCreateInstance(context);
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();

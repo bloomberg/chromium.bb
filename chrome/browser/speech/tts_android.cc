@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +26,9 @@ TtsPlatformImplAndroid::TtsPlatformImplAndroid()
     : utterance_id_(0) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
-      Java_TtsPlatformImpl_create(env, reinterpret_cast<intptr_t>(this)));
+      Java_TtsPlatformImpl_create(env,
+                                  reinterpret_cast<intptr_t>(this),
+                                  base::android::GetApplicationContext()));
 }
 
 TtsPlatformImplAndroid::~TtsPlatformImplAndroid() {

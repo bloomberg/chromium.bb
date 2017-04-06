@@ -40,7 +40,7 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
 
     private static class TestLogcatExtractionRunnable extends LogcatExtractionRunnable {
         TestLogcatExtractionRunnable(Context context, File minidump) {
-            super(minidump);
+            super(context, minidump);
         }
 
         @Override

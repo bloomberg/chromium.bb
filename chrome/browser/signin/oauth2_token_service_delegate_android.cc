@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -94,7 +95,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
 
   // Call into Java to get a new token.
   Java_OAuth2TokenService_getOAuth2AuthToken(
-      env, j_username, j_scope,
+      env, base::android::GetApplicationContext(), j_username, j_scope,
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
 
@@ -151,7 +152,9 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
   DCHECK(account_tracker_service_);
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
-      Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this));
+      Java_OAuth2TokenService_create(env,
+                                     base::android::GetApplicationContext(),
+                                     reinterpret_cast<intptr_t>(this));
   java_ref_.Reset(env, local_java_ref.obj());
 
   if (account_tracker_service_->GetMigrationState() ==
@@ -166,12 +169,14 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
     }
     ScopedJavaLocalRef<jobjectArray> java_accounts(
         base::android::ToJavaArrayOfStrings(env, accounts_id));
-    Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+    Java_OAuth2TokenService_saveStoredAccounts(
+        env, base::android::GetApplicationContext(), java_accounts);
   }
 
   if (!is_testing_profile_) {
-    Java_OAuth2TokenService_validateAccounts(AttachCurrentThread(), java_ref_,
-                                             JNI_TRUE);
+    Java_OAuth2TokenService_validateAccounts(
+        AttachCurrentThread(), java_ref_,
+        base::android::GetApplicationContext(), JNI_TRUE);
   }
 }
 
@@ -208,7 +213,8 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
   ScopedJavaLocalRef<jstring> j_account_id =
       ConvertUTF8ToJavaString(env, account_name);
   jboolean refresh_token_is_available =
-      Java_OAuth2TokenService_hasOAuth2RefreshToken(env, j_account_id);
+      Java_OAuth2TokenService_hasOAuth2RefreshToken(
+          env, base::android::GetApplicationContext(), j_account_id);
   return refresh_token_is_available == JNI_TRUE;
 }
 
@@ -237,7 +243,8 @@ std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {
   std::vector<std::string> accounts;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
-      Java_OAuth2TokenService_getAccounts(env);
+      Java_OAuth2TokenService_getAccounts(
+          env, base::android::GetApplicationContext());
   // TODO(fgorski): We may decide to filter out some of the accounts.
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts.obj(),
                                                      &accounts);
@@ -249,7 +256,8 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
   std::vector<std::string> account_names;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
-      Java_OAuth2TokenService_getSystemAccountNames(env);
+      Java_OAuth2TokenService_getSystemAccountNames(
+          env, base::android::GetApplicationContext());
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts.obj(),
                                                      &account_names);
   return account_names;
@@ -276,7 +284,8 @@ void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_access_token =
       ConvertUTF8ToJavaString(env, access_token);
-  Java_OAuth2TokenService_invalidateOAuth2AuthToken(env, j_access_token);
+  Java_OAuth2TokenService_invalidateOAuth2AuthToken(
+      env, base::android::GetApplicationContext(), j_access_token);
 }
 
 void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
@@ -337,7 +346,8 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
 
   // Save the current accounts in the token service before calling
   // FireRefreshToken* methods.
-  Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+  Java_OAuth2TokenService_saveStoredAccounts(
+      env, base::android::GetApplicationContext(), java_accounts);
 
   for (const std::string& refreshed_id : refreshed_ids)
     FireRefreshTokenAvailable(refreshed_id);
@@ -502,7 +512,8 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> java_accounts(
       base::android::ToJavaArrayOfStrings(env, std::vector<std::string>()));
-  Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+  Java_OAuth2TokenService_saveStoredAccounts(
+      env, base::android::GetApplicationContext(), java_accounts);
 
   for (const std::string& account : accounts_to_revoke)
     FireRefreshTokenRevoked(account);

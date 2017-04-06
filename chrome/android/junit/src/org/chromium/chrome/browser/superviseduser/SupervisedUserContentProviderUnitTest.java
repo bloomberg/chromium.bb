@@ -61,7 +61,8 @@ public class SupervisedUserContentProviderUnitTest {
     private static class MySupervisedUserContentProvider extends SupervisedUserContentProvider {
         @Override
         void startForcedSigninProcessor(Context context, Runnable onComplete) {
-            ChromeSigninController.get().setSignedInAccountName("Dummy");
+            ChromeSigninController.get(RuntimeEnvironment.application)
+                    .setSignedInAccountName("Dummy");
             onComplete.run();
         }
 
@@ -196,7 +197,7 @@ public class SupervisedUserContentProviderUnitTest {
     @Test
     public void testShouldProceed_withStartupSignedIn() throws ProcessInitException {
         // Set up a signed in user
-        ChromeSigninController.get().setSignedInAccountName("Dummy");
+        ChromeSigninController.get(RuntimeEnvironment.application).setSignedInAccountName("Dummy");
         // Mock things called during startup
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);

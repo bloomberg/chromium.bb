@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.invalidation.IntentSavingContext;
@@ -42,21 +41,18 @@ public class InvalidationServiceTest {
     @Rule
     public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
-    private IntentSavingContext mAppContext;
+    private IntentSavingContext mContext;
 
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-        mAppContext = new IntentSavingContext(InstrumentationRegistry.getInstrumentation()
-                                                      .getTargetContext()
-                                                      .getApplicationContext());
-        // TODO(wnwen): Remove mAppContext and just use application context.
+        mContext = new IntentSavingContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mAppContext, delegate);
-        ContextUtils.initApplicationContextForTests(mAppContext);
+        AndroidSyncSettings.overrideForTests(mContext, delegate);
     }
 
     @Test
@@ -66,14 +62,14 @@ public class InvalidationServiceTest {
         mUiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                InvalidationService service = InvalidationServiceFactory.getForTest();
+                InvalidationService service = InvalidationServiceFactory.getForTest(mContext);
                 ObjectId bookmark = ModelTypeHelper.toObjectId(ModelType.BOOKMARKS);
                 service.setRegisteredObjectIds(new int[] {1, 2, bookmark.getSource()},
                         new String[] {"a", "b", new String(bookmark.getName())});
-                Assert.assertEquals(1, mAppContext.getNumStartedIntents());
+                Assert.assertEquals(1, mContext.getNumStartedIntents());
 
                 // Validate destination.
-                Intent intent = mAppContext.getStartedIntent(0);
+                Intent intent = mContext.getStartedIntent(0);
                 validateIntentComponent(intent);
                 Assert.assertEquals(InvalidationIntentProtocol.ACTION_REGISTER, intent.getAction());
 

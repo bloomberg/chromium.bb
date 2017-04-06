@@ -17,11 +17,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
+import org.chromium.chrome.browser.widget.DateDividedAdapter.DateViewHolder;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -375,7 +377,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private void setPrivacyDisclaimerVisibility() {
         if (!mIsHeaderInflated) return;
 
-        boolean isSignedIn = ChromeSigninController.get().isSignedIn();
+        boolean isSignedIn =
+                ChromeSigninController.get(ContextUtils.getApplicationContext()).isSignedIn();
         mSignedInNotSyncedTextView.setVisibility(
                 !mHasSyncedData && isSignedIn ? View.VISIBLE : View.GONE);
         mSignedInSyncedTextView.setVisibility(mHasSyncedData ? View.VISIBLE : View.GONE);

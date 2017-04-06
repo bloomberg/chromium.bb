@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.content.Context;
+
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -38,9 +39,9 @@ public class AccountIdProvider {
      *
      * @param accountName The email address of a Google account.
      */
-    public String getAccountId(String accountName) {
+    public String getAccountId(Context ctx, String accountName) {
         try {
-            return GoogleAuthUtil.getAccountId(ContextUtils.getApplicationContext(), accountName);
+            return GoogleAuthUtil.getAccountId(ctx, accountName);
         } catch (IOException | GoogleAuthException ex) {
             Log.e("cr.AccountIdProvider", "AccountIdProvider.getAccountId", ex);
             return null;
@@ -52,9 +53,9 @@ public class AccountIdProvider {
      * Since the AccountIdProvider queries Google Play services, this basically checks whether
      * Google Play services is available.
      */
-    public boolean canBeUsed() {
+    public boolean canBeUsed(Context ctx) {
         return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                ContextUtils.getApplicationContext(), new UserRecoverableErrorHandler.Silent());
+                ctx, new UserRecoverableErrorHandler.Silent());
     }
 
     /**

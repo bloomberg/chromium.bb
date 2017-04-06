@@ -335,7 +335,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         // We remove the the SyncedAccountPreference if there's only 1 account on the device, so
         // it's possible for accountList to be null
         if (accountList != null) {
-            Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+            Account[] accounts = AccountManagerHelper.get(getActivity()).getGoogleAccounts();
             if (accounts.length <= 1) {
                 getPreferenceScreen().removePreference(accountList);
             } else {
@@ -708,8 +708,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
         }
 
         if (mCurrentSyncError == SYNC_AUTH_ERROR) {
-            AccountManagerHelper.get().updateCredentials(
-                    ChromeSigninController.get().getSignedInUser(), getActivity(), null);
+            AccountManagerHelper.get(getActivity())
+                    .updateCredentials(ChromeSigninController.get(getActivity()).getSignedInUser(),
+                            getActivity(), null);
             return;
         }
 
@@ -722,7 +723,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         }
 
         if (mCurrentSyncError == SYNC_OTHER_ERRORS) {
-            final Account account = ChromeSigninController.get().getSignedInUser();
+            final Account account = ChromeSigninController.get(getActivity()).getSignedInUser();
             SigninManager.get(getActivity()).signOut(new Runnable() {
                 @Override
                 public void run() {

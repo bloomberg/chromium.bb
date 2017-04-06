@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.invalidation;
 
+import android.content.Context;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
@@ -41,10 +43,10 @@ public final class InvalidationServiceFactory {
     }
 
     @VisibleForTesting
-    public static InvalidationService getForTest() {
-        return nativeGetForTest();
+    public static InvalidationService getForTest(Context context) {
+        return nativeGetForTest(context);
     }
 
     private static native InvalidationService nativeGetForProfile(Profile profile);
-    private static native InvalidationService nativeGetForTest();
+    private static native InvalidationService nativeGetForTest(Context context);
 }

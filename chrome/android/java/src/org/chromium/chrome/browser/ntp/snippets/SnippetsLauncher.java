@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.content.Context;
+
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -50,15 +52,16 @@ public class SnippetsLauncher {
 
     /**
      * Create a SnippetsLauncher object, which is owned by C++.
+     * @param context The app context.
      */
     @VisibleForTesting
     @CalledByNative
-    public static SnippetsLauncher create() {
+    public static SnippetsLauncher create(Context context) {
         if (sInstance != null) {
             throw new IllegalStateException("Already instantiated");
         }
 
-        sInstance = new SnippetsLauncher();
+        sInstance = new SnippetsLauncher(context);
         return sInstance;
     }
 
@@ -81,19 +84,19 @@ public class SnippetsLauncher {
         return sInstance != null;
     }
 
-    protected SnippetsLauncher() {
-        checkGCM();
-        mScheduler = GcmNetworkManager.getInstance(ContextUtils.getApplicationContext());
+    protected SnippetsLauncher(Context context) {
+        checkGCM(context);
+        mScheduler = GcmNetworkManager.getInstance(context);
     }
 
-    private boolean canUseGooglePlayServices() {
+    private boolean canUseGooglePlayServices(Context context) {
         return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                ContextUtils.getApplicationContext(), new UserRecoverableErrorHandler.Silent());
+                context, new UserRecoverableErrorHandler.Silent());
     }
 
-    private void checkGCM() {
+    private void checkGCM(Context context) {
         // Check to see if Play Services is up to date, and disable GCM if not.
-        if (!canUseGooglePlayServices()) {
+        if (!canUseGooglePlayServices(context)) {
             mGCMEnabled = false;
             Log.i(TAG, "Disabling SnippetsLauncher because Play Services is not up to date.");
         }

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.content.Context;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.WebContents;
 
@@ -22,6 +24,10 @@ public class CreditCardScanner {
     /** The delegate to notify of scanning result. */
     protected final Delegate mDelegate;
 
+    /** Application context. Used in subclass. */
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+    protected final Context mContext;
+
     /** The web contents that's requesting a scan. Used in subclass. */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     protected final WebContents mWebContents;
@@ -31,11 +37,12 @@ public class CreditCardScanner {
         /**
          * Builds an instance of credit card scanner.
          *
+         * @param context     Application context.
          * @param webContents The web contents that are requesting a scan.
          * @param delegate    The delegate to notify of scanning result.
          * @return An object that can scan a credit card.
          */
-        CreditCardScanner create(WebContents webContents, Delegate delegate);
+        CreditCardScanner create(Context context, WebContents webContents, Delegate delegate);
     }
 
     /** The delegate for credit card scanning. */
@@ -69,21 +76,26 @@ public class CreditCardScanner {
     /**
      * Creates an instance of a credit card scanner.
      *
+     * @param context     Application context.
      * @param webContents The web contents that are requesting a scan.
      * @param delegate    The delegate to notify of scanning result.
      * @return An object that can scan a credit card.
      */
-    public static CreditCardScanner create(WebContents webContents, Delegate delegate) {
-        return sFactory != null ? sFactory.create(webContents, delegate)
-                                : new CreditCardScanner(webContents, delegate);
+    public static CreditCardScanner create(
+            Context context, WebContents webContents, Delegate delegate) {
+        return sFactory != null ? sFactory.create(context, webContents, delegate)
+                                : new CreditCardScanner(context, webContents, delegate);
     }
 
     /**
      * Constructor for the credit card scanner.
-     *  @param webContents The web contents that are requesting a scan.
+     *
+     * @param context     Application context.
+     * @param webContents The web contents that are requesting a scan.
      * @param delegate    The delegate to notify of scanning result.
      */
-    protected CreditCardScanner(WebContents webContents, Delegate delegate) {
+    protected CreditCardScanner(Context context, WebContents webContents, Delegate delegate) {
+        mContext = context;
         mWebContents = webContents;
         mDelegate = delegate;
     }
