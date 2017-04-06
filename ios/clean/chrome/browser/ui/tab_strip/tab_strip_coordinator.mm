@@ -7,7 +7,6 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_view_controller.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
@@ -49,9 +48,6 @@
   self.viewController.dataSource = self.mediator;
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
 
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
 }
 

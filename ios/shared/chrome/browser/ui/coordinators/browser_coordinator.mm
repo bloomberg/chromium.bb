@@ -5,7 +5,6 @@
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 #import "base/logging.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,7 +23,6 @@
 
 @implementation BrowserCoordinator
 
-@synthesize context = _context;
 @synthesize browser = _browser;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
@@ -33,7 +31,6 @@
 
 - (instancetype)init {
   if (self = [super init]) {
-    _context = [[CoordinatorContext alloc] init];
     _childCoordinators = [NSMutableSet set];
   }
   return self;
@@ -68,7 +65,6 @@
   [self.childCoordinators addObject:coordinator];
   coordinator.parentCoordinator = self;
   coordinator.browser = self.browser;
-  coordinator.context.baseViewController = self.viewController;
   [coordinator wasAddedToParentCoordinator:self];
 }
 

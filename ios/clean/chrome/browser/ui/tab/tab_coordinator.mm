@@ -14,7 +14,6 @@
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -54,28 +53,17 @@ const BOOL kUseBottomToolbar = NO;
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
   webCoordinator.webState = self.webState;
   [self addChildCoordinator:webCoordinator];
-  // Unset the base view controller, so |webCoordinator| doesn't present its
-  // view controller.
-  webCoordinator.context.baseViewController = nil;
   [webCoordinator start];
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
   toolbarCoordinator.webState = self.webState;
   [self addChildCoordinator:toolbarCoordinator];
-  // Unset the base view controller, so |toolbarCoordinator| doesn't present
-  // its view controller.
-  toolbarCoordinator.context.baseViewController = nil;
   [toolbarCoordinator start];
 
   TabStripCoordinator* tabStripCoordinator = [[TabStripCoordinator alloc] init];
   [self addChildCoordinator:tabStripCoordinator];
-  // Unset the base view controller since this is a contained view controller.
-  tabStripCoordinator.context.baseViewController = nil;
   [tabStripCoordinator start];
 
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
 }
 
@@ -86,19 +74,18 @@ const BOOL kUseBottomToolbar = NO;
   for (BrowserCoordinator* child in self.children) {
     [child stop];
   }
-  [self.viewController.presentingViewController
-      dismissViewControllerAnimated:self.context.animated
-                         completion:nil];
   _webStateObserver.reset();
 }
 
-- (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {
-  if ([coordinator isKindOfClass:[ToolbarCoordinator class]]) {
-    self.viewController.toolbarViewController = coordinator.viewController;
-  } else if ([coordinator isKindOfClass:[WebCoordinator class]]) {
-    self.viewController.contentViewController = coordinator.viewController;
-  } else if ([coordinator isKindOfClass:[TabStripCoordinator class]]) {
-    self.viewController.tabStripViewController = coordinator.viewController;
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  if ([childCoordinator isKindOfClass:[ToolbarCoordinator class]]) {
+    self.viewController.toolbarViewController = childCoordinator.viewController;
+  } else if ([childCoordinator isKindOfClass:[WebCoordinator class]] ||
+             [childCoordinator isKindOfClass:[NTPCoordinator class]]) {
+    self.viewController.contentViewController = childCoordinator.viewController;
+  } else if ([childCoordinator isKindOfClass:[TabStripCoordinator class]]) {
+    self.viewController.tabStripViewController =
+        childCoordinator.viewController;
   }
 }
 
@@ -128,9 +115,7 @@ const BOOL kUseBottomToolbar = NO;
   if (webState->GetLastCommittedURL() == GURL("chrome://newtab/")) {
     NTPCoordinator* ntpCoordinator = [[NTPCoordinator alloc] init];
     [self addChildCoordinator:ntpCoordinator];
-    ntpCoordinator.context.baseViewController = nil;
     [ntpCoordinator start];
-    self.viewController.contentViewController = ntpCoordinator.viewController;
   }
 }
 

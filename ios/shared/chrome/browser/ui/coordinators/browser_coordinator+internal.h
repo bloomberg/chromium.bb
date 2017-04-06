@@ -56,8 +56,6 @@
 - (void)removeChildCoordinator:(BrowserCoordinator*)coordinator;
 
 // Called when this coordinator is added to a parent coordinator.
-// Subclasses can override this method to run code that requires a configured
-// CoordinatorContext.
 - (void)wasAddedToParentCoordinator:(BrowserCoordinator*)parentCoordinator;
 
 // Called when this coordinator is removed from its parent coordinator.

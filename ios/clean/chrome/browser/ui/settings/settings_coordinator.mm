@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -31,17 +30,7 @@
                                 currentBrowserState:self.browser
                                                         ->browser_state()
                                            delegate:self];
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
-}
-
-- (void)stop {
-  [super stop];
-  [self.viewController.presentingViewController
-      dismissViewControllerAnimated:self.context.animated
-                         completion:nil];
 }
 
 #pragma mark - SettingsNavigationControllerDelegate

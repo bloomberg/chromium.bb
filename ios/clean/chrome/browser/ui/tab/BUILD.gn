@@ -19,7 +19,6 @@ source_set("tab") {
     "//ios/clean/chrome/browser/ui/tab_strip",
     "//ios/clean/chrome/browser/ui/toolbar",
     "//ios/clean/chrome/browser/ui/web_contents",
-    "//ios/shared/chrome/browser/coordinator_context",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
   ]

@@ -8,7 +8,6 @@
 #import "ios/clean/chrome/browser/ui/presenters/menu_presentation_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,35 +15,24 @@
 #endif
 
 @interface ToolsCoordinator ()<UIViewControllerTransitioningDelegate>
-@property(nonatomic, strong) MenuViewController* menuViewController;
+@property(nonatomic, strong) MenuViewController* viewController;
 @property(nonatomic, strong) ToolsMediator* mediator;
 @end
 
 @implementation ToolsCoordinator
-@synthesize menuViewController = _menuViewController;
+@synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
 #pragma mark - BrowserCoordinator
 
 - (void)start {
-  self.menuViewController = [[MenuViewController alloc] init];
-  self.menuViewController.modalPresentationStyle = UIModalPresentationCustom;
-  self.menuViewController.transitioningDelegate = self;
-  self.menuViewController.dispatcher =
-      static_cast<id>(self.browser->dispatcher());
-  _mediator = [[ToolsMediator alloc] initWithConsumer:self.menuViewController];
+  self.viewController = [[MenuViewController alloc] init];
+  self.viewController.modalPresentationStyle = UIModalPresentationCustom;
+  self.viewController.transitioningDelegate = self;
+  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.mediator = [[ToolsMediator alloc] initWithConsumer:self.viewController];
 
-  [self.context.baseViewController presentViewController:self.menuViewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
-}
-
-- (void)stop {
-  [super stop];
-  [self.menuViewController.presentingViewController
-      dismissViewControllerAnimated:self.context.animated
-                         completion:nil];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

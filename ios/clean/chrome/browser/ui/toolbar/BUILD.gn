@@ -18,7 +18,6 @@ source_set("toolbar") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/omnibox",
     "//ios/clean/chrome/browser/ui/tools",
-    "//ios/shared/chrome/browser/coordinator_context",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",

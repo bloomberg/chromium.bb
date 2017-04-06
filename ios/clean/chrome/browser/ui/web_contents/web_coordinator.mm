@@ -8,7 +8,6 @@
 #import "ios/clean/chrome/browser/ui/context_menu/web_context_menu_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_view_controller.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
@@ -46,13 +45,6 @@
 - (void)start {
   self.viewController = [[WebContentsViewController alloc] init];
   self.mediator.consumer = self.viewController;
-
-  // Reminder: this is a no-op if |baseViewController| is nil, for example
-  // when this coordinator's view controller will be contained instead of
-  // presented.
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
 }
 

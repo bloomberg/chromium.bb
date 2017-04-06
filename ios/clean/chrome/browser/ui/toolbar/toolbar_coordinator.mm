@@ -9,7 +9,6 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -69,9 +68,6 @@
   [self addChildCoordinator:locationBarCoordinator];
   [locationBarCoordinator start];
 
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
 }
 
@@ -80,10 +76,22 @@
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 
-- (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {
-  if ([coordinator isKindOfClass:[LocationBarCoordinator class]]) {
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  if ([childCoordinator isKindOfClass:[LocationBarCoordinator class]]) {
     self.viewController.locationBarViewController =
         self.locationBarCoordinator.viewController;
+  } else if ([childCoordinator isKindOfClass:[ToolsCoordinator class]]) {
+    [self.viewController presentViewController:childCoordinator.viewController
+                                      animated:YES
+                                    completion:nil];
+  }
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  if ([childCoordinator isKindOfClass:[ToolsCoordinator class]]) {
+    [childCoordinator.viewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
   }
 }
 

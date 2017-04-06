@@ -14,7 +14,6 @@
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
-#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
@@ -68,8 +67,6 @@
   // SettingsCommands
   [dispatcher startDispatchingToTarget:self
                            forSelector:@selector(showSettings)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeSettings)];
   // TabGridCommands
   [dispatcher startDispatchingToTarget:self
                            forSelector:@selector(showTabGridTabAtIndex:)];
@@ -85,18 +82,28 @@
 
   self.mediator.consumer = self.viewController;
 
-  // |baseViewController| is nullable, so this is by design a no-op if it hasn't
-  // been set. This may be true in a unit test, or if this coordinator is being
-  // used as a root coordinator.
-  [self.context.baseViewController presentViewController:self.viewController
-                                                animated:self.context.animated
-                                              completion:nil];
   [super start];
 }
 
 - (void)stop {
   [super stop];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
+         [childCoordinator isKindOfClass:[TabCoordinator class]]);
+  [self.viewController presentViewController:childCoordinator.viewController
+                                    animated:YES
+                                  completion:nil];
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
+         [childCoordinator isKindOfClass:[TabCoordinator class]]);
+  [childCoordinator.viewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
 }
 
 #pragma mark - TabGridCommands
