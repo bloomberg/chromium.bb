@@ -20,13 +20,19 @@ class FontMetrics;
 // https://drafts.csswg.org/css2/visudet.html#line-height
 struct NGLineHeightMetrics {
   NGLineHeightMetrics() {}
+  NGLineHeightMetrics(LayoutUnit initial_ascent, LayoutUnit initial_descent)
+      : ascent(initial_ascent), descent(initial_descent) {}
 
-  // Use the leading from the 'line-height' property, or the font metrics of
-  // the primary font if 'line-height: normal'.
+  // Compute from ComputedStyle, using the font metrics of the prikmary font.
+  // The leading is not included.
   NGLineHeightMetrics(const ComputedStyle&, FontBaseline);
 
-  // Use the leading from the font metrics.
+  // Compute from FontMetrics. The leading is not included.
   NGLineHeightMetrics(const FontMetrics&, FontBaseline);
+
+  // Add the leading. Half the leading is added to ascent and descent each.
+  // https://drafts.csswg.org/css2/visudet.html#leading
+  void AddLeading(LayoutUnit line_height);
 
   // Unite a metrics for an inline box to a metrics for a line box.
   void Unite(const NGLineHeightMetrics&);
@@ -36,20 +42,10 @@ struct NGLineHeightMetrics {
   LayoutUnit ascent;
   LayoutUnit descent;
 
-  // Half the leading added to ascent and descent; A' = A + L/2 and
-  // D' = D + L/2. https://drafts.csswg.org/css2/visudet.html#leading
-  // Then united to compute 'top' and 'bottom' of line boxes. When united,
-  // the half leading for ascent and for descent may be different.
-  // TODO(kojii): Always carrying/uniting 4 values look inefficient.
-  LayoutUnit ascent_and_leading;
-  LayoutUnit descent_and_leading;
-
-  LayoutUnit LineHeight() const {
-    return ascent_and_leading + descent_and_leading;
-  }
+  LayoutUnit LineHeight() const { return ascent + descent; }
 
  private:
-  void Initialize(const FontMetrics&, FontBaseline, LayoutUnit line_height);
+  void Initialize(const FontMetrics&, FontBaseline);
 };
 
 }  // namespace blink

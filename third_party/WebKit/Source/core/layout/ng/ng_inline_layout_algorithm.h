@@ -102,6 +102,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
  private:
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
+  bool IsFirstLine() const;
+  const ComputedStyle& FirstLineStyle() const;
+  const ComputedStyle& LineStyle() const;
+
   // Set the start and the end to the specified offset.
   // This empties the current line.
   void Initialize(unsigned index, unsigned offset);
@@ -134,7 +138,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                            const LineItemChunk&,
                            NGLineBoxFragmentBuilder*);
   LayoutUnit PlaceAtomicInline(const NGLayoutInlineItem&,
-                               LayoutUnit estimated_baseline,
                                NGLineBoxFragmentBuilder*,
                                NGTextFragmentBuilder*);
 
@@ -159,6 +162,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGLogicalRect current_opportunity_;
 
   unsigned is_horizontal_writing_mode_ : 1;
+  unsigned disallow_first_line_rules_ : 1;
 
   NGConstraintSpaceBuilder space_builder_;
 #if DCHECK_IS_ON()

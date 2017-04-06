@@ -20,7 +20,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   STACK_ALLOCATED();
 
  public:
-  NGLineBoxFragmentBuilder(NGInlineNode*);
+  NGLineBoxFragmentBuilder(NGInlineNode*, const NGLineHeightMetrics&);
 
   NGLineBoxFragmentBuilder& SetDirection(TextDirection);
 

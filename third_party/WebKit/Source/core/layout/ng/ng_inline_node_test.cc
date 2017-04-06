@@ -22,8 +22,6 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  LayoutObject* GetLayoutObject() override { return nullptr; }
-
   String& Text() { return text_content_; }
   Vector<NGLayoutInlineItem>& Items() { return items_; }
 

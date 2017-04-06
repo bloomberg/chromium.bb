@@ -12,34 +12,31 @@ NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
                                          FontBaseline baseline_type) {
   const SimpleFontData* font_data = style.font().primaryFont();
   DCHECK(font_data);
-  Initialize(font_data->getFontMetrics(), baseline_type,
-             style.computedLineHeightAsFixed());
+  Initialize(font_data->getFontMetrics(), baseline_type);
 }
 
 NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
                                          FontBaseline baseline_type) {
-  Initialize(font_metrics, baseline_type,
-             LayoutUnit::fromFloatCeil(font_metrics.floatLineSpacing()));
+  Initialize(font_metrics, baseline_type);
 }
 
 void NGLineHeightMetrics::Initialize(const FontMetrics& font_metrics,
-                                     FontBaseline baseline_type,
-                                     LayoutUnit line_height) {
+                                     FontBaseline baseline_type) {
   ascent = font_metrics.fixedAscent(baseline_type);
   descent = font_metrics.fixedDescent(baseline_type);
+}
+
+void NGLineHeightMetrics::AddLeading(LayoutUnit line_height) {
   LayoutUnit half_leading = (line_height - (ascent + descent)) / 2;
-  // Ensure the top and the baseline is snapped to CSS pixel.
-  // TODO(kojii): Snap baseline to pixel when our own paitn code is ready.
-  ascent_and_leading = ascent + half_leading.floor();
-  descent_and_leading = line_height - ascent_and_leading;
+  // TODO(kojii): floor() is to make text dump compatible with legacy test
+  // results. Revisit when we paint.
+  ascent += half_leading.floor();
+  descent = line_height - ascent;
 }
 
 void NGLineHeightMetrics::Unite(const NGLineHeightMetrics& other) {
   ascent = std::max(ascent, other.ascent);
   descent = std::max(descent, other.descent);
-  ascent_and_leading = std::max(ascent_and_leading, other.ascent_and_leading);
-  descent_and_leading =
-      std::max(descent_and_leading, other.descent_and_leading);
 }
 
 }  // namespace blink
