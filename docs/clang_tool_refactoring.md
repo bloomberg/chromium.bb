@@ -125,13 +125,6 @@ $gen_targets = $(ninja -C out/gn -t targets all \
 ninja -C out/Debug $gen_targets
 ```
 
-On Windows, generate the compile DB first, and after making any source changes.
-Then omit the `--generate-compdb` in later steps.
-
-```shell
-tools/clang/scripts/generate_win_compdb.py out/Debug
-```
-
 Then run the actual clang tool to generate a list of edits:
 
 ```shell
