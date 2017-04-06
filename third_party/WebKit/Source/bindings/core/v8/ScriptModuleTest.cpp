@@ -147,8 +147,7 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
   auto modulator = new ScriptModuleTestModulator();
   auto resolver = modulator->testScriptModuleResolver();
 
-  auto contextData = V8PerContextData::from(scope.context());
-  contextData->setModulator(modulator);
+  Modulator::setModulator(&scope.frame(), modulator);
 
   ScriptModule module = ScriptModule::compile(
       scope.isolate(), "export const a = 42;", "foo.js", SharableCrossOrigin);
@@ -165,8 +164,7 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   auto modulator = new ScriptModuleTestModulator();
   auto resolver = modulator->testScriptModuleResolver();
 
-  auto contextData = V8PerContextData::from(scope.context());
-  contextData->setModulator(modulator);
+  Modulator::setModulator(&scope.frame(), modulator);
 
   ScriptModule moduleA = ScriptModule::compile(
       scope.isolate(), "export const a = 'a';", "foo.js", SharableCrossOrigin);

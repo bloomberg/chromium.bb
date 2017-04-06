@@ -36,7 +36,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "core/dom/Modulator.h"
 #include "platform/InstanceCounters.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
@@ -189,14 +188,16 @@ void V8PerContextData::addCustomElementBinding(
   m_customElementBindings.push_back(std::move(binding));
 }
 
-void V8PerContextData::setModulator(Modulator* modulator) {
-  DCHECK(!m_modulator);
-  DCHECK(modulator);
-  m_modulator = modulator;
+void V8PerContextData::addData(const char* key, Data* data) {
+  m_dataMap.set(key, data);
 }
 
-void V8PerContextData::clearModulator() {
-  m_modulator = nullptr;
+void V8PerContextData::clearData(const char* key) {
+  m_dataMap.erase(key);
+}
+
+V8PerContextData::Data* V8PerContextData::getData(const char* key) {
+  return m_dataMap.at(key);
 }
 
 }  // namespace blink

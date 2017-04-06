@@ -9,15 +9,40 @@
 
 namespace blink {
 
-Modulator* Modulator::from(LocalFrame* frame) {
+namespace {
+const char kPerContextDataKey[] = "Modulator";
+
+V8PerContextData* getPerContextData(LocalFrame* frame) {
   ScriptState* scriptState = toScriptStateForMainWorld(frame);
   if (!scriptState)
     return nullptr;
-  // TODO(kouhei): setModulator in V8PerContextData when we land ModulatorImpl.
-  return scriptState->perContextData()->modulator();
+  return scriptState->perContextData();
+}
+}  // namespace
+
+Modulator* Modulator::from(LocalFrame* frame) {
+  return from(getPerContextData(frame));
+}
+
+Modulator* Modulator::from(V8PerContextData* perContextData) {
+  if (!perContextData)
+    return nullptr;
+  return static_cast<Modulator*>(perContextData->getData(kPerContextDataKey));
 }
 
 Modulator::~Modulator() {}
+
+void Modulator::setModulator(LocalFrame* frame, Modulator* modulator) {
+  V8PerContextData* perContextData = getPerContextData(frame);
+  DCHECK(perContextData);
+  perContextData->addData(kPerContextDataKey, modulator);
+}
+
+void Modulator::clearModulator(LocalFrame* frame) {
+  V8PerContextData* perContextData = getPerContextData(frame);
+  DCHECK(perContextData);
+  perContextData->clearData(kPerContextDataKey);
+}
 
 KURL Modulator::resolveModuleSpecifier(const String& moduleRequest,
                                        const KURL& baseURL) {

@@ -5,6 +5,7 @@
 #ifndef Modulator_h
 #define Modulator_h
 
+#include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
@@ -40,10 +41,17 @@ enum class ModuleGraphLevel { TopLevelModuleFetch, DependentModuleFetch };
 // https://html.spec.whatwg.org/#environment-settings-object
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
-class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator> {
+class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
+                              public V8PerContextData::Data {
+  USING_GARBAGE_COLLECTED_MIXIN(Modulator);
+
  public:
   static Modulator* from(LocalFrame*);
+  static Modulator* from(V8PerContextData*);
   virtual ~Modulator();
+
+  static void setModulator(LocalFrame*, Modulator*);
+  static void clearModulator(LocalFrame*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

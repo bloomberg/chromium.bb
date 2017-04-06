@@ -89,7 +89,7 @@ v8::MaybeLocal<v8::Module> ScriptModule::resolveModuleCallback(
     v8::Local<v8::String> specifier,
     v8::Local<v8::Module> referrer) {
   v8::Isolate* isolate = context->GetIsolate();
-  Modulator* modulator = V8PerContextData::from(context)->modulator();
+  Modulator* modulator = Modulator::from(V8PerContextData::from(context));
   DCHECK(modulator);
 
   ScriptModule referrerRecord(isolate, referrer);
