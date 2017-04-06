@@ -32,6 +32,22 @@
 
 namespace WTF {
 using base::CheckedNumeric;
+using base::IsValidForType;
+using base::ValueOrDieForType;
+using base::ValueOrDefaultForType;
+using base::MakeCheckedNum;
+using base::CheckMax;
+using base::CheckMin;
+using base::CheckAdd;
+using base::CheckSub;
+using base::CheckMul;
+using base::CheckDiv;
+using base::CheckMod;
+using base::CheckLsh;
+using base::CheckRsh;
+using base::CheckAnd;
+using base::CheckOr;
+using base::CheckXor;
 }  // namespace WTF
 
 using WTF::CheckedNumeric;
