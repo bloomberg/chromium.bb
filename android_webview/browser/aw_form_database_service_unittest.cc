@@ -9,18 +9,16 @@
 
 #include "base/android/jni_android.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util_android.h"
 
 using autofill::AutofillWebDataService;
 using autofill::FormFieldData;
 using base::android::AttachCurrentThread;
-using content::BrowserThread;
 using testing::Test;
 
 namespace android_webview {
@@ -28,10 +26,8 @@ namespace android_webview {
 class AwFormDatabaseServiceTest : public Test {
  public:
   AwFormDatabaseServiceTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-    db_thread_.Start();
-  }
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_DB_THREAD) {}
 
  protected:
   void SetUp() override {
@@ -47,10 +43,7 @@ class AwFormDatabaseServiceTest : public Test {
 
   // The path to the temporary directory used for the test operations.
   base::ScopedTempDir temp_dir_;
-  // A message loop for UI thread.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   JNIEnv* env_;
 
   std::unique_ptr<AwFormDatabaseService> service_;
