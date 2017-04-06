@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
@@ -117,7 +118,7 @@ class PrivetNotificationsListenerTest : public testing::Test {
  protected:
   StrictMock<MockPrivetNotificationsListenerDeleagate> mock_delegate_;
   std::unique_ptr<PrivetNotificationsListener> notification_listener_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory fetcher_factory_;
   DeviceDescription description_;

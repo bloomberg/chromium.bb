@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -145,7 +146,7 @@ class SMSServiceTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
