@@ -503,6 +503,9 @@ bool MemoryCoordinatorImpl::TryToPurgeMemoryFromChildren(PurgeTarget target) {
   base::TimeTicks now = tick_clock_->NowTicks();
   // TODO(bashi): Better to sort child processes based on their priorities.
   for (auto& iter : children()) {
+    MemoryCoordinatorHandleImpl* handle = iter.second.handle.get();
+    if (!handle || !handle->child() || !handle->child().is_bound())
+      continue;
     if (iter.second.is_visible && target == PurgeTarget::BACKGROUNDED)
       continue;
     if (!iter.second.can_purge_after.is_null() &&
@@ -513,7 +516,7 @@ bool MemoryCoordinatorImpl::TryToPurgeMemoryFromChildren(PurgeTarget target) {
     // request until the child process goes foreground and then goes background
     // again.
     iter.second.can_purge_after = base::TimeTicks::Max();
-    iter.second.handle->child()->PurgeMemory();
+    handle->child()->PurgeMemory();
     return true;
   }
   return false;
