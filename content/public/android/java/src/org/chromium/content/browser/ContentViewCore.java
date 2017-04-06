@@ -654,7 +654,7 @@ public class ContentViewCore
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             // mContainerView can change, but this OnTapListener can only be used
             // with the mContainerViewAtCreation.
-            private final ViewGroup mContainerViewAtCreation = mContainerView;
+            private final ViewGroup mContainerViewAtCreation = containerView;
 
             @Override
             public void onResolveTapDisambiguation(
