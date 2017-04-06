@@ -14,15 +14,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "net/base/completion_callback.h"
-
-class Profile;
 
 namespace safe_browsing {
 
@@ -32,9 +29,10 @@ class ThreatDetailsRedirectsCollector
     : public base::RefCountedThreadSafe<
           ThreatDetailsRedirectsCollector,
           content::BrowserThread::DeleteOnUIThread>,
-      public content::NotificationObserver {
+      public history::HistoryServiceObserver {
  public:
-  explicit ThreatDetailsRedirectsCollector(Profile* profile);
+  explicit ThreatDetailsRedirectsCollector(
+      const base::WeakPtr<history::HistoryService>& history_service);
 
   // Collects urls' redirects chain information from the history service.
   // We get access to history service via web_contents in UI thread.
@@ -48,10 +46,9 @@ class ThreatDetailsRedirectsCollector
   // Returns the redirect urls we get from history service
   const std::vector<RedirectChain>& GetCollectedUrls() const;
 
-  // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // history::HistoryServiceObserver
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -69,7 +66,6 @@ class ThreatDetailsRedirectsCollector
   // is all done.
   void AllDone();
 
-  Profile* profile_;
   base::CancelableTaskTracker request_tracker_;
 
   // Method we call when we are done. The caller must be alive for the
@@ -86,7 +82,9 @@ class ThreatDetailsRedirectsCollector
   // The collected directs from history service
   std::vector<RedirectChain> redirects_urls_;
 
-  content::NotificationRegistrar registrar_;
+  base::WeakPtr<history::HistoryService> history_service_;
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreatDetailsRedirectsCollector);
 };

@@ -10,10 +10,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -23,12 +21,14 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 ThreatDetailsRedirectsCollector::ThreatDetailsRedirectsCollector(
-    Profile* profile)
-    : profile_(profile), has_started_(false) {
+    const base::WeakPtr<history::HistoryService>& history_service)
+    : has_started_(false),
+      history_service_(history_service),
+      history_service_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::Source<Profile>(profile));
+
+  if (history_service) {
+    history_service_observer_.Add(history_service.get());
   }
 }
 
@@ -59,16 +59,6 @@ ThreatDetailsRedirectsCollector::GetCollectedUrls() const {
   return redirects_urls_;
 }
 
-void ThreatDetailsRedirectsCollector::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
-  DVLOG(1) << "Profile gone.";
-  profile_ = NULL;
-}
-
 ThreatDetailsRedirectsCollector::~ThreatDetailsRedirectsCollector() {}
 
 void ThreatDetailsRedirectsCollector::StartGetRedirects(
@@ -84,21 +74,16 @@ void ThreatDetailsRedirectsCollector::StartGetRedirects(
 
 void ThreatDetailsRedirectsCollector::GetRedirects(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!profile_) {
+
+  if (!history_service_) {
     AllDone();
     return;
   }
 
-  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!history) {
-    AllDone();
-    return;
-  }
-
-  history->QueryRedirectsTo(
-      url, base::Bind(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
-                      base::Unretained(this), url),
+  history_service_->QueryRedirectsTo(
+      url,
+      base::Bind(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
+                 base::Unretained(this), url),
       &request_tracker_);
 }
 
@@ -127,6 +112,12 @@ void ThreatDetailsRedirectsCollector::AllDone() {
   DVLOG(1) << "AllDone";
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
   callback_.Reset();
+}
+
+void ThreatDetailsRedirectsCollector::HistoryServiceBeingDeleted(
+    history::HistoryService* history_service) {
+  history_service_observer_.Remove(history_service);
+  history_service_.reset();
 }
 
 }  // namespace safe_browsing

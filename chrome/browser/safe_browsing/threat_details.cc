@@ -15,9 +15,11 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -179,8 +181,13 @@ ThreatDetails::ThreatDetails(BaseUIManager* ui_manager,
       did_proceed_(false),
       num_visits_(0),
       ambiguous_dom_(false),
-      cache_collector_(new ThreatDetailsCacheCollector),
-      redirects_collector_(new ThreatDetailsRedirectsCollector(profile_)) {
+      cache_collector_(new ThreatDetailsCacheCollector) {
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  redirects_collector_ = new ThreatDetailsRedirectsCollector(
+      history_service ? history_service->AsWeakPtr()
+                      : base::WeakPtr<history::HistoryService>());
   StartCollection();
 }
 
