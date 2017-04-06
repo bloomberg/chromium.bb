@@ -425,6 +425,7 @@ target(link_target_type, "renderer") {
   defines = []
 
   public_deps = [
+    "//content/public/common:common_sources",
     "//ipc",
   ]
 
@@ -448,7 +449,6 @@ target(link_target_type, "renderer") {
     "//content/common:features",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
-    "//content/public/common:common_sources",
     "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/public/common:features",
     "//content/public/common:service_names",
