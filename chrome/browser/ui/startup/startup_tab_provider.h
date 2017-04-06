@@ -64,6 +64,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
   static StartupTabs GetStandardOnboardingTabsForState(
       bool is_first_run,
       bool has_seen_welcome_page,
+      bool is_signin_allowed,
       bool is_signed_in,
       bool is_supervised_user);
 
@@ -74,6 +75,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
       bool is_first_run,
       bool has_seen_welcome_page,
       bool has_seen_win10_promo,
+      bool is_signin_allowed,
       bool is_signed_in,
       bool set_default_browser_allowed,
       bool is_default_browser,

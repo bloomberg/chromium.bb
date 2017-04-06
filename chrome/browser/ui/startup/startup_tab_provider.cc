@@ -56,6 +56,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   PrefService* prefs = profile->GetPrefs();
   bool has_seen_welcome_page =
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
+  bool is_signin_allowed = profile->IsSyncAllowed();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   bool is_signed_in = signin_manager && signin_manager->IsAuthenticated();
@@ -82,13 +83,15 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
         g_browser_process->CachedDefaultWebClientState() ==
         shell_integration::IS_DEFAULT;
     return GetWin10OnboardingTabsForState(
-        is_first_run, has_seen_welcome_page, has_seen_win10_promo, is_signed_in,
-        set_default_browser_allowed, is_default_browser, is_supervised_user);
+        is_first_run, has_seen_welcome_page, has_seen_win10_promo,
+        is_signin_allowed, is_signed_in, set_default_browser_allowed,
+        is_default_browser, is_supervised_user);
   }
 #endif  // defined(OS_WIN)
 
   return GetStandardOnboardingTabsForState(is_first_run, has_seen_welcome_page,
-                                           is_signed_in, is_supervised_user);
+                                           is_signin_allowed, is_signed_in,
+                                           is_supervised_user);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -139,10 +142,12 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
 StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
     bool is_first_run,
     bool has_seen_welcome_page,
+    bool is_signin_allowed,
     bool is_signed_in,
     bool is_supervised_user) {
   StartupTabs tabs;
-  if (!has_seen_welcome_page && !is_signed_in && !is_supervised_user)
+  if (!has_seen_welcome_page && is_signin_allowed && !is_signed_in &&
+      !is_supervised_user)
     tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
   return tabs;
 }
@@ -153,6 +158,7 @@ StartupTabs StartupTabProviderImpl::GetWin10OnboardingTabsForState(
     bool is_first_run,
     bool has_seen_welcome_page,
     bool has_seen_win10_promo,
+    bool is_signin_allowed,
     bool is_signed_in,
     bool set_default_browser_allowed,
     bool is_default_browser,
@@ -165,7 +171,7 @@ StartupTabs StartupTabProviderImpl::GetWin10OnboardingTabsForState(
   if (set_default_browser_allowed && !has_seen_win10_promo &&
       !is_default_browser) {
     tabs.emplace_back(GetWin10WelcomePageUrl(!is_first_run), false);
-  } else if (!has_seen_welcome_page && !is_signed_in) {
+  } else if (!has_seen_welcome_page && is_signin_allowed && !is_signed_in) {
     tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
   }
   return tabs;
