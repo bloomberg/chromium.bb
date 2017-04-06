@@ -28,7 +28,7 @@ TEST(TextSearcherICUTest, FindSubstring) {
   const String& text = makeUTF16("Long text with substring content.");
   searcher.setText(text.characters16(), text.length());
 
-  MatchResult result;
+  MatchResultICU result;
 
   EXPECT_TRUE(searcher.nextMatchResult(result));
   EXPECT_NE(0u, result.start);
@@ -49,7 +49,7 @@ TEST(TextSearcherICUTest, FindIgnoreCaseSubstring) {
   const String& text = makeUTF16("Long text with SubStrinG content.");
   searcher.setText(text.characters16(), text.length());
 
-  MatchResult result;
+  MatchResultICU result;
   EXPECT_TRUE(searcher.nextMatchResult(result));
   EXPECT_NE(0u, result.start);
   EXPECT_NE(0u, result.length);
@@ -72,20 +72,20 @@ TEST(TextSearcherICUTest, FindSubstringWithOffset) {
       makeUTF16("Long text with substring content. Second substring");
   searcher.setText(text.characters16(), text.length());
 
-  MatchResult firstResult;
+  MatchResultICU firstResult;
 
   EXPECT_TRUE(searcher.nextMatchResult(firstResult));
   EXPECT_NE(0u, firstResult.start);
   EXPECT_NE(0u, firstResult.length);
 
-  MatchResult secondResult;
+  MatchResultICU secondResult;
   EXPECT_TRUE(searcher.nextMatchResult(secondResult));
   EXPECT_NE(0u, secondResult.start);
   EXPECT_NE(0u, secondResult.length);
 
   searcher.setOffset(firstResult.start + firstResult.length);
 
-  MatchResult offsetResult;
+  MatchResultICU offsetResult;
   EXPECT_TRUE(searcher.nextMatchResult(offsetResult));
   EXPECT_EQ(offsetResult.start, secondResult.start);
   EXPECT_EQ(offsetResult.length, secondResult.length);

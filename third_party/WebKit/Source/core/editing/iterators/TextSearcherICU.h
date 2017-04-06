@@ -13,7 +13,7 @@ struct UStringSearch;
 
 namespace blink {
 
-struct CORE_EXPORT MatchResult {
+struct CORE_EXPORT MatchResultICU {
   size_t start;
   size_t length;
 };
@@ -28,7 +28,7 @@ class CORE_EXPORT TextSearcherICU {
   void setPattern(const StringView& pattern, bool sensitive);
   void setText(const UChar* text, size_t length);
   void setOffset(size_t);
-  bool nextMatchResult(MatchResult&);
+  bool nextMatchResult(MatchResultICU&);
 
  private:
   void setPattern(const UChar* pattern, size_t length);

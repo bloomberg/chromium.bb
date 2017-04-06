@@ -252,7 +252,7 @@ inline size_t SearchBuffer::search(size_t& start) {
   m_textSearcher->setText(m_buffer.data(), size);
   m_textSearcher->setOffset(m_prefixLength);
 
-  MatchResult match;
+  MatchResultICU match;
 
 nextMatch:
   if (!m_textSearcher->nextMatchResult(match))

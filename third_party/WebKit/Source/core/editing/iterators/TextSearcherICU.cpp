@@ -129,7 +129,7 @@ void TextSearcherICU::setOffset(size_t offset) {
   DCHECK_EQ(status, U_ZERO_ERROR);
 }
 
-bool TextSearcherICU::nextMatchResult(MatchResult& result) {
+bool TextSearcherICU::nextMatchResult(MatchResultICU& result) {
   UErrorCode status = U_ZERO_ERROR;
   const int matchStart = usearch_next(m_searcher, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
