@@ -466,3 +466,27 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.get_latest_try_jobs = lambda: []
         self.assertEqual(1, updater.run(args=[]))
         self.assertLog(['ERROR: No try job information was collected.\n'])
+
+    def test_new_manual_tests_get_skip_expectation(self):
+        host = self.mock_host()
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/x-manual.html', '<html>')
+        updater = WPTExpectationsUpdater(host)
+        results = {
+            'external/wpt/x-manual.html': {
+                (
+                    'test-linux-precise',
+                    'test-linux-trusty',
+                    'test-mac-mac10.10',
+                    'test-mac-mac10.11',
+                    'test-win-win7',
+                    'test-win-win10',
+                ): {'expected': 'PASS', 'actual': 'MISSING', 'bug': 'crbug.com/test'}
+            }
+        }
+        results_copy = copy.deepcopy(results)
+        self.assertEqual(
+            updater.get_tests_to_rebaseline(results),
+            ([], results_copy))
+        self.assertEqual(
+            updater.create_line_list(results),
+            ['crbug.com/test external/wpt/x-manual.html [ Skip ]'])

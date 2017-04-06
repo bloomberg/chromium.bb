@@ -236,7 +236,7 @@ class WPTExpectationsUpdater(object):
         value to create one test expectations line per key.
 
         Args:
-            merged_results: A merged_results with the format:
+            merged_results: A dictionary with the format:
                 {
                     'test_name': {
                         'platform': {
@@ -253,16 +253,26 @@ class WPTExpectationsUpdater(object):
         """
         line_list = []
         for test_name, port_results in sorted(merged_results.iteritems()):
-            for port_names in sorted(port_results):
-                if test_name.startswith('external'):
-                    line_parts = [port_results[port_names]['bug']]
-                    specifier_part = self.specifier_part(self.to_list(port_names), test_name)
-                    if specifier_part:
-                        line_parts.append(specifier_part)
-                    line_parts.append(test_name)
-                    line_parts.append('[ %s ]' % ' '.join(self.get_expectations(port_results[port_names])))
-                    line_list.append(' '.join(line_parts))
+            if not test_name.startswith('external'):
+                continue
+            for port_names, results in sorted(port_results.iteritems()):
+                line_list.append(self._create_line(test_name, port_names, results))
         return line_list
+
+    def _create_line(self, test_name, port_names, results):
+        """Constructs one test expectations line string."""
+        line_parts = [results['bug']]
+        specifier_part = self.specifier_part(self.to_list(port_names), test_name)
+        if specifier_part:
+            line_parts.append(specifier_part)
+        line_parts.append(test_name)
+
+        # Skip new manual tests; see crbug.com/708241 for context.
+        if '-manual.' in test_name and results['actual'] in ('MISSING', 'TIMEOUT'):
+            line_parts.append('[ Skip ]')
+        else:
+            line_parts.append('[ %s ]' % ' '.join(self.get_expectations(results)))
+        return ' '.join(line_parts)
 
     def specifier_part(self, port_names, test_name):
         """Returns the specifier part for a new test expectations line.
