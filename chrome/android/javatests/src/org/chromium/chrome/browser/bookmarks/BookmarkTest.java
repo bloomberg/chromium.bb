@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.Adapter;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -187,7 +188,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         final BookmarkDelegate delegate = adapter.getDelegateForTesting();
 
         assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
-        assertEquals("Wrong number of items before starting search.", 3, adapter.getItemCount());
+        assertBookmarkItems("Wrong number of items before starting search.", 3, adapter, delegate);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -197,24 +198,25 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
-        assertEquals("Wrong number of items after showing search UI. The promo should be hidden.",
-                2, adapter.getItemCount());
+        assertBookmarkItems(
+                "Wrong number of items after showing search UI. The promo should be hidden.", 2,
+                adapter, delegate);
 
         searchBookmarks("Google");
-        assertEquals("Wrong number of items after searching.", 1,
-                mItemsContainer.getAdapter().getItemCount());
+        assertBookmarkItems("Wrong number of items after searching.", 1,
+                mItemsContainer.getAdapter(), delegate);
 
         BookmarkId newBookmark = addBookmark(TEST_PAGE_TITLE_GOOGLE2, mTestPage);
-        assertEquals("Wrong number of items after bookmark added while searching.", 2,
-                mItemsContainer.getAdapter().getItemCount());
+        assertBookmarkItems("Wrong number of items after bookmark added while searching.", 2,
+                mItemsContainer.getAdapter(), delegate);
 
         removeBookmark(newBookmark);
-        assertEquals("Wrong number of items after bookmark removed while searching.", 1,
-                mItemsContainer.getAdapter().getItemCount());
+        assertBookmarkItems("Wrong number of items after bookmark removed while searching.", 1,
+                mItemsContainer.getAdapter(), delegate);
 
         searchBookmarks("Non-existent page");
-        assertEquals("Wrong number of items after searching for non-existent item.", 0,
-                mItemsContainer.getAdapter().getItemCount());
+        assertBookmarkItems("Wrong number of items after searching for non-existent item.", 0,
+                mItemsContainer.getAdapter(), delegate);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -222,9 +224,29 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 delegate.closeSearchUI();
             }
         });
-        assertEquals("Wrong number of items after closing search UI.", 3,
-                mItemsContainer.getAdapter().getItemCount());
+        assertBookmarkItems("Wrong number of items after closing search UI.", 3,
+                mItemsContainer.getAdapter(), delegate);
         assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+    }
+
+    /**
+     * Asserts the number of bookmark items being shown, taking large device deviders into account.
+     *
+     * @param errorMessage              Error message to display in case the assert fails.
+     * @param exepectedOnRegularDevice  Expected count of items on small tablets.
+     * @param adapter                   Adapter to retrieve the bookmark item count from.
+     * @param delegate                  BookmarkDelegate to check the bookmark UI state.
+     */
+    private void assertBookmarkItems(final String errorMessage, final int exepectedOnRegularDevice,
+            final Adapter adapter, final BookmarkDelegate delegate) {
+        // TODO(twellington): Remove after bookmarks redesign is complete.
+        // The +1 for large devices stems from the divider being added to the state folder for now,
+        // which will offset all counts by one.
+        final int expectedCount = DeviceFormFactor.isLargeTablet(getActivity())
+                        && BookmarkUIState.STATE_FOLDER == delegate.getCurrentState()
+                ? exepectedOnRegularDevice + 1
+                : exepectedOnRegularDevice;
+        assertEquals(errorMessage, expectedCount, adapter.getItemCount());
     }
 
     /**
