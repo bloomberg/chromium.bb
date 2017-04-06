@@ -802,11 +802,11 @@ bool CSPDirectiveList::allowWorkerFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  // sources. So, we do this nested set of calls to 'operativeDirective()' to
-  // grab 'worker-src' if it exists, 'script-src' if it doesn't, and
-  // 'defaut-src' if neither are available.
   SourceListDirective* workerSrc = operativeDirective(
       m_workerSrc.get(), operativeDirective(m_scriptSrc.get()));
+
+  if (allowDynamicWorker())
+    return true;
 
   // In CSP2, workers are controlled via 'child-src'. CSP3 moves them to
   // 'script-src'. In order to avoid breaking sites that allowed workers via
@@ -873,6 +873,12 @@ bool CSPDirectiveList::allowStyleHash(
 
 bool CSPDirectiveList::allowDynamic() const {
   return checkDynamic(operativeDirective(m_scriptSrc.get()));
+}
+
+bool CSPDirectiveList::allowDynamicWorker() const {
+  SourceListDirective* workerSrc = operativeDirective(
+      m_workerSrc.get(), operativeDirective(m_scriptSrc.get()));
+  return checkDynamic(workerSrc);
 }
 
 const String& CSPDirectiveList::pluginTypesText() const {

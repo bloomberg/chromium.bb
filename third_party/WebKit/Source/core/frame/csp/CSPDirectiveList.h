@@ -130,6 +130,7 @@ class CORE_EXPORT CSPDirectiveList
   bool allowStyleHash(const CSPHashValue&,
                       ContentSecurityPolicy::InlineType) const;
   bool allowDynamic() const;
+  bool allowDynamicWorker() const;
 
   bool allowRequestWithoutIntegrity(WebURLRequest::RequestContext,
                                     const KURL&,
