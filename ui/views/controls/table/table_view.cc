@@ -75,6 +75,15 @@ ui::NativeTheme::ColorId selected_text_color_id(bool has_focus) {
       ui::NativeTheme::kColorId_TableSelectedTextUnfocused;
 }
 
+// Whether the platform "command" key is down.
+bool IsCmdOrCtrl(const ui::Event& event) {
+#if defined(OS_MACOSX)
+  return event.IsCommandDown();
+#else
+  return event.IsControlDown();
+#endif
+}
+
 } // namespace
 
 // Used as the comparator to sort the contents of the table.
@@ -350,7 +359,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_A:
       // control-a selects all.
-      if (event.IsControlDown() && !single_selection_ && RowCount()) {
+      if (IsCmdOrCtrl(event) && !single_selection_ && RowCount()) {
         ui::ListSelectionModel selection_model;
         selection_model.SetSelectedIndex(selection_model_.active());
         for (int i = 0; i < RowCount(); ++i)
@@ -862,20 +871,19 @@ void TableView::ConfigureSelectionModelForEvent(
   const int view_index = event.y() / row_height_;
   DCHECK(view_index >= 0 && view_index < RowCount());
 
-  if (selection_model_.anchor() == -1 ||
-      single_selection_ ||
-      (!event.IsControlDown() && !event.IsShiftDown())) {
+  if (selection_model_.anchor() == -1 || single_selection_ ||
+      (!IsCmdOrCtrl(event) && !event.IsShiftDown())) {
     SelectRowsInRangeFrom(view_index, true, model);
     model->set_anchor(ViewToModel(view_index));
     model->set_active(ViewToModel(view_index));
     return;
   }
-  if ((event.IsControlDown() && event.IsShiftDown()) || event.IsShiftDown()) {
+  if ((IsCmdOrCtrl(event) && event.IsShiftDown()) || event.IsShiftDown()) {
     // control-shift: copy existing model and make sure rows between anchor and
     // |view_index| are selected.
     // shift: reset selection so that only rows between anchor and |view_index|
     // are selected.
-    if (event.IsControlDown() && event.IsShiftDown())
+    if (IsCmdOrCtrl(event) && event.IsShiftDown())
       model->Copy(selection_model_);
     else
       model->set_anchor(selection_model_.anchor());
@@ -886,7 +894,7 @@ void TableView::ConfigureSelectionModelForEvent(
     }
     model->set_active(ViewToModel(view_index));
   } else {
-    DCHECK(event.IsControlDown());
+    DCHECK(IsCmdOrCtrl(event));
     // Toggle the selection state of |view_index| and set the anchor/active to
     // it and don't change the state of any other rows.
     model->Copy(selection_model_);

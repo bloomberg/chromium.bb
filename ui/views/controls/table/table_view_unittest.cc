@@ -51,6 +51,12 @@ class TableViewTestHelper {
 
 namespace {
 
+#if defined(OS_MACOSX)
+constexpr int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
+#else
+constexpr int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
+#endif
+
 // TestTableModel2 -------------------------------------------------------------
 
 // Trivial TableModel implementation that is backed by a vector of vectors.
@@ -220,6 +226,7 @@ class TableViewTest : public ViewsTestBase {
 
   void ClickOnRow(int row, int flags) {
     ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    generator.set_assume_window_at_origin(false);
     generator.set_flags(flags);
     generator.set_current_location(GetPointForRow(row));
     generator.PressLeftButton();
@@ -915,8 +922,6 @@ TEST_F(TableViewTest, HomeEnd) {
   table_->set_observer(NULL);
 }
 
-// TODO(tapted): enable these tests on Mac.
-#if !defined(OS_MACOSX)
 // Verifies multiple selection gestures work (control-click, shift-click ...).
 TEST_F(TableViewTest, Multiselection) {
   // Configure the grouper so that there are three groups:
@@ -956,12 +961,12 @@ TEST_F(TableViewTest, Multiselection) {
   EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 
   // Control click on third row, should toggle it.
-  ClickOnRow(2, ui::EF_CONTROL_DOWN);
+  ClickOnRow(2, kCtrlOrCmdMask);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=3 4", SelectionStateAsString());
 
   // Control-shift click on second row, should extend selection to it.
-  ClickOnRow(1, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  ClickOnRow(1, kCtrlOrCmdMask | ui::EF_SHIFT_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=2 selection=0 1 2 3 4", SelectionStateAsString());
 
@@ -1017,7 +1022,6 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
 
   table_->set_observer(NULL);
 }
-#endif
 
 // Verifies we don't crash after removing the selected row when there is
 // sorting and the anchor/active index also match the selected row.

@@ -34,15 +34,22 @@ NSEvent* g_current_event = nil;
 
 namespace {
 
+// Return the current owner of the EventGeneratorDelegate. May be null.
+ui::test::EventGenerator* GetActiveGenerator();
+
 NSPoint ConvertRootPointToTarget(NSWindow* target,
                                  const gfx::Point& point_in_root) {
-  // Normally this would do ui::ConvertPointFromScreenToWindow. However, Cocoa
-  // can reposition the window on screen and make things flaky. Initially, just
-  // assume that the contentRect of |target| is at the top-left corner of the
-  // screen.
-  NSRect content_rect = [target contentRectForFrameRect:[target frame]];
-  return NSMakePoint(point_in_root.x(),
-                     NSHeight(content_rect) - point_in_root.y());
+  DCHECK(GetActiveGenerator());
+  gfx::Point point = point_in_root;
+
+  if (GetActiveGenerator()->assume_window_at_origin()) {
+    // When assuming the window is at the origin, ignore the titlebar as well.
+    NSRect content_rect = [target contentRectForFrameRect:[target frame]];
+    return NSMakePoint(point.x(), NSHeight(content_rect) - point.y());
+  }
+
+  point -= gfx::ScreenRectFromNSRect([target frame]).OffsetFromOrigin();
+  return NSMakePoint(point.x(), NSHeight([target frame]) - point.y());
 }
 
 // Inverse of ui::EventFlagsFromModifiers().
@@ -376,7 +383,7 @@ void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
       event->type() == ui::ET_MOUSEWHEEL
           ? CreateMouseWheelEventInWindow(window_, event)
           : CreateMouseEventInWindow(window_, event->type(), event->location(),
-                                     event->changed_button_flags());
+                                     event->flags());
 
   using Target = ui::test::EventGenerator::Target;
   switch (owner_->target()) {
@@ -561,7 +568,6 @@ gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
   return gfx::Point(NSWidth([window frame]) / 2, NSHeight([window frame]) / 2);
 }
 
-// Return the current owner of the EventGeneratorDelegate. May be null.
 ui::test::EventGenerator* GetActiveGenerator() {
   return EventGeneratorDelegateMac::GetInstance()->owner();
 }

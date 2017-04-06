@@ -84,43 +84,23 @@ const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
 EventGeneratorDelegate* EventGenerator::default_delegate = NULL;
 
-EventGenerator::EventGenerator(gfx::NativeWindow root_window)
-    : current_target_(NULL),
-      flags_(0),
-      grab_(false),
-      async_(false),
-      target_(Target::WIDGET) {
+EventGenerator::EventGenerator(gfx::NativeWindow root_window) {
   Init(root_window, NULL);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                const gfx::Point& point)
-    : current_location_(point),
-      current_target_(NULL),
-      flags_(0),
-      grab_(false),
-      async_(false),
-      target_(Target::WIDGET) {
+    : current_location_(point) {
   Init(root_window, NULL);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
-                               gfx::NativeWindow window)
-    : current_target_(NULL),
-      flags_(0),
-      grab_(false),
-      async_(false),
-      target_(Target::WIDGET) {
+                               gfx::NativeWindow window) {
   Init(root_window, window);
 }
 
 EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
-    : delegate_(delegate),
-      current_target_(NULL),
-      flags_(0),
-      grab_(false),
-      async_(false),
-      target_(Target::WIDGET) {
+    : delegate_(delegate) {
   Init(NULL, NULL);
 }
 
