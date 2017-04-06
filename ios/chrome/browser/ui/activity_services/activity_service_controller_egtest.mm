@@ -60,6 +60,12 @@ id<GREYMatcher> PrintButton() {
 // Test that when trying to print a page redirected to an unprintable page, a
 // snackbar explaining that the page cannot be printed is displayed.
 - (void)testActivityServiceControllerPrintAfterRedirectionToUnprintablePage {
+// TODO(crbug.com/694662): This test relies on external URL because of the bug.
+// Re-enable this test on device once the bug is fixed.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   std::map<GURL, std::string> responses;
   const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://choux");
   responses[regularPageURL] = "fleur";

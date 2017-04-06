@@ -413,6 +413,12 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests navigating forward via window.history.forward() to an error page.
 - (void)testHistoryForwardToErrorPage {
+// TODO(crbug.com/694662): This test relies on external URL because of the bug.
+// Re-enable this test on device once the bug is fixed.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   SetupBackAndForwardResponseProvider();
 
   // Go to page 1 with a button which calls window.history.forward().

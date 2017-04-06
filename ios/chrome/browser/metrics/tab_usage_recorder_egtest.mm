@@ -495,6 +495,11 @@ void SelectTabUsingUI(NSString* title) {
 // Verify correct recording of metrics when the reloading of an evicted tab
 // fails.
 - (void)testEvictedTabReloadFailure {
+// TODO(crbug.com/709126): Evaluate and re-enable this test if necessary.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   web::test::SetUpFileBasedHttpServer();
   chrome_test_util::HistogramTester histogramTester;
   FailureBlock failureBlock = ^(NSString* error) {

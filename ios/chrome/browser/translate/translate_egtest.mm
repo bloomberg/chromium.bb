@@ -558,6 +558,11 @@ using translate::LanguageDetectionController;
 
 // Tests that the language detection infobar is displayed.
 - (void)testLanguageDetectionInfobar {
+// TODO(crbug.com/709131): Evaluate and re-enable this test if necessary.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   // The translate machinery will not auto-fire without API keys, unless that
   // behavior is overridden for testing.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
@@ -712,6 +717,11 @@ using translate::LanguageDetectionController;
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
 - (void)testAutoTranslate {
+// TODO(crbug.com/709131): Evaluate and re-enable this test if necessary.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   // The translate machinery will not auto-fire without API keys, unless that
   // behavior is overridden for testing.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);

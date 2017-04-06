@@ -285,6 +285,11 @@ void MockSignIn() {
 // in, and that tapping on the link in the message opens a new tab with the sync
 // help page.
 - (void)testHistoryEntriesStatusCell {
+// TODO(crbug.com/709135): Evaluate and re-enable this test if necessary.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#endif
+
   [self loadTestURLs];
   [self openHistoryPanel];
   // Assert that no message is shown when the user is not signed in.
