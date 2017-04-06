@@ -10,13 +10,12 @@ static_library("common") {
     "subresource_filter_message_generator.h",
     "subresource_filter_messages.h",
   ]
-  deps = [
+  public_deps = [
+    "//base",
     "//components/subresource_filter/core/common",
     "//content/public/common",
-    "//url",
-  ]
-  public_deps = [
     "//ipc",
+    "//url",
   ]
 }
 
