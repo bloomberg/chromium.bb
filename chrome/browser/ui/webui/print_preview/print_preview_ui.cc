@@ -445,6 +445,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(nullptr),
       source_is_modifiable_(true),
       source_has_selection_(false),
+      print_selection_only_(false),
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);

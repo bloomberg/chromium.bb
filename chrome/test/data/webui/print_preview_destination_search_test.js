@@ -27,7 +27,7 @@ PrintPreviewDestinationSearchTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 };
 
-TEST_F('PrintPreviewDestinationSearchTest', 'DISABLED_Select', function() {
+TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
   var self = this;
 
   suite('DestinationSearchTest', function() {
@@ -98,18 +98,55 @@ TEST_F('PrintPreviewDestinationSearchTest', 'DISABLED_Select', function() {
       });
     };
 
-    function requestSetup(destId, nativeLayerMock, destinationSearch) {
+    function mockSetupCall(destId, nativeLayerMock) {
+      var resolver = new PromiseResolver();
+
+      if (cr.isChromeOS) {
+        nativeLayerMock.expects(once()).setupPrinter(destId).
+            will(returnValue(resolver.promise));
+
+        return resolver;
+      }
+
+      nativeLayerMock.expects(once()).startGetLocalDestinationCapabilities(
+          destId);
+      resolver.promise.then(
+          function(result) {
+            // Simulate the native layer dispatching capabilities.
+            var capsSetEvent =
+                new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+            capsSetEvent.settingsInfo = result;
+            destinationStore_.onLocalDestinationCapabilitiesSet_(capsSetEvent);
+          }.bind(this),
+          function() {
+            var failEvent = new Event(
+                print_preview.NativeLayer.EventType.GET_CAPABILITIES_FAIL);
+            failEvent.destinationId = destId;
+            destinationStore_.onGetCapabilitiesFail_(failEvent);
+          }.bind(this));
+
+      return resolver;
+    };
+
+    function requestSetup(destId, destinationSearch) {
+      var origin = cr.isChromeOS ? print_preview.Destination.Origin.CROS :
+                                   print_preview.Destination.Origin.LOCAL;
+
       var dest = new print_preview.Destination(destId,
           print_preview.Destination.Type.LOCAL,
-          print_preview.Destination.Origin.CROS,
+          origin,
           "displayName",
           print_preview.Destination.ConnectionStatus.ONLINE);
 
-      var resolver = new PromiseResolver();
-      nativeLayerMock.expects(once()).setupPrinter(destId).
-          will(returnValue(resolver.promise));
-      destinationSearch.handleOnDestinationSelect_(dest);
-      return resolver;
+      // Add the destination to the list.
+      destinationSearch.localList_.updateDestinations([dest]);
+
+      // Select destination.
+      if (cr.isChromeOS) {
+        destinationSearch.handleConfigureDestination_(dest);
+      } else {
+        destinationSearch.handleOnDestinationSelect_(dest);
+      }
     };
 
     function resolveSetup(resolver, printerId, success, capabilities) {
@@ -145,19 +182,30 @@ TEST_F('PrintPreviewDestinationSearchTest', 'DISABLED_Select', function() {
     });
 
     test('ResolutionFails', function() {
+      if (!cr.isChromeOS) {
+        // Capabilities failure logs a console error for non-CrOS printers.
+        // TODO(crbug.com/708739): Handle this gracefully and activate test.
+        return;
+      }
+
       var destId = "001122DEADBEEF";
-      var resolver = requestSetup(destId, nativeLayer_, destinationSearch_);
+
+      var resolver = mockSetupCall(destId, nativeLayer_);
+      requestSetup(destId, destinationSearch_);
       resolver.reject(destId);
     });
 
     test('ReceiveSuccessfulSetup', function() {
-      var destId = "00112233DEADBEEF";
-      var resolver = requestSetup(destId, nativeLayer_, destinationSearch_);
 
-      waiter = waitForEvent(
+      var destId = "00112233DEADBEEF";
+
+      var waiter = waitForEvent(
           destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT);
 
+      var resolver = mockSetupCall(destId, nativeLayer_);
+
+      requestSetup(destId, destinationSearch_);
       resolveSetup(resolver, destId, true, getCaps());
 
       // wait for event propogation to complete.
@@ -170,17 +218,21 @@ TEST_F('PrintPreviewDestinationSearchTest', 'DISABLED_Select', function() {
 
     test('ReceiveFailedSetup', function() {
       var destId = '00112233DEADBEEF';
-      var resolver = requestSetup(destId, nativeLayer_, destinationSearch_);
 
-      waiter = waitForEvent(
-          destinationStore_,
-          print_preview.DestinationStore.EventType.PRINTER_CONFIGURED);
+      var resolver = mockSetupCall(destId, nativeLayer_);
+      requestSetup(destId, destinationSearch_);
 
+      // Force resolution to fail.
       resolveSetup(resolver, destId, false, null);
 
-      return waiter.then(function() {
+      if (cr.isChromeOS) {
+        // Selection should not change on ChromeOS.
         assertEquals(null, destinationStore_.selectedDestination);
-      });
+      } else {
+        // Other code expects selection to be present so it still occurs
+        // for non-CrOS.
+        assertEquals(destId, destinationStore_.selectedDestination.id);
+      }
     });
   });
 
