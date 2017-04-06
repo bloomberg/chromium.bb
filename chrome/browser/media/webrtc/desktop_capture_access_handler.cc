@@ -314,7 +314,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 #if defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID::RegisterAuraWindow(
           content::DesktopMediaID::TYPE_SCREEN,
-          ash::Shell::GetInstance()->GetPrimaryRootWindow());
+          ash::Shell::Get()->GetPrimaryRootWindow());
 #else   // defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                           webrtc::kFullDesktopScreenId);

@@ -95,7 +95,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
     const CaptureFocusedWindowCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   aura::Window* window =
-      ash::Shell::GetInstance()->activation_client()->GetActiveWindow();
+      ash::Shell::Get()->activation_client()->GetActiveWindow();
 
   if (window == nullptr) {
     callback.Run(std::vector<uint8_t>{});

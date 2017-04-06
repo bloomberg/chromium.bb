@@ -373,9 +373,9 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
   if (IsOriginForCasting(security_origin) && IsVideoMediaType(stream_type)) {
     // Notify ash that casting state has changed.
     if (state == content::MEDIA_REQUEST_STATE_DONE) {
-      ash::Shell::GetInstance()->OnCastingSessionStartedOrStopped(true);
+      ash::Shell::Get()->OnCastingSessionStartedOrStopped(true);
     } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
-      ash::Shell::GetInstance()->OnCastingSessionStartedOrStopped(false);
+      ash::Shell::Get()->OnCastingSessionStartedOrStopped(false);
     }
   }
 #endif

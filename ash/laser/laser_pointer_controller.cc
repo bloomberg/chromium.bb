@@ -44,7 +44,7 @@ LaserPointerController::LaserPointerController()
           base::Bind(&LaserPointerController::AddStationaryPoint,
                      base::Unretained(this)),
           true /* is_repeating */)) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 
   int64_t presentation_delay_ms;
   // Use device specific presentation delay if specified.
@@ -58,7 +58,7 @@ LaserPointerController::LaserPointerController()
 }
 
 LaserPointerController::~LaserPointerController() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void LaserPointerController::SetEnabled(bool enabled) {

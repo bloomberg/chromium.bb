@@ -145,18 +145,18 @@ class ShutdownPolicyInSessionTest
 
   // Opens the system tray menu. This creates the tray views.
   void OpenSystemTrayMenu() {
-    ash::Shell::GetInstance()->GetPrimarySystemTray()->ShowDefaultView(
+    ash::Shell::Get()->GetPrimarySystemTray()->ShowDefaultView(
         ash::BUBBLE_CREATE_NEW);
   }
 
   // Closes the system tray menu. This deletes the tray views.
   void CloseSystemTrayMenu() {
-    ash::Shell::GetInstance()->GetPrimarySystemTray()->CloseSystemBubble();
+    ash::Shell::Get()->GetPrimarySystemTray()->CloseSystemBubble();
   }
 
   // Gets the shutdown button view.
   const views::View* GetShutdownButton() {
-    ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+    ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
     return tray->GetTrayTilesForTesting()
         ->GetDefaultViewForTesting()
         ->GetShutdownButtonViewForTest();

@@ -277,7 +277,7 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       scale_(kNonMagnifiedScale),
       scroll_direction_(SCROLL_NONE),
       disable_move_magnifier_delay_(false) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
   point_of_interest_ = root_window_->bounds().CenterPoint();
 }
@@ -289,7 +289,7 @@ MagnificationControllerImpl::~MagnificationControllerImpl() {
 
   root_window_->RemoveObserver(this);
 
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void MagnificationControllerImpl::RedrawKeepingMousePosition(float scale,
@@ -565,8 +565,7 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  Shell::GetInstance()->accessibility_delegate()->SaveScreenMagnifierScale(
-      scale);
+  Shell::Get()->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   RedrawKeepingMousePosition(scale, animate);
 }
 
@@ -597,7 +596,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (!is_enabled_ && input_method)
       input_method->AddObserver(this);
 
-    Shell* shell = Shell::GetInstance();
+    Shell* shell = Shell::Get();
     float scale =
         shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)

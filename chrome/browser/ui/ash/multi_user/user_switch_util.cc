@@ -27,8 +27,7 @@ void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
 
   // If neither screen sharing nor capturing is going on we can immediately
   // switch users.
-  ash::SystemTray* system_tray =
-      ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* system_tray = ash::Shell::Get()->GetPrimarySystemTray();
   if (!system_tray->GetScreenShareItem()->is_started() &&
       !system_tray->GetScreenCaptureItem()->is_started()) {
     on_switch.Run();
@@ -39,8 +38,7 @@ void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
           l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_MESSAGE)) ==
       chrome::MESSAGE_BOX_RESULT_YES) {
     // Stop screen sharing and capturing.
-    ash::SystemTray* system_tray =
-        ash::Shell::GetInstance()->GetPrimarySystemTray();
+    ash::SystemTray* system_tray = ash::Shell::Get()->GetPrimarySystemTray();
     if (system_tray->GetScreenShareItem()->is_started())
       system_tray->GetScreenShareItem()->Stop();
     if (system_tray->GetScreenCaptureItem()->is_started())

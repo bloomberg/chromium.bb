@@ -48,7 +48,7 @@ namespace test {
 namespace {
 
 ScreenPositionController* GetScreenPositionController() {
-  ShellTestApi test_api(Shell::GetInstance());
+  ShellTestApi test_api(Shell::Get());
   return test_api.screen_position_controller();
 }
 
@@ -105,8 +105,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
 
   UpdateDisplay("100+100-200x200,100+500-200x200");
 
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ(
       "100,100",
       root_windows[0]->GetHost()->GetBoundsInPixels().origin().ToString());
@@ -194,8 +193,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
 TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenHiDPI) {
   UpdateDisplay("50+50-200x200*2,50+300-300x300");
 
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ("50,50 200x200",
             root_windows[0]->GetHost()->GetBoundsInPixels().ToString());
   EXPECT_EQ("50,300 300x300",
@@ -242,8 +240,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenRotate) {
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
                              display_manager()->GetSecondaryDisplay());
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
   // The point is on the 2nd host. (50,70) on 2n host -
@@ -274,8 +271,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenUIScale) {
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
                              display_manager()->GetSecondaryDisplay());
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
   // The point is on the 2nd host. (50,70) - ro
@@ -341,8 +337,7 @@ TEST_F(ScreenPositionControllerTest,
   EXPECT_TRUE(window_->GetBoundsInScreen().Contains(
       aura::Env::GetInstance()->last_mouse_location()));
 
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   aura::WindowTracker tracker;
   tracker.Add(root_windows[1]);
   std::unique_ptr<ConvertToScreenEventHandler> event_handler(

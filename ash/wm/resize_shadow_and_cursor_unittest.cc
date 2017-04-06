@@ -70,9 +70,8 @@ class ResizeShadowAndCursorTest : public AshTestBase {
   }
 
   const ResizeShadow* GetShadow() const {
-    return Shell::GetInstance()
-        ->resize_shadow_controller()
-        ->GetShadowForWindowForTest(window_);
+    return Shell::Get()->resize_shadow_controller()->GetShadowForWindowForTest(
+        window_);
   }
 
   // Returns the hit test code if there is a resize shadow. Returns HTNOWHERE if
@@ -101,7 +100,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
 
   // Returns the current cursor type.
   int GetCurrentCursorType() const {
-    CursorManagerTestApi test_api(ash::Shell::GetInstance()->cursor_manager());
+    CursorManagerTestApi test_api(ash::Shell::Get()->cursor_manager());
     return test_api.GetCurrentCursor().native_type();
   }
 

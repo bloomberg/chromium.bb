@@ -164,7 +164,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
   tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
   tray_container()->AddChildView(icon_);
 
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
@@ -174,7 +174,7 @@ PaletteTray::~PaletteTray() {
     bubble_->bubble_view()->reset_delegate();
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
@@ -287,7 +287,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   if (!palette_utils::HasStylusInput())
     return;
 
-  PaletteDelegate* palette_delegate = Shell::GetInstance()->palette_delegate();
+  PaletteDelegate* palette_delegate = Shell::Get()->palette_delegate();
 
   // Don't do anything if the palette should not be shown or if the user has
   // disabled it all-together.
@@ -399,7 +399,7 @@ void PaletteTray::AnchorUpdated() {
 }
 
 void PaletteTray::Initialize() {
-  PaletteDelegate* delegate = Shell::GetInstance()->palette_delegate();
+  PaletteDelegate* delegate = Shell::Get()->palette_delegate();
   // |delegate| can be null in tests.
   if (!delegate)
     return;

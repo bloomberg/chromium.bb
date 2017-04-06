@@ -70,7 +70,7 @@ class VideoDetectorTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     observer_.reset(new TestObserver);
-    detector_ = Shell::GetInstance()->video_detector();
+    detector_ = Shell::Get()->video_detector();
     detector_->AddObserver(observer_.get());
 
     now_ = base::TimeTicks::Now();
@@ -198,7 +198,7 @@ TEST_F(VideoDetectorTest, DontReportWhenWindowHidden) {
 TEST_F(VideoDetectorTest, DontReportDuringShutdown) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(0, 0, 1024, 768));
-  Shell::GetInstance()->OnAppTerminating();
+  Shell::Get()->OnAppTerminating();
   SendUpdates(window.get(), kMinRect, kMinFps + 5, 2 * kMinDuration);
   EXPECT_TRUE(observer_->empty());
 }

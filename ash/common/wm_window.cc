@@ -669,7 +669,7 @@ void WmWindow::ShowResizeShadow(int component) {
     return;
   }
   ResizeShadowController* resize_shadow_controller =
-      Shell::GetInstance()->resize_shadow_controller();
+      Shell::Get()->resize_shadow_controller();
   if (resize_shadow_controller)
     resize_shadow_controller->ShowShadow(window_, component);
 }
@@ -680,7 +680,7 @@ void WmWindow::HideResizeShadow() {
     return;
   }
   ResizeShadowController* resize_shadow_controller =
-      Shell::GetInstance()->resize_shadow_controller();
+      Shell::Get()->resize_shadow_controller();
   if (resize_shadow_controller)
     resize_shadow_controller->HideShadow(window_);
 }

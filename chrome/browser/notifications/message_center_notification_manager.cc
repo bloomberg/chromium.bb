@@ -291,7 +291,7 @@ void MessageCenterNotificationManager::EnsureMessageCenterClosed() {
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance()) {
     ash::WebNotificationTray* tray =
-        ash::Shell::GetInstance()->GetWebNotificationTray();
+        ash::Shell::Get()->GetWebNotificationTray();
     if (tray)
       tray->GetMessageCenterTray()->HideMessageCenterBubble();
   }

@@ -135,8 +135,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(controller(), (void*)NULL);
   // shell_helper() is destructed already, thats why we call Shell directly.
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetPrimarySystemTray()->
-      HasSystemBubble());
+  EXPECT_FALSE(ash::Shell::Get()->GetPrimarySystemTray()->HasSystemBubble());
 }
 
 }  // namespace chromeos

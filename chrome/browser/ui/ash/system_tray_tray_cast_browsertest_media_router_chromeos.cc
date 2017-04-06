@@ -41,7 +41,7 @@ media_router::MediaRoute MakeRoute(const std::string& route_id,
 
 // Returns the cast tray instance.
 ash::TrayCast* GetTrayCast() {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
 
   // Make sure we actually popup the tray, otherwise the TrayCast instance will
   // not be created.

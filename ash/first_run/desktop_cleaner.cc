@@ -92,7 +92,7 @@ class NotificationBlocker : public message_center::NotificationBlocker {
 
 DesktopCleaner::DesktopCleaner() {
   // TODO(dzhioev): Add support for secondary displays.
-  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
   for (size_t i = 0; i < arraysize(kContainerIdsToHide); ++i) {
     aura::Window* container =
         Shell::GetContainer(root_window, kContainerIdsToHide[i]);

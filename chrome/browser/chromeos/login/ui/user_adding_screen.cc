@@ -64,7 +64,7 @@ void UserAddingScreenImpl::Cancel() {
   CHECK(IsRunning());
 
   // Make sure that system tray is enabled after this flow.
-  ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(true);
+  ash::Shell::Get()->GetPrimarySystemTray()->SetEnabled(true);
   display_host_->CancelUserAdding();
 
   // Reset wallpaper if cancel adding user from multiple user sign in page.

@@ -98,8 +98,7 @@ void CreateLockScreen() {
   widget->GetNativeView()->Focus();
 
   // TODO: it shouldn't be necessary to invoke UpdateTooltip() here.
-  Shell::GetInstance()->tooltip_controller()->UpdateTooltip(
-      widget->GetNativeView());
+  Shell::Get()->tooltip_controller()->UpdateTooltip(widget->GetNativeView());
 }
 
 }  // namespace shell

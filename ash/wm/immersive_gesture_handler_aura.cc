@@ -28,11 +28,11 @@ gfx::Point GetEventLocationInScreen(const ui::LocatedEvent& event) {
 ImmersiveGestureHandlerAura::ImmersiveGestureHandlerAura(
     ImmersiveFullscreenController* controller)
     : immersive_fullscreen_controller_(controller) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 ImmersiveGestureHandlerAura::~ImmersiveGestureHandlerAura() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void ImmersiveGestureHandlerAura::OnGestureEvent(ui::GestureEvent* event) {

@@ -40,7 +40,7 @@ AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(WmShelf* shelf)
 AshPopupAlignmentDelegate::~AshPopupAlignmentDelegate() {
   if (screen_)
     screen_->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   shelf_->RemoveObserver(this);
 }
 
@@ -50,7 +50,7 @@ void AshPopupAlignmentDelegate::StartObserving(
   screen_ = screen;
   work_area_ = display.work_area();
   screen->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   if (tray_bubble_height_ > 0)
     UpdateWorkArea();
 }

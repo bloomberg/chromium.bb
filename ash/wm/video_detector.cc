@@ -84,11 +84,11 @@ VideoDetector::VideoDetector()
       window_observer_manager_(this),
       is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 VideoDetector::~VideoDetector() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 

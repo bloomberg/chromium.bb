@@ -259,7 +259,7 @@ TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
   EXPECT_TRUE(IsBubbleShown());
 
   AccessibilityDelegate* accessibility_delegate =
-      Shell::GetInstance()->accessibility_delegate();
+      Shell::Get()->accessibility_delegate();
 
   accessibility_delegate->SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
@@ -278,7 +278,7 @@ TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
 
 TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
   AccessibilityDelegate* accessibility_delegate =
-      Shell::GetInstance()->accessibility_delegate();
+      Shell::Get()->accessibility_delegate();
   accessibility_delegate->SetVirtualKeyboardEnabled(false);
   ASSERT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
 

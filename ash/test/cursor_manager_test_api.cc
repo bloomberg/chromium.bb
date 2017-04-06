@@ -30,13 +30,13 @@ gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
 
 display::Display::Rotation CursorManagerTestApi::GetCurrentCursorRotation()
     const {
-  return ShellTestApi(Shell::GetInstance())
+  return ShellTestApi(Shell::Get())
       .ash_native_cursor_manager()
       ->image_cursors_->GetRotation();
 }
 
 float CursorManagerTestApi::GetCurrentCursorScale() const {
-  return ShellTestApi(Shell::GetInstance())
+  return ShellTestApi(Shell::Get())
       .ash_native_cursor_manager()
       ->image_cursors_->GetScale();
 }

@@ -806,7 +806,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     keyboard_event_rewriters_->AddEventRewriter(
         base::MakeUnique<ui::EventRewriterChromeOS>(
             event_rewriter_delegate_.get(),
-            ash::Shell::GetInstance()->sticky_keys_controller()));
+            ash::Shell::Get()->sticky_keys_controller()));
     keyboard_event_rewriters_->Init();
   }
 

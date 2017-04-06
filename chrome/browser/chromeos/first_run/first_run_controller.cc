@@ -77,7 +77,7 @@ void FirstRunController::Init() {
   user_profile_ = ProfileHelper::Get()->GetProfileByUserUnsafe(
       user_manager->GetActiveUser());
 
-  shell_helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
+  shell_helper_.reset(ash::Shell::Get()->CreateFirstRunHelper());
   shell_helper_->AddObserver(this);
 
   FirstRunView* view = new FirstRunView();

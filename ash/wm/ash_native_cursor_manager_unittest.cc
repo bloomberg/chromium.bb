@@ -56,7 +56,7 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
 typedef test::AshTestBase AshNativeCursorManagerTest;
 
 TEST_F(AshNativeCursorManagerTest, LockCursor) {
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
   cursor_manager->SetCursor(ui::kCursorCopy);
@@ -98,7 +98,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetCursor) {
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   cursor_manager->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
@@ -109,7 +109,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursor) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
@@ -125,7 +125,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   UpdateDisplay("800x100*2");
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
@@ -137,7 +137,7 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
 }
 
 TEST_F(AshNativeCursorManagerTest, FractionalScale) {
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   // Cursor should use the resource scale factor.
   UpdateDisplay("800x100*1.25");
@@ -148,17 +148,17 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::Display::SetInternalDisplayId(display_id);
 
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetDisplayUIScale(display_id, 0.5f);
   EXPECT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetDisplayUIScale(display_id, 1.0f);
 
   // 2x display should keep using 2x cursor regardless of the UI scale.
@@ -167,7 +167,7 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetDisplayUIScale(display_id, 2.0f);
   EXPECT_EQ(
       1.0f,

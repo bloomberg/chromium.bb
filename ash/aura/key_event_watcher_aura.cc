@@ -10,11 +10,11 @@
 namespace ash {
 
 KeyEventWatcherAura::KeyEventWatcherAura() {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 KeyEventWatcherAura::~KeyEventWatcherAura() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void KeyEventWatcherAura::OnKeyEvent(ui::KeyEvent* event) {

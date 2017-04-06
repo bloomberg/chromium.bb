@@ -462,7 +462,7 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   if (WmShell::Get()->IsRunningInMash())
     return;
 
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   ui::EventTargetTestApi test_api(shell);
   test::ShellTestApi shell_test_api(shell);
 

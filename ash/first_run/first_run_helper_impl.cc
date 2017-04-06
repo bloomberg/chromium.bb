@@ -41,11 +41,11 @@ views::Widget* CreateFirstRunWindow() {
 }  // anonymous namespace
 
 FirstRunHelperImpl::FirstRunHelperImpl() : widget_(CreateFirstRunWindow()) {
-  Shell::GetInstance()->overlay_filter()->Activate(this);
+  Shell::Get()->overlay_filter()->Activate(this);
 }
 
 FirstRunHelperImpl::~FirstRunHelperImpl() {
-  Shell::GetInstance()->overlay_filter()->Deactivate(this);
+  Shell::Get()->overlay_filter()->Deactivate(this);
   if (IsTrayBubbleOpened())
     CloseTrayBubble();
   widget_->Close();
@@ -75,29 +75,29 @@ aura::Window* FirstRunHelperImpl::GetWindow() {
 }
 
 void FirstRunHelperImpl::OpenTrayBubble() {
-  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   tray->ShowPersistentDefaultView();
 }
 
 void FirstRunHelperImpl::CloseTrayBubble() {
-  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   DCHECK(tray->HasSystemBubble()) << "Tray bubble is closed already.";
   tray->CloseSystemBubble();
 }
 
 bool FirstRunHelperImpl::IsTrayBubbleOpened() {
-  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   return tray->HasSystemBubble();
 }
 
 gfx::Rect FirstRunHelperImpl::GetTrayBubbleBounds() {
-  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   views::View* bubble = tray->GetSystemBubble()->bubble_view();
   return bubble->GetBoundsInScreen();
 }
 
 gfx::Rect FirstRunHelperImpl::GetHelpButtonBounds() {
-  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   views::View* help_button = tray->GetHelpButtonView();
   return help_button->GetBoundsInScreen();
 }

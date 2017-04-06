@@ -111,7 +111,7 @@ MaximizeModeController::MaximizeModeController()
       tablet_mode_switch_is_on_(false),
       lid_is_closed_(false),
       weak_factory_(this) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
   // TODO(jonross): Do not create MaximizeModeController if the flag is
@@ -130,7 +130,7 @@ MaximizeModeController::MaximizeModeController()
 }
 
 MaximizeModeController::~MaximizeModeController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 
   if (IsEnabled()) {
     WmShell::Get()->RemoveDisplayObserver(this);
@@ -162,17 +162,17 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
-    Shell::GetInstance()->NotifyMaximizeModeStarted();
+    Shell::Get()->NotifyMaximizeModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(true);
     });
 
   } else {
-    Shell::GetInstance()->NotifyMaximizeModeEnding();
+    Shell::Get()->NotifyMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
-    Shell::GetInstance()->NotifyMaximizeModeEnded();
+    Shell::Get()->NotifyMaximizeModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(false);

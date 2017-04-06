@@ -43,13 +43,13 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
     tablet_controller_.reset(
         new TabletPowerButtonController(lock_state_controller_));
   }
-  Shell::GetInstance()->display_configurator()->AddObserver(this);
-  Shell::GetInstance()->PrependPreTargetHandler(this);
+  Shell::Get()->display_configurator()->AddObserver(this);
+  Shell::Get()->PrependPreTargetHandler(this);
 }
 
 PowerButtonController::~PowerButtonController() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  Shell::Get()->RemovePreTargetHandler(this);
+  Shell::Get()->display_configurator()->RemoveObserver(this);
   tablet_controller_.reset();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
@@ -87,7 +87,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
   // Take screenshot on power button down plus volume down when in touch view.
   if (should_take_screenshot) {
-    SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
+    SystemTray* system_tray = Shell::Get()->GetPrimarySystemTray();
     if (system_tray && system_tray->GetTrayAudio())
       system_tray->GetTrayAudio()->HideDetailedView(false);
 

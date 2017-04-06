@@ -22,7 +22,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
 
  protected:
   MouseCursorEventFilter* event_filter() {
-    return Shell::GetInstance()->mouse_cursor_filter();
+    return Shell::Get()->mouse_cursor_filter();
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
@@ -39,7 +39,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
 TEST_F(MouseCursorEventFilterTest, WarpMouse) {
   UpdateDisplay("500x500,500x500");
 
-  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::Get()
                                                   ->display_manager()
                                                   ->GetCurrentDisplayLayout()
                                                   .placement_list[0]
@@ -76,7 +76,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
-  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::Get()
                                                   ->display_manager()
                                                   ->GetCurrentDisplayLayout()
                                                   .placement_list[0]
@@ -101,7 +101,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
   UpdateDisplay("500x500,600x600*2");
 
-  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::GetInstance()
+  ASSERT_EQ(display::DisplayPlacement::RIGHT, Shell::Get()
                                                   ->display_manager()
                                                   ->GetCurrentDisplayLayout()
                                                   .placement_list[0]
@@ -145,8 +145,7 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::RIGHT, 0));
-  test::CursorManagerTestApi cursor_test_api(
-      Shell::GetInstance()->cursor_manager());
+  test::CursorManagerTestApi cursor_test_api(Shell::Get()->cursor_manager());
 
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
   TestIfMouseWarpsAt(gfx::Point(399, 200));

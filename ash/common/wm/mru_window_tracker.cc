@@ -102,11 +102,11 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 // MruWindowTracker, public:
 
 MruWindowTracker::MruWindowTracker() : ignore_window_activations_(false) {
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   for (WmWindow* window : mru_windows_)
     window->aura_window()->RemoveObserver(this);
 }

@@ -101,10 +101,10 @@ void AutoclickControllerImpl::SetEnabled(bool enabled) {
   enabled_ = enabled;
 
   if (enabled_) {
-    Shell::GetInstance()->AddPreTargetHandler(this);
+    Shell::Get()->AddPreTargetHandler(this);
     autoclick_controller_common_->CancelAutoclick();
   } else {
-    Shell::GetInstance()->RemovePreTargetHandler(this);
+    Shell::Get()->RemovePreTargetHandler(this);
   }
 }
 

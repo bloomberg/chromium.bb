@@ -213,8 +213,7 @@ void SetWallpaper(const gfx::ImageSkia& image,
   } else if (ash::Shell::HasInstance()) {
     // Note: Wallpaper setting is skipped in unit tests without shell instances.
     // In classic ash, interact with the WallpaperController class directly.
-    ash::Shell::GetInstance()->wallpaper_controller()->SetWallpaperImage(
-        image, layout);
+    ash::Shell::Get()->wallpaper_controller()->SetWallpaperImage(image, layout);
   }
 }
 
@@ -473,7 +472,7 @@ void WallpaperManager::InitializeWallpaper() {
   // Zero delays is also set in autotests.
   if (WizardController::IsZeroDelayEnabled()) {
     // Ensure tests have some sort of wallpaper.
-    ash::Shell::GetInstance()->wallpaper_controller()->CreateEmptyWallpaper();
+    ash::Shell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
     return;
   }
 
@@ -1349,7 +1348,7 @@ void WallpaperManager::SetDefaultWallpaperPath(
   default_large_wallpaper_file_ = default_large_wallpaper_file;
 
   ash::WallpaperController* controller =
-      ash::Shell::GetInstance()->wallpaper_controller();
+      ash::Shell::Get()->wallpaper_controller();
 
   // |need_update_screen| is true if the previous default wallpaper is visible
   // now, so we need to update wallpaper on the screen.

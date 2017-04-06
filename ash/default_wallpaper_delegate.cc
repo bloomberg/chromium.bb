@@ -28,7 +28,7 @@ bool DefaultWallpaperDelegate::ShouldShowInitialAnimation() {
 void DefaultWallpaperDelegate::UpdateWallpaper(bool clear_cache) {}
 
 void DefaultWallpaperDelegate::InitializeWallpaper() {
-  Shell::GetInstance()->wallpaper_controller()->CreateEmptyWallpaper();
+  Shell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
 }
 
 bool DefaultWallpaperDelegate::CanOpenSetWallpaperPage() {

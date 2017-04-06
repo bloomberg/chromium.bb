@@ -72,7 +72,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   ~WallpaperManagerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    controller_ = ash::Shell::GetInstance()->wallpaper_controller();
+    controller_ = ash::Shell::Get()->wallpaper_controller();
     controller_->set_wallpaper_reload_delay_for_test(0);
     local_state_ = g_browser_process->local_state();
     UpdateDisplay("800x600");
@@ -88,8 +88,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   // Update the display configuration as given in |display_specs|.  See
   // display::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs) {
-    display::test::DisplayManagerTestApi(
-        ash::Shell::GetInstance()->display_manager())
+    display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay(display_specs);
   }
 

@@ -159,7 +159,7 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
 
   // Send an a11y alert.
-  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       enabled ? A11Y_ALERT_CAPS_ON : A11Y_ALERT_CAPS_OFF);
 
   if (tray_view())

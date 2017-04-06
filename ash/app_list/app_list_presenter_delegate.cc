@@ -66,7 +66,7 @@ AppListPresenterDelegate::AppListPresenterDelegate(
     app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 AppListPresenterDelegate::~AppListPresenterDelegate() {
@@ -75,10 +75,10 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
   WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
   window->GetRootWindowController()->GetShelf()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {
@@ -108,7 +108,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
   WmShelf* shelf = WmShelf::ForWindow(wm_root_window);
   shelf->AddObserver(this);
 

@@ -26,8 +26,8 @@ const char kDesktopTaskSwitchUserAction[] = "Desktop_SwitchTask";
 
 // Test fixture for the DesktopTaskSwitchMetricsRecorder class. NOTE: This
 // fixture extends AshTestBase so that the UserMetricsRecorder instance required
-// by the test target can be obtained through Shell::GetInstance()->metrics()
-// and the test target is not the same instance as the one owned by the
+// by the test target can be obtained through Shell::Get()->metrics() and the
+// test target is not the same instance as the one owned by the
 // UserMetricsRecorder instance.
 class DesktopTaskSwitchMetricRecorderTest : public test::AshTestBase {
  public:
@@ -341,8 +341,7 @@ TEST_F(DesktopTaskSwitchMetricRecorderWithShellIntegrationTest,
   aura::Window* positionable_window =
       CreatePositionableWindowInShellWithBounds(gfx::Rect(0, 0, 10, 10));
 
-  Shell::GetInstance()->activation_client()->ActivateWindow(
-      positionable_window);
+  Shell::Get()->activation_client()->ActivateWindow(positionable_window);
 
   EXPECT_EQ(0, GetActionCount());
 }

@@ -76,7 +76,7 @@ TabScrubber::TabScrubber()
       activation_delay_(kActivationDelayMS),
       use_default_activation_delay_(true),
       weak_ptr_factory_(this) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  ash::Shell::Get()->AddPreTargetHandler(this);
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_CLOSED,

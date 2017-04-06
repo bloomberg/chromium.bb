@@ -80,7 +80,7 @@ class MagnificationControllerTest : public test::AshTestBase {
   }
 
   ash::MagnificationController* GetMagnificationController() const {
-    return ash::Shell::GetInstance()->magnification_controller();
+    return ash::Shell::Get()->magnification_controller();
   }
 
   gfx::Rect GetViewport() const {
@@ -672,7 +672,7 @@ TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
 
 // Make sure that unified desktop can enter magnified mode.
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
-  Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
+  Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(true);
 
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
 

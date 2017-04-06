@@ -58,7 +58,7 @@ std::vector<uint8_t> EncodeImagePng(const gfx::ImageSkia image) {
 ash::WallpaperController* GetWallpaperController() {
   if (!ash::Shell::HasInstance())
     return nullptr;
-  return ash::Shell::GetInstance()->wallpaper_controller();
+  return ash::Shell::Get()->wallpaper_controller();
 }
 
 }  // namespace
@@ -218,8 +218,7 @@ void ArcWallpaperService::SetDefaultWallpaper() {
 
 void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ash::WallpaperController* wc =
-      ash::Shell::GetInstance()->wallpaper_controller();
+  ash::WallpaperController* wc = ash::Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = wc->GetWallpaper();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::TaskTraits().MayBlock().WithPriority(

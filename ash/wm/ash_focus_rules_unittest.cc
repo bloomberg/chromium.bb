@@ -41,7 +41,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
   void RequestLockScreen() override {
     TestSessionControllerClient::RequestLockScreen();
     CreateLockScreen();
-    Shell::GetInstance()->UpdateShelfVisibility();
+    Shell::Get()->UpdateShelfVisibility();
   }
 
   void UnlockScreen() override {
@@ -51,7 +51,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
       lock_screen_widget_.reset(nullptr);
     }
 
-    Shell::GetInstance()->UpdateShelfVisibility();
+    Shell::Get()->UpdateShelfVisibility();
   }
 
  private:

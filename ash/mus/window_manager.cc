@@ -560,11 +560,11 @@ void WindowManager::OnWmSetClientArea(
 }
 
 bool WindowManager::IsWindowActive(aura::Window* window) {
-  return Shell::GetInstance()->activation_client()->GetActiveWindow() == window;
+  return Shell::Get()->activation_client()->GetActiveWindow() == window;
 }
 
 void WindowManager::OnWmDeactivateWindow(aura::Window* window) {
-  Shell::GetInstance()->activation_client()->DeactivateWindow(window);
+  Shell::Get()->activation_client()->DeactivateWindow(window);
 }
 
 }  // namespace mus

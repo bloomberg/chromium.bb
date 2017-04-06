@@ -46,7 +46,7 @@ ArcIntentHelperBridge::~ArcIntentHelperBridge() {
 
 void ArcIntentHelperBridge::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ash::Shell::GetInstance()->set_link_handler_model_factory(this);
+  ash::Shell::Get()->set_link_handler_model_factory(this);
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->intent_helper(), Init);
   DCHECK(instance);
@@ -55,7 +55,7 @@ void ArcIntentHelperBridge::OnInstanceReady() {
 
 void ArcIntentHelperBridge::OnInstanceClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ash::Shell::GetInstance()->set_link_handler_model_factory(nullptr);
+  ash::Shell::Get()->set_link_handler_model_factory(nullptr);
 }
 
 void ArcIntentHelperBridge::OnIconInvalidated(const std::string& package_name) {
@@ -79,7 +79,7 @@ void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ash::Shell::GetInstance()->wallpaper_controller()->OpenSetWallpaperPage();
+  ash::Shell::Get()->wallpaper_controller()->OpenSetWallpaperPage();
 }
 
 void ArcIntentHelperBridge::SetWallpaperDeprecated(

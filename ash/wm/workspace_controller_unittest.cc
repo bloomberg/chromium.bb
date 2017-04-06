@@ -624,7 +624,7 @@ TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
   gfx::Insets insets =
       display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
   insets.Set(0, 0, insets.bottom() + 30, 0);
-  Shell::GetInstance()->SetDisplayWorkAreaInsets(w1.get(), insets);
+  Shell::Get()->SetDisplayWorkAreaInsets(w1.get(), insets);
 
   // Switch to w1. The window should have moved.
   wm::ActivateWindow(w1.get());
@@ -700,8 +700,7 @@ TEST_F(WorkspaceControllerTest, TransientParent) {
   // Window with a transient parent. We set the transient parent to the root,
   // which would never happen but is enough to exercise the bug.
   std::unique_ptr<Window> w1(CreateTestWindowUnparented());
-  ::wm::AddTransientChild(Shell::GetInstance()->GetPrimaryRootWindow(),
-                          w1.get());
+  ::wm::AddTransientChild(Shell::Get()->GetPrimaryRootWindow(), w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();

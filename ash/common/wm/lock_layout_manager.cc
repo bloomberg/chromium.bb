@@ -21,7 +21,7 @@ LockLayoutManager::LockLayoutManager(WmWindow* window)
       window_(window),
       root_window_(window->GetRootWindow()),
       keyboard_observer_(this) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   root_window_->aura_window()->AddObserver(this);
   if (keyboard::KeyboardController::GetInstance())
     keyboard_observer_.Add(keyboard::KeyboardController::GetInstance());
@@ -34,7 +34,7 @@ LockLayoutManager::~LockLayoutManager() {
   for (WmWindow* child : window_->GetChildren())
     child->aura_window()->RemoveObserver(this);
 
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void LockLayoutManager::OnWindowResized() {

@@ -21,9 +21,9 @@ namespace exo {
 // WMHelperAsh, public:
 
 WMHelperAsh::WMHelperAsh() {
-  ash::Shell::GetInstance()->AddShellObserver(this);
-  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
-  ash::Shell::GetInstance()->cursor_manager()->AddObserver(this);
+  ash::Shell::Get()->AddShellObserver(this);
+  ash::Shell::Get()->activation_client()->AddObserver(this);
+  ash::Shell::Get()->cursor_manager()->AddObserver(this);
   ash::WmShell::Get()->AddDisplayObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
@@ -39,9 +39,9 @@ WMHelperAsh::~WMHelperAsh() {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
   ash::WmShell::Get()->RemoveDisplayObserver(this);
-  ash::Shell::GetInstance()->cursor_manager()->RemoveObserver(this);
-  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::Shell::Get()->cursor_manager()->RemoveObserver(this);
+  ash::Shell::Get()->activation_client()->RemoveObserver(this);
+  ash::Shell::Get()->RemoveShellObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   ash::Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
@@ -51,8 +51,7 @@ WMHelperAsh::~WMHelperAsh() {
 
 const display::ManagedDisplayInfo WMHelperAsh::GetDisplayInfo(
     int64_t display_id) const {
-  return ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
-      display_id);
+  return ash::Shell::Get()->display_manager()->GetDisplayInfo(display_id);
 }
 
 aura::Window* WMHelperAsh::GetContainer(int container_id) {
@@ -61,7 +60,7 @@ aura::Window* WMHelperAsh::GetContainer(int container_id) {
 }
 
 aura::Window* WMHelperAsh::GetActiveWindow() const {
-  return ash::Shell::GetInstance()->activation_client()->GetActiveWindow();
+  return ash::Shell::Get()->activation_client()->GetActiveWindow();
 }
 
 aura::Window* WMHelperAsh::GetFocusedWindow() const {
@@ -71,27 +70,27 @@ aura::Window* WMHelperAsh::GetFocusedWindow() const {
 }
 
 ui::CursorSetType WMHelperAsh::GetCursorSet() const {
-  return ash::Shell::GetInstance()->cursor_manager()->GetCursorSet();
+  return ash::Shell::Get()->cursor_manager()->GetCursorSet();
 }
 
 void WMHelperAsh::AddPreTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(handler);
+  ash::Shell::Get()->AddPreTargetHandler(handler);
 }
 
 void WMHelperAsh::PrependPreTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::GetInstance()->PrependPreTargetHandler(handler);
+  ash::Shell::Get()->PrependPreTargetHandler(handler);
 }
 
 void WMHelperAsh::RemovePreTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::GetInstance()->RemovePreTargetHandler(handler);
+  ash::Shell::Get()->RemovePreTargetHandler(handler);
 }
 
 void WMHelperAsh::AddPostTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::GetInstance()->AddPostTargetHandler(handler);
+  ash::Shell::Get()->AddPostTargetHandler(handler);
 }
 
 void WMHelperAsh::RemovePostTargetHandler(ui::EventHandler* handler) {
-  ash::Shell::GetInstance()->RemovePostTargetHandler(handler);
+  ash::Shell::Get()->RemovePostTargetHandler(handler);
 }
 
 bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
@@ -101,14 +100,11 @@ bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
 }
 
 bool WMHelperAsh::IsSpokenFeedbackEnabled() const {
-  return ash::Shell::GetInstance()
-      ->accessibility_delegate()
-      ->IsSpokenFeedbackEnabled();
+  return ash::Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void WMHelperAsh::PlayEarcon(int sound_key) const {
-  return ash::Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
-      sound_key);
+  return ash::Shell::Get()->accessibility_delegate()->PlayEarcon(sound_key);
 }
 
 void WMHelperAsh::OnWindowActivated(

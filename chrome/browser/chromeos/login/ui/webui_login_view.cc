@@ -174,9 +174,8 @@ WebUILoginView::~WebUILoginView() {
     observer.OnHostDestroying();
 
   if (!ash_util::IsRunningInMash() &&
-      ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
-    ash::Shell::GetInstance()->GetPrimarySystemTray()->SetNextFocusableView(
-        nullptr);
+      ash::Shell::Get()->HasPrimaryStatusArea()) {
+    ash::Shell::Get()->GetPrimarySystemTray()->SetNextFocusableView(nullptr);
   } else {
     NOTIMPLEMENTED();
   }
@@ -457,7 +456,7 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   if (ash_util::IsRunningInMash())
     return true;
 
-  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
     ash::Shell::Get()->focus_cycler()->RotateFocus(

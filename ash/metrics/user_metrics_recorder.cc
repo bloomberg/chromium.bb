@@ -130,7 +130,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
       break;
 
     const aura::Window::Windows& children =
-        Shell::GetContainer(Shell::GetInstance()->GetPrimaryRootWindow(),
+        Shell::GetContainer(Shell::Get()->GetPrimaryRootWindow(),
                             current_container_id)
             ->children();
     // Reverse iterate over the child windows so that they are processed in
@@ -606,7 +606,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
 
 void UserMetricsRecorder::OnShellInitialized() {
   // Lazy creation of the DesktopTaskSwitchMetricRecorder because it accesses
-  // Shell::GetInstance() which is not available when |this| is instantiated.
+  // Shell::Get() which is not available when |this| is instantiated.
   if (!desktop_task_switch_metric_recorder_) {
     desktop_task_switch_metric_recorder_.reset(
         new DesktopTaskSwitchMetricRecorder());

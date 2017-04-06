@@ -28,11 +28,11 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
   DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
     InitHeaderPainter();
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 PanelFrameView::~PanelFrameView() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void PanelFrameView::SetFrameColors(SkColor active_frame_color,

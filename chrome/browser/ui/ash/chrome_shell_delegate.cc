@@ -103,10 +103,10 @@ void InitAfterFirstSessionStart() {
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
   AccessibilityDelegateImpl() {
-    ash::Shell::GetInstance()->AddShellObserver(AccessibilityManager::Get());
+    ash::Shell::Get()->AddShellObserver(AccessibilityManager::Get());
   }
   ~AccessibilityDelegateImpl() override {
-    ash::Shell::GetInstance()->RemoveShellObserver(AccessibilityManager::Get());
+    ash::Shell::Get()->RemoveShellObserver(AccessibilityManager::Get());
   }
 
   void ToggleHighContrast() override {

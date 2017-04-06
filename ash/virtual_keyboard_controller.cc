@@ -45,7 +45,7 @@ void MoveKeyboardToDisplayInternal(const int64_t display_id) {
       ->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
   for (RootWindowController* controller :
-       Shell::GetInstance()->GetAllRootWindowControllers()) {
+       Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
             .id() == display_id) {
@@ -73,13 +73,13 @@ VirtualKeyboardController::VirtualKeyboardController()
       has_internal_keyboard_(false),
       has_touchscreen_(false),
       ignore_external_keyboard_(false) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   UpdateDevices();
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
@@ -211,9 +211,9 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   if (is_enabled == was_enabled)
     return;
   if (is_enabled) {
-    Shell::GetInstance()->CreateKeyboard();
+    Shell::Get()->CreateKeyboard();
   } else {
-    Shell::GetInstance()->DeactivateKeyboard();
+    Shell::Get()->DeactivateKeyboard();
   }
 }
 

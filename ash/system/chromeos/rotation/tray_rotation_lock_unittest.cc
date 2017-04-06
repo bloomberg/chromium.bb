@@ -133,9 +133,7 @@ TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeModeAndRotationLock) {
   TearDownViews();
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
-  Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->ToggleUserRotationLock();
+  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
   EXPECT_TRUE(tray_view()->visible());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
@@ -149,9 +147,7 @@ TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringMaximizeMode) {
   ASSERT_FALSE(tray_view()->visible());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
-  Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->ToggleUserRotationLock();
+  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
   EXPECT_TRUE(tray_view()->visible());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
@@ -220,7 +216,7 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   MaximizeModeController* maximize_mode_controller =
       Shell::Get()->maximize_mode_controller();
   ScreenOrientationController* screen_orientation_controller =
-      Shell::GetInstance()->screen_orientation_controller();
+      Shell::Get()->screen_orientation_controller();
   ASSERT_FALSE(screen_orientation_controller->rotation_locked());
   maximize_mode_controller->EnableMaximizeModeWindowManager(true);
   ASSERT_FALSE(tray_view()->visible());
@@ -262,9 +258,7 @@ TEST_F(TrayRotationLockTest, LockUpdatedDuringDesctruction) {
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   DestroyTrayView();
-  Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->ToggleUserRotationLock();
+  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
 }

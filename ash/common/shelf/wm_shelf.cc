@@ -42,10 +42,10 @@ class WmShelf::AutoHideEventHandler : public ui::EventHandler {
  public:
   explicit AutoHideEventHandler(ShelfLayoutManager* shelf_layout_manager)
       : shelf_layout_manager_(shelf_layout_manager) {
-    Shell::GetInstance()->AddPreTargetHandler(this);
+    Shell::Get()->AddPreTargetHandler(this);
   }
   ~AutoHideEventHandler() override {
-    Shell::GetInstance()->RemovePreTargetHandler(this);
+    Shell::Get()->RemovePreTargetHandler(this);
   }
 
   // Overridden from ui::EventHandler:
@@ -175,8 +175,7 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
   shelf_widget_->OnShelfAlignmentChanged();
   shelf_layout_manager_->LayoutShelf();
   Shell::Get()->shelf_controller()->NotifyShelfAlignmentChanged(this);
-  Shell::GetInstance()->NotifyShelfAlignmentChanged(
-      GetWindow()->GetRootWindow());
+  Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
 }
 
 bool WmShelf::IsHorizontalAlignment() const {
@@ -220,7 +219,7 @@ void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
 
   auto_hide_behavior_ = auto_hide_behavior;
   Shell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);
-  Shell::GetInstance()->NotifyShelfAutoHideBehaviorChanged(
+  Shell::Get()->NotifyShelfAutoHideBehaviorChanged(
       GetWindow()->GetRootWindow());
 }
 

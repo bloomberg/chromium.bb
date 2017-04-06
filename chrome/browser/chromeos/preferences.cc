@@ -82,7 +82,7 @@ Preferences::Preferences()
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+    ash::Shell::Get()->AddShellObserver(this);
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
@@ -93,7 +93,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+    ash::Shell::Get()->AddShellObserver(this);
 }
 
 Preferences::~Preferences() {
@@ -102,7 +102,7 @@ Preferences::~Preferences() {
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
+    ash::Shell::Get()->RemoveShellObserver(this);
 }
 
 // static
@@ -552,8 +552,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // TODO: this needs to work in Config::MUS. http://crbug.com/705591.
     if (ash::Shell::HasInstance() &&
         chromeos::GetAshConfig() == ash::Config::CLASSIC) {
-      ash::Shell::GetInstance()->display_manager()
-          ->SetUnifiedDesktopEnabled(enabled);
+      ash::Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(enabled);
     }
   }
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kNaturalScroll) {
@@ -634,7 +633,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       const bool enabled = touch_hud_projection_enabled_.GetValue();
       // There may not be a shell, e.g., in some unit tests.
       if (ash::Shell::HasInstance())
-        ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
+        ash::Shell::Get()->SetTouchHudProjectionEnabled(enabled);
     }
   }
 

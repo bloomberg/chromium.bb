@@ -15,7 +15,7 @@ InputEventsBlocker::InputEventsBlocker() {
   // TODO(mash): Implement a mash version. This will probably need to talk to
   // the window server.
   if (!ash_util::IsRunningInMash()) {
-    ash::Shell::GetInstance()->PrependPreTargetHandler(this);
+    ash::Shell::Get()->PrependPreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " created.";
   } else {
     NOTIMPLEMENTED();
@@ -24,7 +24,7 @@ InputEventsBlocker::InputEventsBlocker() {
 
 InputEventsBlocker::~InputEventsBlocker() {
   if (!ash_util::IsRunningInMash()) {
-    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+    ash::Shell::Get()->RemovePreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
   } else {
     NOTIMPLEMENTED();

@@ -258,9 +258,9 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
       keyboard_observer_(this),
       weak_factory_(this) {
   DCHECK(panel_container);
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
   WmShell::Get()->AddDisplayObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
@@ -290,9 +290,9 @@ void PanelLayoutManager::Shutdown() {
   }
   panel_windows_.clear();
   WmShell* shell = panel_container_->GetShell();
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   shell->RemoveDisplayObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(WmWindow* panel) {

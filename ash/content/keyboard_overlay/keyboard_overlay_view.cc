@@ -37,7 +37,7 @@ KeyboardOverlayView::KeyboardOverlayView(content::BrowserContext* context,
 KeyboardOverlayView::~KeyboardOverlayView() {}
 
 void KeyboardOverlayView::Cancel() {
-  Shell::GetInstance()->overlay_filter()->Deactivate(this);
+  Shell::Get()->overlay_filter()->Deactivate(this);
   views::Widget* widget = GetWidget();
   if (widget)
     widget->Close();
@@ -66,7 +66,7 @@ aura::Window* KeyboardOverlayView::GetWindow() {
 void KeyboardOverlayView::ShowDialog(content::BrowserContext* context,
                                      WebContentsHandler* handler,
                                      const GURL& url) {
-  if (Shell::GetInstance()->overlay_filter()->IsActive())
+  if (Shell::Get()->overlay_filter()->IsActive())
     return;
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
@@ -75,7 +75,7 @@ void KeyboardOverlayView::ShowDialog(content::BrowserContext* context,
       new KeyboardOverlayView(context, delegate, handler);
   delegate->Show(view);
 
-  Shell::GetInstance()->overlay_filter()->Activate(view);
+  Shell::Get()->overlay_filter()->Activate(view);
 }
 
 void KeyboardOverlayView::WindowClosing() {

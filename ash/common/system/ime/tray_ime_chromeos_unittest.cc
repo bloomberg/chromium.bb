@@ -60,8 +60,7 @@ class TrayIMETest : public test::AshTestBase {
 };
 
 void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
-  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
-      enabled);
+  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(enabled);
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   AccessibilityNotificationVisibility notification =
       enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;

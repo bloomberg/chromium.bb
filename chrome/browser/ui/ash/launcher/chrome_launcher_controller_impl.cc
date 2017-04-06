@@ -261,7 +261,7 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+    ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ChromeLauncherControllerImpl::~ChromeLauncherControllerImpl() {
@@ -273,7 +273,7 @@ ChromeLauncherControllerImpl::~ChromeLauncherControllerImpl() {
 
   model_->RemoveObserver(this);
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+    ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   for (const auto& pair : id_to_item_controller_map_) {
     int index = model_->ItemIndexByID(pair.first);
     // A "browser proxy" is not known to the model and this removal does
@@ -571,7 +571,7 @@ void ChromeLauncherControllerImpl::ActiveUserChanged(
   ash::Shell::Get()->system_tray_delegate()->ActiveUserWasChanged();
   // Force on-screen keyboard to reset.
   if (keyboard::IsKeyboardEnabled())
-    ash::Shell::GetInstance()->CreateKeyboard();
+    ash::Shell::Get()->CreateKeyboard();
 }
 
 void ChromeLauncherControllerImpl::AdditionalUserAddedToSession(
@@ -1166,9 +1166,9 @@ void ChromeLauncherControllerImpl::SetVirtualKeyboardBehaviorFromPrefs() {
   }
   const bool is_enabled = keyboard::IsKeyboardEnabled();
   if (was_enabled && !is_enabled)
-    ash::Shell::GetInstance()->DeactivateKeyboard();
+    ash::Shell::Get()->DeactivateKeyboard();
   else if (is_enabled && !was_enabled)
-    ash::Shell::GetInstance()->CreateKeyboard();
+    ash::Shell::Get()->CreateKeyboard();
 }
 
 ash::ShelfItemStatus ChromeLauncherControllerImpl::GetAppState(

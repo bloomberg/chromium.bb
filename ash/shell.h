@@ -202,9 +202,6 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   static Shell* CreateInstance(const ShellInitParams& init_params);
 
   // Should never be called before |CreateInstance()|.
-  // TODO: deprecated. Use Get() instead. GetInstance() will be renamed close
-  // to branch point.
-  static Shell* GetInstance() { return Get(); }
   static Shell* Get();
 
   // Returns true if the ash shell has been instantiated.

@@ -117,8 +117,7 @@ using DragDropTest = test::AshInteractiveUITestBase;
 // during drag & drop operation.
 TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   views::View* draggable_view = new DraggableView();
   draggable_view->set_drag_controller(NULL);
   draggable_view->SetBounds(0, 0, 100, 100);

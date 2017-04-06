@@ -30,7 +30,7 @@ namespace {
 display::Screen* screen_for_shutdown = nullptr;
 
 display::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
+  return Shell::Get()->display_manager();
 }
 
 class ScreenForShutdown : public display::Screen {

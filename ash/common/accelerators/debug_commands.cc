@@ -109,7 +109,7 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
 void HandleToggleWallpaperMode() {
   static int index = 0;
   WallpaperController* wallpaper_controller =
-      Shell::GetInstance()->wallpaper_controller();
+      Shell::Get()->wallpaper_controller();
   switch (++index % 4) {
     case 0:
       Shell::Get()->wallpaper_delegate()->InitializeWallpaper();
@@ -192,7 +192,7 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       HandlePrintWindowHierarchy();
       break;
     case DEBUG_SHOW_TOAST:
-      Shell::GetInstance()->toast_manager()->Show(
+      Shell::Get()->toast_manager()->Show(
           ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
                     base::ASCIIToUTF16("Dismiss")));
       break;

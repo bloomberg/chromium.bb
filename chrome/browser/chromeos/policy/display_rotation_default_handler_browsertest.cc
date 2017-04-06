@@ -41,7 +41,7 @@ namespace em = enterprise_management;
 namespace {
 
 display::DisplayManager* GetDisplayManager() {
-  return ash::Shell::GetInstance()->display_manager();
+  return ash::Shell::Get()->display_manager();
 }
 
 display::Display::Rotation GetRotationOfFirstDisplay() {

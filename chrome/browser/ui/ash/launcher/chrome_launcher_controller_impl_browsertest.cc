@@ -1898,8 +1898,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
 // the launcher in the secondary monitor.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
   // Update the display configuration to add a secondary display.
-  display::test::DisplayManagerTestApi(
-      ash::Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
       .UpdateDisplay("800x800,801+0-800x800");
 
   // Get a number of interfaces we need.

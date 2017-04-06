@@ -12,11 +12,11 @@ namespace ash {
 ShutdownObserver::ShutdownObserver(
     display::DisplayConfigurator* display_configurator)
     : display_configurator_(display_configurator) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ShutdownObserver::~ShutdownObserver() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void ShutdownObserver::OnAppTerminating() {

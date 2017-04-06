@@ -377,7 +377,7 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
   }
 
   AccessibilityDelegate* accessibility_delegate =
-      Shell::GetInstance()->accessibility_delegate();
+      Shell::Get()->accessibility_delegate();
   // Fails to show the keyboard.
   if (accessibility_delegate->IsVirtualKeyboardEnabled())
     return;
@@ -410,9 +410,8 @@ bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
-  return keyboard_suppressed_ && !Shell::GetInstance()
-                                      ->accessibility_delegate()
-                                      ->IsVirtualKeyboardEnabled();
+  return keyboard_suppressed_ &&
+         !Shell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {
@@ -528,8 +527,7 @@ void ImeMenuTray::OnKeyboardHidden() {
   if (!force_show_keyboard_)
     return;
 
-  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
-      false);
+  Shell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
   force_show_keyboard_ = false;
 }
 

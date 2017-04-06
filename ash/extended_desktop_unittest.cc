@@ -36,9 +36,9 @@ namespace {
 
 void SetSecondaryDisplayLayout(display::DisplayPlacement::Position position) {
   std::unique_ptr<display::DisplayLayout> layout =
-      Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout().Copy();
+      Shell::Get()->display_manager()->GetCurrentDisplayLayout().Copy();
   layout->placement_list[0].position = position;
-  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+  Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
       std::move(layout));
 }
 
@@ -258,7 +258,7 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();
   EXPECT_EQ(ui::kCursorPointer, host0->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorNull, host1->last_cursor().native_type());
-  Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorCopy);
+  Shell::Get()->cursor_manager()->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, host0->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorCopy, host1->last_cursor().native_type());
 }
@@ -697,7 +697,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 
 TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   UpdateDisplay("500x600,600x400");
-  SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   ASSERT_FALSE(tray->HasSystemBubble());
 
   ui::test::EventGenerator& event_generator(GetEventGenerator());
@@ -833,7 +833,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
 
 TEST_F(ExtendedDesktopTest, PassiveGrab) {
   EventLocationRecordingEventHandler event_handler;
-  ash::Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  ash::Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("300x300,200x200");
 
@@ -856,7 +856,7 @@ TEST_F(ExtendedDesktopTest, PassiveGrab) {
   generator.MoveMouseTo(400, 150);
   EXPECT_EQ("100,150 100,150", event_handler.GetLocationsAndReset());
 
-  ash::Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  ash::Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 }  // namespace ash

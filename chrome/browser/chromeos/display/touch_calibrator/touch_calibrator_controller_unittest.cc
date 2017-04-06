@@ -75,7 +75,7 @@ TEST_F(TouchCalibratorControllerTest, StartCalibration) {
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
-  ui::EventTargetTestApi test_api(ash::Shell::GetInstance());
+  ui::EventTargetTestApi test_api(ash::Shell::Get());
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
   ui::EventHandlerList::const_iterator event_target =
       std::find(handlers.begin(), handlers.end(), &touch_calibrator_controller);

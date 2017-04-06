@@ -135,8 +135,7 @@ TEST_F(AccessibilityFocusRingControllerTest, RectsToRingsParagraphShape) {
 
 TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
   UpdateDisplay("400x400,500x500");
-  aura::Window::Windows root_windows =
-      ash::Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = ash::Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
 
   AccessibilityHighlightManager highlight_manager;

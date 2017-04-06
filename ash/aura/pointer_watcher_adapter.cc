@@ -17,11 +17,11 @@
 namespace ash {
 
 PointerWatcherAdapter::PointerWatcherAdapter() {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 PointerWatcherAdapter::~PointerWatcherAdapter() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void PointerWatcherAdapter::AddPointerWatcher(

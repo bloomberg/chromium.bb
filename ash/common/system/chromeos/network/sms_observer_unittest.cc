@@ -45,9 +45,7 @@ class SmsObserverTest : public test::AshTestBase {
   SmsObserverTest() {}
   ~SmsObserverTest() override {}
 
-  SmsObserver* GetSmsObserver() {
-    return Shell::GetInstance()->sms_observer_.get();
-  }
+  SmsObserver* GetSmsObserver() { return Shell::Get()->sms_observer_.get(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsObserverTest);

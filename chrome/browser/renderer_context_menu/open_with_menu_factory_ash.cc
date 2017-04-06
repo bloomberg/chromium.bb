@@ -52,7 +52,7 @@ void OpenWithMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   if (!ash::Shell::HasInstance())
     return;
   ash::LinkHandlerModelFactory* factory =
-      ash::Shell::GetInstance()->link_handler_model_factory();
+      ash::Shell::Get()->link_handler_model_factory();
   if (!factory)
     return;
 

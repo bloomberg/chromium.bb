@@ -145,7 +145,7 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
       user_window_observer_(this),
       observed_container_windows_(&container_window_observer_),
       observed_user_windows_(&user_window_observer_) {
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
     OnDisplayAdded(display);
   display::Screen::GetScreen()->AddObserver(this);
@@ -153,7 +153,7 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
 void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {

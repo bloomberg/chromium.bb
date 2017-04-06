@@ -104,9 +104,9 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  aura::Window* root_window = ash::Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window =
+      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display.id());
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 

@@ -183,7 +183,7 @@ display::ColorCalibrationProfile StringToColorProfile(
 }
 
 display::DisplayManager* GetDisplayManager() {
-  return ash::Shell::GetInstance()->display_manager();
+  return ash::Shell::Get()->display_manager();
 }
 
 // Returns true id the current user can write display preferences to
@@ -410,13 +410,13 @@ void StoreDisplayPowerState(DisplayPowerState power_state) {
 
 void StoreCurrentDisplayPowerState() {
   StoreDisplayPowerState(
-      ash::Shell::GetInstance()->display_configurator()->
-          requested_power_state());
+      ash::Shell::Get()->display_configurator()->requested_power_state());
 }
 
 void StoreCurrentDisplayRotationLockPrefs() {
-  bool rotation_lock = ash::Shell::GetInstance()->display_manager()->
-      registered_internal_display_rotation_lock();
+  bool rotation_lock = ash::Shell::Get()
+                           ->display_manager()
+                           ->registered_internal_display_rotation_lock();
   StoreDisplayRotationPrefs(rotation_lock);
 }
 
@@ -441,7 +441,7 @@ void StoreDisplayPrefs() {
 
   // Do not store prefs when the confirmation dialog is shown.
   if (!UserCanSaveDisplayPreference() ||
-      !ash::Shell::GetInstance()->ShouldSaveDisplaySettings()) {
+      !ash::Shell::Get()->ShouldSaveDisplaySettings()) {
     return;
   }
 
@@ -474,7 +474,7 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
     std::string value = local_state->GetString(prefs::kDisplayPowerState);
     chromeos::DisplayPowerState power_state;
     if (GetDisplayPowerStateFromString(value, &power_state)) {
-      ash::Shell::GetInstance()->display_configurator()->SetInitialDisplayPower(
+      ash::Shell::Get()->display_configurator()->SetInitialDisplayPower(
           power_state);
     }
   }

@@ -936,8 +936,7 @@ class DragImageWindowObserver : public aura::WindowObserver {
 // across displays when drag is cancelled.
 TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     aura::client::SetDragDropClient(*iter, drag_drop_controller_.get());
@@ -1014,7 +1013,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
 // Verifies that a drag is aborted if a display is disconnected during the drag.
 TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
   UpdateDisplay("400x400,400x400");
-  for (aura::Window* root : Shell::GetInstance()->GetAllRootWindows()) {
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
     aura::client::SetDragDropClient(root, drag_drop_controller_.get());
   }
 

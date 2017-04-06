@@ -470,9 +470,9 @@ TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
       throbber_circle_(nullptr),
       hint_box_view_(nullptr),
       touch_point_view_(nullptr) {
-  aura::Window* root = ash::Shell::GetInstance()
-                           ->window_tree_host_manager()
-                           ->GetRootWindowForDisplayId(display_.id());
+  aura::Window* root =
+      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display_.id());
   widget_.reset(new views::Widget);
   widget_->Init(GetWidgetParams(root));
   widget_->SetContentsView(this);

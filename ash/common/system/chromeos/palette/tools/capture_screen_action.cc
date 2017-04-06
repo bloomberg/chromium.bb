@@ -31,7 +31,7 @@ void CaptureScreenAction::OnEnable() {
 
   delegate()->DisableTool(GetToolId());
   delegate()->HidePaletteImmediately();
-  Shell::GetInstance()->palette_delegate()->TakeScreenshot();
+  Shell::Get()->palette_delegate()->TakeScreenshot();
 }
 
 views::View* CaptureScreenAction::CreateView() {

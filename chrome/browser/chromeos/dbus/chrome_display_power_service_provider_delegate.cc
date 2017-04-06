@@ -29,7 +29,7 @@ void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
   // know so that it can ignore such events.
   ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
 
-  ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(
+  ash::Shell::Get()->display_configurator()->SetDisplayPower(
       power_state, display::DisplayConfigurator::kSetDisplayPowerNoFlags,
       callback);
 }

@@ -93,11 +93,11 @@ class CallbackRunningObserver {
 }  // namespace
 
 DisplayAnimatorChromeOS::DisplayAnimatorChromeOS() : weak_ptr_factory_(this) {
-  Shell::GetInstance()->display_configurator()->AddObserver(this);
+  Shell::Get()->display_configurator()->AddObserver(this);
 }
 
 DisplayAnimatorChromeOS::~DisplayAnimatorChromeOS() {
-  Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  Shell::Get()->display_configurator()->RemoveObserver(this);
   ClearHidingLayers();
 }
 
@@ -109,7 +109,7 @@ void DisplayAnimatorChromeOS::StartFadeOutAnimation(base::Closure callback) {
   // hiding the root windows, we put a black layer over a root window for
   // safety.  These layers remain to hide root windows and will be deleted
   // after the animation of OnDisplayModeChanged().
-  for (aura::Window* root_window : Shell::GetInstance()->GetAllRootWindows()) {
+  for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
     std::unique_ptr<ui::Layer> hiding_layer =
         base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
@@ -158,7 +158,7 @@ void DisplayAnimatorChromeOS::StartFadeInAnimation() {
   // Schedules the fade-in effect for all root windows.  Because we put the
   // black layers for fade-out, here we actually turn those black layers
   // invisible.
-  for (aura::Window* root_window : Shell::GetInstance()->GetAllRootWindows()) {
+  for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
     ui::Layer* hiding_layer = nullptr;
     if (hiding_layers_.find(root_window) == hiding_layers_.end()) {
       // In case of the transition from mirroring->non-mirroring, new root

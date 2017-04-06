@@ -135,7 +135,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
       shelf_view_(nullptr),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            wm_shelf_,
-                           Shell::GetInstance()->wallpaper_controller()),
+                           Shell::Get()->wallpaper_controller()),
       activating_as_fallback_(false) {
   DCHECK(wm_shelf_);
   background_animator_.AddObserver(this);

@@ -32,7 +32,7 @@ using DisplayUnitInfoList = DisplayInfoProvider::DisplayUnitInfoList;
 using DisplayLayoutList = DisplayInfoProvider::DisplayLayoutList;
 
 void EnableMaximizeMode(bool enable) {
-  ash::Shell::GetInstance()
+  ash::Shell::Get()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(enable);
 }
@@ -67,7 +67,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
   }
 
   display::DisplayManager* GetDisplayManager() const {
-    return ash::Shell::GetInstance()->display_manager();
+    return ash::Shell::Get()->display_manager();
   }
 
   std::string SystemInfoDisplayInsetsToString(
@@ -912,7 +912,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
 // upon exiting maximize mode, and that a rotation lock is not set.
 TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   ash::ScreenOrientationController* screen_orientation_controller =
-      ash::Shell::GetInstance()->screen_orientation_controller();
+      ash::Shell::Get()->screen_orientation_controller();
   api::system_display::DisplayProperties info;
   info.rotation.reset(new int(90));
 
@@ -950,10 +950,9 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationDuringMaximizeMode) {
   // Entering maximize mode enables accelerometer screen rotations.
   EnableMaximizeMode(true);
 
-  ASSERT_FALSE(ash::Shell::GetInstance()
-                   ->screen_orientation_controller()
-                   ->rotation_locked());
-  ASSERT_FALSE(ash::Shell::GetInstance()
+  ASSERT_FALSE(
+      ash::Shell::Get()->screen_orientation_controller()->rotation_locked());
+  ASSERT_FALSE(ash::Shell::Get()
                    ->screen_orientation_controller()
                    ->user_rotation_locked());
 
@@ -968,10 +967,9 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationDuringMaximizeMode) {
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
-  EXPECT_TRUE(ash::Shell::GetInstance()
-                  ->screen_orientation_controller()
-                  ->rotation_locked());
-  EXPECT_TRUE(ash::Shell::GetInstance()
+  EXPECT_TRUE(
+      ash::Shell::Get()->screen_orientation_controller()->rotation_locked());
+  EXPECT_TRUE(ash::Shell::Get()
                   ->screen_orientation_controller()
                   ->user_rotation_locked());
 }
@@ -1130,8 +1128,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(
-          ash::Shell::GetInstance()->display_manager())
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
   api::system_display::DisplayProperties info;
@@ -1208,8 +1205,7 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
 TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(
-          ash::Shell::GetInstance()->display_manager())
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
   std::string id = base::Int64ToString(internal_display_id);
@@ -1246,8 +1242,7 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNonTouchDisplay) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(
-          ash::Shell::GetInstance()->display_manager())
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
@@ -1258,8 +1253,7 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNonTouchDisplay) {
                                  ? display_id_list[1]
                                  : display_id_list[0];
 
-  display::test::DisplayManagerTestApi(
-      ash::Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
       .SetTouchSupport(display_id, display::Display::TOUCH_SUPPORT_UNAVAILABLE);
 
   std::string id = base::Int64ToString(display_id);

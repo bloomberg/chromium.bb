@@ -150,7 +150,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
 
   if (update_last_location_now) {
     gfx::Point new_point_in_screen;
-    if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
+    if (Shell::Get()->display_manager()->IsInUnifiedMode()) {
       new_point_in_screen = point_in_host;
       // First convert to the unified host.
       host->ConvertPixelsToDIP(&new_point_in_screen);

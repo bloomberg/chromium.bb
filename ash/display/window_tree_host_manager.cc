@@ -79,7 +79,7 @@ const float kCursorMultiplierForExternalDisplays = 1.2f;
 #endif
 
 display::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
+  return Shell::Get()->display_manager();
 }
 
 void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
@@ -247,7 +247,7 @@ WindowTreeHostManager::~WindowTreeHostManager() {}
 
 void WindowTreeHostManager::Start() {
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::GetInstance()->display_manager()->set_delegate(this);
+  Shell::Get()->display_manager()->set_delegate(this);
 }
 
 void WindowTreeHostManager::Shutdown() {
@@ -256,7 +256,7 @@ void WindowTreeHostManager::Shutdown() {
 
   // Unset the display manager's delegate here because
   // DisplayManager outlives WindowTreeHostManager.
-  Shell::GetInstance()->display_manager()->set_delegate(nullptr);
+  Shell::Get()->display_manager()->set_delegate(nullptr);
 
   cursor_window_controller_.reset();
   mirror_window_controller_.reset();
@@ -524,7 +524,7 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
     // The cursor's native position did not change but its screen position did
     // change. This occurs when the scale factor or the rotation of the display
     // that the cursor is on changes.
-    Shell::GetInstance()->cursor_manager()->SetDisplay(target_display);
+    Shell::Get()->cursor_manager()->SetDisplay(target_display);
 
     // Update the cursor's root location. This ends up dispatching a synthetic
     // mouse move. The synthetic mouse move updates the composited cursor's
@@ -564,9 +564,9 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
 
     // Magnifier controllers keep pointers to the current root window.
     // Update them here to avoid accessing them later.
-    Shell::GetInstance()->magnification_controller()->SwitchTargetRootWindow(
+    Shell::Get()->magnification_controller()->SwitchTargetRootWindow(
         ash_host->AsWindowTreeHost()->window(), false);
-    Shell::GetInstance()
+    Shell::Get()
         ->partial_magnification_controller()
         ->SwitchTargetRootWindowIfNeeded(
             ash_host->AsWindowTreeHost()->window());
@@ -579,8 +579,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     ash::SystemTray* old_tray =
         GetRootWindowController(to_delete->AsWindowTreeHost()->window())
             ->GetSystemTray();
-    ash::SystemTray* new_tray =
-        ash::Shell::GetInstance()->GetPrimarySystemTray();
+    ash::SystemTray* new_tray = ash::Shell::Get()->GetPrimarySystemTray();
     if (old_tray->GetWidget()->IsVisible()) {
       new_tray->SetVisible(true);
       new_tray->GetWidget()->Show();
@@ -789,7 +788,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange(
 }
 
 display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
-  return Shell::GetInstance()->display_configurator();
+  return Shell::Get()->display_configurator();
 }
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(

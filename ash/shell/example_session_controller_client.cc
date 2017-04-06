@@ -46,12 +46,12 @@ void ExampleSessionControllerClient::Initialize() {
 void ExampleSessionControllerClient::RequestLockScreen() {
   TestSessionControllerClient::RequestLockScreen();
   shell::CreateLockScreen();
-  Shell::GetInstance()->UpdateShelfVisibility();
+  Shell::Get()->UpdateShelfVisibility();
 }
 
 void ExampleSessionControllerClient::UnlockScreen() {
   TestSessionControllerClient::UnlockScreen();
-  Shell::GetInstance()->UpdateShelfVisibility();
+  Shell::Get()->UpdateShelfVisibility();
 }
 
 }  // namespace shell

@@ -311,8 +311,7 @@ TEST_F(PanelLayoutManagerTest, UndockTest) {
   std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(
-          Shell::GetInstance()->display_manager())
+      display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
   // Create the primary display info.
@@ -348,8 +347,7 @@ TEST_F(PanelLayoutManagerTest, DockUndockTest) {
   std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(
-          Shell::GetInstance()->display_manager())
+      display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
           .SetFirstDisplayAsInternalDisplay();
 
   // Create the primary display info.

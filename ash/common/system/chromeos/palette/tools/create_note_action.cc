@@ -29,14 +29,14 @@ PaletteToolId CreateNoteAction::GetToolId() const {
 void CreateNoteAction::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::GetInstance()->palette_delegate()->CreateNote();
+  Shell::Get()->palette_delegate()->CreateNote();
 
   delegate()->DisableTool(GetToolId());
   delegate()->HidePalette();
 }
 
 views::View* CreateNoteAction::CreateView() {
-  if (!Shell::GetInstance()->palette_delegate()->HasNoteApp())
+  if (!Shell::Get()->palette_delegate()->HasNoteApp())
     return nullptr;
 
   return CreateDefaultView(

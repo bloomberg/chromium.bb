@@ -126,8 +126,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   // to fill the wallpaper. Ideally the image should be larger than the largest
   // display supported, if not we will scale and center it if the layout is
   // wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
-  WallpaperController* controller =
-      Shell::GetInstance()->wallpaper_controller();
+  WallpaperController* controller = Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   wallpaper::WallpaperLayout layout = controller->GetWallpaperLayout();
 
@@ -193,8 +192,7 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
 }
 
 views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
-  WallpaperController* controller =
-      Shell::GetInstance()->wallpaper_controller();
+  WallpaperController* controller = Shell::Get()->wallpaper_controller();
   WallpaperDelegate* wallpaper_delegate = Shell::Get()->wallpaper_delegate();
 
   views::Widget* wallpaper_widget = new views::Widget;

@@ -16,7 +16,7 @@ namespace ash {
 namespace test {
 
 const aura::WindowTreeHost* MirrorWindowTestApi::GetHost() const {
-  aura::Window* window = Shell::GetInstance()
+  aura::Window* window = Shell::Get()
                              ->window_tree_host_manager()
                              ->mirror_window_controller()
                              ->GetWindow();
@@ -24,14 +24,14 @@ const aura::WindowTreeHost* MirrorWindowTestApi::GetHost() const {
 }
 
 int MirrorWindowTestApi::GetCurrentCursorType() const {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()
       ->cursor_type_;
 }
 
 const gfx::Point& MirrorWindowTestApi::GetCursorHotPoint() const {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()
       ->hot_point_;
@@ -43,7 +43,7 @@ gfx::Point MirrorWindowTestApi::GetCursorHotPointLocationInRootWindow() const {
 }
 
 const aura::Window* MirrorWindowTestApi::GetCursorWindow() const {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()
       ->cursor_window_.get();

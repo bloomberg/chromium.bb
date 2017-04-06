@@ -109,7 +109,7 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
     return device_info;
 
   display::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
+      ash::Shell::Get()->display_manager();
   int64_t primary_display_id =
       display_manager->GetPrimaryDisplayCandidate().id();
   display::ManagedDisplayInfo display_info =

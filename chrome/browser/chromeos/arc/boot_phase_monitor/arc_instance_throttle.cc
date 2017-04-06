@@ -52,13 +52,13 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
 }  // namespace
 
 ArcInstanceThrottle::ArcInstanceThrottle() {
-  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  ash::Shell::Get()->activation_client()->AddObserver(this);
   ThrottleInstanceIfNeeded(ash::WmWindow::Get(ash::wm::GetActiveWindow()));
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+    ash::Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,

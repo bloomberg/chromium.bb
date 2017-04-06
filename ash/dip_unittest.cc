@@ -48,7 +48,7 @@ TEST_F(DIPTest, WorkArea) {
 
   const display::Display display_2x = screen->GetDisplayNearestWindow(root);
   const display::ManagedDisplayInfo display_info_2x =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
+      Shell::Get()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
   EXPECT_EQ("1,1 2000x1800", display_info_2x.bounds_in_native().ToString());

@@ -154,11 +154,10 @@ class MagnificationManagerImpl
     enabled_ = enabled;
 
     if (type_ == ash::MAGNIFIER_FULL) {
-      ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-          enabled_);
+      ash::Shell::Get()->magnification_controller()->SetEnabled(enabled_);
       MonitorFocusInPageChange();
     } else {
-      ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+      ash::Shell::Get()->partial_magnification_controller()->SetEnabled(
           enabled_);
     }
   }
@@ -177,9 +176,8 @@ class MagnificationManagerImpl
     keep_focus_centered_ = keep_focus_centered;
 
     if (type_ == ash::MAGNIFIER_FULL) {
-      ash::Shell::GetInstance()
-          ->magnification_controller()
-          ->SetKeepFocusCentered(keep_focus_centered_);
+      ash::Shell::Get()->magnification_controller()->SetKeepFocusCentered(
+          keep_focus_centered_);
     }
   }
 
@@ -221,8 +219,8 @@ class MagnificationManagerImpl
 
     if (AccessibilityManager::Get()) {
       AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
-      if (ash::Shell::GetInstance()) {
-        ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+      if (ash::Shell::Get()) {
+        ash::Shell::Get()->SetCursorCompositingEnabled(
             AccessibilityManager::Get()->ShouldEnableCursorCompositing());
       }
     }
@@ -271,10 +269,9 @@ class MagnificationManagerImpl
       case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
         content::FocusedNodeDetails* node_details =
             content::Details<content::FocusedNodeDetails>(details).ptr();
-        ash::Shell::GetInstance()
-            ->magnification_controller()
-            ->HandleFocusedNodeChanged(node_details->is_editable_node,
-                                       node_details->node_bounds_in_screen);
+        ash::Shell::Get()->magnification_controller()->HandleFocusedNodeChanged(
+            node_details->is_editable_node,
+            node_details->node_bounds_in_screen);
         break;
       }
     }

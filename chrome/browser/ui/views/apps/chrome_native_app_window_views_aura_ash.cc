@@ -344,7 +344,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
                                                  AppWindow::FULLSCREEN_TYPE_OS);
     if (!ash_util::IsRunningInMash()) {
       DCHECK(ash::Shell::HasInstance());
-      ash::Shell::GetInstance()->UpdateShelfVisibility();
+      ash::Shell::Get()->UpdateShelfVisibility();
     }
   }
 }

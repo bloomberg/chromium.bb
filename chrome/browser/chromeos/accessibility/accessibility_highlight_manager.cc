@@ -38,7 +38,7 @@ AccessibilityHighlightManager::~AccessibilityHighlightManager() {
   AccessibilityFocusRingController::GetInstance()->HideCaretRing();
   AccessibilityFocusRingController::GetInstance()->HideCursorRing();
 
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   if (shell && registered_observers_) {
     shell->RemovePreTargetHandler(this);
     shell->cursor_manager()->RemoveObserver(this);
@@ -65,7 +65,7 @@ void AccessibilityHighlightManager::HighlightCaret(bool caret) {
 }
 
 void AccessibilityHighlightManager::RegisterObservers() {
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   shell->AddPreTargetHandler(this);
   shell->cursor_manager()->AddObserver(this);
   registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
@@ -131,7 +131,7 @@ void AccessibilityHighlightManager::OnCursorVisibilityChanged(bool is_visible) {
 }
 
 bool AccessibilityHighlightManager::IsCursorVisible() {
-  return ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible();
+  return ash::Shell::Get()->cursor_manager()->IsCursorVisible();
 }
 
 void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {

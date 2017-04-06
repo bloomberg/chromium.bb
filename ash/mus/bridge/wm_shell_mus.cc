@@ -250,7 +250,7 @@ void WmShellMus::RecordGestureAction(GestureActionType action) {
 
 void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
   if (GetAshConfig() == Config::MUS) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+    Shell::Get()->metrics()->RecordUserMetricsAction(action);
     return;
   }
   // TODO: http://crbug.com/616581.
@@ -259,10 +259,8 @@ void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
 
 void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
   if (GetAshConfig() == Config::MUS) {
-    Shell::GetInstance()
-        ->metrics()
-        ->task_switch_metrics_recorder()
-        .OnTaskSwitch(source);
+    Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
+        source);
     return;
   }
   // TODO: http://crbug.com/616581.
@@ -349,9 +347,8 @@ std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
 }
 
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
-  return session_state_delegate_
-             ? session_state_delegate_.get()
-             : Shell::GetInstance()->session_state_delegate();
+  return session_state_delegate_ ? session_state_delegate_.get()
+                                 : Shell::Get()->session_state_delegate();
 }
 
 void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {
@@ -397,9 +394,7 @@ bool WmShellMus::IsTouchDown() {
 
 void WmShellMus::ToggleIgnoreExternalKeyboard() {
   if (GetAshConfig() == Config::MUS) {
-    Shell::GetInstance()
-        ->virtual_keyboard_controller()
-        ->ToggleIgnoreExternalKeyboard();
+    Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
     return;
   }
 
@@ -408,7 +403,7 @@ void WmShellMus::ToggleIgnoreExternalKeyboard() {
 
 void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   if (GetAshConfig() == Config::MUS) {
-    Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
+    Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
     return;
   }
 
@@ -417,8 +412,7 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
 
 void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
   if (GetAshConfig() == Config::MUS) {
-    Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
-        enabled);
+    Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
     return;
   }
 

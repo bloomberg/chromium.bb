@@ -159,9 +159,9 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
       keyboard_observer_(this) {
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
 }
@@ -172,7 +172,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   WmShell::Get()->RemoveLockStateObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
@@ -180,7 +180,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 void ShelfLayoutManager::PrepareForShutdown() {
   in_shutdown_ = true;
   // Stop observing changes to avoid updating a partially destructed shelf.
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {

@@ -46,8 +46,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
     // In case of a popup with an 'unspecified' location in ash, we are
     // looking for a good screen location. We are interpreting (0,0) as an
     // unspecified location.
-    *bounds = ash::Shell::GetInstance()->window_positioner()->
-        GetPopupPosition(*bounds);
+    *bounds = ash::Shell::Get()->window_positioner()->GetPopupPosition(*bounds);
     determined = true;
   }
 

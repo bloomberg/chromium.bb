@@ -1952,8 +1952,7 @@ class EventRewriterAshTest : public ash::test::AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    sticky_keys_controller_ =
-        ash::Shell::GetInstance()->sticky_keys_controller();
+    sticky_keys_controller_ = ash::Shell::Get()->sticky_keys_controller();
     delegate_ = base::MakeUnique<EventRewriterDelegateImpl>();
     delegate_->set_pref_service_for_testing(prefs());
     rewriter_ = base::MakeUnique<ui::EventRewriterChromeOS>(

@@ -55,7 +55,7 @@ ScreenLayoutObserverTest::ScreenLayoutObserverTest() {}
 ScreenLayoutObserverTest::~ScreenLayoutObserverTest() {}
 
 ScreenLayoutObserver* ScreenLayoutObserverTest::GetScreenLayoutObserver() {
-  return Shell::GetInstance()->screen_layout_observer();
+  return Shell::Get()->screen_layout_observer();
 }
 
 void ScreenLayoutObserverTest::CloseNotification() {
@@ -103,9 +103,8 @@ ScreenLayoutObserverTest::GetDisplayNotification() const {
 }
 
 TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
 
   UpdateDisplay("400x400");
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
@@ -207,9 +206,8 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
 // Verify that notification shows up when display is switched from dock mode to
 // extend mode.
 TEST_F(ScreenLayoutObserverTest, DisplayConfigurationChangedTwice) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
@@ -237,9 +235,8 @@ TEST_F(ScreenLayoutObserverTest, DisplayConfigurationChangedTwice) {
 TEST_F(ScreenLayoutObserverTest, UpdateAfterSuppressDisplayNotification) {
   UpdateDisplay("400x400,200x200");
 
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
 
   // Rotate the second.
   UpdateDisplay("400x400,200x200/r");
@@ -253,9 +250,8 @@ TEST_F(ScreenLayoutObserverTest, UpdateAfterSuppressDisplayNotification) {
 // Verify that no notification is shown when overscan of a screen is changed.
 TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
   UpdateDisplay("400x400, 300x300");
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
 
   // /o creates the default overscan.
@@ -264,7 +260,7 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Reset the overscan.
-  Shell::GetInstance()->display_manager()->SetOverscanInsets(
+  Shell::Get()->display_manager()->SetOverscanInsets(
       display_manager()->GetSecondaryDisplay().id(), gfx::Insets());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
@@ -273,9 +269,8 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
 // Tests that exiting mirror mode by closing the lid shows the correct "exiting
 // mirror mode" message.
 TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   display::Display::SetInternalDisplayId(
       display_manager()->GetSecondaryDisplay().id());
@@ -299,9 +294,8 @@ TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
 // Tests that exiting mirror mode because of adding a third display shows the
 // correct "3+ displays mirror mode is not supported" message.
 TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfThirdDisplayMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   display::Display::SetInternalDisplayId(
       display_manager()->GetSecondaryDisplay().id());
@@ -325,9 +319,8 @@ TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfThirdDisplayMessage) {
 // correct message.
 TEST_F(ScreenLayoutObserverTest,
        ExitMirrorModeNoInternalDisplayBecauseOfDisplayRemovedMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   display::Display::SetInternalDisplayId(
       display_manager()->GetSecondaryDisplay().id());
@@ -350,9 +343,8 @@ TEST_F(ScreenLayoutObserverTest,
 // Tests notification messages shown when adding and removing displays in
 // extended mode.
 TEST_F(ScreenLayoutObserverTest, AddingRemovingDisplayExtendedModeMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400");
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
@@ -375,9 +367,8 @@ TEST_F(ScreenLayoutObserverTest, AddingRemovingDisplayExtendedModeMessage) {
 // Tests notification messages shown when entering and exiting unified desktop
 // mode.
 TEST_F(ScreenLayoutObserverTest, EnteringExitingUnifiedModeMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400");
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
@@ -416,9 +407,8 @@ TEST_F(ScreenLayoutObserverTest, EnteringExitingUnifiedModeMessage) {
 // Special case: Tests notification messages shown when entering docked mode
 // by closing the lid and the internal display is the secondary display.
 TEST_F(ScreenLayoutObserverTest, DockedModeWithExternalPrimaryDisplayMessage) {
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),

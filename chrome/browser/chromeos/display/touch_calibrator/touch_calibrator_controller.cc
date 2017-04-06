@@ -39,7 +39,7 @@ void TouchCalibratorController::StartCalibration(
   is_calibrating_ = true;
   callback_ = callback;
 
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
   target_display_ = target_display;
 
   // Clear all touch calibrator views used in any previous calibration.
@@ -57,11 +57,10 @@ void TouchCalibratorController::StartCalibration(
         base::MakeUnique<TouchCalibratorView>(display, is_primary_view);
   }
 
-  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
-      true);
+  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(true);
 
   // Add self as an event handler target.
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  ash::Shell::Get()->AddPreTargetHandler(this);
 }
 
 void TouchCalibratorController::StopCalibration() {
@@ -69,13 +68,12 @@ void TouchCalibratorController::StopCalibration() {
     return;
   is_calibrating_ = false;
 
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
-  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
-      false);
+  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
 
   // Remove self as the event handler.
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  ash::Shell::Get()->RemovePreTargetHandler(this);
 
   // Transition all touch calibrator views to their final state for a graceful
   // exit.
@@ -122,7 +120,7 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
       callback_.Reset();
     }
     StopCalibration();
-    ash::Shell::GetInstance()->display_manager()->SetTouchCalibrationData(
+    ash::Shell::Get()->display_manager()->SetTouchCalibrationData(
         target_display_.id(), touch_point_quad_,
         target_screen_calibration_view->size());
     return;

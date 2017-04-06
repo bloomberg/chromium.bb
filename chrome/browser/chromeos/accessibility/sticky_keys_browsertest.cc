@@ -51,7 +51,7 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
   }
 
   ash::SystemTray* GetSystemTray() {
-    return ash::Shell::GetInstance()->GetPrimarySystemTray();
+    return ash::Shell::Get()->GetPrimarySystemTray();
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OverlayShown) {
 
   // Overlay should not be visible if sticky keys is not enabled.
   ash::StickyKeysController* controller =
-      ash::Shell::GetInstance()->sticky_keys_controller();
+      ash::Shell::Get()->sticky_keys_controller();
   EXPECT_FALSE(controller->GetOverlayForTest());
   for (auto key_code : modifier_keys) {
     SendKeyPress(key_code);

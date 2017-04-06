@@ -52,7 +52,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
 
 views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
-  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
+  return ash::Shell::Get()->CreateDefaultNonClientFrameView(widget);
 }
 
 void ChromeViewsDelegate::AdjustSavedWindowPlacementChromeOS(

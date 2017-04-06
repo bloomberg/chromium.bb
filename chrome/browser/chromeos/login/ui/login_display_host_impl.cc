@@ -304,17 +304,17 @@ class LoginDisplayHostImpl::KeyboardDrivenOobeKeyHandler
     : public ui::EventHandler {
  public:
   KeyboardDrivenOobeKeyHandler() {
-    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+    ash::Shell::Get()->AddPreTargetHandler(this);
   }
   ~KeyboardDrivenOobeKeyHandler() override {
-    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+    ash::Shell::Get()->RemovePreTargetHandler(this);
   }
 
  private:
   // ui::EventHandler
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (event->key_code() == ui::VKEY_F6) {
-      ash::Shell::GetInstance()->GetPrimarySystemTray()->CloseSystemBubble();
+      ash::Shell::Get()->GetPrimarySystemTray()->CloseSystemBubble();
       event->StopPropagation();
     }
   }
@@ -379,7 +379,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
   }
 
   if (!ash_util::IsRunningInMash())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+    ash::Shell::Get()->AddShellObserver(this);
   else
     NOTIMPLEMENTED();
   display::Screen::GetScreen()->AddObserver(this);
@@ -498,7 +498,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   }
 
   if (!ash_util::IsRunningInMash())
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
+    ash::Shell::Get()->RemoveShellObserver(this);
   else
     NOTIMPLEMENTED();
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -561,9 +561,7 @@ void LoginDisplayHostImpl::Finalize() {
   // See crbug.com/541864.
   if (ash::WmShell::HasInstance() &&
       finalize_animation_type_ != ANIMATION_ADD_USER) {
-    ash::Shell::GetInstance()
-        ->wallpaper_controller()
-        ->MoveToUnlockedContainer();
+    ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
   }
 
   switch (finalize_animation_type_) {
@@ -687,7 +685,7 @@ void LoginDisplayHostImpl::StartUserAdding(
         ash::kShellWindowId_LockScreenContainersContainer);
     lock_container->layer()->SetOpacity(1.0);
 
-    ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
+    ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
   } else {
     NOTIMPLEMENTED();
   }
@@ -950,9 +948,7 @@ void LoginDisplayHostImpl::Observe(
     if (!ash_util::IsRunningInMash()) {
       // For new user, move wallpaper to lock container so that windows created
       // during the user image picker step are below it.
-      ash::Shell::GetInstance()
-          ->wallpaper_controller()
-          ->MoveToLockedContainer();
+      ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1124,9 +1120,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   if (ash::Shell::HasInstance() &&
       finalize_animation_type_ == ANIMATION_ADD_USER) {
     if (!ash_util::IsRunningInMash()) {
-      ash::Shell::GetInstance()
-          ->wallpaper_controller()
-          ->MoveToUnlockedContainer();
+      ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1149,7 +1143,7 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLoginAnimations))
-    ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
+    ash::Shell::Get()->DoInitialWorkspaceAnimation();
 }
 
 void LoginDisplayHostImpl::ScheduleFadeOutAnimation(int animation_speed_ms) {

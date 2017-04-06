@@ -538,7 +538,7 @@ TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
 TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
   UpdateDisplay("600x600,600x600");
   Shell::RootWindowControllerList controllers =
-      Shell::GetInstance()->GetAllRootWindowControllers();
+      Shell::Get()->GetAllRootWindowControllers();
 
   Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   w1->Maximize();
@@ -575,7 +575,7 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
 TEST_F(RootWindowControllerTest, GetRootWindowController) {
   UpdateDisplay("600x600,600x600");
   Shell::RootWindowControllerList controllers =
-      Shell::GetInstance()->GetAllRootWindowControllers();
+      Shell::Get()->GetAllRootWindowControllers();
   ASSERT_EQ(2u, controllers.size());
 
   // Test null.
@@ -668,14 +668,14 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   observer1.SetWindow(window1);
   window1->Init(ui::LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(
-      window1, Shell::GetInstance()->GetPrimaryRootWindow(), gfx::Rect());
+      window1, Shell::Get()->GetPrimaryRootWindow(), gfx::Rect());
 
   DestroyedWindowObserver observer2;
   aura::Window* window2 = new aura::Window(NULL);
   window2->set_owned_by_parent(false);
   observer2.SetWindow(window2);
   window2->Init(ui::LAYER_NOT_DRAWN);
-  Shell::GetInstance()->GetPrimaryRootWindow()->AddChild(window2);
+  Shell::Get()->GetPrimaryRootWindow()->AddChild(window2);
 
   Shell::GetPrimaryRootWindowController()->CloseChildWindows();
 
@@ -697,7 +697,7 @@ class VirtualKeyboardRootWindowControllerTest
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     keyboard::SetTouchKeyboardEnabled(true);
-    Shell::GetInstance()->CreateKeyboard();
+    Shell::Get()->CreateKeyboard();
   }
 
   void TearDown() override {
@@ -768,8 +768,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   UpdateDisplay("500x500,500x500");
   display::Display secondary_display =
-      Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      Shell::Get()->display_manager()->GetSecondaryDisplay();
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(secondary_display.id(),
                        display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
 
@@ -777,11 +777,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   // does.
   ASSERT_NE(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
             display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
-  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
-            Shell::GetInstance()
-                ->display_manager()
-                ->GetSecondaryDisplay()
-                .touch_support());
+  ASSERT_EQ(
+      display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+      Shell::Get()->display_manager()->GetSecondaryDisplay().touch_support());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
@@ -823,23 +821,21 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
   UpdateDisplay("500x500,500x500");
   const int64_t primary_display_id =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(primary_display_id,
                        display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
   const int64_t secondary_display_id =
-      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id();
-  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      Shell::Get()->display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .SetTouchSupport(secondary_display_id,
                        display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
 
   // Both of displays have touch capability.
   ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
             display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
-  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
-            Shell::GetInstance()
-                ->display_manager()
-                ->GetSecondaryDisplay()
-                .touch_support());
+  ASSERT_EQ(
+      display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+      Shell::Get()->display_manager()->GetSecondaryDisplay().touch_support());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
@@ -968,7 +964,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
   // Reinitialize the keyboard.
-  Shell::GetInstance()->CreateKeyboard();
+  Shell::Get()->CreateKeyboard();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
 }

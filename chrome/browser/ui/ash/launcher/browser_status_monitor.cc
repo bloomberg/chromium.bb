@@ -82,11 +82,11 @@ BrowserStatusMonitor::BrowserStatusMonitor(
     : launcher_controller_(launcher_controller),
       browser_tab_strip_tracker_(this, this, this) {
   DCHECK(launcher_controller_);
-  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  ash::Shell::Get()->activation_client()->AddObserver(this);
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {
-  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  ash::Shell::Get()->activation_client()->RemoveObserver(this);
   browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
 }
 

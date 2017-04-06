@@ -13,11 +13,11 @@ namespace ash {
 
 DesktopTaskSwitchMetricRecorder::DesktopTaskSwitchMetricRecorder()
     : last_active_task_window_(nullptr) {
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 }
 
 DesktopTaskSwitchMetricRecorder::~DesktopTaskSwitchMetricRecorder() {
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
 void DesktopTaskSwitchMetricRecorder::OnWindowActivated(

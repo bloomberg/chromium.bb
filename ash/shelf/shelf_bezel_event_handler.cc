@@ -18,11 +18,11 @@ namespace ash {
 
 ShelfBezelEventHandler::ShelfBezelEventHandler(WmShelf* shelf)
     : shelf_(shelf), in_touch_drag_(false) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 ShelfBezelEventHandler::~ShelfBezelEventHandler() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void ShelfBezelEventHandler::OnGestureEvent(ui::GestureEvent* event) {

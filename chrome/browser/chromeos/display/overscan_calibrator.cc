@@ -78,16 +78,15 @@ OverscanCalibrator::OverscanCalibrator(const display::Display& target_display,
       committed_(false) {
   // Undo the overscan calibration temporarily so that the user can see
   // dark boundary and current overscan region.
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetOverscanInsets(
+  ash::Shell::Get()->window_tree_host_manager()->SetOverscanInsets(
       display_.id(), gfx::Insets());
 
   display::ManagedDisplayInfo info =
-      ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
-          display_.id());
+      ash::Shell::Get()->display_manager()->GetDisplayInfo(display_.id());
 
-  aura::Window* root = ash::Shell::GetInstance()
-                           ->window_tree_host_manager()
-                           ->GetRootWindowForDisplayId(display_.id());
+  aura::Window* root =
+      ash::Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display_.id());
   ui::Layer* parent_layer =
       ash::Shell::GetContainer(root, ash::kShellWindowId_OverlayContainer)
           ->layer();
@@ -103,13 +102,13 @@ OverscanCalibrator::~OverscanCalibrator() {
   // Overscan calibration has finished without commit, so the display has to
   // be the original offset.
   if (!committed_) {
-    ash::Shell::GetInstance()->window_tree_host_manager()->SetOverscanInsets(
+    ash::Shell::Get()->window_tree_host_manager()->SetOverscanInsets(
         display_.id(), initial_insets_);
   }
 }
 
 void OverscanCalibrator::Commit() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetOverscanInsets(
+  ash::Shell::Get()->window_tree_host_manager()->SetOverscanInsets(
       display_.id(), insets_);
   committed_ = true;
 }

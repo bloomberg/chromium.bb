@@ -375,8 +375,7 @@ void RootWindowController::CreateShelfView() {
   // Notify shell observers that the shelf has been created.
   // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
   // require changing AttachedPanelWidgetTargeter's access to WmShelf.
-  Shell::GetInstance()->NotifyShelfCreatedForRootWindow(
-      WmWindow::Get(GetRootWindow()));
+  Shell::Get()->NotifyShelfCreatedForRootWindow(WmWindow::Get(GetRootWindow()));
 
   wm_shelf_->shelf_widget()->PostCreateShelf();
 }
@@ -540,7 +539,7 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 }
 
 void RootWindowController::Shutdown() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 
   touch_exploration_manager_.reset();
 
@@ -633,7 +632,7 @@ void RootWindowController::InitTouchHuds() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
     set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
-  if (Shell::GetInstance()->is_touch_hud_projection_enabled())
+  if (Shell::Get()->is_touch_hud_projection_enabled())
     EnableTouchHudProjection();
 }
 
@@ -649,8 +648,8 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  Shell::GetInstance()->NotifyVirtualKeyboardActivated(
-      true, WmWindow::Get(GetRootWindow()));
+  Shell::Get()->NotifyVirtualKeyboardActivated(true,
+                                               WmWindow::Get(GetRootWindow()));
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -674,7 +673,7 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
     parent->RemoveChild(keyboard_container);
-    Shell::GetInstance()->NotifyVirtualKeyboardActivated(
+    Shell::Get()->NotifyVirtualKeyboardActivated(
         false, WmWindow::Get(GetRootWindow()));
   }
 }
@@ -752,7 +751,7 @@ RootWindowController::RootWindowController(
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
   WmShell* wm_shell = WmShell::Get();
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
 
   CreateContainers();
@@ -1081,7 +1080,7 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
     WmWindow* primary_root = WmShell::Get()->GetPrimaryRootWindow();
-    Shell::GetInstance()->set_root_window_for_new_windows(
+    Shell::Get()->set_root_window_for_new_windows(
         primary_root == root ? nullptr : primary_root);
   }
 }

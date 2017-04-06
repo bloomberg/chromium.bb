@@ -20,15 +20,15 @@ TEST_F(OverlayEventFilterTest, CancelAtActivating) {
   TestOverlayDelegate d1;
   TestOverlayDelegate d2;
 
-  Shell::GetInstance()->overlay_filter()->Activate(&d1);
+  Shell::Get()->overlay_filter()->Activate(&d1);
   EXPECT_EQ(0, d1.GetCancelCountAndReset());
   EXPECT_EQ(0, d2.GetCancelCountAndReset());
 
-  Shell::GetInstance()->overlay_filter()->Activate(&d2);
+  Shell::Get()->overlay_filter()->Activate(&d2);
   EXPECT_EQ(1, d1.GetCancelCountAndReset());
   EXPECT_EQ(0, d2.GetCancelCountAndReset());
 
-  Shell::GetInstance()->overlay_filter()->Cancel();
+  Shell::Get()->overlay_filter()->Cancel();
   EXPECT_EQ(0, d1.GetCancelCountAndReset());
   EXPECT_EQ(1, d2.GetCancelCountAndReset());
 }

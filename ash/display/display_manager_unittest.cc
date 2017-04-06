@@ -975,8 +975,7 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysWithDetachedDisplays) {
 
 TEST_F(DisplayManagerTest, NoMirrorInThreeDisplays) {
   UpdateDisplay("640x480,320x200,400x300");
-  ash::Shell::GetInstance()->display_configuration_controller()->SetMirrorMode(
-      true);
+  ash::Shell::Get()->display_configuration_controller()->SetMirrorMode(true);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(3u, display_manager()->GetNumDisplays());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
@@ -1062,7 +1061,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             updated_display_info2.GetOverscanInsetsInPixel().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       display_manager()->GetSecondaryDisplay().id());
   EXPECT_EQ("-500,0 500x500",
             display_manager()->GetSecondaryDisplay().bounds().ToString());
@@ -1452,7 +1451,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100", GetDisplayForId(10).bounds().ToString());
 
-  ash::Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       secondary_display_info.id());
   EXPECT_EQ("-500,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
@@ -2236,7 +2235,7 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::GetInstance()->window_tree_host_manager();
+      ash::Shell::Get()->window_tree_host_manager();
   EXPECT_TRUE(
       window_tree_host_manager->mirror_window_controller()->GetWindow());
 
@@ -2264,7 +2263,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_FALSE(root_windows[0]->Contains(test_api.GetCursorWindow()));
 
-  Shell::GetInstance()->SetCursorCompositingEnabled(true);
+  Shell::Get()->SetCursorCompositingEnabled(true);
 
   EXPECT_TRUE(root_windows[0]->Contains(test_api.GetCursorWindow()));
 
@@ -2277,7 +2276,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroringWithCompositingCursor) {
   root_windows = Shell::GetAllRootWindows();
   EXPECT_TRUE(root_windows[0]->Contains(test_api.GetCursorWindow()));
 
-  Shell::GetInstance()->SetCursorCompositingEnabled(false);
+  Shell::Get()->SetCursorCompositingEnabled(false);
 }
 
 TEST_F(DisplayManagerTest, MirroredLayout) {
@@ -2394,8 +2393,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChangeUndock) {
 TEST_F(DisplayManagerTest, UpdateDisplayWithHostOrigin) {
   UpdateDisplay("100x200,300x400");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
   aura::WindowTreeHost* host0 = root_windows[0]->GetHost();
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();

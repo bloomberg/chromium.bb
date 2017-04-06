@@ -29,7 +29,7 @@ namespace {
 
 AshWindowTreeHost* GetMirroringAshWindowTreeHostForDisplayId(
     int64_t display_id) {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->window_tree_host_manager()
       ->mirror_window_controller()
       ->GetAshWindowTreeHostForDisplayId(display_id);
@@ -41,9 +41,7 @@ AshWindowTreeHost* GetMirroringAshWindowTreeHostForDisplayId(
 aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
     const gfx::Point& point_in_screen) {
   display::Displays mirroring_display_list =
-      Shell::GetInstance()
-          ->display_manager()
-          ->software_mirroring_display_list();
+      Shell::Get()->display_manager()->software_mirroring_display_list();
   auto iter = display::FindDisplayContainingPoint(mirroring_display_list,
                                                   point_in_screen);
   if (iter == mirroring_display_list.end())
@@ -79,9 +77,7 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
         aura::client::GetCursorClient(target->GetRootWindow());
     if (cursor_client) {
       display::Displays mirroring_display_list =
-          Shell::GetInstance()
-              ->display_manager()
-              ->software_mirroring_display_list();
+          Shell::Get()->display_manager()->software_mirroring_display_list();
       auto iter = display::FindDisplayContainingPoint(mirroring_display_list,
                                                       point_in_unified_host);
       if (iter != mirroring_display_list.end() &&
@@ -121,9 +117,8 @@ void UnifiedMouseWarpController::SetEnabled(bool enabled) {
 }
 
 void UnifiedMouseWarpController::ComputeBounds() {
-  display::Displays display_list = Shell::GetInstance()
-                                       ->display_manager()
-                                       ->software_mirroring_display_list();
+  display::Displays display_list =
+      Shell::Get()->display_manager()->software_mirroring_display_list();
 
   if (display_list.size() < 2) {
     LOG(ERROR) << "Mirroring Display lost during re-configuration";
@@ -155,9 +150,8 @@ bool UnifiedMouseWarpController::WarpMouseCursorInNativeCoords(
   bool in_second_edge = second_edge_bounds_in_native_.Contains(point_in_native);
   if (!in_first_edge && !in_second_edge)
     return false;
-  display::Displays display_list = Shell::GetInstance()
-                                       ->display_manager()
-                                       ->software_mirroring_display_list();
+  display::Displays display_list =
+      Shell::Get()->display_manager()->software_mirroring_display_list();
   // Wait updating the cursor until the cursor moves to the new display
   // to avoid showing the wrong sized cursor at the source display.
   current_cursor_display_id_ =

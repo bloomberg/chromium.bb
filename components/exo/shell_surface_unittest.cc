@@ -966,7 +966,7 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(shell_window, ev_out));
 
   // Enable spoken feedback.
-  ash::Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+  ash::Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
   shell_surface.OnAccessibilityModeChanged();
 
@@ -1003,7 +1003,7 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   EXPECT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
 
   // Disable spoken feedback. Shadow underlay is restored.
-  ash::Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+  ash::Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
   shell_surface.OnAccessibilityModeChanged();
   shell_surface2.OnAccessibilityModeChanged();

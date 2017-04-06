@@ -196,17 +196,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
@@ -275,17 +271,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());

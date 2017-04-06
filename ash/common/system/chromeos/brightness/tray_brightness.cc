@@ -113,7 +113,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   tri_view->AddView(TriView::Container::CENTER, slider_);
 
   if (is_default_view_) {
-    Shell::GetInstance()->AddShellObserver(this);
+    Shell::Get()->AddShellObserver(this);
     SetVisible(Shell::Get()
                    ->maximize_mode_controller()
                    ->IsMaximizeModeWindowManagerEnabled());
@@ -124,7 +124,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
 BrightnessView::~BrightnessView() {
   if (is_default_view_)
-    Shell::GetInstance()->RemoveShellObserver(this);
+    Shell::Get()->RemoveShellObserver(this);
 }
 
 void BrightnessView::SetBrightnessPercent(double percent) {

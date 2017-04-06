@@ -142,11 +142,11 @@ void AshTestHelper::SetUp(bool start_session) {
   aura::test::EnvTestHelper().SetInputStateLookup(
       std::unique_ptr<aura::InputStateLookup>());
 
+  Shell* shell = Shell::Get();
   session_controller_client_.reset(
-      new TestSessionControllerClient(Shell::Get()->session_controller()));
+      new TestSessionControllerClient(shell->session_controller()));
   session_controller_client_->InitializeAndBind();
 
-  Shell* shell = Shell::GetInstance();
   if (start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
 
@@ -158,8 +158,7 @@ void AshTestHelper::SetUp(bool start_session) {
     shell->screen_layout_observer()->set_show_notifications_for_testing(false);
 
     // DisplayManager is specific to classic-ash.
-    display::test::DisplayManagerTestApi(
-        Shell::GetInstance()->display_manager())
+    display::test::DisplayManagerTestApi(shell->display_manager())
         .DisableChangeDisplayUponHostResize();
     DisplayConfigurationControllerTestApi(
         shell->display_configuration_controller())
@@ -278,7 +277,7 @@ void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
   if (config_ == Config::CLASSIC)
-    return Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
+    return Shell::Get()->display_manager()->GetSecondaryDisplay();
 
   std::vector<RootWindowController*> roots = GetRootsOrderedByDisplayId();
   CHECK_LE(2U, roots.size());

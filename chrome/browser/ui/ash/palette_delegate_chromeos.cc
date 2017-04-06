@@ -140,8 +140,7 @@ void PaletteDelegateChromeOS::TakeScreenshot() {
 }
 
 void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
-  auto* screenshot_controller =
-      ash::Shell::GetInstance()->screenshot_controller();
+  auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
   auto* screenshot_delegate = ash::WmShellAura::Get()
                                   ->accelerator_controller_delegate()
                                   ->screenshot_delegate();
@@ -155,7 +154,7 @@ void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
 }
 
 void PaletteDelegateChromeOS::CancelPartialScreenshot() {
-  ash::Shell::GetInstance()->screenshot_controller()->CancelScreenshotSession();
+  ash::Shell::Get()->screenshot_controller()->CancelScreenshotSession();
 }
 
 }  // namespace chromeos

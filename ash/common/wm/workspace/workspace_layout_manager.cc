@@ -45,8 +45,8 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
       work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr),
       keyboard_observer_(this) {
-  Shell::GetInstance()->AddShellObserver(this);
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
   root_window_->aura_window()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DCHECK(window->aura_window()->GetProperty(kSnapChildrenToPixelBoundary));
@@ -61,8 +61,8 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
     window->aura_window()->RemoveObserver(this);
   }
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
@@ -380,8 +380,7 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
     return;
   bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
   if (is_fullscreen != is_fullscreen_) {
-    Shell::GetInstance()->NotifyFullscreenStateChanged(is_fullscreen,
-                                                       root_window_);
+    Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, root_window_);
     is_fullscreen_ = is_fullscreen;
   }
 }

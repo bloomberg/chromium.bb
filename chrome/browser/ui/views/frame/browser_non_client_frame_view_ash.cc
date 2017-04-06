@@ -77,11 +77,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       window_icon_(nullptr) {
   ash::WmWindow::Get(frame->GetNativeWindow())
       ->InstallResizeHandleWindowTargeter(nullptr);
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  ash::Shell::Get()->AddShellObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::Shell::Get()->RemoveShellObserver(this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {

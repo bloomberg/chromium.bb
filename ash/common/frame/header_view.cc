@@ -31,11 +31,11 @@ HeaderView::HeaderView(views::Widget* target_widget,
   header_painter_->Init(target_widget_, this, caption_button_container_);
   UpdateAvatarIcon();
 
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 HeaderView::~HeaderView() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void HeaderView::SchedulePaintForTitle() {

@@ -61,7 +61,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
   // Overridden from views::TestViewsDelegate:
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) override {
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
+    return ash::Shell::Get()->CreateDefaultNonClientFrameView(widget);
   }
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,

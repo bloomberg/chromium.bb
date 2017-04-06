@@ -154,11 +154,10 @@ class RootWindowTransformersTest : public test::AshTestBase {
 #endif
 
 TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
-  MagnificationController* magnifier =
-      Shell::GetInstance()->magnification_controller();
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -251,12 +250,12 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
             GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("600x400*2@1.5,500x300");
 
@@ -265,8 +264,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
                                                          display1.id());
   display::Display display2 = display_manager()->GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  MagnificationController* magnifier =
-      Shell::GetInstance()->magnification_controller();
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
@@ -294,20 +292,19 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
   magnifier->SetEnabled(false);
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("200x200*2");
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* root_window = root_windows[0];
   ui::test::EventGenerator generator(root_window);
-  MagnificationController* magnifier =
-      Shell::GetInstance()->magnification_controller();
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
   magnifier->SetEnabled(true);
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
@@ -330,14 +327,13 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
                   event_handler.scroll_y_offset_ordinal());
   magnifier->SetEnabled(false);
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
-  MagnificationController* magnifier =
-      Shell::GetInstance()->magnification_controller();
+  Shell::Get()->AddPreTargetHandler(&event_handler);
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
 
   // Test 1
   UpdateDisplay("600x400*2/r@1.5");
@@ -416,7 +412,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
   magnifier->SetEnabled(false);
   EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {

@@ -138,8 +138,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
       new_resolution(new_resolution),
       accept_callback(accept_callback),
       timeout_count(0) {
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   if (!display::Display::HasInternalDisplay() &&
       display_manager->num_connected_displays() == 1u) {
     timeout_count = kTimeoutInSec;
@@ -154,12 +153,12 @@ ResolutionNotificationController::ResolutionChangeInfo::
 }
 
 ResolutionNotificationController::ResolutionNotificationController() {
-  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
 ResolutionNotificationController::~ResolutionNotificationController() {
-  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -216,8 +215,8 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
 
   data.should_make_spoken_feedback_for_popup_updates = enable_spoken_feedback;
 
-  const base::string16 display_name = base::UTF8ToUTF16(
-      Shell::GetInstance()->display_manager()->GetDisplayNameForId(
+  const base::string16 display_name =
+      base::UTF8ToUTF16(Shell::Get()->display_manager()->GetDisplayNameForId(
           change_info_->display_id));
   const base::string16 message =
       (change_info_->new_resolution->size() ==
@@ -281,8 +280,7 @@ void ResolutionNotificationController::RevertResolutionChange() {
   scoped_refptr<display::ManagedDisplayMode> old_resolution =
       change_info_->old_resolution;
   change_info_.reset();
-  Shell::GetInstance()->display_manager()->SetDisplayMode(display_id,
-                                                          old_resolution);
+  Shell::Get()->display_manager()->SetDisplayMode(display_id, old_resolution);
 }
 
 void ResolutionNotificationController::OnDisplayAdded(
@@ -303,7 +301,7 @@ void ResolutionNotificationController::OnDisplayConfigurationChanged() {
     return;
 
   change_info_->current_resolution =
-      Shell::GetInstance()->display_manager()->GetActiveModeForDisplayId(
+      Shell::Get()->display_manager()->GetActiveModeForDisplayId(
           change_info_->display_id);
   CreateOrUpdateNotification(true);
   if (g_use_timer && change_info_->timeout_count > 0) {

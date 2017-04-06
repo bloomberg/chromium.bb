@@ -160,14 +160,14 @@ ScreenOrientationController::ScreenOrientationController()
       rotation_locked_orientation_(blink::WebScreenOrientationLockAny),
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto& windows : lock_info_map_)
     windows.first->aura_window()->RemoveObserver(this);
 }
@@ -185,7 +185,7 @@ void ScreenOrientationController::LockOrientationForWindow(
     blink::WebScreenOrientationLockType lock_orientation,
     LockCompletionBehavior lock_completion_behavior) {
   if (lock_info_map_.empty())
-    Shell::GetInstance()->activation_client()->AddObserver(this);
+    Shell::Get()->activation_client()->AddObserver(this);
 
   if (!requesting_window->aura_window()->HasObserver(this))
     requesting_window->aura_window()->AddObserver(this);
@@ -198,7 +198,7 @@ void ScreenOrientationController::LockOrientationForWindow(
 void ScreenOrientationController::UnlockOrientationForWindow(WmWindow* window) {
   lock_info_map_.erase(window);
   if (lock_info_map_.empty())
-    Shell::GetInstance()->activation_client()->RemoveObserver(this);
+    Shell::Get()->activation_client()->RemoveObserver(this);
   window->aura_window()->RemoveObserver(this);
   ApplyLockForActiveWindow();
 }
@@ -207,7 +207,7 @@ void ScreenOrientationController::UnlockAll() {
   for (auto pair : lock_info_map_)
     pair.first->aura_window()->RemoveObserver(this);
   lock_info_map_.clear();
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   SetRotationLockedInternal(false);
   if (user_rotation_ != current_rotation_)
     SetDisplayRotation(user_rotation_, display::Display::ROTATION_SOURCE_USER);
@@ -346,7 +346,7 @@ void ScreenOrientationController::SetDisplayRotation(
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
       &ignore_display_configuration_updates_, true);
 
-  Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
+  Shell::Get()->display_configuration_controller()->SetDisplayRotation(
       display::Display::InternalDisplayId(), rotation, source);
 }
 
@@ -364,7 +364,7 @@ void ScreenOrientationController::SetLockToOrientation(
   user_locked_orientation_ = orientation;
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
       &ignore_display_configuration_updates_, true);
-  Shell::GetInstance()->display_manager()->RegisterDisplayRotationProperties(
+  Shell::Get()->display_manager()->RegisterDisplayRotationProperties(
       user_rotation_locked(), OrientationToRotation(user_locked_orientation_));
 
   ApplyLockForActiveWindow();
@@ -515,8 +515,7 @@ void ScreenOrientationController::HandleScreenRotation(
 }
 
 void ScreenOrientationController::LoadDisplayRotationProperties() {
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   if (!display_manager->registered_internal_display_rotation_lock())
     return;
   user_locked_orientation_ = RotationToOrientation(
@@ -525,7 +524,7 @@ void ScreenOrientationController::LoadDisplayRotationProperties() {
 
 void ScreenOrientationController::ApplyLockForActiveWindow() {
   MruWindowTracker::WindowList mru_windows(
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList());
 
   for (WmWindow* window : mru_windows) {
     if (!window->GetTargetVisibility())

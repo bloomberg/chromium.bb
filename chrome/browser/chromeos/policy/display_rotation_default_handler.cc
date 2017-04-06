@@ -20,8 +20,8 @@
 namespace policy {
 
 DisplayRotationDefaultHandler::DisplayRotationDefaultHandler() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  ash::Shell::Get()->AddShellObserver(this);
   settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kDisplayRotationDefault,
       base::Bind(&DisplayRotationDefaultHandler::OnCrosSettingsChanged,
@@ -41,8 +41,8 @@ void DisplayRotationDefaultHandler::OnDisplayConfigurationChanged() {
 }
 
 void DisplayRotationDefaultHandler::OnWindowTreeHostManagerShutdown() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  ash::Shell::Get()->RemoveShellObserver(this);
   settings_observer_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
@@ -64,7 +64,7 @@ void DisplayRotationDefaultHandler::RotateDisplays() {
   rotation_in_progress_ = true;
 
   display::DisplayManager* const display_manager =
-      ash::Shell::GetInstance()->display_manager();
+      ash::Shell::Get()->display_manager();
   const size_t num_displays = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num_displays; ++i) {
     const display::Display& display = display_manager->GetDisplayAt(i);

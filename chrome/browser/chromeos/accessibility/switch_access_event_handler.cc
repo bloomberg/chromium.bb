@@ -16,12 +16,12 @@ namespace chromeos {
 
 SwitchAccessEventHandler::SwitchAccessEventHandler() {
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+    ash::Shell::Get()->AddPreTargetHandler(this);
 }
 
 SwitchAccessEventHandler::~SwitchAccessEventHandler() {
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+    ash::Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {

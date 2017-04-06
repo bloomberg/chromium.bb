@@ -138,7 +138,7 @@ void CursorWindowController::UpdateContainer() {
     if (display.is_valid())
       SetDisplay(display);
   } else {
-    aura::Window* mirror_window = Shell::GetInstance()
+    aura::Window* mirror_window = Shell::Get()
                                       ->window_tree_host_manager()
                                       ->mirror_window_controller()
                                       ->GetWindow();
@@ -156,15 +156,15 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
 
   // TODO(oshima): Do not updatethe composition cursor when crossing
   // display in unified desktop mode for now. crbug.com/517222.
-  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode() &&
+  if (Shell::Get()->display_manager()->IsInUnifiedMode() &&
       display.id() != display::DisplayManager::kUnifiedDisplayId) {
     return;
   }
 
   display_ = display;
-  aura::Window* root_window = Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window =
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display.id());
   if (!root_window)
     return;
 
@@ -244,7 +244,7 @@ void CursorWindowController::UpdateCursorImage() {
   } else {
     // Use the original device scale factor instead of the display's, which
     // might have been adjusted for the UI scale.
-    const float original_scale = Shell::GetInstance()
+    const float original_scale = Shell::Get()
                                      ->display_manager()
                                      ->GetDisplayInfo(display_.id())
                                      .device_scale_factor();

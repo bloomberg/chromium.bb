@@ -67,12 +67,10 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
 class TestShellObserver : public ShellObserver {
  public:
   TestShellObserver() : call_count_(0), is_fullscreen_(false) {
-    Shell::GetInstance()->AddShellObserver(this);
+    Shell::Get()->AddShellObserver(this);
   }
 
-  ~TestShellObserver() override {
-    Shell::GetInstance()->RemoveShellObserver(this);
-  }
+  ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override {

@@ -135,13 +135,13 @@ DragDropController::DragDropController()
       drag_drop_window_delegate_(new DragDropTrackerDelegate(this)),
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
-  Shell::GetInstance()->PrependPreTargetHandler(this);
+  Shell::Get()->PrependPreTargetHandler(this);
   WmShell::Get()->AddDisplayObserver(this);
 }
 
 DragDropController::~DragDropController() {
   WmShell::Get()->RemoveDisplayObserver(this);
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
   Cleanup();
   if (cancel_animation_)
     cancel_animation_->End();
@@ -442,7 +442,7 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::kCursorAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::kCursorGrabbing;
-      ash::Shell::GetInstance()->cursor_manager()->SetCursor(cursor);
+      ash::Shell::Get()->cursor_manager()->SetCursor(cursor);
     }
   }
 
@@ -459,7 +459,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const ui::LocatedEvent& event) {
-  ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
+  ash::Shell::Get()->cursor_manager()->SetCursor(ui::kCursorPointer);
 
   // We must guarantee that a target gets a OnDragEntered before Drop. WebKit
   // depends on not getting a Drop without DragEnter. This behavior is
@@ -514,7 +514,7 @@ void DragDropController::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void DragDropController::DoDragCancel(int drag_cancel_animation_duration_ms) {
-  ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
+  ash::Shell::Get()->cursor_manager()->SetCursor(ui::kCursorPointer);
 
   // |drag_window_| can be NULL if we have just started the drag and have not
   // received any DragUpdates, or, if the |drag_window_| gets destroyed during

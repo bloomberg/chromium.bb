@@ -93,12 +93,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
-  ash::Shell::GetInstance()->OnLockStateChanged(true);
+  ash::Shell::Get()->OnLockStateChanged(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
-  ash::Shell::GetInstance()->OnLockStateChanged(false);
+  ash::Shell::Get()->OnLockStateChanged(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
@@ -127,12 +127,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
-  ash::Shell::GetInstance()->OnLockStateChanged(true);
+  ash::Shell::Get()->OnLockStateChanged(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
-  ash::Shell::GetInstance()->OnLockStateChanged(false);
+  ash::Shell::Get()->OnLockStateChanged(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }

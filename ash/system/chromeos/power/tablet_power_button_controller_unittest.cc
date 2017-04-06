@@ -56,8 +56,8 @@ class TabletPowerButtonControllerTest : public AshTestBase {
         switches::kAshEnableTouchView);
     AshTestBase::SetUp();
 
-    lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
-    tablet_controller_ = Shell::GetInstance()
+    lock_state_controller_ = Shell::Get()->lock_state_controller();
+    tablet_controller_ = Shell::Get()
                              ->power_button_controller()
                              ->tablet_power_button_controller_for_test();
     test_api_ = base::MakeUnique<TabletPowerButtonController::TestApi>(

@@ -94,7 +94,7 @@ WallpaperController::WallpaperController(
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       task_runner_(task_runner) {
   WmShell::Get()->AddDisplayObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
@@ -104,7 +104,7 @@ WallpaperController::~WallpaperController() {
   if (color_calculator_)
     color_calculator_->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 

@@ -273,12 +273,12 @@ void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
       base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));
   const base::string16 dismiss_text16(base::UTF8ToUTF16(
       data->dismiss_text.has_value() ? *data->dismiss_text : std::string()));
-  ash::Shell::GetInstance()->toast_manager()->Show(
+  ash::Shell::Get()->toast_manager()->Show(
       ash::ToastData(data->id, text16, data->duration, dismiss_text16));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
-  ash::Shell::GetInstance()->toast_manager()->Cancel(data->id);
+  ash::Shell::Get()->toast_manager()->Cancel(data->id);
 }
 
 }  // namespace arc

@@ -85,7 +85,7 @@ void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
 
 void BindWallpaperRequestOnMainThread(
     mojom::WallpaperControllerRequest request) {
-  Shell::GetInstance()->wallpaper_controller()->BindRequest(std::move(request));
+  Shell::Get()->wallpaper_controller()->BindRequest(std::move(request));
 }
 
 }  // namespace

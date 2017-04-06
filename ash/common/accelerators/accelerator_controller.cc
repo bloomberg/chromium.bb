@@ -380,9 +380,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::GetInstance()
-            ->accessibility_delegate()
-            ->IsSpokenFeedbackEnabled())
+    if (Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
       return false;
   }
   return true;
@@ -521,8 +519,8 @@ void HandleShowStylusTools() {
 }
 
 bool CanHandleShowStylusTools() {
-  return Shell::GetInstance()->palette_delegate() &&
-         Shell::GetInstance()->palette_delegate()->ShouldShowPalette();
+  return Shell::Get()->palette_delegate() &&
+         Shell::Get()->palette_delegate()->ShouldShowPalette();
 }
 
 void HandleSuspend() {
@@ -612,13 +610,13 @@ void HandleToggleHighContrast() {
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 
-  Shell::GetInstance()->accessibility_delegate()->ToggleHighContrast();
+  Shell::Get()->accessibility_delegate()->ToggleHighContrast();
 }
 
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  Shell::GetInstance()->accessibility_delegate()->ToggleSpokenFeedback(
+  Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       A11Y_NOTIFICATION_SHOW);
 }
 
@@ -1258,7 +1256,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
   }
   if (Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
-    Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+    Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
         A11Y_ALERT_WINDOW_NEEDED);
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }

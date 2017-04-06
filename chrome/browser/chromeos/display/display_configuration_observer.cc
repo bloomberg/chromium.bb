@@ -13,11 +13,11 @@
 namespace chromeos {
 
 DisplayConfigurationObserver::DisplayConfigurationObserver() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayConfigurationObserver::~DisplayConfigurationObserver() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void DisplayConfigurationObserver::OnDisplaysInitialized() {

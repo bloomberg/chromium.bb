@@ -2161,7 +2161,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
 
   float GetCursorDeviceScaleFactor() const {
     ash::test::CursorManagerTestApi cursor_test_api(
-        ash::Shell::GetInstance()->cursor_manager());
+        ash::Shell::Get()->cursor_manager());
     return cursor_test_api.GetCurrentCursor().device_scale_factor();
   }
 
@@ -2292,7 +2292,7 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
 
   // Switching display mode should cancel the drag operation.
   display::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
+      ash::Shell::Get()->display_manager();
   display_manager->AddRemoveDisplay();
 }
 

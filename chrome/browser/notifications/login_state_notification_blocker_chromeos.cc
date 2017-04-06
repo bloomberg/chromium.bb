@@ -24,7 +24,7 @@ LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
   // when running as a mus client (ash::Shell is not initialized when that is
   // the case).
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+    ash::Shell::Get()->AddShellObserver(this);
 
   // LoginState may not exist in some tests.
   if (chromeos::LoginState::IsInitialized())
@@ -40,7 +40,7 @@ LoginStateNotificationBlockerChromeOS::
     chromeos::LoginState::Get()->RemoveObserver(this);
   if (observing_) {
     if (ash::Shell::HasInstance())
-      ash::Shell::GetInstance()->RemoveShellObserver(this);
+      ash::Shell::Get()->RemoveShellObserver(this);
     chromeos::UserAddingScreen::Get()->RemoveObserver(this);
   }
 }
@@ -69,7 +69,7 @@ void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
 
 void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
+    ash::Shell::Get()->RemoveShellObserver(this);
   chromeos::UserAddingScreen::Get()->RemoveObserver(this);
   observing_ = false;
 }

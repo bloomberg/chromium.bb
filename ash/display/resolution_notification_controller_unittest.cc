@@ -132,7 +132,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
   static void TickTimer() { controller()->OnTimerTick(); }
 
   static ResolutionNotificationController* controller() {
-    return Shell::GetInstance()->resolution_notification_controller();
+    return Shell::Get()->resolution_notification_controller();
   }
 
   int accept_count() const { return accept_count_; }

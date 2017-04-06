@@ -98,7 +98,7 @@ class TabScrubberTest : public InProcessBrowserTest,
     TabScrubber::GetInstance()->set_activation_delay(0);
 
     // Disable external monitor scaling of coordinates.
-    ash::Shell* shell = ash::Shell::GetInstance();
+    ash::Shell* shell = ash::Shell::Get();
     shell->event_transformation_handler()->set_transformation_mode(
         ash::EventTransformationHandler::TRANSFORM_NONE);
   }

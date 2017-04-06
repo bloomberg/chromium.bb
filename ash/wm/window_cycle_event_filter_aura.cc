@@ -13,17 +13,17 @@
 namespace ash {
 
 WindowCycleEventFilterAura::WindowCycleEventFilterAura() {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
   // Handling release of "Alt" must come before other pretarget handlers
   // (specifically, the partial screenshot handler). See crbug.com/651939
   // We can't do all key event handling that early though because it prevents
   // other accelerators (like triggering a partial screenshot) from working.
-  Shell::GetInstance()->PrependPreTargetHandler(&alt_release_handler_);
+  Shell::Get()->PrependPreTargetHandler(&alt_release_handler_);
 }
 
 WindowCycleEventFilterAura::~WindowCycleEventFilterAura() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shell::GetInstance()->RemovePreTargetHandler(&alt_release_handler_);
+  Shell::Get()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(&alt_release_handler_);
 }
 
 void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {

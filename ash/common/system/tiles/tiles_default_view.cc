@@ -123,7 +123,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
         ->RequestLockScreen();
   } else if (sender == power_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
-    Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+    Shell::Get()->lock_state_controller()->RequestShutdown();
   }
 
   owner_->system_tray()->CloseSystemBubble();

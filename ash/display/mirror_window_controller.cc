@@ -114,8 +114,7 @@ class NoneCaptureClient : public aura::client::CaptureClient {
 };
 
 display::DisplayManager::MultiDisplayMode GetCurrentMultiDisplayMode() {
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   return display_manager->IsInUnifiedMode()
              ? display::DisplayManager::UNIFIED
              : (display_manager->IsInMirrorMode()
@@ -148,8 +147,7 @@ MirrorWindowController::~MirrorWindowController() {
 void MirrorWindowController::UpdateWindow(
     const std::vector<display::ManagedDisplayInfo>& display_info_list) {
   static int mirror_host_count = 0;
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   const display::Display& primary =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   const display::ManagedDisplayInfo& source_display_info =
@@ -181,13 +179,13 @@ void MirrorWindowController::UpdateWindow(
 
       aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
       host->SetSharedInputMethod(
-          Shell::GetInstance()->window_tree_host_manager()->input_method());
+          Shell::Get()->window_tree_host_manager()->input_method());
       host->window()->SetName(
           base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
       host->compositor()->SetBackgroundColor(SK_ColorBLACK);
       // No need to remove the observer because the WindowTreeHostManager
       // outlives the host.
-      host->AddObserver(Shell::GetInstance()->window_tree_host_manager());
+      host->AddObserver(Shell::Get()->window_tree_host_manager());
       host->AddObserver(this);
       // TODO(oshima): TouchHUD is using idkey.
       InitRootWindowSettings(host->window())->display_id = display_info.id();
@@ -203,7 +201,7 @@ void MirrorWindowController::UpdateWindow(
       if (display_manager->IsInUnifiedMode()) {
         host_info->ash_host->ConfineCursorToRootWindow();
         AshWindowTreeHost* unified_ash_host =
-            Shell::GetInstance()
+            Shell::Get()
                 ->window_tree_host_manager()
                 ->GetAshWindowTreeHostForDisplayId(
                     display::Screen::GetScreen()->GetPrimaryDisplay().id());
@@ -262,8 +260,7 @@ void MirrorWindowController::UpdateWindow(
 void MirrorWindowController::UpdateWindow() {
   if (mirroring_host_info_map_.empty())
     return;
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   std::vector<display::ManagedDisplayInfo> display_info_list;
   for (auto& pair : mirroring_host_info_map_)
     display_info_list.push_back(display_manager->GetDisplayInfo(pair.first));
@@ -300,7 +297,7 @@ void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
       reflector_->OnMirroringCompositorResized();
       // No need to update the transformer as new transformer is already set
       // in UpdateWindow.
-      Shell::GetInstance()
+      Shell::Get()
           ->window_tree_host_manager()
           ->cursor_window_controller()
           ->UpdateLocation();
@@ -310,8 +307,7 @@ void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
 }
 
 aura::Window* MirrorWindowController::GetWindow() {
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   if (!display_manager->IsInMirrorMode() || mirroring_host_info_map_.empty())
     return nullptr;
   DCHECK_EQ(1U, mirroring_host_info_map_.size());
@@ -326,9 +322,8 @@ display::Display MirrorWindowController::GetDisplayForRootWindow(
     if (pair.second->ash_host->AsWindowTreeHost()->window() == root) {
       // Sanity check to catch an error early.
       int64_t id = pair.first;
-      const display::Displays& list = Shell::GetInstance()
-                                          ->display_manager()
-                                          ->software_mirroring_display_list();
+      const display::Displays& list =
+          Shell::Get()->display_manager()->software_mirroring_display_list();
       auto iter = std::find_if(
           list.begin(), list.end(),
           [id](const display::Display& display) { return display.id() == id; });
@@ -364,7 +359,7 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   aura::client::SetCaptureClient(host->window(), nullptr);
   delete capture_client;
 
-  host->RemoveObserver(Shell::GetInstance()->window_tree_host_manager());
+  host->RemoveObserver(Shell::Get()->window_tree_host_manager());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
   reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());

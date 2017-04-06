@@ -36,7 +36,7 @@ namespace test {
 namespace {
 
 bool cursor_visible() {
-  return Shell::GetInstance()->cursor_manager()->IsCursorVisible();
+  return Shell::Get()->cursor_manager()->IsCursorVisible();
 }
 
 void CheckCalledCallback(bool* flag) {
@@ -80,13 +80,13 @@ class LockStateControllerTest : public AshTestBase {
 
     test_animator_ = new TestSessionStateAnimator;
 
-    lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
+    lock_state_controller_ = Shell::Get()->lock_state_controller();
     lock_state_controller_->set_animator_for_test(test_animator_);
 
     test_api_.reset(new LockStateControllerTestApi(lock_state_controller_));
     test_api_->set_shutdown_controller(&test_shutdown_controller_);
 
-    power_button_controller_ = Shell::GetInstance()->power_button_controller();
+    power_button_controller_ = Shell::Get()->power_button_controller();
 
     shell_delegate_ =
         static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());

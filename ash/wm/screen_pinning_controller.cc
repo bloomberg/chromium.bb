@@ -230,7 +230,7 @@ void ScreenPinningController::SetPinnedWindow(WmWindow* pinned_window) {
     pinned_window_ = nullptr;
   }
 
-  Shell::GetInstance()->NotifyPinnedStateChanged(pinned_window);
+  Shell::Get()->NotifyPinnedStateChanged(pinned_window);
 }
 
 void ScreenPinningController::OnWindowAddedToPinnedContainer(

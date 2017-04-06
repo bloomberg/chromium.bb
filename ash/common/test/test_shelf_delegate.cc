@@ -42,10 +42,8 @@ TestShelfDelegate* TestShelfDelegate::instance_ = nullptr;
 // shelf is created, to simulate ChromeLauncherController's behavior.
 class ShelfInitializer : public ShellObserver {
  public:
-  ShelfInitializer() { Shell::GetInstance()->AddShellObserver(this); }
-  ~ShelfInitializer() override {
-    Shell::GetInstance()->RemoveShellObserver(this);
-  }
+  ShelfInitializer() { Shell::Get()->AddShellObserver(this); }
+  ~ShelfInitializer() override { Shell::Get()->RemoveShellObserver(this); }
 
   // ShellObserver:
   void OnShelfCreatedForRootWindow(WmWindow* root_window) override {

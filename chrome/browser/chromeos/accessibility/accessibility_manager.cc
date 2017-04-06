@@ -416,10 +416,10 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
   NotifyAccessibilityStatusChanged(details);
 
-  ash::Shell::GetInstance()->cursor_manager()->SetCursorSet(
+  ash::Shell::Get()->cursor_manager()->SetCursorSet(
       enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
-  ash::Shell::GetInstance()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
-  ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+  ash::Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
+  ash::Shell::Get()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());
 }
 
@@ -457,7 +457,7 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
     return;
 
   sticky_keys_enabled_ = enabled;
-  ash::Shell::GetInstance()->sticky_keys_controller()->Enable(enabled);
+  ash::Shell::Get()->sticky_keys_controller()->Enable(enabled);
 }
 
 void AccessibilityManager::EnableSpokenFeedback(
@@ -552,8 +552,8 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 
   NotifyAccessibilityStatusChanged(details);
 
-  ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
-  ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+  ash::Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
+  ash::Shell::Get()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());
 }
 
@@ -683,7 +683,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   }
 
-  ash::Shell::GetInstance()->autoclick_controller()->SetEnabled(enabled);
+  ash::Shell::Get()->autoclick_controller()->SetEnabled(enabled);
 }
 
 void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
@@ -721,7 +721,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
     return;
   }
 
-  ash::Shell::GetInstance()->autoclick_controller()->SetAutoclickDelay(
+  ash::Shell::Get()->autoclick_controller()->SetAutoclickDelay(
       autoclick_delay_ms_);
 }
 
@@ -760,9 +760,9 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
     // might still be enabled and a forced reset is required to pick up the
     // layout change.
     if (keyboard::IsKeyboardEnabled())
-      ash::Shell::GetInstance()->CreateKeyboard();
+      ash::Shell::Get()->CreateKeyboard();
     else
-      ash::Shell::GetInstance()->DeactivateKeyboard();
+      ash::Shell::Get()->DeactivateKeyboard();
   } else {
     // TODO(mash): Support on-screen keyboard. See http://crbug.com/646565
     NOTIMPLEMENTED();
@@ -802,7 +802,7 @@ void AccessibilityManager::UpdateMonoAudioFromPref() {
                                           enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
 
-  ash::Shell::GetInstance()->audio_a11y_controller()->SetOutputMono(enabled);
+  ash::Shell::Get()->audio_a11y_controller()->SetOutputMono(enabled);
 }
 
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
@@ -1044,7 +1044,7 @@ void AccessibilityManager::InputMethodChanged(
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.
   if (!ash_util::IsRunningInMash()) {
-    ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
+    ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());
   }

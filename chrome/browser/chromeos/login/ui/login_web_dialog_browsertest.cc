@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CannotMinimize) {
 
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(
-          ash::Shell::GetInstance()->GetPrimaryRootWindow());
+          ash::Shell::Get()->GetPrimaryRootWindow());
   aura::Window* window = activation_client->GetActiveWindow();
   ASSERT_TRUE(window);
   EXPECT_EQ(0, window->GetProperty(aura::client::kResizeBehaviorKey) &

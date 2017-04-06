@@ -34,7 +34,7 @@ const int kCursorSize = 12;
 // monitors. it will stop the mouse at the any edge of the screen. must
 // swtich back on when the screenshot is complete.
 void EnableMouseWarp(bool enable) {
-  Shell::GetInstance()->mouse_cursor_filter()->set_mouse_warp_enabled(enable);
+  Shell::Get()->mouse_cursor_filter()->set_mouse_warp_enabled(enable);
 }
 
 class ScreenshotWindowTargeter : public aura::WindowTargeter {
@@ -54,9 +54,9 @@ class ScreenshotWindowTargeter : public aura::WindowTargeter {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestPoint(location);
 
-    aura::Window* root_window = Shell::GetInstance()
-                                    ->window_tree_host_manager()
-                                    ->GetRootWindowForDisplayId(display.id());
+    aura::Window* root_window =
+        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+            display.id());
 
     position_client->ConvertPointFromScreen(root_window, &location);
 
@@ -235,13 +235,13 @@ ScreenshotController::ScreenshotController()
       screenshot_delegate_(nullptr) {
   // Keep this here and don't move it to StartPartialScreenshotSession(), as it
   // needs to be pre-pended by MouseCursorEventFilter in Shell::Init().
-  Shell::GetInstance()->PrependPreTargetHandler(this);
+  Shell::Get()->PrependPreTargetHandler(this);
 }
 
 ScreenshotController::~ScreenshotController() {
   if (screenshot_delegate_)
     CancelScreenshotSession();
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void ScreenshotController::StartWindowScreenshotSession(
@@ -261,8 +261,8 @@ void ScreenshotController::StartWindowScreenshotSession(
   }
   SetSelectedWindow(wm::GetActiveWindow());
 
-  cursor_setter_.reset(new ScopedCursorSetter(
-      Shell::GetInstance()->cursor_manager(), ui::kCursorCross));
+  cursor_setter_.reset(
+      new ScopedCursorSetter(Shell::Get()->cursor_manager(), ui::kCursorCross));
 
   EnableMouseWarp(true);
 }
@@ -286,8 +286,8 @@ void ScreenshotController::StartPartialScreenshotSession(
   }
 
   if (!pen_events_only_) {
-    cursor_setter_.reset(new ScopedCursorSetter(
-        Shell::GetInstance()->cursor_manager(), ui::kCursorCross));
+    cursor_setter_.reset(new ScopedCursorSetter(Shell::Get()->cursor_manager(),
+                                                ui::kCursorCross));
   }
 
   EnableMouseWarp(false);
@@ -340,7 +340,7 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
       // called before ctor is called.
       cursor_setter_.reset();
       cursor_setter_.reset(new ScopedCursorSetter(
-          Shell::GetInstance()->cursor_manager(), ui::kCursorNone));
+          Shell::Get()->cursor_manager(), ui::kCursorNone));
     }
     Update(event);
   }

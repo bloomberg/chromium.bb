@@ -104,7 +104,7 @@ AshInit::AshInit() {
   else
     CreateClassicShell();
 
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
 
   ash::AcceleratorControllerDelegateAura* accelerator_controller_delegate =
       nullptr;

@@ -29,13 +29,13 @@ ScreenDimmer::ScreenDimmer(Container container)
       is_dimming_(false),
       at_bottom_(false),
       window_dimmers_(base::MakeUnique<WindowUserData<WindowDimmer>>()) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ScreenDimmer::~ScreenDimmer() {
   // Usage in chrome results in ScreenDimmer outliving the shell.
   if (Shell::HasInstance())
-    Shell::GetInstance()->RemoveShellObserver(this);
+    Shell::Get()->RemoveShellObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {

@@ -23,7 +23,7 @@ void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       ui::GetTouchScreensAvailability() ==
           ui::TouchScreensAvailability::ENABLED) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
   }
 }
 

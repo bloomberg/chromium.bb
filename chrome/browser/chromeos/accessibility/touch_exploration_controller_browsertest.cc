@@ -46,7 +46,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::WaitForResizeComplete(web_contents);
-    root_window_ = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    root_window_ = ash::Shell::Get()->GetPrimaryRootWindow();
     event_handler_.reset(new ui::test::TestEventHandler());
     root_window_->AddPreTargetHandler(event_handler_.get());
   }
@@ -58,7 +58,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
 
   void SwitchTouchExplorationMode(bool on) {
     ash::AccessibilityDelegate* delegate =
-        ash::Shell::GetInstance()->accessibility_delegate();
+        ash::Shell::Get()->accessibility_delegate();
     if (on != delegate->IsSpokenFeedbackEnabled())
       delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   }

@@ -71,7 +71,7 @@ void PowerEventObserver::OnLockAnimationsComplete() {
 }
 
 void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
-  Shell::GetInstance()->power_button_controller()->OnScreenBrightnessChanged(
+  Shell::Get()->power_button_controller()->OnScreenBrightnessChanged(
       static_cast<double>(level));
 }
 
@@ -122,7 +122,7 @@ void PowerEventObserver::SuspendImminent() {
   // TODO(derat): After mus exposes a method for suspending displays, call it
   // here: http://crbug.com/692193
   if (!WmShell::Get()->IsRunningInMash()) {
-    Shell::GetInstance()->display_configurator()->SuspendDisplays(base::Bind(
+    Shell::Get()->display_configurator()->SuspendDisplays(base::Bind(
         &OnSuspendDisplaysCompleted, chromeos::DBusThreadManager::Get()
                                          ->GetPowerManagerClient()
                                          ->GetSuspendReadinessCallback()));
@@ -133,7 +133,7 @@ void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   // TODO(derat): After mus exposes a method for resuming displays, call it
   // here: http://crbug.com/692193
   if (!WmShell::Get()->IsRunningInMash())
-    Shell::GetInstance()->display_configurator()->ResumeDisplays();
+    Shell::Get()->display_configurator()->ResumeDisplays();
   Shell::Get()->system_tray_notifier()->NotifyRefreshClock();
 
   // If the suspend request was being blocked while waiting for the lock

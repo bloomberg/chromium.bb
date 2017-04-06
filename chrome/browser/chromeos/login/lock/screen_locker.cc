@@ -158,12 +158,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
 
-  ash::Shell::GetInstance()
-      ->lock_state_controller()
-      ->SetLockScreenDisplayedCallback(base::Bind(
-          base::IgnoreResult(&AccessibilityManager::PlayEarcon),
-          base::Unretained(AccessibilityManager::Get()), chromeos::SOUND_LOCK,
-          PlaySoundOption::SPOKEN_FEEDBACK_ENABLED));
+  ash::Shell::Get()->lock_state_controller()->SetLockScreenDisplayedCallback(
+      base::Bind(base::IgnoreResult(&AccessibilityManager::PlayEarcon),
+                 base::Unretained(AccessibilityManager::Get()),
+                 chromeos::SOUND_LOCK,
+                 PlaySoundOption::SPOKEN_FEEDBACK_ENABLED));
 }
 
 void ScreenLocker::Init() {
@@ -413,7 +412,7 @@ void ScreenLocker::HandleLockScreenRequest() {
   if (g_screen_lock_observer->session_started() &&
       user_manager::UserManager::Get()->CanCurrentUserLock()) {
     ScreenLocker::Show();
-    ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
+    ash::Shell::Get()->lock_state_controller()->OnStartingLock();
   } else {
     // If the current user's session cannot be locked or the user has not
     // completed all sign-in steps yet, log out instead. The latter is done to
@@ -484,8 +483,7 @@ void ScreenLocker::Hide() {
       BrowserThread::UI, FROM_HERE, base::Bind([] {
         base::Callback<void(void)> callback =
             base::Bind(&ScreenLocker::ScheduleDeletion);
-        ash::Shell::GetInstance()->lock_state_controller()->OnLockScreenHide(
-            callback);
+        ash::Shell::Get()->lock_state_controller()->OnLockScreenHide(callback);
       }));
 }
 
@@ -515,7 +513,7 @@ ScreenLocker::~ScreenLocker() {
   ClearErrors();
 
   VLOG(1) << "Moving wallpaper to unlocked container";
-  ash::Shell::GetInstance()->wallpaper_controller()->MoveToUnlockedContainer();
+  ash::Shell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
 
   screen_locker_ = NULL;
   bool state = false;
@@ -546,7 +544,7 @@ void ScreenLocker::ScreenLockReady() {
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
   VLOG(1) << "Moving wallpaper to locked container";
-  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
+  ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

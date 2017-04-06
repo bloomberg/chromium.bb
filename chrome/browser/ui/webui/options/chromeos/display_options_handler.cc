@@ -43,11 +43,11 @@ namespace options {
 namespace {
 
 display::DisplayManager* GetDisplayManager() {
-  return ash::Shell::GetInstance()->display_manager();
+  return ash::Shell::Get()->display_manager();
 }
 
 ash::DisplayConfigurationController* GetDisplayConfigurationController() {
-  return ash::Shell::GetInstance()->display_configuration_controller();
+  return ash::Shell::Get()->display_configuration_controller();
 }
 
 int64_t GetDisplayIdFromValue(const base::Value* arg) {
@@ -196,13 +196,13 @@ base::DictionaryValue* ConvertBoundsToValue(const gfx::Rect& bounds) {
 DisplayOptionsHandler::DisplayOptionsHandler() {
   // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
   if (!ash_util::IsRunningInMash())
-    ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+    ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
   // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
   if (!ash_util::IsRunningInMash())
-    ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+    ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
@@ -500,10 +500,8 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
     return;
   // For external displays, show a notification confirming the resolution
   // change.
-  ash::Shell::GetInstance()
-      ->resolution_notification_controller()
-      ->PrepareNotification(display_id, current_mode, mode,
-                            base::Bind(&chromeos::StoreDisplayPrefs));
+  ash::Shell::Get()->resolution_notification_controller()->PrepareNotification(
+      display_id, current_mode, mode, base::Bind(&chromeos::StoreDisplayPrefs));
 }
 
 void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {

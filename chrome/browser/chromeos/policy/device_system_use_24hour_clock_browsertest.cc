@@ -76,7 +76,7 @@ class SystemUse24HourClockPolicyTest
 
   static base::HourClockType TestGetPrimarySystemTrayTimeHourType() {
     const ash::TraySystemInfo* tray_system_info =
-        ash::Shell::GetInstance()
+        ash::Shell::Get()
             ->GetPrimarySystemTray()
             ->GetTraySystemInfoForTesting();
     const ash::tray::TimeView* time_tray =
@@ -87,7 +87,7 @@ class SystemUse24HourClockPolicyTest
 
   static bool TestPrimarySystemTrayHasDateDefaultView() {
     const ash::TraySystemInfo* tray_system_info =
-        ash::Shell::GetInstance()
+        ash::Shell::Get()
             ->GetPrimarySystemTray()
             ->GetTraySystemInfoForTesting();
     const ash::SystemInfoDefaultView* system_info_default_view =
@@ -96,7 +96,7 @@ class SystemUse24HourClockPolicyTest
   }
 
   static void TestPrimarySystemTrayCreateDefaultView() {
-    ash::TraySystemInfo* tray_system_info = ash::Shell::GetInstance()
+    ash::TraySystemInfo* tray_system_info = ash::Shell::Get()
                                                 ->GetPrimarySystemTray()
                                                 ->GetTraySystemInfoForTesting();
     tray_system_info->CreateDefaultViewForTesting(
@@ -105,7 +105,7 @@ class SystemUse24HourClockPolicyTest
 
   static base::HourClockType TestGetPrimarySystemTrayDateHourType() {
     const ash::TraySystemInfo* tray_system_info =
-        ash::Shell::GetInstance()
+        ash::Shell::Get()
             ->GetPrimarySystemTray()
             ->GetTraySystemInfoForTesting();
     const ash::SystemInfoDefaultView* system_info_default_view =

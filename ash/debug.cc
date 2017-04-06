@@ -13,8 +13,7 @@ namespace ash {
 namespace debug {
 
 void ToggleShowDebugBorders() {
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
@@ -28,8 +27,7 @@ void ToggleShowDebugBorders() {
 }
 
 void ToggleShowFpsCounter() {
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
@@ -43,8 +41,7 @@ void ToggleShowFpsCounter() {
 }
 
 void ToggleShowPaintRects() {
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   std::unique_ptr<bool> value;
   for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {

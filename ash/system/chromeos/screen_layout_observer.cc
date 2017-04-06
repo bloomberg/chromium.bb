@@ -39,7 +39,7 @@ namespace ash {
 namespace {
 
 display::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
+  return Shell::Get()->display_manager();
 }
 
 base::string16 GetDisplayName(int64_t display_id) {
@@ -337,7 +337,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
 
   // Don't display notifications for accelerometer triggered screen rotations.
   // See http://crbug.com/364949
-  if (Shell::GetInstance()
+  if (Shell::Get()
           ->screen_orientation_controller()
           ->ignore_display_configuration_updates()) {
     return;

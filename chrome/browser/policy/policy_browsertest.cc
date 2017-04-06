@@ -4145,7 +4145,7 @@ IN_PROC_BROWSER_TEST_F(HardwareAccelerationModePolicyTest,
 IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
   // Verify that Unified Desktop can be enabled by policy
   display::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
+      ash::Shell::Get()->display_manager();
 
   // The policy description promises that Unified Desktop is not available
   // unless the policy is set (or a command line or an extension is used). If

@@ -82,21 +82,21 @@ TabletPowerButtonController::TabletPowerButtonController(
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   // TODO(mash): Provide a way for this class to observe stylus events:
   // http://crbug.com/682460
   if (ui::InputDeviceManager::HasInstance())
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
-  Shell::GetInstance()->PrependPreTargetHandler(this);
+  Shell::Get()->PrependPreTargetHandler(this);
 
   GetInitialBacklightsForcedOff();
 }
 
 TabletPowerButtonController::~TabletPowerButtonController() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
   if (ui::InputDeviceManager::HasInstance())
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 }
@@ -222,7 +222,7 @@ void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
   delegate->UpdateTouchscreenStatusFromPrefs();
 
   // Send an a11y alert.
-  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       forced_off ? A11Y_ALERT_SCREEN_OFF : A11Y_ALERT_SCREEN_ON);
 }
 

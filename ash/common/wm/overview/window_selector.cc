@@ -306,12 +306,12 @@ void WindowSelector::Init(const WindowList& windows) {
   DCHECK(!grid_list_.empty());
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
   shell->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
-  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+  Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
       A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
@@ -375,7 +375,7 @@ void WindowSelector::RemoveAllObservers() {
   for (WmWindow* window : observed_windows_)
     window->aura_window()->RemoveObserver(this);
 
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->aura_window()->RemoveObserver(this);

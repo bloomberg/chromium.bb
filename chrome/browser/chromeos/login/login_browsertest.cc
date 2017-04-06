@@ -309,7 +309,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 // Used to make sure that the system tray is visible and within the screen
 // bounds after login.
 void TestSystemTrayIsVisible(bool otr) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
   ash::WmWindow* wm_primary_win = ash::WmWindow::Get(primary_win);
   ash::WmShelf* wm_shelf = ash::WmShelf::ForWindow(wm_primary_win);
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
 
 // Verifies the cursor is not hidden at startup when user is logged in.
 IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
   TestSystemTrayIsVisible(false);
 }
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
 
 // Verifies the cursor is not hidden at startup when running guest session.
 IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
   TestSystemTrayIsVisible(true);
 }
@@ -368,11 +368,11 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   ShowLoginWizard(OobeScreen::SCREEN_SPECIAL_LOGIN);
 
   // Cursor should be hidden at startup
-  EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+  EXPECT_FALSE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
   // Cursor should be shown after cursor is moved.
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
+  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, LoginDisplayHost::default_host());

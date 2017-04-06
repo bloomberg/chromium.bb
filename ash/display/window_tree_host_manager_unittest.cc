@@ -77,7 +77,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
         changed_display_id_(0),
         focus_changed_count_(0),
         activation_changed_count_(0) {
-    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+    Shell::Get()->window_tree_host_manager()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->AddObserver(this);
@@ -86,7 +86,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
   }
 
   ~TestObserver() override {
-    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
@@ -262,7 +262,7 @@ class StartupHelper : public test::TestShellDelegate,
 
   // ash::ShellSelegate:
   void PreInit() override {
-    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+    Shell::Get()->window_tree_host_manager()->AddObserver(this);
   }
 
   // ash::WindowTreeHostManager::Observer:
@@ -292,8 +292,7 @@ class WindowTreeHostManagerStartupTest : public test::AshTestBase,
     test::AshTestBase::SetUp();
   }
   void TearDown() override {
-    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(
-        startup_helper_);
+    Shell::Get()->window_tree_host_manager()->RemoveObserver(startup_helper_);
     test::AshTestBase::TearDown();
   }
 
@@ -710,8 +709,7 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   // avoid getting the OnDisplayConfigurationChanged() call twice in
   // SetDisplayUIScale. Note that this scenario will never happen on
   // real devices.
-  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
-      secondary_id);
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(secondary_id);
   EXPECT_EQ(1, observer.CountAndReset());
 
   display::test::DisplayManagerTestApi(display_manager())
@@ -738,7 +736,7 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
 
 TEST_F(WindowTreeHostManagerTest, FindNearestDisplay) {
   WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
+      Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200,300x300");
   display_manager()->SetLayoutForCurrentDisplays(
@@ -797,7 +795,7 @@ TEST_F(WindowTreeHostManagerTest, FindNearestDisplay) {
 
 TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
+      Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200,300x300");
   display::Display primary_display =
@@ -973,7 +971,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryWithThreeDisplays) {
 
   EXPECT_EQ(primary_id, display::Screen::GetScreen()->GetPrimaryDisplay().id());
   WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
+      Shell::Get()->window_tree_host_manager();
 
   aura::Window* primary_root =
       window_tree_host_manager->GetRootWindowForDisplayId(primary_id);
@@ -1095,7 +1093,7 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
 
   EXPECT_EQ(primary_id, display::Screen::GetScreen()->GetPrimaryDisplay().id());
   WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
+      Shell::Get()->window_tree_host_manager();
 
   // Make non_primary_ids[2] primary.
   window_tree_host_manager->SetPrimaryDisplayId(non_primary_ids[2]);
@@ -1174,9 +1172,9 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
 
 TEST_F(WindowTreeHostManagerTest, OverscanInsets) {
   WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
+      Shell::Get()->window_tree_host_manager();
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1216,12 +1214,12 @@ TEST_F(WindowTreeHostManagerTest, OverscanInsets) {
       &point);
   EXPECT_EQ("15,10", point.ToString());
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(WindowTreeHostManagerTest, Rotate) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1295,12 +1293,12 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("600x400*2@1.5,500x300");
 
@@ -1330,12 +1328,12 @@ TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(WindowTreeHostManagerTest, TouchScale) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("200x200*2");
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1359,12 +1357,12 @@ TEST_F(WindowTreeHostManagerTest, TouchScale) {
   EXPECT_EQ(event_handler.scroll_y_offset(),
             event_handler.scroll_y_offset_ordinal());
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   TestEventHandler event_handler;
-  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+  Shell::Get()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("600x400*2/r@1.5");
 
@@ -1416,7 +1414,7 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   generator.MoveMouseToInHost(0, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
 
-  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
 // Make sure that the compositor based mirroring can switch
@@ -1632,7 +1630,7 @@ TEST_F(WindowTreeHostManagerTest,
   UpdateDisplay("200x200,200x200*2/r");
 
   aura::Env* env = aura::Env::GetInstance();
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
   test::CursorManagerTestApi test_api(shell->cursor_manager());
@@ -1656,7 +1654,7 @@ TEST_F(WindowTreeHostManagerTest,
 TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected) {
   aura::Env* env = aura::Env::GetInstance();
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
   test::CursorManagerTestApi test_api(shell->cursor_manager());
@@ -1689,10 +1687,9 @@ TEST_F(WindowTreeHostManagerTest,
 TEST_F(WindowTreeHostManagerTest,
        GetRootWindowForDisplayIdDuringDisplayDisconnection) {
   UpdateDisplay("300x300,200x200");
-  aura::Window* root2 = Shell::GetInstance()
-                            ->window_tree_host_manager()
-                            ->GetRootWindowForDisplayId(
-                                display_manager()->GetSecondaryDisplay().id());
+  aura::Window* root2 =
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display_manager()->GetSecondaryDisplay().id());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       nullptr, root2, gfx::Rect(350, 0, 100, 100));
   views::View* view = new views::View();

@@ -20,13 +20,13 @@ ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
       controller->GetSessionState() != session_manager::SessionState::ACTIVE;
   screen_locked_ = controller->IsScreenLocked();
   controller->AddSessionStateObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
   WmShell::Get()->RemoveLockStateObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void ShelfLockingManager::OnLockStateChanged(bool locked) {

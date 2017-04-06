@@ -58,14 +58,14 @@ void AbortAnimations(ui::Layer* layer) {
 }
 
 display::Display::Rotation GetCurrentScreenRotation(int64_t display_id) {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->display_manager()
       ->GetDisplayInfo(display_id)
       .GetActiveRotation();
 }
 
 bool IsDisplayIdValid(int64_t display_id) {
-  return Shell::GetInstance()->display_manager()->IsDisplayIdValid(display_id);
+  return Shell::Get()->display_manager()->IsDisplayIdValid(display_id);
 }
 
 // 180 degree rotations should animate clock-wise.
@@ -77,9 +77,8 @@ int GetRotationFactor(display::Display::Rotation initial_rotation,
 }
 
 aura::Window* GetRootWindow(int64_t display_id) {
-  return Shell::GetInstance()
-      ->window_tree_host_manager()
-      ->GetRootWindowForDisplayId(display_id);
+  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+      display_id);
 }
 
 // Returns true if the rotation between |initial_rotation| and |new_rotation| is
@@ -242,7 +241,7 @@ void ScreenRotationAnimator::AnimateRotation(
   std::unique_ptr<LayerCleanupObserver> old_layer_cleanup_observer(
       new LayerCleanupObserver(weak_factory_.GetWeakPtr()));
 
-  Shell::GetInstance()->display_manager()->SetDisplayRotation(
+  Shell::Get()->display_manager()->SetDisplayRotation(
       display_id_, rotation_request->new_rotation, rotation_request->source);
 
   const gfx::Rect rotated_screen_bounds = root_window->GetTargetBounds();

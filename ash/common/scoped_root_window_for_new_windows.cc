@@ -12,11 +12,11 @@ namespace ash {
 ScopedRootWindowForNewWindows::ScopedRootWindowForNewWindows(
     WmWindow* new_root) {
   DCHECK(new_root);
-  Shell::GetInstance()->scoped_root_window_for_new_windows_ = new_root;
+  Shell::Get()->scoped_root_window_for_new_windows_ = new_root;
 }
 
 ScopedRootWindowForNewWindows::~ScopedRootWindowForNewWindows() {
-  Shell::GetInstance()->scoped_root_window_for_new_windows_ = nullptr;
+  Shell::Get()->scoped_root_window_for_new_windows_ = nullptr;
 }
 
 }  // namespace ash

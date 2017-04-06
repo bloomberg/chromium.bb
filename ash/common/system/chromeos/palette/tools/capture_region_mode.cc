@@ -46,9 +46,9 @@ void CaptureRegionMode::OnEnable() {
   ToastData toast(kToastId, l10n_util::GetStringUTF16(
                                 IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST),
                   kToastDurationMs, base::Optional<base::string16>());
-  Shell::GetInstance()->toast_manager()->Show(toast);
+  Shell::Get()->toast_manager()->Show(toast);
 
-  Shell::GetInstance()->palette_delegate()->TakePartialScreenshot(base::Bind(
+  Shell::Get()->palette_delegate()->TakePartialScreenshot(base::Bind(
       &CaptureRegionMode::OnScreenshotDone, weak_factory_.GetWeakPtr()));
   delegate()->HidePalette();
 }
@@ -58,7 +58,7 @@ void CaptureRegionMode::OnDisable() {
 
   // If the user manually cancelled the action we need to make sure to cancel
   // the screenshot session as well.
-  Shell::GetInstance()->palette_delegate()->CancelPartialScreenshot();
+  Shell::Get()->palette_delegate()->CancelPartialScreenshot();
 }
 
 views::View* CaptureRegionMode::CreateView() {

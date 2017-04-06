@@ -29,12 +29,12 @@ const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray, UMA_SCREEN_CAPTURE) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
 }
 
 ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveScreenCaptureObserver(this);
 }
 

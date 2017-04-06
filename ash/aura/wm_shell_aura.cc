@@ -60,13 +60,13 @@ WmShellAura* WmShellAura::Get() {
 
 void WmShellAura::Shutdown() {
   if (added_display_observer_)
-    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
   pointer_watcher_adapter_.reset();
 
   WmShell::Shutdown();
 
-  Shell::GetInstance()->window_tree_host_manager()->Shutdown();
+  Shell::Get()->window_tree_host_manager()->Shutdown();
 }
 
 bool WmShellAura::IsRunningInMash() const {
@@ -79,36 +79,34 @@ Config WmShellAura::GetAshConfig() const {
 
 WmWindow* WmShellAura::GetPrimaryRootWindow() {
   return WmWindow::Get(
-      Shell::GetInstance()->window_tree_host_manager()->GetPrimaryRootWindow());
+      Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow());
 }
 
 WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
-  return WmWindow::Get(Shell::GetInstance()
-                           ->window_tree_host_manager()
-                           ->GetRootWindowForDisplayId(display_id));
+  return WmWindow::Get(
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display_id));
 }
 
 const display::ManagedDisplayInfo& WmShellAura::GetDisplayInfo(
     int64_t display_id) const {
-  return Shell::GetInstance()->display_manager()->GetDisplayInfo(display_id);
+  return Shell::Get()->display_manager()->GetDisplayInfo(display_id);
 }
 
 bool WmShellAura::IsActiveDisplayId(int64_t display_id) const {
-  return Shell::GetInstance()->display_manager()->IsActiveDisplayId(display_id);
+  return Shell::Get()->display_manager()->IsActiveDisplayId(display_id);
 }
 
 display::Display WmShellAura::GetFirstDisplay() const {
-  return Shell::GetInstance()
-      ->display_manager()
-      ->software_mirroring_display_list()[0];
+  return Shell::Get()->display_manager()->software_mirroring_display_list()[0];
 }
 
 bool WmShellAura::IsInUnifiedMode() const {
-  return Shell::GetInstance()->display_manager()->IsInUnifiedMode();
+  return Shell::Get()->display_manager()->IsInUnifiedMode();
 }
 
 bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
-  return Shell::GetInstance()
+  return Shell::Get()
              ->display_manager()
              ->current_default_multi_display_mode() ==
          display::DisplayManager::UNIFIED;
@@ -116,26 +114,26 @@ bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
 
 void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
                                            const gfx::Insets& insets) {
-  Shell::GetInstance()
+  Shell::Get()
       ->window_tree_host_manager()
       ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
 }
 
 void WmShellAura::LockCursor() {
-  Shell::GetInstance()->cursor_manager()->LockCursor();
+  Shell::Get()->cursor_manager()->LockCursor();
 }
 
 void WmShellAura::UnlockCursor() {
-  Shell::GetInstance()->cursor_manager()->UnlockCursor();
+  Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
 bool WmShellAura::IsMouseEventsEnabled() {
-  return Shell::GetInstance()->cursor_manager()->IsMouseEventsEnabled();
+  return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
 std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
   aura::Window::Windows root_windows =
-      Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
+      Shell::Get()->window_tree_host_manager()->GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());
   for (size_t i = 0; i < root_windows.size(); ++i)
     wm_windows[i] = WmWindow::Get(root_windows[i]);
@@ -143,7 +141,7 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
 }
 
 void WmShellAura::RecordUserMetricsAction(UserMetricsAction action) {
-  Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+  Shell::Get()->metrics()->RecordUserMetricsAction(action);
 }
 
 void WmShellAura::RecordGestureAction(GestureActionType action) {
@@ -151,8 +149,7 @@ void WmShellAura::RecordGestureAction(GestureActionType action) {
 }
 
 void WmShellAura::RecordTaskSwitchMetric(TaskSwitchSource source) {
-  Shell::GetInstance()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
-      source);
+  Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(source);
 }
 
 std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
@@ -201,13 +198,13 @@ std::unique_ptr<KeyEventWatcher> WmShellAura::CreateKeyEventWatcher() {
 }
 
 SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
-  return Shell::GetInstance()->session_state_delegate();
+  return Shell::Get()->session_state_delegate();
 }
 
 void WmShellAura::AddDisplayObserver(WmDisplayObserver* observer) {
   if (!added_display_observer_) {
     added_display_observer_ = true;
-    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+    Shell::Get()->window_tree_host_manager()->AddObserver(this);
   }
   display_observers_.AddObserver(observer);
 }
@@ -230,17 +227,15 @@ bool WmShellAura::IsTouchDown() {
 }
 
 void WmShellAura::ToggleIgnoreExternalKeyboard() {
-  Shell::GetInstance()
-      ->virtual_keyboard_controller()
-      ->ToggleIgnoreExternalKeyboard();
+  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
 }
 
 void WmShellAura::SetLaserPointerEnabled(bool enabled) {
-  Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
+  Shell::Get()->laser_pointer_controller()->SetEnabled(enabled);
 }
 
 void WmShellAura::SetPartialMagnifierEnabled(bool enabled) {
-  Shell::GetInstance()->partial_magnification_controller()->SetEnabled(enabled);
+  Shell::Get()->partial_magnification_controller()->SetEnabled(enabled);
 }
 
 void WmShellAura::CreatePointerWatcherAdapter() {
@@ -248,14 +243,13 @@ void WmShellAura::CreatePointerWatcherAdapter() {
 }
 
 void WmShellAura::CreatePrimaryHost() {
-  Shell::GetInstance()->window_tree_host_manager()->Start();
+  Shell::Get()->window_tree_host_manager()->Start();
   AshWindowTreeHostInitParams ash_init_params;
-  Shell::GetInstance()->window_tree_host_manager()->CreatePrimaryHost(
-      ash_init_params);
+  Shell::Get()->window_tree_host_manager()->CreatePrimaryHost(ash_init_params);
 }
 
 void WmShellAura::InitHosts(const ShellInitParams& init_params) {
-  Shell::GetInstance()->window_tree_host_manager()->InitHosts();
+  Shell::Get()->window_tree_host_manager()->InitHosts();
 }
 
 std::unique_ptr<AcceleratorController>

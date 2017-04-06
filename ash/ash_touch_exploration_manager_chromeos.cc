@@ -30,7 +30,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               chromeos::switches::kEnableChromeVoxArcSupport)) {
   Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
-  Shell::GetInstance()->activation_client()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
 }
@@ -40,7 +40,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
       Shell::Get()->system_tray_notifier();
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -62,8 +62,8 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 }
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
-  if (Shell::GetInstance()->accessibility_delegate()->IsSpokenFeedbackEnabled())
-    Shell::GetInstance()->accessibility_delegate()->SilenceSpokenFeedback();
+  if (Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
+    Shell::Get()->accessibility_delegate()->SilenceSpokenFeedback();
 }
 
 void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
@@ -71,30 +71,29 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+    Shell::Get()->accessibility_delegate()->PlayEarcon(
         chromeos::SOUND_VOLUME_ADJUST);
   }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
-  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_PASSTHROUGH);
 }
 
 void AshTouchExplorationManager::PlayExitScreenEarcon() {
-  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_EXIT_SCREEN);
 }
 
 void AshTouchExplorationManager::PlayEnterScreenEarcon() {
-  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_ENTER_SCREEN);
 }
 
 void AshTouchExplorationManager::HandleAccessibilityGesture(
     ui::AXGesture gesture) {
-  Shell::GetInstance()->accessibility_delegate()->HandleAccessibilityGesture(
-      gesture);
+  Shell::Get()->accessibility_delegate()->HandleAccessibilityGesture(gesture);
 }
 
 void AshTouchExplorationManager::OnDisplayMetricsChanged(
@@ -107,15 +106,13 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
 
 void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   if (delegate->ShouldToggleSpokenFeedbackViaTouch())
     delegate->PlaySpokenFeedbackToggleCountdown(tick_count);
 }
 
 void AshTouchExplorationManager::ToggleSpokenFeedback() {
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
+  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   if (delegate->ShouldToggleSpokenFeedbackViaTouch())
     delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_SHOW);
 }
@@ -144,7 +141,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
       !enable_chromevox_arc_support_;
 
   const bool spoken_feedback_enabled =
-      Shell::GetInstance()->accessibility_delegate()->IsSpokenFeedbackEnabled();
+      Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 
   if (!touch_accessibility_enabler_) {
     // Always enable gesture to toggle spoken feedback.
@@ -165,7 +162,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
                                        .work_area();
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
-      Shell::GetInstance()->accessibility_delegate()->ClearFocusHighlight();
+      Shell::Get()->accessibility_delegate()->ClearFocusHighlight();
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }

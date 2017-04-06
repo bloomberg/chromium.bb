@@ -261,7 +261,7 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
   if (observed_profile_)
     StopObserving(observed_profile_);
   if (observing_shell_)
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
+    ash::Shell::Get()->RemoveShellObserver(this);
 }
 
 // static
@@ -395,7 +395,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   // the layout switch information.
   if (!observing_shell_) {
     observing_shell_ = true;
-    ash::Shell::GetInstance()->AddShellObserver(this);
+    ash::Shell::Get()->AddShellObserver(this);
   }
 
   // Check if we have controller for this task.
@@ -614,7 +614,7 @@ void ArcAppWindowLauncherController::OnMaximizeModeStarted() {
 
 void ArcAppWindowLauncherController::OnMaximizeModeEnded() {
   ash::ScreenOrientationController* orientation_controller =
-      ash::Shell::GetInstance()->screen_orientation_controller();
+      ash::Shell::Get()->screen_orientation_controller();
   // Don't unlock one by one because it'll switch to next rotation.
   orientation_controller->UnlockAll();
 }
@@ -724,7 +724,7 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
           ScreenOrientationController::LockCompletionBehavior::DisableSensor;
     }
   }
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   shell->screen_orientation_controller()->LockOrientationForWindow(
       window, BlinkOrientationLockFromMojom(orientation_lock),
       lock_completion_behavior);

@@ -23,11 +23,11 @@ AttachedPanelWindowTargeter::AttachedPanelWindowTargeter(
       panel_container_(container),
       panel_layout_manager_(panel_layout_manager),
       default_touch_extend_(default_touch_extend) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 AttachedPanelWindowTargeter::~AttachedPanelWindowTargeter() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void AttachedPanelWindowTargeter::OnShelfCreatedForRootWindow(

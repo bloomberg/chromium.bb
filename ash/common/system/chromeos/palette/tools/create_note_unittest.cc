@@ -35,8 +35,7 @@ class CreateNoteTest : public test::AshTestBase {
   }
 
   TestPaletteDelegate* test_palette_delegate() {
-    return static_cast<TestPaletteDelegate*>(
-        Shell::GetInstance()->palette_delegate());
+    return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
   }
 
  protected:

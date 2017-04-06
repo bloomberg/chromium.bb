@@ -47,21 +47,21 @@ namespace {
 using base::UserMetricsAction;
 
 bool CanHandleMagnifyScreen() {
-  return Shell::GetInstance()->magnification_controller()->IsEnabled();
+  return Shell::Get()->magnification_controller()->IsEnabled();
 }
 
 // Magnify the screen
 void HandleMagnifyScreen(int delta_index) {
-  if (Shell::GetInstance()->magnification_controller()->IsEnabled()) {
+  if (Shell::Get()->magnification_controller()->IsEnabled()) {
     // TODO(yoshiki): Move the following logic to MagnificationController.
-    float scale = Shell::GetInstance()->magnification_controller()->GetScale();
+    float scale = Shell::Get()->magnification_controller()->GetScale();
     // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
     int scale_index =
         std::floor(std::log(scale) / std::log(kMagnificationScaleFactor) + 0.5);
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
-    Shell::GetInstance()->magnification_controller()->SetScale(
+    Shell::Get()->magnification_controller()->SetScale(
         std::pow(kMagnificationScaleFactor, new_scale_index), true);
   }
 }
@@ -83,7 +83,7 @@ display::Display::Rotation GetNextRotation(display::Display::Rotation current) {
 
 // Rotates the screen.
 void HandleRotateScreen() {
-  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode())
+  if (Shell::Get()->display_manager()->IsInUnifiedMode())
     return;
 
   base::RecordAction(UserMetricsAction("Accel_Rotate_Screen"));
@@ -91,8 +91,8 @@ void HandleRotateScreen() {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   const display::ManagedDisplayInfo& display_info =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
-  Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
+      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
+  Shell::Get()->display_configuration_controller()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.GetActiveRotation()),
       display::Display::ROTATION_SOURCE_USER);
 }
@@ -100,14 +100,14 @@ void HandleRotateScreen() {
 void HandleTakeWindowScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Window_Screenshot"));
   DCHECK(screenshot_delegate);
-  Shell::GetInstance()->screenshot_controller()->StartWindowScreenshotSession(
+  Shell::Get()->screenshot_controller()->StartWindowScreenshotSession(
       screenshot_delegate);
 }
 
 void HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
   DCHECK(screenshot_delegate);
-  Shell::GetInstance()->screenshot_controller()->StartPartialScreenshotSession(
+  Shell::Get()->screenshot_controller()->StartPartialScreenshotSession(
       screenshot_delegate, true /* draw_overlay_immediately */);
 }
 
@@ -132,15 +132,14 @@ void HandleSwapPrimaryDisplay() {
   // TODO(rjkroege): This is not correct behaviour on devices with more than
   // two screens. Behave the same as mirroring: fail and notify if there are
   // three or more screens.
-  Shell::GetInstance()->display_configuration_controller()->SetPrimaryDisplayId(
-      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id());
+  Shell::Get()->display_configuration_controller()->SetPrimaryDisplayId(
+      Shell::Get()->display_manager()->GetSecondaryDisplay().id());
 }
 
 void HandleToggleMirrorMode() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
-  bool mirror = !Shell::GetInstance()->display_manager()->IsInMirrorMode();
-  Shell::GetInstance()->display_configuration_controller()->SetMirrorMode(
-      mirror);
+  bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
+  Shell::Get()->display_configuration_controller()->SetMirrorMode(mirror);
 }
 
 bool CanHandleTouchHud() {
@@ -263,7 +262,7 @@ void AcceleratorControllerDelegateAura::PerformAction(
     const ui::Accelerator& accelerator) {
   switch (action) {
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-      Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
+      Shell::Get()->display_manager()->ToggleDisplayScaleFactor();
       break;
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
       debug::ToggleShowDebugBorders();
@@ -275,18 +274,18 @@ void AcceleratorControllerDelegateAura::PerformAction(
       debug::ToggleShowPaintRects();
       break;
     case DEV_ADD_REMOVE_DISPLAY:
-      Shell::GetInstance()->display_manager()->AddRemoveDisplay();
+      Shell::Get()->display_manager()->AddRemoveDisplay();
       break;
     case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
       break;
     case DEV_TOGGLE_UNIFIED_DESKTOP:
-      Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
-          !Shell::GetInstance()->display_manager()->unified_desktop_enabled());
+      Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(
+          !Shell::Get()->display_manager()->unified_desktop_enabled());
       break;
     case LOCK_PRESSED:
     case LOCK_RELEASED:
-      Shell::GetInstance()->power_button_controller()->OnLockButtonEvent(
+      Shell::Get()->power_button_controller()->OnLockButtonEvent(
           action == LOCK_PRESSED, base::TimeTicks());
       break;
     case MAGNIFY_SCREEN_ZOOM_IN:
@@ -300,7 +299,7 @@ void AcceleratorControllerDelegateAura::PerformAction(
       if (!base::SysInfo::IsRunningOnChromeOS()) {
         // There is no powerd, the Chrome OS power manager, in linux desktop,
         // so call the PowerButtonController here.
-        Shell::GetInstance()->power_button_controller()->OnPowerButtonEvent(
+        Shell::Get()->power_button_controller()->OnPowerButtonEvent(
             action == POWER_PRESSED, base::TimeTicks());
       }
       // We don't do anything with these at present on the device,

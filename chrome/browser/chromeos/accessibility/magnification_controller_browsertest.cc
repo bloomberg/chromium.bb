@@ -45,7 +45,7 @@ aura::Window* GetRootWindow() {
 }
 
 ash::MagnificationController* GetMagnificationController() {
-  return ash::Shell::GetInstance()->magnification_controller();
+  return ash::Shell::Get()->magnification_controller();
 }
 
 bool IsMagnifierEnabled() {

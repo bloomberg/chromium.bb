@@ -206,13 +206,13 @@ class PartialMagnificationController::BorderRenderer
 };
 
 PartialMagnificationController::PartialMagnificationController() {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 PartialMagnificationController::~PartialMagnificationController() {
   CloseMagnifierWindow();
 
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void PartialMagnificationController::SetEnabled(bool enabled) {

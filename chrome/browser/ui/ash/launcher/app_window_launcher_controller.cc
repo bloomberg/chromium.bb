@@ -13,9 +13,9 @@ AppWindowLauncherController::AppWindowLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner) {
   if (ash::Shell::HasInstance()) {
-    if (ash::Shell::GetInstance()->GetPrimaryRootWindow()) {
+    if (ash::Shell::Get()->GetPrimaryRootWindow()) {
       activation_client_ = aura::client::GetActivationClient(
-          ash::Shell::GetInstance()->GetPrimaryRootWindow());
+          ash::Shell::Get()->GetPrimaryRootWindow());
       if (activation_client_)
         activation_client_->AddObserver(this);
     }

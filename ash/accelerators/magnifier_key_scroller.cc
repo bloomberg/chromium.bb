@@ -24,7 +24,7 @@ bool MagnifierKeyScroller::IsEnabled() {
       switches::kAshEnableMagnifierKeyScroller);
 
   return (magnifier_key_scroller_enabled || has_switch) &&
-         ash::Shell::GetInstance()->magnification_controller()->IsEnabled();
+         ash::Shell::Get()->magnification_controller()->IsEnabled();
 }
 
 // static
@@ -58,7 +58,7 @@ bool MagnifierKeyScroller::ShouldStopEventPropagation() const {
 
 void MagnifierKeyScroller::OnKeyHold(const ui::KeyEvent* event) {
   MagnificationController* controller =
-      Shell::GetInstance()->magnification_controller();
+      Shell::Get()->magnification_controller();
   switch (event->key_code()) {
     case ui::VKEY_UP:
       controller->SetScrollDirection(MagnificationController::SCROLL_UP);
@@ -79,7 +79,7 @@ void MagnifierKeyScroller::OnKeyHold(const ui::KeyEvent* event) {
 
 void MagnifierKeyScroller::OnKeyUnhold(const ui::KeyEvent* event) {
   MagnificationController* controller =
-      Shell::GetInstance()->magnification_controller();
+      Shell::Get()->magnification_controller();
   controller->SetScrollDirection(MagnificationController::SCROLL_NONE);
 }
 

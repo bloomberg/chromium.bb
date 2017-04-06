@@ -21,7 +21,7 @@ void AshTestViewsDelegate::OnBeforeWidgetInit(
 
   if (!params->parent && !params->context && ash::Shell::HasInstance()) {
     // If the window has neither a parent nor a context add to the root.
-    params->parent = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    params->parent = ash::Shell::Get()->GetPrimaryRootWindow();
   }
 }
 

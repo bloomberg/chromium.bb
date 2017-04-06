@@ -43,12 +43,11 @@ void SetMagnifierType(ash::MagnifierType type) {
 }
 
 void SetFullScreenMagnifierScale(double scale) {
-  ash::Shell::GetInstance()->
-      magnification_controller()->SetScale(scale, false);
+  ash::Shell::Get()->magnification_controller()->SetScale(scale, false);
 }
 
 double GetFullScreenMagnifierScale() {
-  return ash::Shell::GetInstance()->magnification_controller()->GetScale();
+  return ash::Shell::Get()->magnification_controller()->GetScale();
 }
 
 void SetSavedFullScreenMagnifierScale(double scale) {

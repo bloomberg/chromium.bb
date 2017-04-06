@@ -33,12 +33,12 @@ OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
   // horizontal shelf, no separator is required.
   set_separator_visibility(false);
 
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 

@@ -22,7 +22,7 @@ ScopedDisableInternalMouseAndKeyboardOzone::
       input_controller->IsInternalTouchpadEnabled()) {
     should_ignore_touch_pad_ = false;
     input_controller->SetInternalTouchpadEnabled(false);
-    Shell::GetInstance()->cursor_manager()->HideCursor();
+    Shell::Get()->cursor_manager()->HideCursor();
   }
 
   // Allow the acccessible keys present on the side of some devices to continue
@@ -42,7 +42,7 @@ ScopedDisableInternalMouseAndKeyboardOzone::
 
   if (!should_ignore_touch_pad_) {
     input_controller->SetInternalTouchpadEnabled(true);
-    Shell::GetInstance()->cursor_manager()->ShowCursor();
+    Shell::Get()->cursor_manager()->ShowCursor();
   }
 
   input_controller->SetInternalKeyboardFilter(false /* enable_filter */,

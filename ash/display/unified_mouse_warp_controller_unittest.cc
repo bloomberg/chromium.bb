@@ -49,7 +49,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
         *point_in_mirroring_host = *point_in_unified_host;
         // Convert from mirroring host to unified host.
         AshWindowTreeHost* ash_host =
-            Shell::GetInstance()
+            Shell::Get()
                 ->window_tree_host_manager()
                 ->mirror_window_controller()
                 ->GetAshWindowTreeHostForDisplayId(info.id());
@@ -62,9 +62,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_native) {
     static_cast<UnifiedMouseWarpController*>(
-        Shell::GetInstance()
-            ->mouse_cursor_filter()
-            ->mouse_warp_controller_for_test())
+        Shell::Get()->mouse_cursor_filter()->mouse_warp_controller_for_test())
         ->update_location_for_test();
     int64_t orig_mirroring_display_id;
     gfx::Point point_in_unified_host;
@@ -97,7 +95,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
   }
 
   MouseCursorEventFilter* event_filter() {
-    return Shell::GetInstance()->mouse_cursor_filter();
+    return Shell::Get()->mouse_cursor_filter();
   }
 
   UnifiedMouseWarpController* mouse_warp_controller() {

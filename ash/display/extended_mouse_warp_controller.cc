@@ -36,9 +36,8 @@ const int kMinimumIndicatorHeight = 200;
 
 // Helper method that maps a display::Display to an aura::Window.
 aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
-  return Shell::GetInstance()
-      ->window_tree_host_manager()
-      ->GetRootWindowForDisplayId(display_id);
+  return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+      display_id);
 }
 
 // Helper method that maps an aura::Window to display id;
@@ -101,8 +100,7 @@ ExtendedMouseWarpController::WarpRegion::GetIndicatorBoundsForTest(
 ExtendedMouseWarpController::ExtendedMouseWarpController(
     aura::Window* drag_source)
     : drag_source_root_(drag_source), allow_non_native_event_(false) {
-  display::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
                                        : display::kInvalidDisplayId;
   display::Displays display_list = display_manager->active_display_list();

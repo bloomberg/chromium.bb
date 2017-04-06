@@ -643,7 +643,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   std::unique_ptr<CustomEventHandler> f2(new CustomEventHandler);
 
   // Adds them to root window event filter.
-  ::wm::CompoundEventFilter* env_filter = Shell::GetInstance()->env_filter();
+  ::wm::CompoundEventFilter* env_filter = Shell::Get()->env_filter();
   env_filter->AddHandler(f1.get());
   env_filter->AddHandler(f2.get());
 
@@ -712,8 +712,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
-      ash::Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
   generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
@@ -736,8 +735,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
-      ash::Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.
   generator.PressKey(ui::VKEY_A, ui::EF_NONE);
@@ -761,7 +759,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   ASSERT_TRUE(cursor_manager->IsCursorVisible());
 
@@ -786,8 +784,7 @@ TEST_F(WindowManagerTest, TestCursorClientObserver) {
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
-      ash::Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
 
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));

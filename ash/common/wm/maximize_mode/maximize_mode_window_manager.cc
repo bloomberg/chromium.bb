@@ -48,7 +48,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   for (aura::Window* window : added_windows_)
     window->RemoveObserver(this);
   added_windows_.clear();
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
@@ -206,7 +206,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   event_handler_ = WmShell::Get()->CreateMaximizeModeEventHandler();
 }
 
@@ -276,7 +276,7 @@ void MaximizeModeWindowManager::AddWindowCreationObservers() {
   DCHECK(observed_container_windows_.empty());
   // Observe window activations/creations in the default containers on all root
   // windows.
-  for (aura::Window* root : Shell::GetInstance()->GetAllRootWindows()) {
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
     aura::Window* default_container =
         root->GetChildById(kShellWindowId_DefaultContainer);
     DCHECK(!base::ContainsKey(observed_container_windows_, default_container));

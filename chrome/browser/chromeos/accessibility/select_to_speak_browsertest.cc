@@ -33,8 +33,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     AccessibilityManager::Get()->SetSelectToSpeakEnabled(true);
     extension_load_waiter.Wait();
 
-    aura::Window* root_window =
-        ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    aura::Window* root_window = ash::Shell::Get()->GetPrimaryRootWindow();
     generator_.reset(new ui::test::EventGenerator(root_window));
 
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -47,7 +46,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SpeakStatusTray) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   gfx::Rect tray_bounds = tray->GetBoundsInScreen();
 
   // Hold down Search and click a few pixels into the status tray bounds.

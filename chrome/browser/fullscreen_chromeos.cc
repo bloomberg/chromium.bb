@@ -18,7 +18,7 @@ bool IsFullScreenMode(int64_t display_id) {
   }
 
   for (ash::RootWindowController* controller :
-       ash::Shell::GetInstance()->GetAllRootWindowControllers()) {
+       ash::Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
             .id() == display_id) {

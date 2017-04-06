@@ -19,7 +19,7 @@ namespace ash {
 namespace {
 
 display::Display::Rotation GetDisplayRotation(int64_t display_id) {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->display_manager()
       ->GetDisplayInfo(display_id)
       .GetActiveRotation();
@@ -27,7 +27,7 @@ display::Display::Rotation GetDisplayRotation(int64_t display_id) {
 
 void SetDisplayRotation(int64_t display_id,
                         display::Display::Rotation rotation) {
-  Shell::GetInstance()->display_manager()->SetDisplayRotation(
+  Shell::Get()->display_manager()->SetDisplayRotation(
       display_id, rotation,
       display::Display::RotationSource::ROTATION_SOURCE_USER);
 }

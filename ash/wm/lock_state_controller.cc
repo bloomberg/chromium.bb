@@ -160,7 +160,7 @@ void LockStateController::RequestShutdown() {
 
   shutting_down_ = true;
 
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   // TODO(derat): Remove these null checks once mash instantiates a
   // CursorManager.
   if (shell->cursor_manager()) {
@@ -196,7 +196,7 @@ void LockStateController::OnAppTerminating() {
   // This is also the case when the user signs off.
   if (!shutting_down_) {
     shutting_down_ = true;
-    Shell* shell = Shell::GetInstance();
+    Shell* shell = Shell::Get();
     if (shell->cursor_manager()) {
       shell->cursor_manager()->HideCursor();
       shell->cursor_manager()->LockCursor();
@@ -269,7 +269,7 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   VLOG(1) << "OnPreShutdownAnimationTimeout";
   shutting_down_ = true;
 
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   if (shell->cursor_manager())
     shell->cursor_manager()->HideCursor();
 
@@ -285,7 +285,7 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
   }
 
   base::TimeDelta sound_duration =
-      Shell::GetInstance()->accessibility_delegate()->PlayShutdownSound();
+      Shell::Get()->accessibility_delegate()->PlayShutdownSound();
   sound_duration =
       std::min(sound_duration,
                base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
@@ -305,7 +305,7 @@ void LockStateController::OnRealPowerTimeout() {
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   // Hide cursor, but let it reappear if the mouse moves.
   if (shell->cursor_manager())
     shell->cursor_manager()->HideCursor();

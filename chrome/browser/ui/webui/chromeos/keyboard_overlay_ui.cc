@@ -310,7 +310,7 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource(Profile* profile) {
                          chromeos::switches::kHasChromeOSDiamondKey));
   source->AddBoolean("keyboardOverlayTopRowKeysAreFunctionKeys",
                      TopRowKeysAreFunctionKeys(profile));
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   display::DisplayManager* display_manager = shell->display_manager();
   source->AddBoolean("keyboardOverlayIsDisplayUIScalingEnabled",
                      display_manager->IsDisplayUIScalingEnabled());

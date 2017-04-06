@@ -34,9 +34,7 @@ bool IsMaximizeModeWindowManagerEnabled() {
 }
 
 bool IsUserRotationLocked() {
-  return Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->user_rotation_locked();
+  return Shell::Get()->screen_orientation_controller()->user_rotation_locked();
 }
 
 }  // namespace
@@ -92,14 +90,14 @@ RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
 
   SetVisible(IsMaximizeModeWindowManagerEnabled());
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   if (IsMaximizeModeWindowManagerEnabled())
-    Shell::GetInstance()->screen_orientation_controller()->AddObserver(this);
+    Shell::Get()->screen_orientation_controller()->AddObserver(this);
 }
 
 RotationLockDefaultView::~RotationLockDefaultView() {
   StopObservingRotation();
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void RotationLockDefaultView::Update() {
@@ -121,7 +119,7 @@ void RotationLockDefaultView::Update() {
 
 void RotationLockDefaultView::StopObservingRotation() {
   ScreenOrientationController* controller =
-      Shell::GetInstance()->screen_orientation_controller();
+      Shell::Get()->screen_orientation_controller();
   if (controller)
     controller->RemoveObserver(this);
 }
@@ -133,16 +131,14 @@ void RotationLockDefaultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 bool RotationLockDefaultView::PerformAction(const ui::Event& event) {
-  Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->ToggleUserRotationLock();
+  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
   return true;
 }
 
 void RotationLockDefaultView::OnMaximizeModeStarted() {
   Update();
   SetVisible(true);
-  Shell::GetInstance()->screen_orientation_controller()->AddObserver(this);
+  Shell::Get()->screen_orientation_controller()->AddObserver(this);
 }
 
 void RotationLockDefaultView::OnMaximizeModeEnded() {
@@ -160,11 +156,11 @@ TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
     : TrayImageItem(system_tray,
                     kSystemTrayRotationLockLockedIcon,
                     UMA_ROTATION_LOCK) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 TrayRotationLock::~TrayRotationLock() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void TrayRotationLock::OnUserRotationLockChanged() {
@@ -179,7 +175,7 @@ views::View* TrayRotationLock::CreateDefaultView(LoginStatus status) {
 
 void TrayRotationLock::OnMaximizeModeStarted() {
   tray_view()->SetVisible(IsUserRotationLocked());
-  Shell::GetInstance()->screen_orientation_controller()->AddObserver(this);
+  Shell::Get()->screen_orientation_controller()->AddObserver(this);
 }
 
 void TrayRotationLock::OnMaximizeModeEnded() {
@@ -189,7 +185,7 @@ void TrayRotationLock::OnMaximizeModeEnded() {
 
 void TrayRotationLock::DestroyTrayView() {
   StopObservingRotation();
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   TrayImageItem::DestroyTrayView();
 }
 
@@ -211,7 +207,7 @@ bool TrayRotationLock::OnPrimaryDisplay() const {
 
 void TrayRotationLock::StopObservingRotation() {
   ScreenOrientationController* controller =
-      Shell::GetInstance()->screen_orientation_controller();
+      Shell::Get()->screen_orientation_controller();
   if (controller)
     controller->RemoveObserver(this);
 }

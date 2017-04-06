@@ -138,7 +138,7 @@ void AshTestBase::SetUp() {
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   // TODO: mus/mash needs to support CursorManager. http://crbug.com/637853.
   if (Shell::GetAshConfig() == Config::CLASSIC)
-    Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+    Shell::Get()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as
@@ -152,7 +152,7 @@ void AshTestBase::SetUp() {
 
 void AshTestBase::TearDown() {
   teardown_called_ = true;
-  Shell::GetInstance()->OnAppTerminating();
+  Shell::Get()->OnAppTerminating();
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
@@ -174,7 +174,7 @@ WmShelf* AshTestBase::GetPrimaryShelf() {
 
 // static
 SystemTray* AshTestBase::GetPrimarySystemTray() {
-  return Shell::GetInstance()->GetPrimarySystemTray();
+  return Shell::Get()->GetPrimarySystemTray();
 }
 
 ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
@@ -187,7 +187,7 @@ ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
 
 // static
 display::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
-  return Shell::GetInstance()
+  return Shell::Get()
       ->display_manager()
       ->GetDisplayInfo(id)
       .GetActiveRotation();
@@ -203,8 +203,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   if (Shell::GetAshConfig() != Config::CLASSIC) {
     ash_test_helper_->UpdateDisplayForMash(display_specs);
   } else {
-    display::test::DisplayManagerTestApi(
-        Shell::GetInstance()->display_manager())
+    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
         .UpdateDisplay(display_specs);
   }
 }
@@ -341,7 +340,7 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
     case BLOCKED_BY_LOCK_SCREEN:
       SetSessionStarted(true);
       Shell::Get()->session_controller()->LockScreenAndFlushForTest();
-      Shell::GetInstance()->OnLockStateChanged(true);
+      Shell::Get()->OnLockStateChanged(true);
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
       SetSessionStarted(false);
@@ -366,23 +365,19 @@ void AshTestBase::DisableIME() {
   if (WmShell::Get()->IsRunningInMash())
     return;
 
-  Shell::GetInstance()->RemovePreTargetHandler(
-      Shell::GetInstance()
-          ->window_tree_host_manager()
-          ->input_method_event_handler());
+  Shell::Get()->RemovePreTargetHandler(
+      Shell::Get()->window_tree_host_manager()->input_method_event_handler());
 }
 
 display::DisplayManager* AshTestBase::display_manager() {
-  return Shell::GetInstance()->display_manager();
+  return Shell::Get()->display_manager();
 }
 
 bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
                                      const gfx::Point& point_in_screen) {
-  DCHECK(!Shell::GetInstance()->display_manager()->IsInUnifiedMode());
+  DCHECK(!Shell::Get()->display_manager()->IsInUnifiedMode());
   static_cast<ExtendedMouseWarpController*>(
-      Shell::GetInstance()
-          ->mouse_cursor_filter()
-          ->mouse_warp_controller_for_test())
+      Shell::Get()->mouse_cursor_filter()->mouse_warp_controller_for_test())
       ->allow_non_native_event_for_test();
   display::Screen* screen = display::Screen::GetScreen();
   display::Display original_display =
@@ -398,7 +393,7 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
 void AshTestBase::SwapPrimaryDisplay() {
   if (display::Screen::GetScreen()->GetNumDisplays() <= 1)
     return;
-  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       display_manager()->GetSecondaryDisplay().id());
 }
 

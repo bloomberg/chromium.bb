@@ -12,11 +12,11 @@
 namespace ash {
 
 HighContrastController::HighContrastController() : enabled_(false) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 HighContrastController::~HighContrastController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void HighContrastController::SetEnabled(bool enabled) {

@@ -13,7 +13,7 @@
 namespace ash {
 namespace test {
 
-ShellTestApi::ShellTestApi() : ShellTestApi(Shell::GetInstance()) {}
+ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
 
 ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
 

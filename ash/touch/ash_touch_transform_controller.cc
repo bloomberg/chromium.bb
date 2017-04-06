@@ -13,11 +13,11 @@ AshTouchTransformController::AshTouchTransformController(
     display::DisplayConfigurator* display_configurator,
     display::DisplayManager* display_manager)
     : TouchTransformController(display_configurator, display_manager) {
-  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 AshTouchTransformController::~AshTouchTransformController() {
-  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void AshTouchTransformController::OnDisplaysInitialized() {

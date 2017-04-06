@@ -128,8 +128,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
 
     test::AshTestBase::SetUp();
     // Enable brightness key.
-    display::test::DisplayManagerTestApi(
-        Shell::GetInstance()->display_manager())
+    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
         .SetFirstDisplayAsInternalDisplay();
   }
 

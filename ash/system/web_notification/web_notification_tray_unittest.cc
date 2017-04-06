@@ -257,9 +257,8 @@ TEST_F(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   if (WmShell::Get()->IsRunningInMash())
     return;
 
-  Shell::GetInstance()
-      ->screen_layout_observer()
-      ->set_show_notifications_for_testing(true);
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
   UpdateDisplay("400x400,200x200");
   // UpdateDisplay() creates the display notifications, so popup is visible.
   EXPECT_TRUE(GetTray()->IsPopupVisible());

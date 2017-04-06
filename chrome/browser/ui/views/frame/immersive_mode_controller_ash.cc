@@ -344,7 +344,7 @@ void ImmersiveModeControllerAsh::Observe(
       IsWindowFullscreenForTabOrPending();
   ash::wm::GetWindowState(native_window_)
       ->set_hide_shelf_when_fullscreen(in_tab_fullscreen);
-  ash::Shell::GetInstance()->UpdateShelfVisibility();
+  ash::Shell::Get()->UpdateShelfVisibility();
 }
 
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,

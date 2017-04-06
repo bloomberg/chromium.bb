@@ -422,14 +422,14 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
 
 TrayCast::TrayCast(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_CAST) {
-  Shell::GetInstance()->AddShellObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->cast_config()->AddObserver(this);
   Shell::Get()->cast_config()->RequestDeviceRefresh();
 }
 
 TrayCast::~TrayCast() {
   Shell::Get()->cast_config()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void TrayCast::StartCastForTest(const std::string& receiver_id) {

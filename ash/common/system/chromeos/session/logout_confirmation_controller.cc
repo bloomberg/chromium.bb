@@ -28,14 +28,14 @@ LogoutConfirmationController::LogoutConfirmationController(
       dialog_(NULL),
       logout_timer_(false, false) {
   if (Shell::HasInstance()) {
-    Shell::GetInstance()->AddShellObserver(this);
+    Shell::Get()->AddShellObserver(this);
     Shell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
   }
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
   if (Shell::HasInstance()) {
-    Shell::GetInstance()->RemoveShellObserver(this);
+    Shell::Get()->RemoveShellObserver(this);
     Shell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(this);
   }
   if (dialog_)

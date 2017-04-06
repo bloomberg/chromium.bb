@@ -78,7 +78,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
 
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
-  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &test_window_delegate, 0, gfx::Rect(50, 50, 100, 100), root));
   window->Show();
@@ -124,7 +124,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
 
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x400,400x400");
-  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &test_window_delegate, 0, gfx::Rect(50, 50, 100, 100), root));
   window->Show();
@@ -178,7 +178,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   // Test with device scale factor.
   UpdateDisplay("400x600*2,400x600");
 
-  aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root = Shell::Get()->GetPrimaryRootWindow();
   ui::test::EventGenerator generator(root);
   generator.MoveMouseToInHost(10, 20);
 
@@ -207,7 +207,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
 // cursor's display.
 TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   aura::Env* env = aura::Env::GetInstance();
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
 

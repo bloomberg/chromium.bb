@@ -206,9 +206,8 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
 }
 
 bool TrayIME::ShouldShowKeyboardToggle() {
-  return keyboard_suppressed_ && !Shell::GetInstance()
-                                      ->accessibility_delegate()
-                                      ->IsVirtualKeyboardEnabled();
+  return keyboard_suppressed_ &&
+         !Shell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
 }
 
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {

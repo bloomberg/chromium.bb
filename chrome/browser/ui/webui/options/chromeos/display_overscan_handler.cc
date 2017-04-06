@@ -118,13 +118,13 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
   }
 
   const display::Display& display =
-      ash::Shell::GetInstance()->display_manager()->GetDisplayForId(display_id);
+      ash::Shell::Get()->display_manager()->GetDisplayForId(display_id);
   DCHECK(display.is_valid());
   if (!display.is_valid())
     return;
 
   ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::GetInstance()->window_tree_host_manager();
+      ash::Shell::Get()->window_tree_host_manager();
   overscan_calibrator_.reset(new OverscanCalibrator(
       display, window_tree_host_manager->GetOverscanInsets(display_id)));
 }

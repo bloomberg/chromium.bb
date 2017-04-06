@@ -47,7 +47,7 @@ void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
                                        ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                        : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   } else if (command_id == MENU_CHANGE_WALLPAPER) {
-    Shell::GetInstance()->wallpaper_controller()->OpenSetWallpaperPage();
+    Shell::Get()->wallpaper_controller()->OpenSetWallpaperPage();
   }
 }
 

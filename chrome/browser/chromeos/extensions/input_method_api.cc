@@ -257,7 +257,7 @@ InputMethodPrivateShowInputViewFunction::Run() {
   // Forcibly enables the a11y onscreen keyboard if there is on keyboard enabled
   // for now. And re-disables it after showing once.
   keyboard::SetAccessibilityKeyboardEnabled(true);
-  ash::Shell::GetInstance()->CreateKeyboard();
+  ash::Shell::Get()->CreateKeyboard();
   keyboard_controller = keyboard::KeyboardController::GetInstance();
   if (!keyboard_controller) {
     keyboard::SetAccessibilityKeyboardEnabled(false);

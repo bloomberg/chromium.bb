@@ -3819,7 +3819,7 @@ class ChromeLauncherControllerOrientationTest
     AddArcAppAndShortcut(appinfo_current_);
 
     ash::ScreenOrientationController* controller =
-        ash::Shell::GetInstance()->screen_orientation_controller();
+        ash::Shell::Get()->screen_orientation_controller();
 
     // Creating a window with NONE orientation will not lock the screen.
     window_none_ = CreateArcWindow(window_app_id_none_);
@@ -3908,7 +3908,7 @@ TEST_P(ChromeLauncherControllerOrientationTest,
   InitLauncherController();
 
   ash::ScreenOrientationController* controller =
-      ash::Shell::GetInstance()->screen_orientation_controller();
+      ash::Shell::Get()->screen_orientation_controller();
 
   std::string app_id1("org.chromium.arc.1");
   int task_id1 = 1;
@@ -3959,7 +3959,7 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
 
   InitApps();
   ash::ScreenOrientationController* controller =
-      ash::Shell::GetInstance()->screen_orientation_controller();
+      ash::Shell::Get()->screen_orientation_controller();
 
   // Activating a window with NON orientation unlocks the screen.
   window_none_->Activate();

@@ -125,7 +125,7 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
   if (keyboard::IsKeyboardEnabled())
-    ash::Shell::GetInstance()->CreateKeyboard();
+    ash::Shell::Get()->CreateKeyboard();
 }
 
 void ChromeVirtualKeyboardDelegate::SetKeyboardRestricted(bool restricted) {
@@ -136,7 +136,7 @@ void ChromeVirtualKeyboardDelegate::SetKeyboardRestricted(bool restricted) {
 
   // Force virtual keyboard reload.
   if (keyboard::IsKeyboardEnabled())
-    ash::Shell::GetInstance()->CreateKeyboard();
+    ash::Shell::Get()->CreateKeyboard();
 }
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
@@ -189,11 +189,10 @@ bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   bool is_enabled = keyboard::IsKeyboardEnabled();
   if (was_enabled == is_enabled)
     return true;
-  if (is_enabled) {
-    ash::Shell::GetInstance()->CreateKeyboard();
-  } else {
-    ash::Shell::GetInstance()->DeactivateKeyboard();
-  }
+  if (is_enabled)
+    ash::Shell::Get()->CreateKeyboard();
+  else
+    ash::Shell::Get()->DeactivateKeyboard();
   return true;
 }
 

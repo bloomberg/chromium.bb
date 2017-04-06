@@ -24,7 +24,7 @@ LoginLockStateNotifier::LoginLockStateNotifier() {
 
   const ScreenLocker* locker = ScreenLocker::default_screen_locker();
   bool locked = locker && locker->locked();
-  ash::Shell::GetInstance()->OnLockStateChanged(locked);
+  ash::Shell::Get()->OnLockStateChanged(locked);
 }
 
 LoginLockStateNotifier::~LoginLockStateNotifier() {}
@@ -35,11 +35,11 @@ void LoginLockStateNotifier::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_APP_TERMINATING:
-      ash::Shell::GetInstance()->OnAppTerminating();
+      ash::Shell::Get()->OnAppTerminating();
       break;
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       bool locked = *content::Details<bool>(details).ptr();
-      ash::Shell::GetInstance()->OnLockStateChanged(locked);
+      ash::Shell::Get()->OnLockStateChanged(locked);
       break;
     }
     default:

@@ -54,7 +54,7 @@ void RoundNearZero(gfx::Transform* transform) {
 gfx::Transform CreateRotationTransform(aura::Window* root_window,
                                        const display::Display& display) {
   display::ManagedDisplayInfo info =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
+      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
 // TODO(oshima): Add animation. (crossfade+rotation, or just cross-fade)
 #if defined(OS_WIN)
@@ -96,8 +96,7 @@ gfx::Transform CreateRotationTransform(aura::Window* root_window,
 }
 
 gfx::Transform CreateMagnifierTransform(aura::Window* root_window) {
-  MagnificationController* magnifier =
-      Shell::GetInstance()->magnification_controller();
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
   float magnifier_scale = 1.f;
   gfx::Point magnifier_offset;
   if (magnifier && magnifier->IsEnabled()) {
@@ -138,8 +137,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::Window* root, const display::Display& display)
       : root_window_(root) {
-    display::DisplayManager* display_manager =
-        Shell::GetInstance()->display_manager();
+    display::DisplayManager* display_manager = Shell::Get()->display_manager();
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
     host_insets_ = info.GetOverscanInsetsInPixel();
@@ -282,7 +280,7 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
     display::Display unified_display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
     display::ManagedDisplayInfo display_info =
-        Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
+        Shell::Get()->display_manager()->GetDisplayInfo(display.id());
     root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
     float scale = root_bounds_.height() /
                   static_cast<float>(screen_bounds.height()) /

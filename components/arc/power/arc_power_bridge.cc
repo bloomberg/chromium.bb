@@ -31,13 +31,13 @@ void ArcPowerBridge::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->power(), Init);
   DCHECK(power_instance);
   power_instance->Init(binding_.CreateInterfacePtrAndBind());
-  ash::Shell::GetInstance()->display_configurator()->AddObserver(this);
+  ash::Shell::Get()->display_configurator()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);
 }
 
 void ArcPowerBridge::OnInstanceClosed() {
-  ash::Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  ash::Shell::Get()->display_configurator()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
@@ -122,8 +122,7 @@ void ArcPowerBridge::OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) {
 }
 
 void ArcPowerBridge::IsDisplayOn(const IsDisplayOnCallback& callback) {
-  callback.Run(
-      ash::Shell::GetInstance()->display_configurator()->IsDisplayOn());
+  callback.Run(ash::Shell::Get()->display_configurator()->IsDisplayOn());
 }
 
 void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {

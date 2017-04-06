@@ -11,11 +11,11 @@ namespace ash {
 namespace wm {
 
 MaximizeModeEventHandlerAura::MaximizeModeEventHandlerAura() {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 MaximizeModeEventHandlerAura::~MaximizeModeEventHandlerAura() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void MaximizeModeEventHandlerAura::OnTouchEvent(ui::TouchEvent* event) {

@@ -286,7 +286,7 @@ aura::Window* Shell::GetRootWindowForNewWindows() {
 // static
 WmWindow* Shell::GetWmRootWindowForNewWindows() {
   CHECK(Shell::HasInstance());
-  Shell* shell = Shell::GetInstance();
+  Shell* shell = Shell::Get();
   if (shell->scoped_root_window_for_new_windows_)
     return shell->scoped_root_window_for_new_windows_;
   return shell->root_window_for_new_windows_;
@@ -314,7 +314,7 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
 
 // static
 Config Shell::GetAshConfig() {
-  return GetInstance()->wm_shell_->GetAshConfig();
+  return Get()->wm_shell_->GetAshConfig();
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(

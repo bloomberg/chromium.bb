@@ -365,7 +365,7 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   DCHECK(controller_.get());
   // For manager user, move wallpaper to locked container so that windows
   // created during the user image picker step are below it.
-  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
+  ash::Shell::Get()->wallpaper_controller()->MoveToLockedContainer();
 
   controller_->SetManagerProfile(manager_profile);
   if (view_)

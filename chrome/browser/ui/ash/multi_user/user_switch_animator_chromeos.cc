@@ -246,7 +246,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
   // Note: The animation duration override will be set before the old user gets
   // hidden and reset after the animations for the new user got kicked off.
   ash::Shell::RootWindowControllerList controller =
-      ash::Shell::GetInstance()->GetAllRootWindowControllers();
+      ash::Shell::Get()->GetAllRootWindowControllers();
   for (ash::Shell::RootWindowControllerList::iterator iter = controller.begin();
        iter != controller.end(); ++iter) {
     (*iter)->GetShelfLayoutManager()->SetAnimationDurationOverride(

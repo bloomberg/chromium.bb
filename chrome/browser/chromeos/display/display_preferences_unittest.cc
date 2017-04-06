@@ -59,9 +59,7 @@ const char kTouchCalibrationPointPairs[] = "touch_calibration_point_pairs";
 const float kMeanGravity = -9.80665f;
 
 bool IsRotationLocked() {
-  return ash::Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->rotation_locked();
+  return ash::Shell::Get()->screen_orientation_controller()->rotation_locked();
 }
 
 class DisplayPreferencesTest : public ash::test::AshTestBase {
@@ -199,7 +197,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   std::string GetRegisteredDisplayPlacementStr(
       const display::DisplayIdList& list) {
-    return ash::Shell::GetInstance()
+    return ash::Shell::Get()
         ->display_manager()
         ->layout_store()
         ->GetRegisteredDisplayLayout(list)
@@ -234,7 +232,7 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
 
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
 
   LoadDisplayPreferences(true);
   // DisplayPowerState should be ignored at boot.
@@ -259,7 +257,7 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
 
 TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::GetInstance()->window_tree_host_manager();
+      ash::Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -471,9 +469,9 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(base::Int64ToString(id2), primary_id_str);
 
   display_manager()->SetLayoutForCurrentDisplays(
-      display::test::CreateDisplayLayout(
-          ash::Shell::GetInstance()->display_manager(),
-          display::DisplayPlacement::BOTTOM, 20));
+      display::test::CreateDisplayLayout(ash::Shell::Get()->display_manager(),
+                                         display::DisplayPlacement::BOTTOM,
+                                         20));
 
   UpdateDisplay("1+0-200x200*2,1+0-200x200");
   // Mirrored.
@@ -570,7 +568,7 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   // Set display's resolution in single display. It creates the notification and
   // display preferences should not stored meanwhile.
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
 
   scoped_refptr<display::ManagedDisplayMode> old_mode(
       new display::ManagedDisplayMode(gfx::Size(400, 300)));
@@ -600,7 +598,7 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
 
   // Once the notification is removed, the specified resolution will be stored
   // by SetDisplayMode.
-  ash::Shell::GetInstance()->display_manager()->SetDisplayMode(
+  ash::Shell::Get()->display_manager()->SetDisplayMode(
       id, make_scoped_refptr(new display::ManagedDisplayMode(
               gfx::Size(300, 200), 60.0f, false, true)));
   UpdateDisplay("300x200#500x400|400x300|300x200");
@@ -700,8 +698,7 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
   profiles.push_back(display::COLOR_PROFILE_DYNAMIC);
   profiles.push_back(display::COLOR_PROFILE_MOVIE);
   profiles.push_back(display::COLOR_PROFILE_READING);
-  display::test::DisplayManagerTestApi(
-      ash::Shell::GetInstance()->display_manager())
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
       .SetAvailableColorProfiles(id1, profiles);
 
   LoadDisplayPreferences(false);
@@ -711,14 +708,14 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
 
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::GetInstance()->window_tree_host_manager();
+      ash::Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(
-      ash::Shell::GetInstance()->display_manager(), id1);
+      ash::Shell::Get()->display_manager(), id1);
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
@@ -789,12 +786,11 @@ TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences(false);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            ash::Shell::GetInstance()->display_configurator()->
-                requested_power_state());
+            ash::Shell::Get()->display_configurator()->requested_power_state());
 }
 
 TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences(false);
@@ -819,7 +815,7 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
 // Tests that display configuration changes caused by MaximizeModeController
 // are not saved.
 TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
-  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::Shell* shell = ash::Shell::Get();
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   LoggedInAsUser();
@@ -1000,9 +996,7 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
-  ash::Shell::GetInstance()
-      ->screen_orientation_controller()
-      ->ToggleUserRotationLock();
+  ash::Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
 
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
