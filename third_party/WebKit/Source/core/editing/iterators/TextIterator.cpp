@@ -56,15 +56,13 @@
 #include <algorithm>
 #include <unicode/utf16.h>
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 using namespace HTMLNames;
 
 namespace {
 
-const int kInvalidOffset = -1;
+const int kInvalidTextOffset = -1;
 
 template <typename Strategy>
 TextIteratorBehavior adjustBehaviorFlags(const TextIteratorBehavior&);
@@ -177,8 +175,8 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       m_handledFirstLetter(false),
       m_shouldStop(false),
       m_handleShadowRoot(false),
-      m_firstLetterStartOffset(kInvalidOffset),
-      m_remainingTextStartOffset(kInvalidOffset),
+      m_firstLetterStartOffset(kInvalidTextOffset),
+      m_remainingTextStartOffset(kInvalidTextOffset),
       m_textState(m_behavior) {
   DCHECK(start.isNotNull());
   DCHECK(end.isNotNull());
@@ -231,7 +229,7 @@ template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::hasNotAdvancedToStartPosition() {
   if (atEnd())
     return false;
-  if (m_remainingTextStartOffset == kInvalidOffset)
+  if (m_remainingTextStartOffset == kInvalidTextOffset)
     return false;
   return m_node == m_startContainer;
 }
@@ -288,8 +286,8 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer,
     advance();
 
   // Clear temporary data for initialization with :first-letter.
-  m_firstLetterStartOffset = kInvalidOffset;
-  m_remainingTextStartOffset = kInvalidOffset;
+  m_firstLetterStartOffset = kInvalidTextOffset;
+  m_remainingTextStartOffset = kInvalidTextOffset;
 }
 
 template <typename Strategy>
@@ -1195,7 +1193,7 @@ int TextIteratorAlgorithm<Strategy>::adjustedStartForFirstLetter(
     const LayoutText& layoutObject,
     int textStartOffset,
     int textEndOffset) {
-  if (m_firstLetterStartOffset == kInvalidOffset)
+  if (m_firstLetterStartOffset == kInvalidTextOffset)
     return textStartOffset;
   if (textNode != m_startContainer)
     return textStartOffset;
@@ -1206,7 +1204,7 @@ int TextIteratorAlgorithm<Strategy>::adjustedStartForFirstLetter(
   if (textEndOffset <= m_firstLetterStartOffset)
     return textStartOffset;
   int adjustedOffset = std::max(textStartOffset, m_firstLetterStartOffset);
-  m_firstLetterStartOffset = kInvalidOffset;
+  m_firstLetterStartOffset = kInvalidTextOffset;
   return adjustedOffset;
 }
 
@@ -1216,7 +1214,7 @@ int TextIteratorAlgorithm<Strategy>::adjustedStartForRemainingText(
     const LayoutText& layoutObject,
     int textStartOffset,
     int textEndOffset) {
-  if (m_remainingTextStartOffset == kInvalidOffset)
+  if (m_remainingTextStartOffset == kInvalidTextOffset)
     return textStartOffset;
   if (textNode != m_startContainer)
     return textStartOffset;
@@ -1227,7 +1225,7 @@ int TextIteratorAlgorithm<Strategy>::adjustedStartForRemainingText(
   if (textEndOffset <= m_remainingTextStartOffset)
     return textStartOffset;
   int adjustedOffset = std::max(textStartOffset, m_remainingTextStartOffset);
-  m_remainingTextStartOffset = kInvalidOffset;
+  m_remainingTextStartOffset = kInvalidTextOffset;
   return adjustedOffset;
 }
 
