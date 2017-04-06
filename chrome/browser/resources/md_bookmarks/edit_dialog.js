@@ -5,10 +5,6 @@
 Polymer({
   is: 'bookmarks-edit-dialog',
 
-  behaviors: [
-    Polymer.IronA11yKeysBehavior,
-  ],
-
   properties: {
     /** @private */
     isFolder_: Boolean,
@@ -33,10 +29,6 @@ Polymer({
 
     /** @private */
     urlValue_: String,
-  },
-
-  keyBindings: {
-    'enter': 'onSaveButtonTap_',
   },
 
   /**

@@ -66,14 +66,6 @@ suite('<bookmarks-edit-dialog>', function() {
     assertEquals('Awesome websites', lastUpdate.edit.title);
   });
 
-  test('pressing enter saves and closes dialog', function() {
-    var item = createItem('1', {url: 'http://www.example.com'});
-    dialog.showEditDialog(item);
-
-    MockInteractions.pressEnter(dialog.$.url);
-    assertFalse(dialog.$.dialog.open);
-  });
-
   test('add passes the correct details to the backend', function() {
     dialog.showAddDialog(false, '1');
 
