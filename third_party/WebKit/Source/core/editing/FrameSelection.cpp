@@ -25,6 +25,7 @@
 
 #include "core/editing/FrameSelection.h"
 
+#include <stdio.h>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
@@ -42,7 +43,7 @@
 #include "core/editing/FrameCaret.h"
 #include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
-#include "core/editing/PendingSelection.h"
+#include "core/editing/LayoutSelection.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionEditor.h"
 #include "core/editing/SelectionModifier.h"
@@ -80,7 +81,6 @@
 #include "platform/text/UnicodeUtilities.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
-#include <stdio.h>
 
 #define EDIT_DEBUG 0
 
@@ -94,7 +94,7 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 
 FrameSelection::FrameSelection(LocalFrame& frame)
     : m_frame(frame),
-      m_pendingSelection(PendingSelection::create(*this)),
+      m_pendingSelection(LayoutSelection::create(*this)),
       m_selectionEditor(SelectionEditor::create(frame)),
       m_granularity(CharacterGranularity),
       m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation()),

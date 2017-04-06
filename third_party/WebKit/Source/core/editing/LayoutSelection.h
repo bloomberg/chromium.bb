@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef PendingSelection_h
-#define PendingSelection_h
+#ifndef LayoutSelection_h
+#define LayoutSelection_h
 
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
@@ -31,10 +31,10 @@ namespace blink {
 class FrameSelection;
 class LayoutView;
 
-class PendingSelection final : public GarbageCollected<PendingSelection> {
+class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
-  static PendingSelection* create(FrameSelection& frameSelection) {
-    return new PendingSelection(frameSelection);
+  static LayoutSelection* create(FrameSelection& frameSelection) {
+    return new LayoutSelection(frameSelection);
   }
 
   bool hasPendingSelection() const { return m_hasPendingSelection; }
@@ -44,7 +44,7 @@ class PendingSelection final : public GarbageCollected<PendingSelection> {
   DECLARE_TRACE();
 
  private:
-  PendingSelection(FrameSelection&);
+  LayoutSelection(FrameSelection&);
 
   const VisibleSelection& visibleSelection() const;
 

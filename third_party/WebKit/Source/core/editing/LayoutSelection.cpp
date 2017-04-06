@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/editing/PendingSelection.h"
+#include "core/editing/LayoutSelection.h"
 
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
@@ -31,10 +31,10 @@
 
 namespace blink {
 
-PendingSelection::PendingSelection(FrameSelection& frameSelection)
+LayoutSelection::LayoutSelection(FrameSelection& frameSelection)
     : m_frameSelection(&frameSelection), m_hasPendingSelection(false) {}
 
-const VisibleSelection& PendingSelection::visibleSelection() const {
+const VisibleSelection& LayoutSelection::visibleSelection() const {
   return m_frameSelection->computeVisibleSelectionInDOMTree();
 }
 
@@ -55,7 +55,7 @@ static bool isSelectionInDocument(
   return true;
 }
 
-SelectionInFlatTree PendingSelection::calcVisibleSelection(
+SelectionInFlatTree LayoutSelection::calcVisibleSelection(
     const VisibleSelectionInFlatTree& originalSelection) const {
   const PositionInFlatTree& start = originalSelection.start();
   const PositionInFlatTree& end = originalSelection.end();
@@ -106,7 +106,7 @@ SelectionInFlatTree PendingSelection::calcVisibleSelection(
   return builder.build();
 }
 
-void PendingSelection::commit(LayoutView& layoutView) {
+void LayoutSelection::commit(LayoutView& layoutView) {
   if (!hasPendingSelection())
     return;
   DCHECK(!layoutView.needsLayout());
@@ -163,7 +163,7 @@ void PendingSelection::commit(LayoutView& layoutView) {
                           endLayoutObject, endPos.computeEditingOffset());
 }
 
-DEFINE_TRACE(PendingSelection) {
+DEFINE_TRACE(LayoutSelection) {
   visitor->trace(m_frameSelection);
 }
 

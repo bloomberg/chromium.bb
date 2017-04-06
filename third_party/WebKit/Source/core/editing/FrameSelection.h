@@ -53,7 +53,7 @@ class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
 class SelectionEditor;
-class PendingSelection;
+class LayoutSelection;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
 
@@ -291,7 +291,7 @@ class CORE_EXPORT FrameSelection final
   void nodeWillBeRemoved(Node&) final;
 
   Member<LocalFrame> m_frame;
-  const Member<PendingSelection> m_pendingSelection;
+  const Member<LayoutSelection> m_pendingSelection;
   const Member<SelectionEditor> m_selectionEditor;
 
   TextGranularity m_granularity;
