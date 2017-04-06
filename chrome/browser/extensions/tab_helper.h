@@ -50,9 +50,7 @@ class TabHelper : public content::WebContentsObserver,
  public:
   ~TabHelper() override;
 
-  void CreateApplicationShortcuts();
   void CreateHostedAppFromWebContents();
-  bool CanCreateApplicationShortcuts() const;
   bool CanCreateBookmarkApp() const;
 
   void UpdateShortcutOnLoadComplete() {
@@ -130,7 +128,6 @@ class TabHelper : public content::WebContentsObserver,
   // OnDidGetApplicationInfo uses this to dispatch calls.
   enum WebAppAction {
     NONE,               // No action at all.
-    CREATE_SHORTCUT,    // Bring up create application shortcut dialog.
     CREATE_HOSTED_APP,  // Create and install a hosted app.
     UPDATE_SHORTCUT     // Update icon for app shortcut.
   };

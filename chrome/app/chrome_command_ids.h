@@ -115,7 +115,6 @@
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000
-#define IDC_CREATE_SHORTCUTS            40001
 #define IDC_CREATE_HOSTED_APP           40002
 #define IDC_DEVELOPER_MENU              40003
 #define IDC_DEV_TOOLS                   40004

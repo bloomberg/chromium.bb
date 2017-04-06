@@ -3565,6 +3565,7 @@ should be able to be added at any place in this file.
 <action name="CreateShortcut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 04/2017 (replaced by CreateHostedApp).</obsolete>
 </action>
 
 <action name="CredentialManager_AccountChooser_Accepted">

@@ -1294,13 +1294,6 @@ bool CanViewSource(const Browser* browser) {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-void CreateApplicationShortcuts(Browser* browser) {
-  base::RecordAction(UserMetricsAction("CreateShortcut"));
-  extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())->
-          CreateApplicationShortcuts();
-}
-
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
   extensions::TabHelper::FromWebContents(
@@ -1308,35 +1301,10 @@ void CreateBookmarkAppFromCurrentWebContents(Browser* browser) {
           CreateHostedAppFromWebContents();
 }
 
-bool CanCreateApplicationShortcuts(const Browser* browser) {
-  return extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())->
-          CanCreateApplicationShortcuts();
-}
-
 bool CanCreateBookmarkApp(const Browser* browser) {
   return extensions::TabHelper::FromWebContents(
              browser->tab_strip_model()->GetActiveWebContents())
       ->CanCreateBookmarkApp();
-}
-
-void ConvertTabToAppWindow(Browser* browser,
-                           content::WebContents* contents) {
-  const GURL& url = contents->GetController().GetLastCommittedEntry()->GetURL();
-  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
-
-  int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
-  if (index >= 0)
-    browser->tab_strip_model()->DetachWebContentsAt(index);
-
-  Browser* app_browser = new Browser(Browser::CreateParams::CreateForApp(
-      app_name, true /* trusted_source */, gfx::Rect(), browser->profile(),
-      true));
-  app_browser->tab_strip_model()->AppendWebContents(contents, true);
-
-  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  contents->GetRenderViewHost()->SyncRendererPrefs();
-  app_browser->window()->Show();
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

@@ -97,12 +97,6 @@ void ShowWebDialogInContainer(int container_id,
                               ui::WebDialogDelegate* delegate);
 #endif  // defined(USE_ASH)
 
-#if !defined(OS_MACOSX)
-// Shows the create web app shortcut dialog box.
-void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     content::WebContents* web_contents);
-#endif  // !defined(OS_MACOSX)
-
 // Shows the create chrome app shortcut dialog box.
 // |close_callback| may be null.
 void ShowCreateChromeAppShortcutsDialog(

@@ -2031,17 +2031,11 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
-          Create application &amp;shortcuts...
-        </message>
         <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
           Add to desktop...
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_CREATE_SHORTCUTS" desc="In Title Case: Default installation menu label">
-          Create Application &amp;Shortcuts...
-        </message>
         <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
           Add to Desktop...
         </message>
@@ -5082,7 +5076,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           No thanks
         </message>
       </if>
-  
+
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
         Other
       </message>

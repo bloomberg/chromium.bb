@@ -176,10 +176,6 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Developer tools.
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
-  bool show_create_shortcuts = true;
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(USE_ASH)
-  show_create_shortcuts = false;
-#endif
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSaveAsMenuLabelExperiment) ||
       base::FieldTrialList::FindFullName("SaveAsMenuText") == "download") {
@@ -197,8 +193,6 @@ void ToolsMenuModel::Build(Browser* browser) {
     string_id = IDS_ADD_TO_SHELF;
 #endif  // defined(USE_ASH)
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, string_id);
-  } else if (show_create_shortcuts) {
-    AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);
@@ -436,12 +430,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
                                    delta);
       }
       LogMenuAction(MENU_ACTION_CREATE_HOSTED_APP);
-      break;
-    case IDC_CREATE_SHORTCUTS:
-      if (!uma_action_recorded_)
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.CreateShortcuts",
-                                   delta);
-      LogMenuAction(MENU_ACTION_CREATE_SHORTCUTS);
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (!uma_action_recorded_) {

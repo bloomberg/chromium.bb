@@ -78,8 +78,6 @@ struct ShortcutInfo {
 // Unity and Gnome Shell).
 enum ApplicationsMenuLocation {
   APP_MENU_LOCATION_NONE,
-  APP_MENU_LOCATION_ROOT,
-  APP_MENU_LOCATION_SUBDIR_CHROME_DEPRECATED,  // TODO(bcwhite) remove this
   APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
   APP_MENU_LOCATION_HIDDEN,
 };

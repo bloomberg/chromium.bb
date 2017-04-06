@@ -27,7 +27,7 @@ namespace {
 class MockAppMenuModel;
 }  // namespace
 
-// Values should correspond to 'WretchMenuAction' enum in histograms.xml.
+// Values should correspond to 'WrenchMenuAction' enum in histograms.xml.
 enum AppMenuAction {
   MENU_ACTION_NEW_TAB = 0,
   MENU_ACTION_NEW_WINDOW = 1,
@@ -47,7 +47,6 @@ enum AppMenuAction {
   MENU_ACTION_COPY = 18,
   MENU_ACTION_PASTE = 19,
   MENU_ACTION_CREATE_HOSTED_APP = 20,
-  MENU_ACTION_CREATE_SHORTCUTS = 21,
   MENU_ACTION_MANAGE_EXTENSIONS = 22,
   MENU_ACTION_TASK_MANAGER = 23,
   MENU_ACTION_CLEAR_BROWSING_DATA = 24,
