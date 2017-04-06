@@ -507,7 +507,6 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   KURL testURL(ParsedURLString, kTestURL);
   ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
   ResourceRequest request = ResourceRequest(testURL);
-  request.setPreviewsState(WebURLRequest::ServerLoFiOn);
   ImageResource* imageResource = ImageResource::create(request);
   imageResource->setStatus(ResourceStatus::Pending);
 
@@ -546,6 +545,49 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   testThatReloadIsStartedThenServeReload(
       testURL, imageResource, imageResource->getContent(), observer.get(),
       WebCachePolicy::BypassingCache);
+}
+
+TEST(ImageResourceTest,
+     ReloadIfLoFiOrPlaceholderAfterFinishedWithoutLoFiHeaders) {
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
+  ResourceRequest request = ResourceRequest(testURL);
+  request.setPreviewsState(WebURLRequest::ServerLoFiOn);
+  ImageResource* imageResource = ImageResource::create(request);
+  imageResource->setStatus(ResourceStatus::Pending);
+
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::create(imageResource->getContent());
+  ResourceFetcher* fetcher = createFetcher();
+
+  // Send the image response, without any LoFi image response headers.
+  imageResource->responseReceived(
+      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), nullAtom),
+      nullptr);
+  imageResource->appendData(reinterpret_cast<const char*>(kJpegImage),
+                            sizeof(kJpegImage));
+  imageResource->finish();
+  EXPECT_FALSE(imageResource->errorOccurred());
+  ASSERT_TRUE(imageResource->getContent()->hasImage());
+  EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());
+  EXPECT_EQ(2, observer->imageChangedCount());
+  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnLastImageChanged());
+  // The observer should have been notified that the image load completed.
+  EXPECT_TRUE(observer->imageNotifyFinishedCalled());
+  EXPECT_EQ(kJpegImageWidth, observer->imageWidthOnImageNotifyFinished());
+  EXPECT_TRUE(imageResource->getContent()->getImage()->isBitmapImage());
+  EXPECT_EQ(kJpegImageWidth, imageResource->getContent()->getImage()->width());
+  EXPECT_EQ(kJpegImageHeight,
+            imageResource->getContent()->getImage()->height());
+
+  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
+  imageResource->reloadIfLoFiOrPlaceholderImage(fetcher,
+                                                Resource::kReloadAlways);
+
+  // The image should not have been reloaded, since it didn't have the LoFi
+  // image response headers.
+  EXPECT_EQ(2, observer->imageChangedCount());
+  EXPECT_TRUE(imageResource->isLoaded());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
@@ -604,12 +646,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
       MockImageResourceObserver::create(imageResource->getContent());
 
   // Send the image response.
-  ResourceResponse initialResourceResponse(testURL, "image/jpeg",
-                                           sizeof(kJpegImage), nullAtom);
-  initialResourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
-
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(initialResourceResponse));
+  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
+      ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
   imageResource->loader()->didReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
 

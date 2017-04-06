@@ -459,14 +459,13 @@ bool ImageResource::shouldReloadBrokenPlaceholder() const {
 }
 
 static bool isLoFiImage(const ImageResource& resource) {
-  if (!(resource.resourceRequest().previewsState() &
-        WebURLRequest::ServerLoFiOn)) {
-    return false;
+  if (resource.isLoaded()) {
+    return resource.response()
+        .httpHeaderField("chrome-proxy-content-transform")
+        .contains("empty-image");
   }
-  return !resource.isLoaded() ||
-         resource.response()
-             .httpHeaderField("chrome-proxy-content-transform")
-             .contains("empty-image");
+  return resource.resourceRequest().previewsState() &
+         WebURLRequest::ServerLoFiOn;
 }
 
 void ImageResource::reloadIfLoFiOrPlaceholderImage(
