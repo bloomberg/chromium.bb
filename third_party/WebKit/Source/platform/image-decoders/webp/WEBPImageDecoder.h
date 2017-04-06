@@ -33,7 +33,6 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "webp/decode.h"
 #include "webp/demux.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

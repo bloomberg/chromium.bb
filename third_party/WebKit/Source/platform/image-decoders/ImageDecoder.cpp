@@ -31,7 +31,7 @@
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

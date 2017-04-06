@@ -30,14 +30,14 @@
 
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
+#include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

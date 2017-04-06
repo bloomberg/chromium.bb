@@ -6,12 +6,12 @@
 #define SegmentReader_h
 
 #include "platform/SharedBuffer.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 

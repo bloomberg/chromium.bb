@@ -40,12 +40,12 @@
 
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback
 // class into this old C decoder, so we will too.
+#include <memory>
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 #define MAX_DICTIONARY_ENTRY_BITS 12
 #define MAX_DICTIONARY_ENTRIES 4096  // 2^MAX_DICTIONARY_ENTRY_BITS

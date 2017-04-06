@@ -29,10 +29,10 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/image-decoders/ImageFrame.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "png.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.

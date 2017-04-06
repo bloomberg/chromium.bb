@@ -27,6 +27,7 @@
 #ifndef ImageDecoder_h
 #define ImageDecoder_h
 
+#include <memory>
 #include "SkColorPriv.h"
 #include "SkColorSpaceXform.h"
 #include "platform/PlatformExport.h"
@@ -36,13 +37,12 @@
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

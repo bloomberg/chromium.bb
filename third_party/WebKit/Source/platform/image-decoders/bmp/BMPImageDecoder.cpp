@@ -31,7 +31,7 @@
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

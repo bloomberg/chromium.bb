@@ -42,7 +42,7 @@
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 #include "zlib.h"
 
 namespace {

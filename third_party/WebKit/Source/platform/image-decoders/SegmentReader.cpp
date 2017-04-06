@@ -5,12 +5,12 @@
 #include "platform/image-decoders/SegmentReader.h"
 
 #include "platform/SharedBuffer.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

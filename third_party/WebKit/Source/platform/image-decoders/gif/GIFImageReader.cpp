@@ -74,8 +74,8 @@ mailing address.
 
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
-#include "wtf/PtrUtil.h"
 #include <string.h>
+#include "platform/wtf/PtrUtil.h"
 
 using blink::GIFImageDecoder;
 

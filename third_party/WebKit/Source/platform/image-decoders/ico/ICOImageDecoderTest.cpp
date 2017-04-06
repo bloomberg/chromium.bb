@@ -4,10 +4,10 @@
 
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
 
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

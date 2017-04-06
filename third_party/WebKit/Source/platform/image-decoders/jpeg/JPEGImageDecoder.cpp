@@ -39,7 +39,7 @@
 
 #include <memory>
 #include "platform/instrumentation/PlatformInstrumentation.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.

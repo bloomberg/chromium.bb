@@ -25,10 +25,10 @@
 
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
-#include "platform/image-decoders/gif/GIFImageReader.h"
-#include "wtf/NotFound.h"
-#include "wtf/PtrUtil.h"
 #include <limits>
+#include "platform/image-decoders/gif/GIFImageReader.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

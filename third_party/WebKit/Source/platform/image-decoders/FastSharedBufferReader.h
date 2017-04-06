@@ -33,10 +33,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/image-decoders/SegmentReader.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

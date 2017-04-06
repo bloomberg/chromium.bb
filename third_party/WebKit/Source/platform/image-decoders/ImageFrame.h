@@ -29,13 +29,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/Vector.h"
 
 class SkBitmap;
 

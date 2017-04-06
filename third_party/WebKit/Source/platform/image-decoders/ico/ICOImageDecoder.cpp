@@ -30,9 +30,9 @@
 
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
 
-#include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
+#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -31,12 +31,12 @@
 #ifndef BMPImageReader_h
 #define BMPImageReader_h
 
+#include <stdint.h>
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/Allocator.h"
-#include "wtf/CPU.h"
-#include "wtf/Noncopyable.h"
-#include <stdint.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

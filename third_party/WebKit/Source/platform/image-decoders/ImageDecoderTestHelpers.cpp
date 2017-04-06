@@ -4,13 +4,13 @@
 
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 
+#include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

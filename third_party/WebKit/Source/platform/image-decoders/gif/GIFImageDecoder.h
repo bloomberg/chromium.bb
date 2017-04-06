@@ -26,9 +26,9 @@
 #ifndef GIFImageDecoder_h
 #define GIFImageDecoder_h
 
-#include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/Noncopyable.h"
 
 class GIFImageReader;
 
