@@ -3081,6 +3081,8 @@ split_static_library("ui") {
       "views/network_profile_bubble_view.cc",
       "views/settings_reset_prompt_dialog.cc",
       "views/settings_reset_prompt_dialog.h",
+      "views/srt_prompt_dialog.cc",
+      "views/srt_prompt_dialog.h",
       "views/uninstall_view.cc",
       "views/uninstall_view.h",
       "webui/cleanup_tool/cleanup_action_handler.cc",

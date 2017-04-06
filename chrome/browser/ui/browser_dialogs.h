@@ -55,6 +55,10 @@ class PaymentRequest;
 class PaymentRequestDialog;
 }
 
+namespace safe_browsing {
+class SRTPromptController;
+}
+
 namespace security_state {
 struct SecurityInfo;
 }  // namespace security_state
@@ -188,6 +192,16 @@ enum class DialogIdentifier { UNKNOWN = 0, TRANSLATE = 1, MAX_VALUE };
 
 // Record an UMA metric counting the creation of a dialog box of this type.
 void RecordDialogCreation(DialogIdentifier identifier);
+
+#if defined(OS_WIN)
+
+// Shows the Chrome Cleanup dialog asking the user if they want to clean their
+// system from unwanted software. This is called when unwanted software has been
+// detected on the system.
+void ShowSRTPrompt(Browser* browser,
+                   safe_browsing::SRTPromptController* controller);
+
+#endif  // OS_WIN
 
 }  // namespace chrome
 

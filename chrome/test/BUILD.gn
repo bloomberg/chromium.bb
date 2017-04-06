@@ -2592,6 +2592,7 @@ test("browser_tests") {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
+        "../browser/ui/views/srt_prompt_dialog_browsertest.cc",
       ]
     }
     if (is_mac || is_win) {
