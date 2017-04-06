@@ -38,11 +38,8 @@ public class QuicUploadTest extends CronetTestBase {
         QuicTestServer.startQuicTestServer(getContext());
 
         builder.enableQuic(true);
-        JSONObject quicParams =
-                new JSONObject().put("host_whitelist", QuicTestServer.getServerHost());
         JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
         JSONObject experimentalOptions = new JSONObject()
-                                                 .put("QUIC", quicParams)
                                                  .put("HostResolverRules", hostResolverParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
 

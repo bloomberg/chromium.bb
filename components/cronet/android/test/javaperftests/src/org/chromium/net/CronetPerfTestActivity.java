@@ -199,12 +199,10 @@ public class CronetPerfTestActivity extends Activity {
             }
 
             try {
-                JSONObject quicParams = new JSONObject().put("host_whitelist", host);
                 JSONObject hostResolverParams =
                         CronetTestUtil.generateHostResolverRules(getConfigString("HOST_IP"));
                 JSONObject experimentalOptions =
                         new JSONObject()
-                                .put("QUIC", quicParams)
                                 .put("HostResolverRules", hostResolverParams);
                 cronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
             } catch (JSONException e) {

@@ -45,8 +45,6 @@ public class QuicTest extends NativeCronetTestCase {
         JSONObject quicParams = new JSONObject().put("delay_tcp_race", true);
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         mTestSupport.addHostResolverRules(experimentalOptions);
-        experimentalOptions.put("host_whitelist", url.getHost());
-
         mCronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
 
         initCronetEngine();

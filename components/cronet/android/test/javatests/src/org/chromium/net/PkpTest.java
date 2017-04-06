@@ -393,10 +393,8 @@ public class PkpTest extends CronetTestBase {
         mBuilder.enableQuic(true);
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
-        JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
         JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
         JSONObject experimentalOptions = new JSONObject()
-                                                 .put("QUIC", quicParams)
                                                  .put("HostResolverRules", hostResolverParams);
         mBuilder.setExperimentalOptions(experimentalOptions.toString());
         mBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));

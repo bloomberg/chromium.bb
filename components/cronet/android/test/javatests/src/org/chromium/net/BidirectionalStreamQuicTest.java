@@ -36,7 +36,7 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         QuicTestServer.startQuicTestServer(getContext());
 
         builder.enableQuic(true);
-        JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
+        JSONObject quicParams = new JSONObject();
         if (enabled == QuicBidirectionalStreams.DISABLED) {
             quicParams.put("quic_disable_bidirectional_streams", true);
         }

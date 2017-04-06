@@ -47,7 +47,6 @@ public class QuicTest extends CronetTestBase {
         // TODO(mgersh): Enable connection migration once it works, see http://crbug.com/634910
         JSONObject quicParams = new JSONObject()
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
-                                        .put("host_whitelist", "test.example.com")
                                         .put("max_server_configs_stored_in_properties", 2)
                                         .put("delay_tcp_race", true)
                                         .put("idle_connection_timeout_seconds", 300)
@@ -119,10 +118,8 @@ public class QuicTest extends CronetTestBase {
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         builder.enableQuic(true);
-        JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
         JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
         JSONObject experimentalOptions = new JSONObject()
-                                                 .put("QUIC", quicParams)
                                                  .put("HostResolverRules", hostResolverParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
         CronetTestUtil.setMockCertVerifierForTesting(
