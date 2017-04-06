@@ -43,14 +43,55 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
   using SyncConfirmationHandler::HandleConfirm;
   using SyncConfirmationHandler::HandleUndo;
   using SyncConfirmationHandler::HandleInitializedWithSize;
-  using SyncConfirmationHandler::HandleGoToSettings;
   using SyncConfirmationHandler::SetUserImageURL;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestingSyncConfirmationHandler);
+};
+
+class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
+ public:
+  TestingOneClickSigninSyncStarter(Profile* profile,
+                                   Browser* browser,
+                                   const std::string& gaia_id,
+                                   const std::string& email,
+                                   const std::string& password,
+                                   const std::string& refresh_token,
+                                   ProfileMode profile_mode,
+                                   StartSyncMode start_mode,
+                                   content::WebContents* web_contents,
+                                   ConfirmationRequired display_confirmation,
+                                   const GURL& current_url,
+                                   const GURL& continue_url,
+                                   Callback callback)
+      : OneClickSigninSyncStarter(profile,
+                                  browser,
+                                  gaia_id,
+                                  email,
+                                  password,
+                                  refresh_token,
+                                  profile_mode,
+                                  start_mode,
+                                  web_contents,
+                                  display_confirmation,
+                                  current_url,
+                                  continue_url,
+                                  callback) {}
+
+ protected:
+  void ShowSyncSetupSettingsSubpage() override {
+    // Intentionally don't open a tab to settings.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestingOneClickSigninSyncStarter);
 };
 
 class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
  public:
-  SyncConfirmationHandlerTest() : did_user_explicitly_interact(false),
-                                  web_ui_(new content::TestWebUI) {}
+  SyncConfirmationHandlerTest()
+      : did_user_explicitly_interact(false), web_ui_(new content::TestWebUI) {}
+
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     chrome::NewTab(browser());
@@ -65,7 +106,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
 
     // This dialog assumes the signin flow was completed, which kicks off the
     // SigninManager.
-    new OneClickSigninSyncStarter(
+    new TestingOneClickSigninSyncStarter(
         profile(), browser(), "gaia", "foo@example.com", "password",
         "refresh_token", OneClickSigninSyncStarter::CURRENT_PROFILE,
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, nullptr,
@@ -78,11 +119,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
 
-    if (did_user_explicitly_interact) {
+    if (did_user_explicitly_interact)
       EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
-    } else {
+    else
       EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
-    }
   }
 
   TestingSyncConfirmationHandler* handler() {
@@ -125,14 +165,16 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return builder.Build().release();
   }
 
-protected:
- bool did_user_explicitly_interact;
+ protected:
+  bool did_user_explicitly_interact;
 
-private:
- std::unique_ptr<content::TestWebUI> web_ui_;
- std::unique_ptr<SyncConfirmationUI> sync_confirmation_ui_;
- TestingSyncConfirmationHandler* handler_;  // Not owned.
- base::UserActionTester user_action_tester_;
+ private:
+  std::unique_ptr<content::TestWebUI> web_ui_;
+  std::unique_ptr<SyncConfirmationUI> sync_confirmation_ui_;
+  TestingSyncConfirmationHandler* handler_;  // Not owned.
+  base::UserActionTester user_action_tester_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
@@ -276,7 +318,9 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   EXPECT_FALSE(sync()->IsFirstSetupComplete());
   EXPECT_TRUE(sync()->IsFirstSetupInProgress());
 
-  handler()->HandleConfirm(nullptr);
+  base::ListValue args;
+  args.AppendBoolean(false /* show advanced */);
+  handler()->HandleConfirm(&args);
   did_user_explicitly_interact = true;
 
   EXPECT_FALSE(sync()->IsFirstSetupInProgress());
@@ -288,4 +332,24 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
       "Signin_Signin_WithDefaultSyncSettings"));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(
       "Signin_Signin_WithAdvancedSyncSettings"));
+}
+
+TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
+  EXPECT_FALSE(sync()->IsFirstSetupComplete());
+  EXPECT_TRUE(sync()->IsFirstSetupInProgress());
+
+  base::ListValue args;
+  args.AppendBoolean(true /* show advanced */);
+  handler()->HandleConfirm(&args);
+  did_user_explicitly_interact = true;
+
+  EXPECT_FALSE(sync()->IsFirstSetupInProgress());
+  EXPECT_FALSE(sync()->IsFirstSetupComplete());
+  EXPECT_TRUE(
+      SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(
+                   "Signin_Signin_WithDefaultSyncSettings"));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(
+                   "Signin_Signin_WithAdvancedSyncSettings"));
 }

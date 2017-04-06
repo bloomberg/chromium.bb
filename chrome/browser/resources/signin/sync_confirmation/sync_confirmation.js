@@ -6,15 +6,11 @@ cr.define('sync.confirmation', function() {
   'use strict';
 
   function onConfirm(e) {
-    chrome.send('confirm');
+    chrome.send('confirm', [$('configure-before-signing-in').checked]);
   }
 
   function onUndo(e) {
     chrome.send('undo');
-  }
-
-  function onGoToSettings(e) {
-    chrome.send('goToSettings');
   }
 
   function initialize() {
@@ -22,7 +18,6 @@ cr.define('sync.confirmation', function() {
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
     if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('settingsLink').addEventListener('click', onGoToSettings);
       $('profile-picture').addEventListener('load', onPictureLoaded);
       $('syncDisabledDetails').hidden = true;
     } else {

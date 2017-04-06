@@ -428,7 +428,7 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     case LoginUIService::CONFIGURE_SYNC_FIRST:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
-      chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+      ShowSyncSetupSettingsSubpage();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       base::RecordAction(
@@ -571,6 +571,10 @@ Browser* OneClickSigninSyncStarter::EnsureBrowser(Browser* browser,
     browser->window()->Show();
   }
   return browser;
+}
+
+void OneClickSigninSyncStarter::ShowSyncSetupSettingsSubpage() {
+  chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
 void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
