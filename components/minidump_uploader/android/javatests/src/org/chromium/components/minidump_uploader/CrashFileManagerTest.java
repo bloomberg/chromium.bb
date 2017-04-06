@@ -474,18 +474,16 @@ public class CrashFileManagerTest extends CrashTestCase {
     }
 
     private void testMinidumpStorageRestrictions(boolean perUid) throws IOException {
-        CrashFileManager fileManager =
-                new CrashFileManager(getInstrumentation().getTargetContext().getCacheDir());
+        CrashFileManager fileManager = new CrashFileManager(mCacheDir);
         // Delete existing minidumps to ensure they don't interfere with this test.
         deleteFilesInDirIfExists(fileManager.getCrashDirectory());
         assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
-        File tmpCopyDir = new File(getInstrumentation().getTargetContext().getCacheDir(), "tmpDir");
+        File tmpCopyDir = new File(getExistingCacheDir(), "tmpDir");
 
         // Note that these minidump files are set up directly in the cache dir - not in the crash
         // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
         // copying them.
-        File minidumpToCopy =
-                new File(getInstrumentation().getTargetContext().getCacheDir(), "toCopy.dmp");
+        File minidumpToCopy = new File(getExistingCacheDir(), "toCopy.dmp");
         setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
         // Ensure we didn't add any new minidumps to the crash directory.
         assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
@@ -565,18 +563,16 @@ public class CrashFileManagerTest extends CrashTestCase {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testCantCopyLargeFile() throws IOException {
-        CrashFileManager fileManager =
-                new CrashFileManager(getInstrumentation().getTargetContext().getCacheDir());
+        CrashFileManager fileManager = new CrashFileManager(mCacheDir);
         // Delete existing minidumps to ensure they don't interfere with this test.
         deleteFilesInDirIfExists(fileManager.getCrashDirectory());
         assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
-        File tmpCopyDir = new File(getInstrumentation().getTargetContext().getCacheDir(), "tmpDir");
+        File tmpCopyDir = new File(getExistingCacheDir(), "tmpDir");
 
         // Note that these minidump files are set up directly in the cache dir - not in the crash
         // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
         // copying them.
-        File minidumpToCopy =
-                new File(getInstrumentation().getTargetContext().getCacheDir(), "toCopy.dmp");
+        File minidumpToCopy = new File(getExistingCacheDir(), "toCopy.dmp");
         setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
         // Write ~1MB data into the minidump file.
         final int kilo = 1024;

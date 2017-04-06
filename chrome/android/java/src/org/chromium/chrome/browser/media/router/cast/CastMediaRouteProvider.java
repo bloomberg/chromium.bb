@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
-import android.content.Context;
 import android.os.Handler;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
@@ -40,7 +39,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     private static final String AUTO_JOIN_PRESENTATION_ID = "auto-join";
     private static final String PRESENTATION_ID_SESSION_ID_PREFIX = "cast-session_";
 
-    private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteManager mManager;
     private final CastMessageHandler mMessageHandler;
@@ -60,8 +58,8 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
      */
     public static class Builder implements MediaRouteProvider.Builder {
         @Override
-        public MediaRouteProvider create(Context applicationContext, MediaRouteManager manager) {
-            return CastMediaRouteProvider.create(applicationContext, manager);
+        public MediaRouteProvider create(MediaRouteManager manager) {
+            return CastMediaRouteProvider.create(manager);
         }
     }
 
@@ -88,18 +86,14 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     }
 
     /**
-     * @param applicationContext The application context to use for this route provider.
      * @return Initialized {@link CastMediaRouteProvider} object or null if it's not supported.
      */
     @Nullable
-    public static CastMediaRouteProvider create(
-            Context applicationContext, MediaRouteManager manager) {
-        assert applicationContext != null;
-        MediaRouter androidMediaRouter =
-                ChromeMediaRouter.getAndroidMediaRouter(applicationContext);
+    public static CastMediaRouteProvider create(MediaRouteManager manager) {
+        MediaRouter androidMediaRouter = ChromeMediaRouter.getAndroidMediaRouter();
         if (androidMediaRouter == null) return null;
 
-        return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
+        return new CastMediaRouteProvider(androidMediaRouter, manager);
     }
 
     public void onLaunchError() {
@@ -289,7 +283,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
                 sendReceiverAction(clientRecord.routeId, sink, source.getClientId(), "cast");
             }
         }
-        request.start(mApplicationContext);
+        request.start();
     }
 
     @Override
@@ -453,15 +447,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     }
 
     @VisibleForTesting
-    static CastMediaRouteProvider createCastMediaRouteProviderForTest(
-            Context applicationContext, MediaRouter androidMediaRouter, MediaRouteManager manager) {
-        return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
-    }
-
-    @VisibleForTesting
-    CastMediaRouteProvider(
-            Context applicationContext, MediaRouter androidMediaRouter, MediaRouteManager manager) {
-        mApplicationContext = applicationContext;
+    CastMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
         mMessageHandler = new CastMessageHandler(this);

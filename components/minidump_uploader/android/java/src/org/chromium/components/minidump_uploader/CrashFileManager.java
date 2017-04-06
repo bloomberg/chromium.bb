@@ -390,6 +390,8 @@ public class CrashFileManager {
     File[] listCrashFiles(@Nullable final Pattern pattern) {
         File crashDir = getCrashDirectory();
 
+        Log.i(TAG, crashDir.getAbsolutePath());
+
         FilenameFilter filter = null;
         if (pattern != null) {
             filter = new FilenameFilter() {

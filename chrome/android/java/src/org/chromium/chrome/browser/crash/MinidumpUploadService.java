@@ -8,12 +8,12 @@ import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.job.JobInfo;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PersistableBundle;
 import android.support.annotation.StringDef;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
@@ -87,7 +87,7 @@ public class MinidumpUploadService extends IntentService {
      * Schedules uploading of all pending minidumps, using the JobScheduler API.
      */
     @SuppressLint("NewApi")
-    public static void scheduleUploadJob(Context context) {
+    public static void scheduleUploadJob() {
         assert shouldUseJobSchedulerForUploads();
 
         CrashReportingPermissionManager permissionManager = PrivacyPreferencesManager.getInstance();
@@ -100,9 +100,10 @@ public class MinidumpUploadService extends IntentService {
         JobInfo.Builder builder =
                 new JobInfo
                         .Builder(TaskIds.CHROME_MINIDUMP_UPLOADING_JOB_ID,
-                                new ComponentName(context, ChromeMinidumpUploadJobService.class))
+                                new ComponentName(ContextUtils.getApplicationContext(),
+                                        ChromeMinidumpUploadJobService.class))
                         .setExtras(permissions);
-        MinidumpUploadJobService.scheduleUpload(context, builder);
+        MinidumpUploadJobService.scheduleUpload(builder);
     }
 
     /**
@@ -291,19 +292,19 @@ public class MinidumpUploadService extends IntentService {
      * Note that this method is asynchronous. All that is guaranteed is that an upload attempt will
      * be enqueued.
      *
-     * @param context The application context, in which to initiate the crash report upload.
-     * @throws A security excpetion if the caller doesn't have permission to start the upload
+     * @throws SecurityException if the caller doesn't have permission to start the upload
      *         service. This can only happen on KitKat and below, due to a framework bug.
      */
-    public static void tryUploadCrashDump(Context context, File minidumpFile)
-            throws SecurityException {
+    public static void tryUploadCrashDump(File minidumpFile) throws SecurityException {
         assert !shouldUseJobSchedulerForUploads();
-        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
-        Intent intent = new Intent(context, MinidumpUploadService.class);
+        CrashFileManager fileManager =
+                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
+        Intent intent =
+                new Intent(ContextUtils.getApplicationContext(), MinidumpUploadService.class);
         intent.setAction(ACTION_UPLOAD);
         intent.putExtra(FILE_TO_UPLOAD_KEY, minidumpFile.getAbsolutePath());
         intent.putExtra(UPLOAD_LOG_KEY, fileManager.getCrashUploadLogFile().getAbsolutePath());
-        context.startService(intent);
+        ContextUtils.getApplicationContext().startService(intent);
     }
 
     /**
@@ -314,15 +315,15 @@ public class MinidumpUploadService extends IntentService {
      *
      * This method is safe to call from the UI thread.
      *
-     * @param context Context of the application.
      */
-    public static void tryUploadAllCrashDumps(Context context) {
+    public static void tryUploadAllCrashDumps() {
         assert !shouldUseJobSchedulerForUploads();
-        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        CrashFileManager fileManager =
+                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
         File[] minidumps = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         Log.i(TAG, "Attempting to upload accumulated crash dumps.");
         for (File minidump : minidumps) {
-            tryUploadCrashDump(context, minidump);
+            tryUploadCrashDump(minidump);
         }
     }
 
@@ -334,17 +335,17 @@ public class MinidumpUploadService extends IntentService {
      *
      * This method is safe to call from the UI thread.
      *
-     * @param context the context to use for the intent.
      * @param localId The local ID of the crash report.
      */
     @CalledByNative
-    public static void tryUploadCrashDumpWithLocalId(Context context, String localId) {
+    public static void tryUploadCrashDumpWithLocalId(String localId) {
         if (localId == null || localId.isEmpty()) {
             Log.w(TAG, "Cannot force crash upload since local crash id is absent.");
             return;
         }
 
-        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        CrashFileManager fileManager =
+                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
         File minidumpFile = fileManager.getCrashFileWithLocalId(localId);
         if (minidumpFile == null) {
             Log.w(TAG, "Could not find a crash dump with local ID " + localId);
@@ -357,9 +358,9 @@ public class MinidumpUploadService extends IntentService {
         }
 
         if (shouldUseJobSchedulerForUploads()) {
-            scheduleUploadJob(context);
+            scheduleUploadJob();
         } else {
-            tryUploadCrashDump(context, renamedMinidumpFile);
+            tryUploadCrashDump(renamedMinidumpFile);
         }
     }
 }

@@ -70,7 +70,7 @@ public class PassphraseActivityTest {
         overrideProfileSyncService();
 
         // PassphraseActivity won't start if an account isn't set.
-        Assert.assertNotNull(ChromeSigninController.get(mContext).getSignedInAccountName());
+        Assert.assertNotNull(ChromeSigninController.get().getSignedInAccountName());
 
         // Create the activity.
         final PassphraseActivity activity = launchPassphraseActivity();

@@ -138,7 +138,7 @@ public class ChromeBackupAgent extends BackupAgent {
 
     @VisibleForTesting
     protected boolean accountExistsOnDevice(String userName) {
-        return AccountManagerHelper.get(this).getAccountFromName(userName) != null;
+        return AccountManagerHelper.get().getAccountFromName(userName) != null;
     }
 
     @VisibleForTesting

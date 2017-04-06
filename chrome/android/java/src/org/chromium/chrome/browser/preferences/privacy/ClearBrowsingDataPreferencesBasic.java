@@ -42,7 +42,7 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
             }
         });
 
-        if (ChromeSigninController.get(getActivity()).isSignedIn()) {
+        if (ChromeSigninController.get().isSignedIn()) {
             if (isHistorySyncEnabled()) { // is synced
                 historyCheckbox.setSummary(R.string.clear_browsing_history_summary_synced);
             } else {

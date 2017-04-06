@@ -606,7 +606,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                         null);
             }
         });
-        if (ChromeSigninController.get(getActivity()).isSignedIn()) {
+        if (ChromeSigninController.get().isSignedIn()) {
             general_summary.setSummary(
                     R.string.clear_browsing_data_footnote_sync_and_site_settings);
         } else {

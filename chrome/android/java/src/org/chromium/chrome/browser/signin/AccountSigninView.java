@@ -129,7 +129,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAccountManagerHelper = AccountManagerHelper.get(getContext().getApplicationContext());
+        mAccountManagerHelper = AccountManagerHelper.get();
     }
 
     /**
@@ -448,15 +448,14 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
         // Ensure that the AccountTrackerService has a fully up to date GAIA id <-> email mapping,
         // as this is needed for the previous account check.
-        if (AccountTrackerService.get(getContext()).checkAndSeedSystemAccounts()) {
+        if (AccountTrackerService.get().checkAndSeedSystemAccounts()) {
             showConfirmSigninPagePreviousAccountCheck();
         } else {
-            AccountTrackerService.get(getContext()).addSystemAccountsSeededListener(
+            AccountTrackerService.get().addSystemAccountsSeededListener(
                     new OnSystemAccountsSeededListener() {
                         @Override
                         public void onSystemAccountsSeedingComplete() {
-                            AccountTrackerService.get(getContext())
-                                    .removeSystemAccountsSeededListener(this);
+                            AccountTrackerService.get().removeSystemAccountsSeededListener(this);
                             showConfirmSigninPagePreviousAccountCheck();
                         }
 

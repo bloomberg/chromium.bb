@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -96,8 +95,7 @@ void ExternalDataUseObserverBridge::Init(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   j_external_data_use_observer_.Reset(Java_ExternalDataUseObserver_create(
-      env, base::android::GetApplicationContext(),
-      reinterpret_cast<intptr_t>(this)));
+      env, reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_data_use_observer_.is_null());
 
   Java_ExternalDataUseObserver_initControlAppManager(

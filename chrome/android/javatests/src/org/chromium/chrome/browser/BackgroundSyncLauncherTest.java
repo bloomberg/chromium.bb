@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -15,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -28,17 +25,14 @@ import java.util.concurrent.Semaphore;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class BackgroundSyncLauncherTest {
-    private Context mContext;
     private BackgroundSyncLauncher mLauncher;
     private Boolean mShouldLaunchResult;
 
     @Before
     public void setUp() throws Exception {
-        mContext = new AdvancedMockContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
         RecordHistogram.setDisabledForTests(true);
-        mLauncher = BackgroundSyncLauncher.create(mContext);
+        mLauncher = BackgroundSyncLauncher.create();
         // Ensure that the initial task is given enough time to complete.
         waitForLaunchBrowserTask();
     }
@@ -130,7 +124,7 @@ public class BackgroundSyncLauncherTest {
 
         // Simulate restarting the browser by deleting the launcher and creating a new one.
         deleteLauncherInstance();
-        mLauncher = BackgroundSyncLauncher.create(mContext);
+        mLauncher = BackgroundSyncLauncher.create();
         waitForLaunchBrowserTask();
         Assert.assertFalse(shouldLaunchBrowserIfStoppedSync());
     }

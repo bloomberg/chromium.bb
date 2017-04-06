@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
@@ -29,8 +28,7 @@ namespace autofill {
 bool CreditCardScannerView::CanShow() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_object(
-      Java_CreditCardScannerBridge_create(
-          env, 0, base::android::GetApplicationContext(), nullptr));
+      Java_CreditCardScannerBridge_create(env, 0, nullptr));
   return Java_CreditCardScannerBridge_canScan(env, java_object);
 }
 
@@ -54,7 +52,6 @@ CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
       java_object_(Java_CreditCardScannerBridge_create(
           base::android::AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
-          base::android::GetApplicationContext(),
           web_contents->GetJavaWebContents())) {}
 
 CreditCardScannerViewAndroid::~CreditCardScannerViewAndroid() {}

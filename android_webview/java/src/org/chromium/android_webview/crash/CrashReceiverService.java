@@ -8,13 +8,13 @@ import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -46,8 +46,7 @@ public class CrashReceiverService extends Service {
         @Override
         public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors) {
             int uid = Binder.getCallingUid();
-            performMinidumpCopyingSerially(
-                    CrashReceiverService.this, uid, fileDescriptors, true /* scheduleUploads */);
+            performMinidumpCopyingSerially(uid, fileDescriptors, true /* scheduleUploads */);
         }
     };
 
@@ -58,15 +57,15 @@ public class CrashReceiverService extends Service {
      * during testing).
      */
     @VisibleForTesting
-    public void performMinidumpCopyingSerially(Context context, int uid,
-            ParcelFileDescriptor[] fileDescriptors, boolean scheduleUploads) {
+    public void performMinidumpCopyingSerially(
+            int uid, ParcelFileDescriptor[] fileDescriptors, boolean scheduleUploads) {
         if (!waitUntilWeCanCopy()) {
             Log.e(TAG, "something went wrong when waiting to copy minidumps, bailing!");
             return;
         }
 
         try {
-            boolean copySucceeded = copyMinidumps(context, uid, fileDescriptors);
+            boolean copySucceeded = copyMinidumps(uid, fileDescriptors);
             if (copySucceeded && scheduleUploads) {
                 // Only schedule a new job if there actually are any files to upload.
                 scheduleNewJob();
@@ -101,7 +100,7 @@ public class CrashReceiverService extends Service {
     private void scheduleNewJob() {
         JobInfo.Builder builder = new JobInfo.Builder(TaskIds.WEBVIEW_MINIDUMP_UPLOADING_JOB_ID,
                 new ComponentName(this, AwMinidumpUploadJobService.class));
-        MinidumpUploadJobService.scheduleUpload(this, builder);
+        MinidumpUploadJobService.scheduleUpload(builder);
     }
 
     /**
@@ -111,16 +110,15 @@ public class CrashReceiverService extends Service {
      * @return whether any minidump was copied.
      */
     @VisibleForTesting
-    public static boolean copyMinidumps(
-            Context context, int uid, ParcelFileDescriptor[] fileDescriptors) {
-        CrashFileManager crashFileManager = new CrashFileManager(createWebViewCrashDir(context));
+    public static boolean copyMinidumps(int uid, ParcelFileDescriptor[] fileDescriptors) {
+        CrashFileManager crashFileManager = new CrashFileManager(getOrCreateWebViewCrashDir());
         boolean copiedAnything = false;
         if (fileDescriptors != null) {
             for (ParcelFileDescriptor fd : fileDescriptors) {
                 if (fd == null) continue;
                 try {
-                    File copiedFile = crashFileManager.copyMinidumpFromFD(fd.getFileDescriptor(),
-                            getWebViewTmpCrashDir(context), uid);
+                    File copiedFile = crashFileManager.copyMinidumpFromFD(
+                            fd.getFileDescriptor(), getWebViewTmpCrashDir(), uid);
                     if (copiedFile == null) {
                         Log.w(TAG, "failed to copy minidump from " + fd.toString());
                         // TODO(gsennton): add UMA metric to ensure we aren't losing too many
@@ -132,7 +130,7 @@ public class CrashReceiverService extends Service {
                     Log.w(TAG, "failed to copy minidump from " + fd.toString() + ": "
                             + e.getMessage());
                 } finally {
-                    deleteFilesInWebViewTmpDirIfExists(context);
+                    deleteFilesInWebViewTmpDirIfExists();
                 }
             }
         }
@@ -143,8 +141,8 @@ public class CrashReceiverService extends Service {
      * Delete all files in the directory where temporary files from this Service are stored.
      */
     @VisibleForTesting
-    public static void deleteFilesInWebViewTmpDirIfExists(Context context) {
-        deleteFilesInDirIfExists(getWebViewTmpCrashDir(context));
+    public static void deleteFilesInWebViewTmpDirIfExists() {
+        deleteFilesInDirIfExists(getWebViewTmpCrashDir());
     }
 
     private static void deleteFilesInDirIfExists(File directory) {
@@ -165,12 +163,11 @@ public class CrashReceiverService extends Service {
      * WebView needs a crash directory different from Chrome's to ensure Chrome's and WebView's
      * minidump handling won't clash in cases where both Chrome and WebView are provided by the
      * same app (Monochrome).
-     * @param context Android Context used to find a cache-directory where minidumps can be stored.
      * @return a reference to the created directory, or null if the creation failed.
      */
     @VisibleForTesting
-    public static File createWebViewCrashDir(Context context) {
-        File dir = getWebViewCrashDir(context);
+    public static File getOrCreateWebViewCrashDir() {
+        File dir = getWebViewCrashDir();
         // Call mkdir before isDirectory to ensure that if another thread created the directory
         // just before the call to mkdir, the current thread fails mkdir, but passes isDirectory.
         if (dir.mkdir() || dir.isDirectory()) {
@@ -181,21 +178,19 @@ public class CrashReceiverService extends Service {
 
     /**
      * Fetch the crash directory where WebView stores its minidumps.
-     * @param context Android Context used to find a cache-directory where minidumps can be stored.
      * @return a File pointing to the crash directory.
      */
     @VisibleForTesting
-    public static File getWebViewCrashDir(Context context) {
-        return new File(context.getCacheDir(), WEBVIEW_CRASH_DIR);
+    public static File getWebViewCrashDir() {
+        return new File(ContextUtils.getApplicationContext().getCacheDir(), WEBVIEW_CRASH_DIR);
     }
 
     /**
      * Directory where we store files temporarily when copying from an app process.
-     * @param context Android Context used to find a cache-directory where minidumps can be stored.
      */
     @VisibleForTesting
-    public static File getWebViewTmpCrashDir(Context context) {
-        return new File(context.getCacheDir(), WEBVIEW_TMP_CRASH_DIR);
+    public static File getWebViewTmpCrashDir() {
+        return new File(ContextUtils.getApplicationContext().getCacheDir(), WEBVIEW_TMP_CRASH_DIR);
     }
 
     @Override

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
@@ -19,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
@@ -32,7 +30,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 public class ChromeBackgroundServiceTest {
-    private Context mContext;
     private BackgroundSyncLauncher mSyncLauncher;
     private SnippetsLauncher mSnippetsLauncher;
     private MockTaskService mTaskService;
@@ -107,12 +104,10 @@ public class ChromeBackgroundServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = new AdvancedMockContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
         RecordHistogram.setDisabledForTests(true);
-        mSyncLauncher = BackgroundSyncLauncher.create(mContext);
-        mSnippetsLauncher = SnippetsLauncher.create(mContext);
+        mSyncLauncher = BackgroundSyncLauncher.create();
+        mSnippetsLauncher = SnippetsLauncher.create();
         mTaskService = new MockTaskService();
     }
 

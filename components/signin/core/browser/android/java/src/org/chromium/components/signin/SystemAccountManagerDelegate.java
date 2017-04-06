@@ -13,7 +13,6 @@ import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +25,7 @@ import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.MainDex;
@@ -42,12 +42,10 @@ import java.util.concurrent.TimeUnit;
 @MainDex
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     private final AccountManager mAccountManager;
-    private final Context mApplicationContext;
     private static final String TAG = "Auth";
 
-    public SystemAccountManagerDelegate(Context context) {
-        mApplicationContext = context.getApplicationContext();
-        mAccountManager = AccountManager.get(context.getApplicationContext());
+    public SystemAccountManagerDelegate() {
+        mAccountManager = AccountManager.get(ContextUtils.getApplicationContext());
     }
 
     @Override
@@ -68,7 +66,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         assert AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
             return GoogleAuthUtil.getTokenWithNotification(
-                    mApplicationContext, account, authTokenScope, null);
+                    ContextUtils.getApplicationContext(), account, authTokenScope, null);
         } catch (GoogleAuthException ex) {
             // This case includes a UserRecoverableNotifiedException, but most clients will have
             // their own retry mechanism anyway.
@@ -82,7 +80,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public void invalidateAuthToken(String authToken) throws AuthException {
         try {
-            GoogleAuthUtil.clearToken(mApplicationContext, authToken);
+            GoogleAuthUtil.clearToken(ContextUtils.getApplicationContext(), authToken);
         } catch (GooglePlayServicesAvailabilityException ex) {
             throw new AuthException(false /* isTransientError */, ex);
         } catch (GoogleAuthException ex) {
@@ -166,7 +164,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     protected boolean hasGetAccountsPermission() {
-        return ApiCompatibilityUtils.checkPermission(mApplicationContext,
+        return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
                        Manifest.permission.GET_ACCOUNTS, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }
@@ -175,7 +173,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return true;
         }
-        return ApiCompatibilityUtils.checkPermission(mApplicationContext,
+        return ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
                        "android.permission.MANAGE_ACCOUNTS", Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }

@@ -196,7 +196,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
     @SmallTest
     public void testPrivacyDisclaimers_SignedOut() {
-        ChromeSigninController signinController = ChromeSigninController.get(getActivity());
+        ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName(null);
 
         assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
@@ -207,7 +207,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        ChromeSigninController signinController = ChromeSigninController.get(getActivity());
+        ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
 
         setHasOtherFormsOfBrowsingData(false, false);
@@ -222,7 +222,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSynced() {
-        ChromeSigninController signinController = ChromeSigninController.get(getActivity());
+        ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
 
         setHasOtherFormsOfBrowsingData(false, true);
@@ -237,7 +237,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
-        ChromeSigninController signinController = ChromeSigninController.get(getActivity());
+        ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
 
         setHasOtherFormsOfBrowsingData(true, true);

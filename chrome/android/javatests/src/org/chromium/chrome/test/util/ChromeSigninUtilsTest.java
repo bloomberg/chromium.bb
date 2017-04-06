@@ -36,8 +36,7 @@ public class ChromeSigninUtilsTest {
     @Before
     public void setUp() throws Exception {
         mSigninUtil = new ChromeSigninUtils(InstrumentationRegistry.getInstrumentation());
-        mSigninController = ChromeSigninController.get(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mSigninController = ChromeSigninController.get();
         mSigninController.setSignedInAccountName(null);
         mSigninUtil.removeAllFakeAccountsFromOs();
         mSigninUtil.removeAllGoogleAccountsFromOs();

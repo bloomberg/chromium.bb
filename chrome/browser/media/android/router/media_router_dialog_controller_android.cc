@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
@@ -104,9 +103,7 @@ MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
     : MediaRouterDialogController(web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_dialog_controller_.Reset(Java_ChromeMediaRouterDialogController_create(
-      env,
-      reinterpret_cast<jlong>(this),
-      base::android::GetApplicationContext()));
+      env, reinterpret_cast<jlong>(this)));
 }
 
 // static

@@ -6,7 +6,6 @@
 
 #include <jni.h>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -33,15 +32,13 @@ void SendEmail(const base::string16& d_email,
       ConvertUTF16ToJavaString(env, d_chooser_title);
   ScopedJavaLocalRef<jstring> j_file_to_attach =
       ConvertUTF16ToJavaString(env, d_file_to_attach);
-  Java_IntentHelper_sendEmail(env, base::android::GetApplicationContext(),
-                              j_email, j_subject, j_body, j_chooser_title,
+  Java_IntentHelper_sendEmail(env, j_email, j_subject, j_body, j_chooser_title,
                               j_file_to_attach);
 }
 
 void OpenDateAndTimeSettings() {
   JNIEnv* env = AttachCurrentThread();
-  Java_IntentHelper_openDateAndTimeSettings(env,
-      base::android::GetApplicationContext());
+  Java_IntentHelper_openDateAndTimeSettings(env);
 }
 
 }  // namespace android
