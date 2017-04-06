@@ -195,8 +195,12 @@ def _create_field(field_role, property_):
         type_name = property_['type_name']
         default_value = property_['default_value']
         size = None
+    elif property_['field_template'] == 'primitive':
+        type_name = property_['type_name']
+        default_value = property_['default_value']
+        size = 1 if type_name == 'bool' else None  # pack bools with 1 bit.
     else:
-        assert property_['field_template'] in ('flag', 'monotonic_flag')
+        assert property_['field_template'] in ('monotonic_flag',)
         type_name = 'bool'
         default_value = 'false'
         size = 1
@@ -224,7 +228,7 @@ def _create_inherited_flag_field(property_):
         join_name(property_['name_for_methods'], 'is inherited'),
         property_name=property_['name'],
         type_name='bool',
-        field_template='flag',
+        field_template='primitive',
         size=1,
         default_value='true',
     )

@@ -69,9 +69,9 @@
       valid_values: [
         // Field is stored as an enum and has a initial/getter/setter/resetter.
         "keyword",
-        // Field is stored a packed boolean flag and has a initial/getter/setter/resetter.
-        // TODO(shend): generalise this to "primitive"
-        "flag",
+        // Field stores a primitive value like int/bool. The type is specified by
+        // type_name. The interface has a initial/getter/setter/resetter.
+        "primitive",
         // Field is stored as a bool, whose default value is false
         // and can only be set to true. Has a initial/getter/setter.
         "monotonic_flag",
