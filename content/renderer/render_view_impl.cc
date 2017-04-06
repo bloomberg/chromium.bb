@@ -181,11 +181,7 @@
 #include <cpu-features.h>
 
 #include "base/android/build_info.h"
-#include "content/renderer/android/address_detector.h"
-#include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/disambiguation_popup_helper.h"
-#include "content/renderer/android/email_detector.h"
-#include "content/renderer/android/phone_number_detector.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #elif defined(OS_MACOSX)
@@ -283,12 +279,6 @@ static base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
 // better than having to wake up all renderers during shutdown.
 const int kDelaySecondsForContentStateSyncHidden = 5;
 const int kDelaySecondsForContentStateSync = 1;
-
-#if defined(OS_ANDROID)
-// Delay between tapping in content and launching the associated android intent.
-// Used to allow users see what has been recognized as content.
-const size_t kContentIntentDelayMilliseconds = 700;
-#endif
 
 static RenderViewImpl* (*g_create_render_view_impl)(
     CompositorDependencies* compositor_deps,
@@ -601,7 +591,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       frame_widget_(nullptr),
       speech_recognition_dispatcher_(NULL),
 #if defined(OS_ANDROID)
-      expected_content_intent_id_(0),
       was_created_by_renderer_(false),
 #endif
       enumeration_completion_id_(0),
@@ -707,17 +696,6 @@ void RenderViewImpl::Initialize(
 
   if (main_render_frame_)
     main_render_frame_->Initialize();
-
-#if defined(OS_ANDROID)
-  content_detectors_.push_back(base::MakeUnique<AddressDetector>());
-  const std::string& contry_iso =
-      params.renderer_preferences.network_contry_iso;
-  if (!contry_iso.empty()) {
-    content_detectors_.push_back(
-        base::MakeUnique<PhoneNumberDetector>(contry_iso));
-  }
-  content_detectors_.push_back(base::MakeUnique<EmailDetector>());
-#endif
 
   // If this RenderView's creation was initiated by an opener page in this
   // process, (e.g. window.open()), we won't be visible until we ask the opener,
@@ -2428,61 +2406,7 @@ void RenderViewImpl::pageImportanceSignalsChanged() {
       main_render_frame_->GetRoutingID(), signals));
 }
 
-// TODO(dglazkov): Remove this ifdef. The content detection code
-// should not be platform-specific.
-// See http://crbug.com/635214 for details.
 #if defined(OS_ANDROID)
-WebURL RenderViewImpl::detectContentIntentAt(
-    const WebHitTestResult& touch_hit) {
-  // TODO(twellington): Remove content detection entirely. It is
-  // currently only enabled for tests. crbug.com/664307.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableContentIntentDetection)) {
-    return WebURL();
-  }
-  DCHECK(touch_hit.node().isTextNode());
-
-  // Process the position with all the registered content detectors until
-  // a match is found. Priority is provided by their relative order.
-  for (const auto& detector : content_detectors_) {
-    WebURL intent = detector->FindTappedContent(touch_hit);
-    if (intent.isValid()) {
-      return intent;
-    }
-  }
-  return WebURL();
-}
-
-void RenderViewImpl::scheduleContentIntent(const WebURL& intent,
-                                           bool is_main_frame) {
-  // Introduce a short delay so that the user can notice the content.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&RenderViewImpl::LaunchAndroidContentIntent,
-                            weak_ptr_factory_.GetWeakPtr(), intent,
-                            expected_content_intent_id_, is_main_frame),
-      base::TimeDelta::FromMilliseconds(kContentIntentDelayMilliseconds));
-}
-
-void RenderViewImpl::cancelScheduledContentIntents() {
-  ++expected_content_intent_id_;
-}
-
-void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
-                                                size_t request_id,
-                                                bool is_main_frame) {
-  if (request_id != expected_content_intent_id_)
-    return;
-
-  // Remove the content highlighting if any.
-  if (RenderWidgetCompositor* rwc = compositor())
-    rwc->setNeedsBeginFrame();
-
-  if (!intent.is_empty()) {
-    Send(new ViewHostMsg_StartContentIntent(GetRoutingID(), intent,
-                                            is_main_frame));
-  }
-}
-
 bool RenderViewImpl::openDateTimeChooser(
     const blink::WebDateTimeChooserParams& params,
     blink::WebDateTimeChooserCompletion* completion) {

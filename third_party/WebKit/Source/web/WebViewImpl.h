@@ -332,8 +332,6 @@ class WEB_EXPORT WebViewImpl final
   void mouseContextMenu(const WebMouseEvent&);
   void mouseDoubleClick(const WebMouseEvent&);
 
-  bool detectContentOnTouch(
-      const GestureEventWithHitTestResults& targetedEvent);
   bool startPageScaleAnimation(const IntPoint& targetPosition,
                                bool useAnchor,
                                float newScale,

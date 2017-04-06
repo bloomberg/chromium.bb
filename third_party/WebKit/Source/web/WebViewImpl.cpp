@@ -710,7 +710,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
               .isScrollbarHandlingGestures())
         break;
       endActiveFlingAnimation();
-      m_client->cancelScheduledContentIntents();
       m_positionOnFlingStart = WebPoint(event.x, event.y);
       m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
       m_flingModifier = event.modifiers();
@@ -759,7 +758,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
     case WebInputEvent::GestureDoubleTap:
       if (m_webSettings->doubleTapToZoomEnabled() &&
           minimumPageScaleFactor() != maximumPageScaleFactor()) {
-        m_client->cancelScheduledContentIntents();
         animateDoubleTapZoom(
             flooredIntPoint(scaledEvent.positionInRootFrame()));
       }
@@ -770,7 +768,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       m_client->didHandleGestureEvent(event, eventCancelled);
       return eventResult;
     case WebInputEvent::GestureScrollBegin:
-      m_client->cancelScheduledContentIntents();
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
     case WebInputEvent::GestureFlingStart:
@@ -817,12 +814,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
   switch (event.type()) {
     case WebInputEvent::GestureTap: {
-      m_client->cancelScheduledContentIntents();
-      if (detectContentOnTouch(targetedEvent)) {
-        eventResult = WebInputEventResult::HandledSystem;
-        break;
-      }
-
       // Don't trigger a disambiguation popup on sites designed for mobile
       // devices.  Instead, assume that the page has been designed with big
       // enough buttons and links.  Don't trigger a disambiguation popup when
@@ -889,7 +880,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         break;
 
-      m_client->cancelScheduledContentIntents();
       m_page->contextMenuController().clearContextMenu();
       {
         ContextMenuAllowedScope scope;
@@ -921,7 +911,6 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       break;
     }
     case WebInputEvent::GestureShowPress: {
-      m_client->cancelScheduledContentIntents();
       eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(
           targetedEvent);
       break;
@@ -4102,44 +4091,6 @@ void WebViewImpl::updateDeviceEmulationTransform() {
   // pick ideal raster scales.
   m_visualViewportContainerLayer->setTransform(m_deviceEmulationTransform);
   m_layerTreeView->forceRecalculateRasterScales();
-}
-
-bool WebViewImpl::detectContentOnTouch(
-    const GestureEventWithHitTestResults& targetedEvent) {
-  if (!m_page->mainFrame()->isLocalFrame())
-    return false;
-
-  // Need a local copy of the hit test as
-  // setToShadowHostIfInUserAgentShadowRoot() will modify it.
-  HitTestResult touchHit = targetedEvent.hitTestResult();
-  touchHit.setToShadowHostIfInRestrictedShadowRoot();
-
-  if (touchHit.isContentEditable())
-    return false;
-
-  Node* node = touchHit.innerNode();
-  if (!node || !node->isTextNode())
-    return false;
-
-  // Ignore when tapping on links or nodes listening to click events, unless
-  // the click event is on the body element, in which case it's unlikely that
-  // the original node itself was intended to be clickable.
-  for (; node && !isHTMLBodyElement(*node);
-       node = LayoutTreeBuilderTraversal::parent(*node)) {
-    if (node->isLink() || node->willRespondToTouchEvents() ||
-        node->willRespondToMouseClickEvents())
-      return false;
-  }
-
-  WebURL intent = m_client->detectContentIntentAt(touchHit);
-  if (!intent.isValid())
-    return false;
-
-  // This code is called directly after hit test code, with no user code
-  // running in between, thus it is assumed that the frame pointer is non-null.
-  bool isMainFrame = node ? node->document().frame()->isMainFrame() : true;
-  m_client->scheduleContentIntent(intent, isMainFrame);
-  return true;
 }
 
 WebViewScheduler* WebViewImpl::scheduler() const {

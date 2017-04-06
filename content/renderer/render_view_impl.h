@@ -60,7 +60,6 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_ANDROID)
-#include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/renderer_date_time_picker.h"
 #endif
 
@@ -86,10 +85,6 @@ struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
 struct WebWindowFeatures;
-
-#if defined(OS_ANDROID)
-class WebHitTestResult;
-#endif
 }  // namespace blink
 
 namespace gfx {
@@ -344,12 +339,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didFocus() override;
 
 #if defined(OS_ANDROID)
-  void scheduleContentIntent(const blink::WebURL& intent,
-                             bool is_main_frame) override;
-  void cancelScheduledContentIntents() override;
-  blink::WebURL detectContentIntentAt(
-      const blink::WebHitTestResult& touch_hit) override;
-
   // Only used on Android since all other platforms implement
   // date and time input fields using MULTIPLE_FIELDS_UI
   bool openDateTimeChooser(const blink::WebDateTimeChooserParams&,
@@ -584,10 +573,6 @@ class CONTENT_EXPORT RenderViewImpl
   void CheckPreferredSize();
 
 #if defined(OS_ANDROID)
-  // Launch an Android content intent with the given URL.
-  void LaunchAndroidContentIntent(const GURL& intent_url,
-                                  size_t request_id,
-                                  bool is_main_frame);
   // Make the video capture devices (e.g. webcam) stop/resume delivering video
   // frames to their clients, depending on flag |suspend|. This is called in
   // response to a RenderView PageHidden/Shown().
@@ -799,13 +784,6 @@ class CONTENT_EXPORT RenderViewImpl
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------
-
-  // Expected id of the next content intent launched. Used to prevent scheduled
-  // intents to be launched if aborted.
-  size_t expected_content_intent_id_;
-
-  // List of click-based content detectors.
-  std::vector<std::unique_ptr<ContentDetector>> content_detectors_;
 
   // A date/time picker object for date and time related input elements.
   std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;

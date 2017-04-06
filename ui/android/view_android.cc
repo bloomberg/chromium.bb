@@ -271,18 +271,6 @@ void ViewAndroid::OnBottomControlsChanged(float bottom_controls_offset,
       env, delegate, bottom_controls_offset, bottom_content_offset);
 }
 
-void ViewAndroid::StartContentIntent(const GURL& content_url,
-                                     bool is_main_frame) {
-  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
-  if (delegate.is_null())
-    return;
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jcontent_url =
-      ConvertUTF8ToJavaString(env, content_url.spec());
-  Java_ViewAndroidDelegate_onStartContentIntent(env, delegate, jcontent_url,
-                                                is_main_frame);
-}
-
 bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event,
                                bool for_touch_handle) {
   return HitTest(

@@ -882,11 +882,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 
 #if defined(OS_ANDROID)
-// Start an android intent with the given URI.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_StartContentIntent,
-                    GURL /* content_url */,
-                    bool /* is_main_frame */)
-
 // Notifies that an unhandled tap has occurred at the specified x,y position
 // and that the UI may need to be triggered.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowUnhandledTapUIIfNeeded,

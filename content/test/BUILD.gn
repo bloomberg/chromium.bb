@@ -1390,8 +1390,6 @@ test("content_unittests") {
     "../common/webplugininfo_unittest.cc",
     "../public/test/referrer_unittest.cc",
     "../renderer/android/disambiguation_popup_helper_unittest.cc",
-    "../renderer/android/email_detector_unittest.cc",
-    "../renderer/android/phone_number_detector_unittest.cc",
     "../renderer/bmp_image_decoder_unittest.cc",
     "../renderer/categorized_worker_pool_unittest.cc",
     "../renderer/device_sensors/device_light_event_pump_unittest.cc",

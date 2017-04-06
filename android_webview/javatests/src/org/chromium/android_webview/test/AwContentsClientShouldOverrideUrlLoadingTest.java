@@ -14,7 +14,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -22,7 +21,6 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
@@ -40,15 +38,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
     private static final String TAG = "AwContentsClientShouldOverrideUrlLoadingTest";
-    private static final String TEST_EMAIL = "nobody@example.org";
-    private static final String TEST_EMAIL_URI = "mailto:" + TEST_EMAIL.replace("@", "%40");
-    private static final String TEST_PHONE = "+16503336000";
-    private static final String TEST_PHONE_URI = "tel:" + TEST_PHONE.replace("+", "%2B");
-    // Use the shortest possible address to ensure it fits into one line.
-    // Otherwise, click on the center of the HTML element may get into empty space.
-    private static final String TEST_ADDRESS = "1 st. long enough, CA 90000";
-    private static final String TEST_ADDRESS_URI = "geo:0,0?q="
-            + TEST_ADDRESS.replace(" ", "+").replace(",", "%2C");
 
     private TestWebServer mWebServer;
     private TestAwContentsClient mContentsClient;
@@ -967,145 +956,5 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         } finally {
             getActivity().setIgnoreStartActivity(false);
         }
-    }
-
-    private String setupForContentClickTest(final String content, boolean inMainFrame)
-            throws Exception {
-        final String contentId = "content";
-        final String findContentJs = inMainFrame
-                ? "document.getElementById(\"" + contentId + "\")"
-                : "window.frames[0].document.getElementById(\"" + contentId + "\")";
-        final String pageHtml = inMainFrame
-                ? "<html><body onload='document.title=" + findContentJs + ".innerText'>"
-                + "<span id='" + contentId + "'>" + content + "</span></body></html>"
-                : "<html>"
-                + "<body style='margin:0;' onload='document.title=" + findContentJs + ".innerText'>"
-                + " <iframe style='border:none;width:100%;' srcdoc=\""
-                + "   <body style='margin:0;'><span id='" + contentId + "'>"
-                + content + "</span></body>"
-                + "\" src='iframe.html'></iframe>"
-                + "</body></html>";
-        final String testUrl = mWebServer.setResponse("/content_test.html", pageHtml, null);
-
-        enableJavaScriptOnUiThread(mAwContents);
-        loadUrlAsync(mAwContents, testUrl);
-        pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mAwContents.getTitle().equals(content);
-            }
-        });
-        return findContentJs;
-    }
-
-    private void doTestNullContentsClientClickableContent(String pageContent,
-            String intentContent) throws Throwable {
-        try {
-            // The test will fire real intents through the test activity.
-            // Need to temporarily suppress startActivity otherwise there will be a
-            // handler selection window and the test can't dismiss that.
-            getActivity().setIgnoreStartActivity(true);
-            setupWithProvidedContentsClient(new NullContentsClient() {
-                @Override
-                public boolean hasWebViewClient() {
-                    return false;
-                }
-            });
-
-            final String findContentJs = setupForContentClickTest(pageContent, true);
-            // Clicking on the content should create an intent.
-            DOMUtils.clickNodeByJs(mAwContents.getContentViewCore(), findContentJs);
-            pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return getActivity().getLastSentIntent() != null;
-                }
-            });
-            assertEquals(intentContent,
-                    getActivity().getLastSentIntent().getData().toString());
-        } finally {
-            getActivity().setIgnoreStartActivity(false);
-        }
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testNullContentsClientClickableEmail() throws Throwable {
-        doTestNullContentsClientClickableContent(TEST_EMAIL, TEST_EMAIL_URI);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us",
-            ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testNullContentsClientClickablePhone() throws Throwable {
-        doTestNullContentsClientClickableContent(TEST_PHONE, TEST_PHONE_URI);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testNullContentsClientClickableAddress() throws Throwable {
-        doTestNullContentsClientClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI);
-    }
-
-    private void doTestClickableContent(String pageContent, String intentContent,
-            boolean inMainFrame) throws Throwable {
-        standardSetup();
-
-        final String findContentJs = setupForContentClickTest(pageContent, inMainFrame);
-        int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        DOMUtils.clickNodeByJs(mAwContents.getContentViewCore(), findContentJs);
-        mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertEquals(intentContent,
-                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
-        assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
-        assertTrue(mShouldOverrideUrlLoadingHelper.hasUserGesture());
-        assertEquals(inMainFrame, mShouldOverrideUrlLoadingHelper.isMainFrame());
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickableEmail() throws Throwable {
-        doTestClickableContent(TEST_EMAIL, TEST_EMAIL_URI, true);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us",
-            ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickablePhone() throws Throwable {
-        doTestClickableContent(TEST_PHONE, TEST_PHONE_URI, true);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickableAddress() throws Throwable {
-        doTestClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI, true);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickableEmailInIframe() throws Throwable {
-        doTestClickableContent(TEST_EMAIL, TEST_EMAIL_URI, false);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us",
-            ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickablePhoneInIframe() throws Throwable {
-        doTestClickableContent(TEST_PHONE, TEST_PHONE_URI, false);
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
-    public void testClickableAddressInIframe() throws Throwable {
-        doTestClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI, false);
     }
 }

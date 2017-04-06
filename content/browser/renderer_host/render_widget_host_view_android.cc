@@ -516,7 +516,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
                         OnShowUnhandledTapUIIfNeeded)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -908,11 +907,6 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
 base::WeakPtr<RenderWidgetHostViewAndroid>
 RenderWidgetHostViewAndroid::GetWeakPtrAndroid() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void RenderWidgetHostViewAndroid::OnStartContentIntent(
-    const GURL& content_url, bool is_main_frame) {
-  view_.StartContentIntent(content_url, is_main_frame);
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(

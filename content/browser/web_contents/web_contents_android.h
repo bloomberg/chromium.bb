@@ -19,6 +19,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace content {
 
 class WebContentsImpl;

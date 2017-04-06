@@ -1948,48 +1948,6 @@ TEST_P(WebViewTest, DragDropURL) {
   EXPECT_EQ(fooUrl, webView->mainFrame()->document().url().string().utf8());
 }
 
-class ContentDetectorClient : public FrameTestHelpers::TestWebViewClient {
- public:
-  ContentDetectorClient() { reset(); }
-
-  WebURL detectContentIntentAt(const WebHitTestResult& hitTest) override {
-    m_contentDetectionRequested = true;
-    return m_contentDetectionResult;
-  }
-
-  void scheduleContentIntent(const WebURL& url, bool isMainFrame) override {
-    m_scheduledIntentURL = url;
-    m_wasInMainFrame = isMainFrame;
-  }
-
-  void cancelScheduledContentIntents() override {
-    m_pendingIntentsCancelled = true;
-  }
-
-  void reset() {
-    m_contentDetectionRequested = false;
-    m_pendingIntentsCancelled = false;
-    m_scheduledIntentURL = WebURL();
-    m_wasInMainFrame = false;
-    m_contentDetectionResult = WebURL();
-  }
-
-  bool contentDetectionRequested() const { return m_contentDetectionRequested; }
-  bool pendingIntentsCancelled() const { return m_pendingIntentsCancelled; }
-  const WebURL& scheduledIntentURL() const { return m_scheduledIntentURL; }
-  bool wasInMainFrame() const { return m_wasInMainFrame; }
-  void setContentDetectionResult(const WebURL& result) {
-    m_contentDetectionResult = result;
-  }
-
- private:
-  bool m_contentDetectionRequested;
-  bool m_pendingIntentsCancelled;
-  WebURL m_scheduledIntentURL;
-  bool m_wasInMainFrame;
-  WebURL m_contentDetectionResult;
-};
-
 bool WebViewTest::tapElement(WebInputEvent::Type type, Element* element) {
   if (!element || !element->layoutObject())
     return false;
@@ -2038,86 +1996,6 @@ IntSize WebViewTest::printICBSizeFromPageSize(const FloatSize& pageSize) {
   const int icbWidth = floor(pageSize.width() * minimumShrinkFactor);
   const int icbHeight = floor(icbWidth * ratio);
   return IntSize(icbWidth, icbHeight);
-}
-
-TEST_P(WebViewTest, DetectContentAroundPosition) {
-  registerMockedHttpURLLoad("content_listeners.html");
-
-  ContentDetectorClient client;
-  WebView* webView = m_webViewHelper.initializeAndLoad(
-      m_baseURL + "content_listeners.html", true, 0, &client);
-  webView->resize(WebSize(500, 300));
-  webView->updateAllLifecyclePhases();
-  runPendingTasks();
-
-  WebString clickListener = WebString::fromUTF8("clickListener");
-  WebString touchstartListener = WebString::fromUTF8("touchstartListener");
-  WebString mousedownListener = WebString::fromUTF8("mousedownListener");
-  WebString noListener = WebString::fromUTF8("noListener");
-  WebString link = WebString::fromUTF8("link");
-
-  // Ensure content detection is not requested for nodes listening to click,
-  // mouse or touch events when we do simple taps.
-  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, clickListener));
-  EXPECT_FALSE(client.contentDetectionRequested());
-  client.reset();
-
-  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, touchstartListener));
-  EXPECT_FALSE(client.contentDetectionRequested());
-  client.reset();
-
-  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, mousedownListener));
-  EXPECT_FALSE(client.contentDetectionRequested());
-  client.reset();
-
-  // Content detection should work normally without these event listeners.
-  // The click listener in the body should be ignored as a special case.
-  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, noListener));
-  EXPECT_TRUE(client.contentDetectionRequested());
-  EXPECT_FALSE(client.scheduledIntentURL().isValid());
-
-  WebURL intentURL = toKURL(m_baseURL);
-  client.setContentDetectionResult(intentURL);
-  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, noListener));
-  EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
-  EXPECT_TRUE(client.wasInMainFrame());
-
-  // Tapping elsewhere should cancel the scheduled intent.
-  WebGestureEvent event(WebInputEvent::GestureTap, WebInputEvent::NoModifiers,
-                        WebInputEvent::TimeStampForTesting);
-  event.sourceDevice = WebGestureDeviceTouchscreen;
-  webView->handleInputEvent(WebCoalescedInputEvent(event));
-  runPendingTasks();
-  EXPECT_TRUE(client.pendingIntentsCancelled());
-
-  // Explicitly reset to break dependency on locally scoped client.
-  m_webViewHelper.reset();
-}
-
-TEST_P(WebViewTest, ContentDetectionInIframe) {
-  registerMockedHttpURLLoad("content_listeners_iframe.html");
-
-  ContentDetectorClient client;
-  WebView* webView = m_webViewHelper.initializeAndLoad(
-      m_baseURL + "content_listeners_iframe.html", true, 0, &client);
-  webView->resize(WebSize(500, 300));
-  webView->updateAllLifecyclePhases();
-  runPendingTasks();
-
-  WebString noListener = WebString::fromUTF8("noListener");
-  WebString frameName = WebString::fromUTF8("innerFrame");
-
-  WebURL intentURL = toKURL(m_baseURL);
-  client.setContentDetectionResult(intentURL);
-  Element* element = static_cast<Element*>(
-      webView->findFrameByName(frameName)->document().getElementById(
-          noListener));
-  EXPECT_TRUE(tapElement(WebInputEvent::GestureTap, element));
-  EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
-  EXPECT_FALSE(client.wasInMainFrame());
-
-  // Explicitly reset to break dependency on locally scoped client.
-  m_webViewHelper.reset();
 }
 
 TEST_P(WebViewTest, ClientTapHandling) {

@@ -13,8 +13,6 @@
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-class GURL;
-
 namespace cc {
 class Layer;
 }
@@ -140,7 +138,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
                             float top_content_offset);
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_content_offset);
-  void StartContentIntent(const GURL& content_url, bool is_main_frame);
 
   ScopedAnchorView AcquireAnchorView();
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,

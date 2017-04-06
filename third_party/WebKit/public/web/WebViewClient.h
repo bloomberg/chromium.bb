@@ -43,7 +43,6 @@ namespace blink {
 
 class WebDateTimeChooserCompletion;
 class WebFileChooserCompletion;
-class WebHitTestResult;
 class WebNode;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
@@ -238,24 +237,6 @@ class WebViewClient : protected WebWidgetClient {
 
   // Informs the browser that the page scale has changed.
   virtual void pageScaleFactorChanged() {}
-
-  // Content detection ----------------------------------------------------
-
-  // Detects if the content at (or around) provided hit test result
-  // corresponds to an intent that could be handed by an embedder
-  // (e.g., email addresses, phone numbers).
-  virtual WebURL detectContentIntentAt(const WebHitTestResult&) {
-    return WebURL();
-  }
-
-  // Schedules a new content intent with the provided url.
-  // The boolean flag is set to true when the user gesture has been applied
-  // to the element from the main frame.
-  virtual void scheduleContentIntent(const WebURL&, bool isMainFrame) {}
-
-  // Cancels any previously scheduled content intents that have not yet
-  // launched.
-  virtual void cancelScheduledContentIntents() {}
 
   // Draggable regions ----------------------------------------------------
 

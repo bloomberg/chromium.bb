@@ -4,7 +4,6 @@
 
 package org.chromium.content_shell;
 
-import android.content.Intent;
 import android.view.ViewGroup;
 
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -15,34 +14,9 @@ import org.chromium.ui.base.ViewAndroidDelegate;
  */
 public class ShellViewAndroidDelegate extends ViewAndroidDelegate {
     private final ViewGroup mContainerView;
-    private ContentIntentHandler mContentIntentHandler;
-
-    /**
-     * Interface used to define/modify what {@link #startContentIntent} does.
-     */
-    public interface ContentIntentHandler {
-        /**
-         * Called when intent url from content is received.
-         * @param intentUrl intent url.
-         */
-        void onIntentUrlReceived(String intentUrl);
-    }
 
     public ShellViewAndroidDelegate(ViewGroup containerView) {
         mContainerView = containerView;
-    }
-
-    /**
-     * Set the {@link ContentIntentHandler} for {@link #starContentIntent}.
-     * @param handler Handler to inject to {@link #startContentIntent}.
-     */
-    public void setContentIntentHandler(ContentIntentHandler handler) {
-        mContentIntentHandler = handler;
-    }
-
-    @Override
-    public void startContentIntent(Intent intent, String intentUrl, boolean isMainFrame) {
-        if (mContentIntentHandler != null) mContentIntentHandler.onIntentUrlReceived(intentUrl);
     }
 
     @Override

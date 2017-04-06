@@ -41,8 +41,6 @@
 #include "ui/gfx/selection_bound.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
-class GURL;
-
 namespace ui {
 class MotionEventAndroid;
 struct DidOverscrollParams;
@@ -232,8 +230,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   }
 
   base::WeakPtr<RenderWidgetHostViewAndroid> GetWeakPtrAndroid();
-
-  void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
 
   bool OnTouchEvent(const ui::MotionEvent& event);
   bool OnTouchHandleEvent(const ui::MotionEvent& event);
