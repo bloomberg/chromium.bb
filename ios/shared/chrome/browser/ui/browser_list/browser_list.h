@@ -24,8 +24,8 @@ class BrowserList : public base::SupportsUserData::Data {
 
   static BrowserList* FromBrowserState(ios::ChromeBrowserState* browser_state);
 
-  // Returns the number of open Browsers.
-  int GetBrowserCount() const;
+  // Returns the number of Browsers in the BrowserList.
+  int count() const { return static_cast<int>(browsers_.size()); }
 
   // Returns whether the specified index is valid.
   int ContainsIndex(int index) const;
@@ -33,11 +33,17 @@ class BrowserList : public base::SupportsUserData::Data {
   // Returns the Browser at the specified index.
   Browser* GetBrowserAtIndex(int index) const;
 
+  // Returns the index of the specified Browser, or kInvalidIndex if not found.
+  int GetIndexOfBrowser(const Browser* browser) const;
+
   // Creates and returns a new Browser instance.
   Browser* CreateNewBrowser();
 
   // Closes the Browser at the specified index.
   void CloseBrowserAtIndex(int index);
+
+  // Invalid index.
+  static const int kInvalidIndex = -1;
 
  private:
   ios::ChromeBrowserState* browser_state_;

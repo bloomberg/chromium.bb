@@ -39,18 +39,21 @@ BrowserList* BrowserList::FromBrowserState(
   return static_cast<BrowserList*>(data);
 }
 
-int BrowserList::GetBrowserCount() const {
-  DCHECK_LE(browsers_.size(), static_cast<size_t>(INT_MAX));
-  return static_cast<int>(browsers_.size());
-}
-
 int BrowserList::ContainsIndex(int index) const {
-  return 0 <= index && index < GetBrowserCount();
+  return 0 <= index && index < count();
 }
 
 Browser* BrowserList::GetBrowserAtIndex(int index) const {
   DCHECK(ContainsIndex(index));
   return browsers_[index].get();
+}
+
+int BrowserList::GetIndexOfBrowser(const Browser* browser) const {
+  for (int index = 0; index < count(); ++index) {
+    if (browsers_[index].get() == browser)
+      return index;
+  }
+  return kInvalidIndex;
 }
 
 Browser* BrowserList::CreateNewBrowser() {
@@ -62,3 +65,5 @@ void BrowserList::CloseBrowserAtIndex(int index) {
   DCHECK(ContainsIndex(index));
   browsers_.erase(browsers_.begin() + index);
 }
+
+const int BrowserList::kInvalidIndex;

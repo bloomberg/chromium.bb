@@ -35,38 +35,59 @@ TEST_F(BrowserListTest, Initialisation) {
 
 TEST_F(BrowserListTest, CreateBrowser) {
   BrowserList* browser_list = BrowserList::FromBrowserState(browser_state());
-  EXPECT_EQ(0, browser_list->GetBrowserCount());
+  EXPECT_EQ(0, browser_list->count());
 
   Browser* browser = browser_list->CreateNewBrowser();
-  ASSERT_EQ(1, browser_list->GetBrowserCount());
+  ASSERT_EQ(1, browser_list->count());
   EXPECT_EQ(browser, browser_list->GetBrowserAtIndex(0));
 }
 
 TEST_F(BrowserListTest, CloseBrowser) {
   BrowserList* browser_list = BrowserList::FromBrowserState(browser_state());
   browser_list->CreateNewBrowser();
-  EXPECT_EQ(1, browser_list->GetBrowserCount());
+  EXPECT_EQ(1, browser_list->count());
 
   browser_list->CloseBrowserAtIndex(0);
-  EXPECT_EQ(0, browser_list->GetBrowserCount());
+  EXPECT_EQ(0, browser_list->count());
 }
 
 TEST_F(BrowserListTest, ContainsIndex) {
   BrowserList* browser_list = BrowserList::FromBrowserState(browser_state());
-  EXPECT_EQ(0, browser_list->GetBrowserCount());
+  EXPECT_EQ(0, browser_list->count());
   EXPECT_FALSE(browser_list->ContainsIndex(-1));
   EXPECT_FALSE(browser_list->ContainsIndex(0));
   EXPECT_FALSE(browser_list->ContainsIndex(1));
 
   browser_list->CreateNewBrowser();
-  EXPECT_EQ(1, browser_list->GetBrowserCount());
+  EXPECT_EQ(1, browser_list->count());
   EXPECT_FALSE(browser_list->ContainsIndex(-1));
   EXPECT_TRUE(browser_list->ContainsIndex(0));
   EXPECT_FALSE(browser_list->ContainsIndex(1));
 
   browser_list->CreateNewBrowser();
-  EXPECT_EQ(2, browser_list->GetBrowserCount());
+  EXPECT_EQ(2, browser_list->count());
   EXPECT_FALSE(browser_list->ContainsIndex(-1));
   EXPECT_TRUE(browser_list->ContainsIndex(0));
   EXPECT_TRUE(browser_list->ContainsIndex(1));
+}
+
+TEST_F(BrowserListTest, GetIndexOfBrowser) {
+  BrowserList* browser_list = BrowserList::FromBrowserState(browser_state());
+  EXPECT_EQ(BrowserList::kInvalidIndex,
+            browser_list->GetIndexOfBrowser(nullptr));
+
+  Browser* browser_0 = browser_list->CreateNewBrowser();
+  EXPECT_EQ(0, browser_list->GetIndexOfBrowser(browser_0));
+  EXPECT_EQ(browser_0, browser_list->GetBrowserAtIndex(0));
+
+  Browser* browser_1 = browser_list->CreateNewBrowser();
+  EXPECT_EQ(1, browser_list->GetIndexOfBrowser(browser_1));
+  EXPECT_EQ(browser_1, browser_list->GetBrowserAtIndex(1));
+
+  // browser_0 is now invalid.
+  browser_list->CloseBrowserAtIndex(0);
+  EXPECT_EQ(BrowserList::kInvalidIndex,
+            browser_list->GetIndexOfBrowser(browser_0));
+  EXPECT_EQ(0, browser_list->GetIndexOfBrowser(browser_1));
+  EXPECT_EQ(browser_1, browser_list->GetBrowserAtIndex(0));
 }
