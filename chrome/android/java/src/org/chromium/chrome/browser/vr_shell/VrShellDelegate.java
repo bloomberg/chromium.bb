@@ -558,19 +558,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     @CalledByNative
-    private boolean exitWebVR() {
+    private boolean exitWebVRPresent() {
         if (!mInVr) return false;
         mVrShell.setWebVrModeEnabled(false);
-        if (mVrSupportLevel == VR_CARDBOARD) {
-            // Transition screen is not available for Cardboard only (non-Daydream) devices.
-            // TODO(bshe): Fix this once b/33490788 is fixed.
-            shutdownVR(false /* isPausing */, false /* showTransition */);
-        } else {
-            // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
-            // should no longer exit the shell outright. Need a way to determine
-            // how VrShell was created.
-            shutdownVR(
-                    false /* isPausing */, !isVrShellEnabled(mVrSupportLevel) /* showTransition */);
+        if (!isVrShellEnabled(mVrSupportLevel)) {
+            shutdownVR(false /* isPausing */, true /* showTransition */);
         }
         return true;
     }
@@ -692,6 +684,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (!mInVr) return;
         mInVr = false;
         mRequestedWebVR = false;
+        // Transition screen is not available for Cardboard only (non-Daydream) devices.
+        // TODO(bshe): Fix this once b/33490788 is fixed.
         boolean transition = mVrSupportLevel == VR_DAYDREAM && showTransition;
         if (!isPausing) {
             if (!transition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {

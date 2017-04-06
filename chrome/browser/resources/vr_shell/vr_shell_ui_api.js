@@ -73,6 +73,7 @@ api.Action = {
   'SHOW_TAB': 9,
   'OPEN_NEW_TAB': 10,
   'KEY_EVENT': 11,
+  'EXIT_PRESENT': 12
 };
 
 /**

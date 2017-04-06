@@ -187,7 +187,9 @@ void VrShellDelegate::ExitWebVRPresent() {
   // VRShell is no longer needed by WebVR, allow it to shut down if it's not
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_exitWebVR(env, j_vr_shell_delegate_.obj());
+  if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_.obj())) {
+    device_provider_->Device()->OnExitPresent();
+  }
 }
 
 void VrShellDelegate::CreateNonPresentingDelegate() {

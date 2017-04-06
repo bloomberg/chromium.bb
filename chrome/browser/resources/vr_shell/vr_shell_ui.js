@@ -391,6 +391,7 @@ var vrShellUi = (function() {
   class Controls {
     constructor(contentQuadId) {
       this.enabled = false;
+      this.exitPresentButtonVisible = false;
 
       this.buttons = {
         backButton: null,
@@ -399,21 +400,27 @@ var vrShellUi = (function() {
       };
       let descriptors = [
         [
-          'backButton', '#back-button',
+          0, 'backButton', '#back-button',
           function() {
             api.doAction(api.Action.HISTORY_BACK, {});
           }
         ],
         [
-          'reloadButton', '#reload-button',
+          1, 'reloadButton', '#reload-button',
           function() {
             api.doAction(api.Action.RELOAD, {});
           }
         ],
         [
-          'forwardButton', '#forward-button',
+          2, 'forwardButton', '#forward-button',
           function() {
             api.doAction(api.Action.HISTORY_FORWARD, {});
+          }
+        ],
+        [
+          0, 'exitPresentButton', '#exit-present-button',
+          function() {
+            api.doAction(api.Action.EXIT_PRESENT, {});
           }
         ],
       ];
@@ -428,14 +435,19 @@ var vrShellUi = (function() {
       controls.setTranslation(0, BUTTON_Y, BUTTON_Z);
       this.controlsId = ui.addElement(controls);
 
-      let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
+      let slotCount = 0;
+      descriptors.forEach(function(descriptor) {
+        slotCount = Math.max(descriptor[0] + 1, slotCount);
+      });
+      let startPosition = -BUTTON_SPACING * (slotCount / 2.0 - 0.5);
 
       for (let i = 0; i < descriptors.length; i++) {
-        let name = descriptors[i][0];
-        let domId = descriptors[i][1];
-        let callback = descriptors[i][2];
+        let slot = descriptors[i][0];
+        let name = descriptors[i][1];
+        let domId = descriptors[i][2];
+        let callback = descriptors[i][3];
         let button = new Button(domId, callback, this.controlsId);
-        button.setTranslation(startPosition + i * BUTTON_SPACING, 0, 0);
+        button.setTranslation(startPosition + slot * BUTTON_SPACING, 0, 0);
         this.buttons[name] = button;
       }
     }
@@ -449,6 +461,11 @@ var vrShellUi = (function() {
       for (let key in this.buttons) {
         this.buttons[key].setVisible(this.enabled);
       }
+      if (this.enabled) {
+        this.buttons['exitPresentButton'].setVisible(
+            this.exitPresentButtonVisible);
+        this.buttons['backButton'].setVisible(!this.exitPresentButtonVisible);
+      }
     }
 
     setBackButtonEnabled(enabled) {
@@ -457,6 +474,12 @@ var vrShellUi = (function() {
 
     setForwardButtonEnabled(enabled) {
       this.buttons.forwardButton.setEnabled(enabled);
+    }
+
+    /** If true shows the exit present button instead of the back button. */
+    setExitPresentButtonVisible(visible) {
+      this.exitPresentButtonVisible = visible;
+      this.configure();
     }
   };
 
@@ -1210,6 +1233,9 @@ var vrShellUi = (function() {
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       this.controls.setEnabled(menuMode);
       this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
+      // TODO(crbug/689139): Don't show exit present button if the page
+      // autopresented.
+      this.controls.setExitPresentButtonVisible(mode == api.Mode.WEB_VR);
       let enabledIndicators = {}
       enabledIndicators[api.Direction.LEFT] = this.canGoBack || this.fullscreen;
       this.gestureHandlers.setEnabled(enabledIndicators);

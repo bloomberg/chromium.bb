@@ -504,6 +504,9 @@ void VrShell::DoUiAction(const UiAction action,
       ui_input_manager_->GenerateKeyboardEvent(char_value, modifiers);
       return;
     }
+    case EXIT_PRESENT:
+      delegate_provider_->ExitWebVRPresent();
+      return;
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);

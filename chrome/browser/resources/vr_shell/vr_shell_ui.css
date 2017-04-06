@@ -134,6 +134,7 @@ html {
 
 #back-button,
 #forward-button,
+#exit-present-button,
 #back-indicator,
 #forward-indicator {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);

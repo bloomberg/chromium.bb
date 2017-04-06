@@ -54,13 +54,15 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
 
+  // device::GvrDelegateProvider implementation.
+  void ExitWebVRPresent() override;
+
  private:
-  // device::GvrDelegateProvider implementation
+  // device::GvrDelegateProvider implementation.
   void SetDeviceProvider(device::GvrDeviceProvider* device_provider) override;
   void ClearDeviceProvider() override;
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
                            const base::Callback<void(bool)>& callback) override;
-  void ExitWebVRPresent() override;
   device::GvrDelegate* GetDelegate() override;
   void SetListeningForActivate(bool listening) override;
 

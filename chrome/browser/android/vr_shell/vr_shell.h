@@ -67,6 +67,7 @@ enum UiAction {
   SHOW_TAB,
   OPEN_NEW_TAB,
   KEY_EVENT,
+  EXIT_PRESENT,
 };
 
 class VrMetricsHelper;
