@@ -729,7 +729,8 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
   if (!m_isExternalScript) {
     accessControlStatus = SharableCrossOrigin;
-  } else if (sourceCode.resource()) {
+  } else {
+    CHECK(sourceCode.resource());
     accessControlStatus = sourceCode.resource()->calculateAccessControlStatus(
         m_element->document().getSecurityOrigin());
   }
