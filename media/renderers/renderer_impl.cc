@@ -184,6 +184,11 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(flush_cb_.is_null());
 
+  if (state_ == STATE_FLUSHED) {
+    task_runner_->PostTask(FROM_HERE, flush_cb);
+    return;
+  }
+
   if (state_ != STATE_PLAYING) {
     DCHECK_EQ(state_, STATE_ERROR);
     return;
@@ -202,13 +207,14 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (state_ != STATE_PLAYING) {
+  if (state_ != STATE_FLUSHED) {
     DCHECK_EQ(state_, STATE_ERROR);
     return;
   }
 
   time_source_->SetMediaTime(time);
 
+  state_ = STATE_PLAYING;
   if (audio_renderer_)
     audio_renderer_->StartPlaying();
   if (video_renderer_)
@@ -278,7 +284,7 @@ void RendererImpl::SetPlaybackRate(double playback_rate) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Playback rate changes are only carried out while playing.
-  if (state_ != STATE_PLAYING)
+  if (state_ != STATE_PLAYING && state_ != STATE_FLUSHED)
     return;
 
   time_source_->SetPlaybackRate(playback_rate);
@@ -480,7 +486,7 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
     time_source_ = wall_clock_time_source_.get();
   }
 
-  state_ = STATE_PLAYING;
+  state_ = STATE_FLUSHED;
   DCHECK(time_source_);
   DCHECK(audio_renderer_ || video_renderer_);
 
@@ -552,7 +558,7 @@ void RendererImpl::OnVideoRendererFlushDone() {
 
   DCHECK_EQ(video_buffering_state_, BUFFERING_HAVE_NOTHING);
   video_ended_ = false;
-  state_ = STATE_PLAYING;
+  state_ = STATE_FLUSHED;
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
@@ -733,6 +739,7 @@ void RendererImpl::PausePlayback() {
       break;
 
     case STATE_FLUSHING:
+    case STATE_FLUSHED:
       // It's OK to pause playback when flushing.
       break;
 

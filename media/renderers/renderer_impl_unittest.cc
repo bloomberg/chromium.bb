@@ -492,7 +492,10 @@ TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
 
 TEST_F(RendererImplTest, FlushAfterInitialization) {
   InitializeWithAudioAndVideo();
-  Flush(true);
+  EXPECT_CALL(callbacks_, OnFlushed());
+  renderer_impl_->Flush(
+      base::Bind(&CallbackHelper::OnFlushed, base::Unretained(&callbacks_)));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(RendererImplTest, FlushAfterPlay) {

@@ -82,8 +82,9 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     STATE_UNINITIALIZED,
     STATE_INIT_PENDING_CDM,  // Initialization is waiting for the CDM to be set.
     STATE_INITIALIZING,      // Initializing audio/video renderers.
-    STATE_FLUSHING,
-    STATE_PLAYING,
+    STATE_FLUSHING,          // Flushing is in progress.
+    STATE_FLUSHED,           // After initialization or after flush completed.
+    STATE_PLAYING,           // After StartPlayingFrom has been called.
     STATE_ERROR
   };
 
