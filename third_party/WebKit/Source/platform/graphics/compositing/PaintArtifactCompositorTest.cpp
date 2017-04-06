@@ -715,6 +715,15 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
       propertyTrees().scroll_tree.FindNodeIndexFromOwningLayerId(layer->id());
   EXPECT_EQ(scrollNodeIndex, scrollNode.id);
 
+  // Only one content layer, and the first child layer is the dummy layer for
+  // the transform node.
+  const cc::Layer* transformNodeLayer = rootLayer()->children()[0].get();
+  EXPECT_EQ(transformNodeLayer->id(), transformNode.owning_layer_id);
+  auto transformNodeIndex =
+      propertyTrees().transform_tree.FindNodeIndexFromOwningLayerId(
+          transformNodeLayer->id());
+  EXPECT_EQ(transformNodeIndex, transformNode.id);
+
   EXPECT_EQ(0u, scrollClient.didScrollCount);
   layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));
   EXPECT_EQ(1u, scrollClient.didScrollCount);
@@ -1587,6 +1596,34 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
   update(artifact.build());
 
   EXPECT_EQ(2, elementIdToTransformNodeIndex(expectedCompositorElementId));
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       TransformNodeHasOwningLayerId) {
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(transform, ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(100, 100, 200, 100), Color::black);
+  update(artifact.build());
+
+  // Only one content layer, and the first child layer is the dummy layer for
+  // the transform node.
+  ASSERT_EQ(1u, contentLayerCount());
+  const cc::Layer* transformNodeLayer = rootLayer()->children()[0].get();
+  const cc::TransformNode* ccTransformNode =
+      propertyTrees().transform_tree.Node(
+          transformNodeLayer->transform_tree_index());
+  EXPECT_EQ(transformNodeLayer->id(), ccTransformNode->owning_layer_id);
+  auto transformNodeIndex =
+      propertyTrees().transform_tree.FindNodeIndexFromOwningLayerId(
+          transformNodeLayer->id());
+  EXPECT_EQ(transformNodeIndex, ccTransformNode->id);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
