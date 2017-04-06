@@ -105,6 +105,14 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
+# check for libdrm as a build-time dependency only
+# libdrm 2.4.30 introduced drm_fourcc.h.
+PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.30], [], [AC_MSG_ERROR([
+     libdrm is a hard build-time dependency for libweston core,
+     but a sufficient version was not found. However, libdrm
+     is not a runtime dependency unless you have features
+     enabled that require it.])])
+
 COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
 
 AC_CONFIG_FILES([doc/doxygen/tools.doxygen doc/doxygen/tooldev.doxygen])
@@ -133,7 +141,6 @@ if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
 	PKG_CHECK_MODULES(EGL, [egl glesv2])
         PKG_CHECK_MODULES([EGL_TESTS], [egl glesv2 wayland-client wayland-egl])
-	PKG_CHECK_MODULES([GL_RENDERER], [libdrm])
 fi
 
 AC_ARG_ENABLE(xkbcommon,
@@ -176,8 +183,6 @@ if test x$enable_xwayland = xyes; then
     PKG_CHECK_MODULES([XWAYLAND_TEST], x11)
   fi
 fi
-
-PKG_CHECK_MODULES(LIBDRM, [libdrm], have_libdrm=yes, have_libdrm=no)
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)

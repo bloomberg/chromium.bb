@@ -324,7 +324,7 @@ gl_renderer_la_LIBADD =				\
 gl_renderer_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
-	$(GL_RENDERER_CFLAGS)			\
+	$(LIBDRM_CFLAGS)			\
 	$(AM_CFLAGS)
 gl_renderer_la_SOURCES =			\
 	libweston/gl-renderer.h			\
