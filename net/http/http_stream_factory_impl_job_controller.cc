@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/proxy_delegate.h"
@@ -681,12 +682,8 @@ bool HttpStreamFactoryImpl::JobController::HasPendingAltJob() const {
 }
 
 size_t HttpStreamFactoryImpl::JobController::EstimateMemoryUsage() const {
-  size_t estimated_size = 0;
-  if (main_job_)
-    estimated_size += main_job_->EstimateMemoryUsage();
-  if (alternative_job_)
-    estimated_size += alternative_job_->EstimateMemoryUsage();
-  return estimated_size;
+  return base::trace_event::EstimateMemoryUsage(main_job_) +
+         base::trace_event::EstimateMemoryUsage(alternative_job_);
 }
 
 WebSocketHandshakeStreamBase::CreateHelper* HttpStreamFactoryImpl::
