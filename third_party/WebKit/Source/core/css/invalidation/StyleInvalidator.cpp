@@ -24,10 +24,10 @@ namespace blink {
 // To minimize performance impact, we wrap trace events with a lookup of
 // cached flag. The cached flag is made "static const" and is not shared
 // with InvalidationSet to avoid additional GOT lookup cost.
-static const unsigned char* s_styleInvalidatorTracingEnabled = nullptr;
+static const unsigned char* s_tracingEnabled = nullptr;
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, reason) \
-  if (UNLIKELY(*s_styleInvalidatorTracingEnabled))                       \
+  if (UNLIKELY(*s_tracingEnabled))                                       \
     TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason);
 
 void StyleInvalidator::invalidate(Document& document) {
@@ -170,7 +170,7 @@ PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(
 }
 
 StyleInvalidator::StyleInvalidator() {
-  s_styleInvalidatorTracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+  s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
   InvalidationSet::cacheTracingFlag();
 }
@@ -299,7 +299,7 @@ void StyleInvalidator::pushInvalidationSetsForContainerNode(
       CHECK(invalidationSet->isAlive());
       recursionData.pushInvalidationSet(*invalidationSet);
     }
-    if (UNLIKELY(*s_styleInvalidatorTracingEnabled)) {
+    if (UNLIKELY(*s_tracingEnabled)) {
       TRACE_EVENT_INSTANT1(
           TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
           "StyleInvalidatorInvalidationTracking", TRACE_EVENT_SCOPE_THREAD,

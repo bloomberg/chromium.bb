@@ -35,7 +35,6 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/zoomAdjustedPixelValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
@@ -182,6 +181,12 @@ CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize) {
   DCHECK_NE(keywordSize, 0);
   DCHECK_LE(keywordSize, 8);
   return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
+}
+
+inline CSSPrimitiveValue* zoomAdjustedPixelValue(double value,
+                                                 const ComputedStyle& style) {
+  return CSSPrimitiveValue::create(adjustFloatForAbsoluteZoom(value, style),
+                                   CSSPrimitiveValue::UnitType::Pixels);
 }
 
 void logUnimplementedPropertyID(CSSPropertyID propertyID) {
