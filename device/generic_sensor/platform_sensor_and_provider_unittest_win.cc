@@ -291,7 +291,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     // longer interested in sensor events and ISensorEvents can be released.
     ON_CALL(*sensor_, SetEventSink(IsNull()))
         .WillByDefault(Invoke([this](ISensorEvents* events) {
-          sensor_events_.Release();
+          sensor_events_.Reset();
           if (this->run_loop_) {
             message_loop_.task_runner()->PostTask(
                 FROM_HERE,

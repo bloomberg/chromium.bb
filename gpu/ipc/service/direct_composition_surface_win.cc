@@ -232,7 +232,7 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   video_input_size_ = input_size;
   video_output_size_ = output_size;
 
-  video_processor_.Release();
+  video_processor_.Reset();
   video_processor_enumerator_.Receive();
   D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc = {};
   desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
@@ -305,7 +305,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (!swap_chain_ || swap_chain_size_ != swap_chain_size) {
     first_present = true;
     swap_chain_size_ = swap_chain_size;
-    swap_chain_.Release();
+    swap_chain_.Reset();
     ReallocateSwapChain();
   } else if (last_gl_image_ == image_dxgi) {
     // The swap chain is presenting the same image as last swap, which means
@@ -390,7 +390,7 @@ bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
   video_processor_ = surface_->video_processor();
   // out_view_ depends on video_processor_enumerator_, so ensure it's
   // recreated if the enumerator is.
-  out_view_.Release();
+  out_view_.Reset();
   return true;
 }
 
@@ -452,7 +452,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
         DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
     CHECK(SUCCEEDED(hr));
   }
-  out_view_.Release();
+  out_view_.Reset();
 }
 
 void DCLayerTree::InitVisual(size_t i) {
@@ -479,7 +479,7 @@ void DCLayerTree::UpdateVisualForVideo(
       visual_info->content_visual;
 
   gfx::Rect bounds_rect = params.rect;
-  visual_info->surface.Release();
+  visual_info->surface.Reset();
   if (!visual_info->swap_chain_presenter) {
     visual_info->swap_chain_presenter =
         base::MakeUnique<SwapChainPresenter>(this, d3d11_device_);
@@ -745,8 +745,8 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
 
 void DirectCompositionSurfaceWin::ReleaseCurrentSurface() {
   ReleaseDrawTexture(true);
-  dcomp_surface_.Release();
-  swap_chain_.Release();
+  dcomp_surface_.Reset();
+  swap_chain_.Reset();
 }
 
 void DirectCompositionSurfaceWin::InitializeSurface() {
@@ -802,7 +802,7 @@ void DirectCompositionSurfaceWin::ReleaseDrawTexture(bool will_discard) {
     real_surface_ = nullptr;
   }
   if (draw_texture_) {
-    draw_texture_.Release();
+    draw_texture_.Reset();
     if (dcomp_surface_) {
       HRESULT hr = dcomp_surface_->EndDraw();
       CHECK(SUCCEEDED(hr));
@@ -852,8 +852,8 @@ void DirectCompositionSurfaceWin::Destroy() {
     CHECK(SUCCEEDED(hr));
     g_current_surface = nullptr;
   }
-  draw_texture_.Release();
-  dcomp_surface_.Release();
+  draw_texture_.Reset();
+  dcomp_surface_.Reset();
 }
 
 gfx::Size DirectCompositionSurfaceWin::GetSize() {

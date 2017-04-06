@@ -19,8 +19,8 @@ namespace {
 
 struct Dummy {
   Dummy() : adds(0), releases(0) { }
-  void AddRef() { ++adds; }
-  void Release() { ++releases; }
+  unsigned long AddRef() { return ++adds; }
+  unsigned long Release() { return ++releases; }
 
   int adds;
   int releases;
@@ -51,7 +51,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   ScopedComPtr<IUnknown> qi_test;
   EXPECT_HRESULT_SUCCEEDED(mem_alloc.QueryInterface(IID_PPV_ARGS(&qi_test)));
   EXPECT_TRUE(qi_test.get() != NULL);
-  qi_test.Release();
+  qi_test.Reset();
 
   // test ScopedComPtr& constructor
   ScopedComPtr<IMalloc> copy1(mem_alloc);
@@ -63,7 +63,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   copy1 = naked_copy;  // Test the =(T*) operator.
   naked_copy->Release();
 
-  copy1.Release();
+  copy1.Reset();
   EXPECT_FALSE(copy1.IsSameObject(unk2.get()));  // unk2 is valid, copy1 is not
 
   // test Interface* constructor
@@ -72,7 +72,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
 
   EXPECT_TRUE(SUCCEEDED(unk.QueryFrom(mem_alloc.get())));
   EXPECT_TRUE(unk.get() != NULL);
-  unk.Release();
+  unk.Reset();
   EXPECT_TRUE(unk.get() == NULL);
   EXPECT_TRUE(unk.IsSameObject(copy1.get()));  // both are NULL
 }

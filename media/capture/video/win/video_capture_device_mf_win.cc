@@ -67,7 +67,7 @@ HRESULT FillCapabilities(IMFSourceReader* source,
     VideoCaptureFormat format;
     if (FillFormat(type.get(), &format))
       capabilities->emplace_back(stream_index, format);
-    type.Release();
+    type.Reset();
     ++stream_index;
   }
 

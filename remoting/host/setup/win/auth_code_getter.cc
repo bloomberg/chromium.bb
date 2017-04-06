@@ -88,7 +88,7 @@ bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
 void AuthCodeGetter::KillBrowser() {
   if (browser_.get()) {
     browser_->Quit();
-    browser_.Release();
+    browser_.Reset();
   }
 }
 

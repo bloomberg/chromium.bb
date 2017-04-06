@@ -493,7 +493,7 @@ BOOL __stdcall LaunchGoogleChrome() {
     if (SUCCEEDED(ipl->LaunchCmdLine(
             chrome_command.GetCommandLineString().c_str())))
       ret = true;
-    ipl.Release();
+    ipl.Reset();
   } else {
     // Couldn't get Omaha's process launcher, Omaha may not be installed at
     // system level. Try just running Chrome instead.

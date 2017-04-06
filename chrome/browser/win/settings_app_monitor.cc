@@ -669,7 +669,7 @@ SettingsAppMonitor::Context::~Context() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (event_handler_) {
-    event_handler_.Release();
+    event_handler_.Reset();
     automation_->RemoveAllEventHandlers();
   }
 }

@@ -1990,7 +1990,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(0, row_index);
   EXPECT_EQ(0, column_index);
   name.Reset();
-  accessible_cell.Release();
+  accessible_cell.Reset();
 
   // The first cell has a rowspan of 2, try navigating down and expect to get
   // at the end of the table.
@@ -2017,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(1, column_index);
   variant.Reset();
   name.Reset();
-  accessible_cell.Release();
+  accessible_cell.Reset();
 
   // Try navigating to the cell in the second row, 2nd column.
   base::win::ScopedComPtr<IAccessible2> cell3;
@@ -2037,7 +2037,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(1, column_index);
   variant.Reset();
   name.Reset();
-  accessible_cell.Release();
+  accessible_cell.Reset();
 }
 
 }  // namespace content

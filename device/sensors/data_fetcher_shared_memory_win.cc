@@ -418,29 +418,29 @@ void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       if (sensor_inclinometer_.get()) {
         sensor_inclinometer_->SetEventSink(nullptr);
-        sensor_inclinometer_.Release();
+        sensor_inclinometer_.Reset();
       }
       break;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       if (sensor_inclinometer_absolute_.get()) {
         sensor_inclinometer_absolute_->SetEventSink(nullptr);
-        sensor_inclinometer_absolute_.Release();
+        sensor_inclinometer_absolute_.Reset();
       }
       break;
     case CONSUMER_TYPE_MOTION:
       if (sensor_accelerometer_.get()) {
         sensor_accelerometer_->SetEventSink(nullptr);
-        sensor_accelerometer_.Release();
+        sensor_accelerometer_.Reset();
       }
       if (sensor_gyrometer_.get()) {
         sensor_gyrometer_->SetEventSink(nullptr);
-        sensor_gyrometer_.Release();
+        sensor_gyrometer_.Reset();
       }
       break;
     case CONSUMER_TYPE_LIGHT:
       if (sensor_light_.get()) {
         sensor_light_->SetEventSink(nullptr);
-        sensor_light_.Release();
+        sensor_light_.Reset();
       }
       break;
     default:

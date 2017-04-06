@@ -147,7 +147,7 @@ STDMETHODIMP PinBase::Disconnect() {
   if (!connected_pin_.get())
     return S_FALSE;
 
-  connected_pin_.Release();
+  connected_pin_.Reset();
   return S_OK;
 }
 

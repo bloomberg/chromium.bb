@@ -71,7 +71,7 @@ bool PlatformSensorProviderWin::StartSensorThread() {
 
 void PlatformSensorProviderWin::StopSensorThread() {
   if (sensor_thread_ && sensor_thread_->IsRunning()) {
-    sensor_manager_.Release();
+    sensor_manager_.Reset();
     sensor_thread_->Stop();
   }
 }

@@ -531,7 +531,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     hresult = dispatch.QueryInterface(app_bundle.Receive());
     if (FAILED(hresult))
       return hresult;
-    dispatch.Release();
+    dispatch.Reset();
 
     ConfigureProxyBlanket(app_bundle.get());
 
@@ -818,10 +818,10 @@ void UpdateCheckDriver::PollGoogleUpdate() {
 
   // Release the reference on the COM objects before bouncing back to the
   // caller's thread.
-  state.Release();
-  app_.Release();
-  app_bundle_.Release();
-  google_update_.Release();
+  state.Reset();
+  app_.Reset();
+  app_bundle_.Reset();
+  google_update_.Reset();
 
   result_runner_->DeleteSoon(FROM_HERE, this);
 }

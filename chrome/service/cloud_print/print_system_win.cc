@@ -393,7 +393,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       ~PrintJobCanceler() {
         if (job_ptr_ && job_ptr_->get()) {
           (*job_ptr_)->Cancel();
-          job_ptr_->Release();
+          job_ptr_->Reset();
         }
       }
 

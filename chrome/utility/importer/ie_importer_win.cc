@@ -602,7 +602,7 @@ void IEImporter::ImportPasswordsIE6() {
   result = pstore->EnumItems(0, &AutocompleteGUID,
                              &AutocompleteGUID, 0, item.Receive());
   if (result != PST_E_OK) {
-    pstore.Release();
+    pstore.Reset();
     FreeLibrary(pstorec_dll);
     return;
   }
@@ -636,8 +636,8 @@ void IEImporter::ImportPasswordsIE6() {
     CoTaskMemFree(item_name);
   }
   // Releases them before unload the dll.
-  item.Release();
-  pstore.Release();
+  item.Reset();
+  pstore.Reset();
   FreeLibrary(pstorec_dll);
 
   size_t i;

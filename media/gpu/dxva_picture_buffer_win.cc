@@ -311,8 +311,8 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
 
   // The same picture buffer can be reused for a different frame. Release the
   // target surface and the decoder references here.
-  target_surface_.Release();
-  decoder_surface_.Release();
+  target_surface_.Reset();
+  decoder_surface_.Reset();
 
   // Grab a reference on the decoder surface and the target surface. These
   // references will be released when we receive a notification that the
@@ -349,11 +349,11 @@ bool PbufferPictureBuffer::CopySurfaceComplete(
   if (src_surface && dest_surface) {
     DCHECK_EQ(src_surface, decoder_surface_.get());
     DCHECK_EQ(dest_surface, target_surface_.get());
-    decoder_surface_.Release();
-    target_surface_.Release();
+    decoder_surface_.Reset();
+    target_surface_.Reset();
   } else {
     DCHECK(decoder_dx11_texture_.get());
-    decoder_dx11_texture_.Release();
+    decoder_dx11_texture_.Reset();
   }
   if (egl_keyed_mutex_) {
     keyed_mutex_value_++;
@@ -391,9 +391,9 @@ bool PbufferPictureBuffer::ReusePictureBuffer() {
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   eglReleaseTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
 
-  decoder_surface_.Release();
-  target_surface_.Release();
-  decoder_dx11_texture_.Release();
+  decoder_surface_.Reset();
+  target_surface_.Reset();
+  decoder_dx11_texture_.Reset();
   state_ = UNUSED;
   if (egl_keyed_mutex_) {
     HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
@@ -465,8 +465,8 @@ bool EGLStreamPictureBuffer::ReusePictureBuffer() {
     RETURN_ON_FAILURE(result, "Could not release stream", false);
   }
   if (current_d3d_sample_) {
-    dx11_decoding_texture_.Release();
-    current_d3d_sample_.Release();
+    dx11_decoding_texture_.Reset();
+    current_d3d_sample_.Reset();
   }
   state_ = UNUSED;
   return true;
@@ -635,7 +635,7 @@ bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
   DCHECK_EQ(COPYING, state_);
   state_ = IN_CLIENT;
 
-  dx11_decoding_texture_.Release();
+  dx11_decoding_texture_.Reset();
 
   HRESULT hr =
       egl_keyed_mutex_->AcquireSync(keyed_mutex_value_, kAcquireSyncWaitMs);

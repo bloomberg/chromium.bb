@@ -231,8 +231,8 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   EXPECT_EQ(L"old text", base::string16(name));
   name.Reset();
 
-  text_dispatch.Release();
-  text_accessible.Release();
+  text_dispatch.Reset();
+  text_accessible.Reset();
 
   // Notify the BrowserAccessibilityManager that the text child has changed.
   AXContentNodeData text2;
@@ -260,8 +260,8 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(L"new text", base::string16(name));
 
-  text_dispatch.Release();
-  text_accessible.Release();
+  text_dispatch.Reset();
+  text_accessible.Reset();
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -671,8 +671,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(combo_box_value.c_str(), text);
   text.Reset();
-  hyperlink.Release();
-  hypertext.Release();
+  hyperlink.Reset();
+  hypertext.Reset();
 
   // Get the text of the check box.
   // It should be its name.
@@ -682,8 +682,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(check_box_name.c_str(), text);
   text.Reset();
-  hyperlink.Release();
-  hypertext.Release();
+  hyperlink.Reset();
+  hypertext.Reset();
 
   // Get the text of the button.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, hyperlink.Receive()));
@@ -692,8 +692,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(button_text_name.c_str(), text);
   text.Reset();
-  hyperlink.Release();
-  hypertext.Release();
+  hyperlink.Reset();
+  hypertext.Reset();
 
   // Get the text of the link.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, hyperlink.Receive()));
@@ -701,8 +701,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
   EXPECT_STREQ(link_text_name.c_str(), text);
   text.Reset();
-  hyperlink.Release();
-  hypertext.Release();
+  hyperlink.Reset();
+  hypertext.Reset();
 
   long hyperlink_index;
   EXPECT_EQ(S_FALSE, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
@@ -1180,8 +1180,8 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
     offset = end;
   }
 
-  textarea_object.Release();
-  text_field_object.Release();
+  textarea_object.Reset();
+  text_field_object.Reset();
 
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
@@ -1630,16 +1630,16 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
   // div_accessible and link_accessible are the only IA2 hyperlinks.
   EXPECT_HRESULT_FAILED(root_accessible->QueryInterface(
       IID_IAccessibleHyperlink, reinterpret_cast<void**>(hyperlink.Receive())));
-  hyperlink.Release();
+  hyperlink.Reset();
   EXPECT_HRESULT_SUCCEEDED(div_accessible->QueryInterface(
       IID_IAccessibleHyperlink, reinterpret_cast<void**>(hyperlink.Receive())));
-  hyperlink.Release();
+  hyperlink.Reset();
   EXPECT_HRESULT_FAILED(text_accessible->QueryInterface(
       IID_IAccessibleHyperlink, reinterpret_cast<void**>(hyperlink.Receive())));
-  hyperlink.Release();
+  hyperlink.Reset();
   EXPECT_HRESULT_SUCCEEDED(link_accessible->QueryInterface(
       IID_IAccessibleHyperlink, reinterpret_cast<void**>(hyperlink.Receive())));
-  hyperlink.Release();
+  hyperlink.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(root_accessible->nActions(&n_actions));
   EXPECT_EQ(0, n_actions);
@@ -2414,17 +2414,17 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   target.QueryInterface(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_child1->unique_id(), unique_id);
-  ax_target.Release();
-  target.Release();
+  ax_target.Reset();
+  target.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_target(1, target.Receive()));
   target.QueryInterface(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_child2->unique_id(), unique_id);
-  ax_target.Release();
-  target.Release();
-  describedby_relation.Release();
+  ax_target.Reset();
+  target.Reset();
+  describedby_relation.Reset();
 
   // Test the reverse relations.
   EXPECT_HRESULT_SUCCEEDED(ax_child1->get_nRelations(&n_relations));
@@ -2445,9 +2445,9 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   target.QueryInterface(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_root->unique_id(), unique_id);
-  ax_target.Release();
-  target.Release();
-  description_for_relation.Release();
+  ax_target.Reset();
+  target.Reset();
+  description_for_relation.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(ax_child2->get_nRelations(&n_relations));
   EXPECT_EQ(1, n_relations);
@@ -2467,8 +2467,8 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   target.QueryInterface(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_root->unique_id(), unique_id);
-  ax_target.Release();
-  target.Release();
+  ax_target.Reset();
+  target.Reset();
 
   // Try adding one more relation.
   std::vector<int32_t> labelledby_ids = {3};

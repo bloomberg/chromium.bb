@@ -839,8 +839,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
       }
     }
 
-    persist_file.Release();
-    shell_link.Release();
+    persist_file.Reset();
+    shell_link.Reset();
 
     // Update the shortcut if some of its properties need to be updated.
     if (updated_properties.options &&

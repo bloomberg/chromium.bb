@@ -1978,7 +1978,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   weak_this_factory_.InvalidateWeakPtrs();
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   pending_output_samples_.clear();
-  decoder_.Release();
+  decoder_.Reset();
   config_change_detector_.reset();
 
   // If we are processing a config change, then leave the d3d9/d3d11 objects
@@ -1994,21 +1994,21 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
     pending_input_buffers_.clear();
     pictures_requested_ = false;
     if (use_dx11_) {
-      d3d11_processor_.Release();
-      enumerator_.Release();
-      video_context_.Release();
-      video_device_.Release();
-      d3d11_device_context_.Release();
-      d3d11_device_.Release();
-      d3d11_device_manager_.Release();
-      d3d11_query_.Release();
-      multi_threaded_.Release();
+      d3d11_processor_.Reset();
+      enumerator_.Reset();
+      video_context_.Reset();
+      video_device_.Reset();
+      d3d11_device_context_.Reset();
+      d3d11_device_.Reset();
+      d3d11_device_manager_.Reset();
+      d3d11_query_.Reset();
+      multi_threaded_.Reset();
       processor_width_ = processor_height_ = 0;
     } else {
-      d3d9_.Release();
-      d3d9_device_ex_.Release();
-      device_manager_.Release();
-      query_.Release();
+      d3d9_.Reset();
+      d3d9_device_ex_.Reset();
+      device_manager_.Reset();
+      query_.Reset();
     }
   }
   sent_drain_message_ = false;
@@ -2781,8 +2781,8 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     int height,
     const gfx::ColorSpace& color_space) {
   if (width < processor_width_ || height != processor_height_) {
-    d3d11_processor_.Release();
-    enumerator_.Release();
+    d3d11_processor_.Reset();
+    enumerator_.Reset();
     processor_width_ = 0;
     processor_height_ = 0;
 
@@ -2950,7 +2950,7 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(IMFTransform* transform,
       RETURN_ON_HR_FAILURE(hr, "Failed to set output type", false);
       return true;
     }
-    media_type.Release();
+    media_type.Reset();
   }
   return false;
 }

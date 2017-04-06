@@ -305,7 +305,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
   // adapter that connects to the endpoint device is present and enabled.
   if (!IsDeviceActive(endpoint_device.get())) {
     DVLOG(1) << "Selected endpoint device is not active";
-    endpoint_device.Release();
+    endpoint_device.Reset();
   }
   return endpoint_device;
 }
@@ -341,7 +341,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
   // adapter that connects to the endpoint device is present and enabled.
   if (!IsDeviceActive(endpoint_device.get())) {
     DVLOG(1) << "Selected endpoint device is not active";
-    endpoint_device.Release();
+    endpoint_device.Reset();
   }
   return endpoint_device;
 }

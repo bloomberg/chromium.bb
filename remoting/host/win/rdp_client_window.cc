@@ -401,9 +401,9 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void RdpClientWindow::OnDestroy() {
-  client_.Release();
-  client_9_.Release();
-  client_settings_.Release();
+  client_.Reset();
+  client_9_.Reset();
+  client_settings_.Reset();
   apply_resolution_timer_.Stop();
 }
 
@@ -503,9 +503,9 @@ HRESULT RdpClientWindow::OnConfirmClose(VARIANT_BOOL* allow_close) {
 int RdpClientWindow::LogOnCreateError(HRESULT error) {
   LOG(ERROR) << "RDP: failed to initiate a connection to "
              << server_endpoint_.ToString() << ": error=" << std::hex << error;
-  client_.Release();
-  client_9_.Release();
-  client_settings_.Release();
+  client_.Reset();
+  client_9_.Reset();
+  client_settings_.Reset();
   return -1;
 }
 

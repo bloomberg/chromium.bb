@@ -125,8 +125,7 @@ StatusTrayStateChangerWin::~StatusTrayStateChangerWin() {
 bool StatusTrayStateChangerWin::CreateTrayNotify() {
   DCHECK(CalledOnValidThread());
 
-  tray_notify_.Release();  // Release so this method can be called more than
-                           // once.
+  tray_notify_.Reset();  // Reset so this method can be called more than once.
 
   HRESULT hr = tray_notify_.CreateInstance(CLSID_TrayNotify);
   if (FAILED(hr))

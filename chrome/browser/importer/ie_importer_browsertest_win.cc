@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   // Cleans up.
   url_history_stg2->DeleteUrl(kIEIdentifyUrl, 0);
   url_history_stg2->DeleteUrl(kIECacheItemUrl, 0);
-  url_history_stg2.Release();
+  url_history_stg2.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,

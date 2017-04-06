@@ -84,7 +84,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
   ScopedComPtr<IBaseFilter> capture_filter;
   for (ScopedComPtr<IMoniker> moniker;
        enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
-       moniker.Release()) {
+       moniker.Reset()) {
     ScopedComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
     if (FAILED(hr))
@@ -147,7 +147,7 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
         return pin;
       }
     }
-    pin.Release();
+    pin.Reset();
   }
 
   DCHECK(!pin.get());
@@ -248,7 +248,7 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
   }
 
   if (capture_graph_builder_.get())
-    capture_graph_builder_.Release();
+    capture_graph_builder_.Reset();
 }
 
 bool VideoCaptureDeviceWin::Init() {

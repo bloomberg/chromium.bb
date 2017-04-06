@@ -138,11 +138,11 @@ bool AudioCapturerWin::ResetAndInitialize() {
 void AudioCapturerWin::Deinitialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
   wave_format_ex_.Reset(nullptr);
-  mm_device_enumerator_.Release();
-  audio_capture_client_.Release();
-  audio_client_.Release();
-  mm_device_.Release();
-  audio_volume_.Release();
+  mm_device_enumerator_.Reset();
+  audio_capture_client_.Reset();
+  audio_client_.Reset();
+  mm_device_.Reset();
+  audio_volume_.Reset();
 }
 
 bool AudioCapturerWin::Initialize() {

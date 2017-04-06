@@ -45,7 +45,7 @@ SnapshotFileDetails::SnapshotFileDetails(const SnapshotFileDetails& other) =
     default;
 
 SnapshotFileDetails::~SnapshotFileDetails() {
-  file_stream_.Release();
+  file_stream_.Reset();
 }
 
 void SnapshotFileDetails::set_file_info(const base::File::Info& file_info) {

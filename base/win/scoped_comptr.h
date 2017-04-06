@@ -46,7 +46,7 @@ class ScopedComPtr {
     static_assert(
         sizeof(ScopedComPtr<Interface, interface_id>) == sizeof(Interface*),
         "ScopedComPtrSize");
-    Release();
+    Reset();
   }
 
   Interface* get() const { return ptr_; }
@@ -57,12 +57,14 @@ class ScopedComPtr {
   // ScopedComPtr instance.
   // Note that this function equates to IUnknown::Release and should not
   // be confused with e.g. unique_ptr::release().
-  void Release() {
+  unsigned long Reset() {
+    unsigned long ref = 0;
     Interface* temp = ptr_;
     if (temp) {
       ptr_ = nullptr;
-      temp->Release();
+      ref = temp->Release();
     }
+    return ref;
   }
 
   // Sets the internal pointer to NULL and returns the held object without

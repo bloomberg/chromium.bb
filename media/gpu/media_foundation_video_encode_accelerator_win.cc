@@ -694,12 +694,12 @@ void MediaFoundationVideoEncodeAccelerator::DestroyTask() {
 }
 
 void MediaFoundationVideoEncodeAccelerator::ReleaseEncoderResources() {
-  encoder_.Release();
-  codec_api_.Release();
-  imf_input_media_type_.Release();
-  imf_output_media_type_.Release();
-  input_sample_.Release();
-  output_sample_.Release();
+  encoder_.Reset();
+  codec_api_.Reset();
+  imf_input_media_type_.Reset();
+  imf_output_media_type_.Reset();
+  input_sample_.Reset();
+  output_sample_.Reset();
 }
 
 }  // namespace content
