@@ -4,7 +4,6 @@
 
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
@@ -39,11 +38,9 @@ SpellCheckProvider::SpellCheckProvider(
     SpellCheck* spellcheck)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SpellCheckProvider>(render_view),
-      spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
   DCHECK(spellcheck_);
   if (render_view) {  // NULL in unit tests.
-    render_view->GetWebView()->setSpellCheckClient(this);
     render_view->GetWebView()->setTextCheckClient(this);
     EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
   }
@@ -92,10 +89,7 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
                         OnRespondSpellingService)
 #endif
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
-                        OnAdvanceToNextMisspelling)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -155,25 +149,6 @@ void SpellCheckProvider::cancelAllPendingRequests() {
   text_check_completions_.Clear();
 }
 
-void SpellCheckProvider::showSpellingUI(bool show) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);
-  Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
-#endif
-}
-
-bool SpellCheckProvider::isShowingSpellingUI() {
-  return spelling_panel_visible_;
-}
-
-void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
-    const WebString& word) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(
-      routing_id(), word.utf16()));
-#endif
-}
-
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
@@ -224,13 +199,6 @@ bool SpellCheckProvider::HasWordCharacters(
 }
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-void SpellCheckProvider::OnAdvanceToNextMisspelling() {
-  if (!render_view()->GetWebView())
-    return;
-  render_view()->GetWebView()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("AdvanceToNextMisspelling"));
-}
-
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     const base::string16& line,
@@ -253,16 +221,6 @@ void SpellCheckProvider::OnRespondTextCheck(
   // Cache the request and the converted results.
   last_request_ = line;
   last_results_.swap(textcheck_results);
-}
-
-void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
-  if (!render_view()->GetWebView())
-    return;
-  // We need to tell the webView whether the spelling panel is visible or not so
-  // that it won't need to make ipc calls later.
-  spelling_panel_visible_ = is_currently_visible;
-  render_view()->GetWebView()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("ToggleSpellPanel"));
 }
 #endif
 

@@ -15,10 +15,8 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 #include "third_party/WebKit/public/web/WebTextCheckClient.h"
 
-class RenderView;
 class SpellCheck;
 struct SpellCheckResult;
 
@@ -27,14 +25,12 @@ class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
 
+// TODO(xiaochengh): Make SpellCheckProvider a RenderFrameObserver.
 // This class deals with invoking browser-side spellcheck mechanism
 // which is done asynchronously.
-// TODO(xiaochengh): Split this class to implement WebSpellCheckClient and
-// WebTextCheckClient separately.
 class SpellCheckProvider
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<SpellCheckProvider>,
-      public blink::WebSpellCheckClient,
       public blink::WebTextCheckClient {
  public:
   using WebTextCheckCompletions = IDMap<blink::WebTextCheckingCompletion*>;
@@ -88,12 +84,6 @@ class SpellCheckProvider
       blink::WebTextCheckingCompletion* completion) override;
   void cancelAllPendingRequests() override;
 
-  // blink::WebSpellCheckClient implementation.
-  void showSpellingUI(bool show) override;
-  bool isShowingSpellingUI() override;
-  void updateSpellingUIWithMisspelledWord(
-      const blink::WebString& word) override;
-
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondSpellingService(
       int identifier,
@@ -107,12 +97,10 @@ class SpellCheckProvider
   bool HasWordCharacters(const base::string16& text, int index) const;
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
       int identifier,
       const base::string16& line,
       const std::vector<SpellCheckResult>& results);
-  void OnToggleSpellPanel(bool is_currently_visible);
 #endif
 
   // Holds ongoing spellchecking operations, assigns IDs for the IPC routing.
@@ -122,9 +110,6 @@ class SpellCheckProvider
   // spellchecking results.
   base::string16 last_request_;
   blink::WebVector<blink::WebTextCheckingResult> last_results_;
-
-  // True if the browser is showing the spelling panel for us.
-  bool spelling_panel_visible_;
 
   // Weak pointer to shared (per RenderView) spellcheck data.
   SpellCheck* spellcheck_;

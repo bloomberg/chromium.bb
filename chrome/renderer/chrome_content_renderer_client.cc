@@ -160,6 +160,7 @@
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck_panel.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
 
@@ -573,6 +574,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
+  new SpellCheckPanel(render_view);
 #endif
   new prerender::PrerendererClient(render_view);
 
