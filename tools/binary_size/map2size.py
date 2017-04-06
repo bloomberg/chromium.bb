@@ -6,8 +6,8 @@
 """Main Python API for analyzing binary size."""
 
 import argparse
+import calendar
 import datetime
-import distutils.spawn
 import gzip
 import logging
 import os
@@ -22,6 +22,7 @@ import helpers
 import linker_map_parser
 import models
 import ninja_parser
+import paths
 
 
 def _OpenMaybeGz(path, mode=None):
@@ -130,7 +131,11 @@ def _NormalizeSourcePath(path):
 
 
 def _ExtractSourcePaths(symbol_group, output_directory):
-  """Fills in the .source_path attribute of all symbols."""
+  """Fills in the .source_path attribute of all symbols.
+
+  Returns True if source paths were found.
+  """
+  all_found = True
   mapper = ninja_parser.SourceFileMapper(output_directory)
 
   for symbol in symbol_group:
@@ -143,8 +148,10 @@ def _ExtractSourcePaths(symbol_group, output_directory):
       if source_path:
         symbol.source_path = _NormalizeSourcePath(source_path)
       else:
+        all_found = False
         logging.warning('Could not find source path for %s', object_path)
   logging.debug('Parsed %d .ninja files.', mapper.GetParsedFileCount())
+  return all_found
 
 
 def _RemoveDuplicatesAndCalculatePadding(symbol_group):
@@ -199,53 +206,13 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
     symbol_group -= models.SymbolGroup(to_remove)
 
 
-def AddOptions(parser):
-  parser.add_argument('--tool-prefix', default='',
-                      help='Path prefix for c++filt.')
-  parser.add_argument('--output-directory',
-                      help='Path to the root build directory.')
+def Analyze(path, lazy_paths=None):
+  """Returns a SizeInfo for the given |path|.
 
-
-def _DetectToolPrefix(tool_prefix, input_file, output_directory=None):
-  """Detects values for --tool-prefix and --output-directory."""
-  if not output_directory:
-    abs_path = os.path.abspath(input_file)
-    release_idx = abs_path.find('Release')
-    if release_idx != -1:
-      output_directory = abs_path[:release_idx] + 'Release'
-      output_directory = os.path.relpath(abs_path[:release_idx] + '/Release')
-      logging.debug('Detected --output-directory=%s', output_directory)
-
-  if not tool_prefix and output_directory:
-    # Auto-detect from build_vars.txt
-    build_vars_path = os.path.join(output_directory, 'build_vars.txt')
-    if os.path.exists(build_vars_path):
-      with open(build_vars_path) as f:
-        build_vars = dict(l.rstrip().split('=', 1) for l in f if '=' in l)
-      logging.debug('Found --tool-prefix from build_vars.txt')
-      tool_prefix = os.path.join(output_directory,
-                                 build_vars['android_tool_prefix'])
-
-  if os.path.sep not in tool_prefix:
-    full_path = distutils.spawn.find_executable(tool_prefix + 'c++filt')
-  else:
-    full_path = tool_prefix + 'c++filt'
-
-  if not full_path or not os.path.isfile(full_path):
-    raise Exception('Bad --tool-prefix. Path not found: %s' % full_path)
-  if not output_directory or not os.path.isdir(output_directory):
-    raise Exception('Bad --output-directory. Path not found: %s' %
-                    output_directory)
-  logging.info('Using --output-directory=%s', output_directory)
-  logging.info('Using --tool-prefix=%s', tool_prefix)
-  return output_directory, tool_prefix
-
-
-def AnalyzeWithArgs(args, input_path):
-  return Analyze(input_path, args.output_directory, args.tool_prefix)
-
-
-def Analyze(path, output_directory=None, tool_prefix=''):
+  Args:
+    path: Can be a .size file, or a .map(.gz). If the latter, then lazy_paths
+        must be provided as well.
+  """
   if path.endswith('.size'):
     logging.debug('Loading results from: %s', path)
     size_info = file_format.LoadSizeInfo(path)
@@ -259,23 +226,26 @@ def Analyze(path, output_directory=None, tool_prefix=''):
   elif not path.endswith('.map') and not path.endswith('.map.gz'):
     raise Exception('Expected input to be a .map or a .size')
   else:
-    # Verify tool_prefix early.
-    output_directory, tool_prefix = (
-        _DetectToolPrefix(tool_prefix, path, output_directory))
+    # output_directory needed for source file information.
+    lazy_paths.VerifyOutputDirectory()
+    # tool_prefix needed for c++filt.
+    lazy_paths.VerifyToolPrefix()
 
     with _OpenMaybeGz(path) as map_file:
       section_sizes, symbols = linker_map_parser.MapFileParser().Parse(map_file)
-    timestamp = datetime.datetime.utcfromtimestamp(os.path.getmtime(path))
-    size_info = models.SizeInfo(section_sizes, models.SymbolGroup(symbols),
-                                timestamp=timestamp)
+    size_info = models.SizeInfo(section_sizes, models.SymbolGroup(symbols))
 
     # Map file for some reason doesn't unmangle all names.
     logging.info('Calculating padding')
     _RemoveDuplicatesAndCalculatePadding(size_info.symbols)
     # Unmangle prints its own log statement.
-    _UnmangleRemainingSymbols(size_info.symbols, tool_prefix)
+    _UnmangleRemainingSymbols(size_info.symbols, lazy_paths.tool_prefix)
     logging.info('Extracting source paths from .ninja files')
-    _ExtractSourcePaths(size_info.symbols, output_directory)
+    all_found = _ExtractSourcePaths(size_info.symbols,
+                                    lazy_paths.output_directory)
+    assert all_found, (
+        'One or more source file paths could not be found. Likely caused by '
+        '.ninja files being generated at a different time than the .map file.')
     # Resolve paths prints its own log statement.
     logging.info('Normalizing names')
     _NormalizeNames(size_info.symbols)
@@ -289,35 +259,97 @@ def Analyze(path, output_directory=None, tool_prefix=''):
   return size_info
 
 
-def _DetectGitRevision(path):
+def _DetectGitRevision(directory):
   try:
     git_rev = subprocess.check_output(
-        ['git', '-C', os.path.dirname(path), 'rev-parse', 'HEAD'])
+        ['git', '-C', directory, 'rev-parse', 'HEAD'])
     return git_rev.rstrip()
   except Exception:
     logging.warning('Failed to detect git revision for file metadata.')
     return None
 
 
+def BuildIdFromElf(elf_path, tool_prefix):
+  args = [tool_prefix + 'readelf', '-n', elf_path]
+  stdout = subprocess.check_output(args)
+  match = re.search(r'Build ID: (\w+)', stdout)
+  assert match, 'Build ID not found from running: ' + ' '.join(args)
+  return match.group(1)
+
+
+def _SectionSizesFromElf(elf_path, tool_prefix):
+  args = [tool_prefix + 'readelf', '-S', '--wide', elf_path]
+  stdout = subprocess.check_output(args)
+  section_sizes = {}
+  # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
+  for match in re.finditer(r'\[[\s\d]+\] (\..*)$', stdout, re.MULTILINE):
+    items = match.group(1).split()
+    section_sizes[items[0]] = int(items[4], 16)
+  return section_sizes
+
+
 def main(argv):
   parser = argparse.ArgumentParser(argv)
-  parser.add_argument('input_file', help='Path to input .map file.')
+  parser.add_argument('elf_file', help='Path to input ELF file.')
   parser.add_argument('output_file', help='Path to output .size(.gz) file.')
-  AddOptions(parser)
+  parser.add_argument('--map-file',
+                      help='Path to input .map(.gz) file. Defaults to '
+                           '{{elf_file}}.map(.gz)?')
+  paths.AddOptions(parser)
   args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
   if not args.output_file.endswith('.size'):
     parser.error('output_file must end with .size')
 
-  size_info = AnalyzeWithArgs(args, args.input_file)
-  if not args.input_file.endswith('.size'):
-    git_rev = _DetectGitRevision(args.input_file)
-    size_info.tag = 'Filename=%s git_rev=%s' % (
-        os.path.basename(args.input_file), git_rev)
+  if args.map_file:
+    map_file_path = args.map_file
+  elif args.elf_file.endswith('.size'):
+    # Allow a .size file to be passed as input as well. Useful for measuring
+    # serialization speed.
+    pass
+  else:
+    map_file_path = args.elf_file + '.map'
+    if not os.path.exists(map_file_path):
+      map_file_path += '.gz'
+    if not os.path.exists(map_file_path):
+      parser.error('Could not find .map(.gz)? file. Use --map-file.')
+
+  lazy_paths = paths.LazyPaths(args=args, input_file=args.elf_file)
+  metadata = None
+  if args.elf_file and not args.elf_file.endswith('.size'):
+    logging.debug('Constructing metadata')
+    git_rev = _DetectGitRevision(os.path.dirname(args.elf_file))
+    build_id = BuildIdFromElf(args.elf_file, lazy_paths.tool_prefix)
+    timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
+        args.elf_file))
+    timestamp = calendar.timegm(timestamp_obj.timetuple())
+
+    def relative_to_out(path):
+      return os.path.relpath(path, lazy_paths.VerifyOutputDirectory())
+
+    metadata = {
+        models.METADATA_GIT_REVISION: git_rev,
+        models.METADATA_MAP_FILENAME: relative_to_out(map_file_path),
+        models.METADATA_ELF_FILENAME: relative_to_out(args.elf_file),
+        models.METADATA_ELF_MTIME: timestamp,
+        models.METADATA_ELF_BUILD_ID: build_id,
+    }
+
+  size_info = Analyze(map_file_path, lazy_paths)
+
+  if metadata:
+    logging.debug('Validating section sizes')
+    elf_section_sizes = _SectionSizesFromElf(args.elf_file,
+                                             lazy_paths.tool_prefix)
+    for k, v in elf_section_sizes.iteritems():
+      assert v == size_info.section_sizes.get(k), (
+          'ELF file and .map file do not match.')
+
+    size_info.metadata = metadata
+
   logging.info('Recording metadata: %s',
                describe.DescribeSizeInfoMetadata(size_info))
   logging.info('Saving result to %s', args.output_file)
   file_format.SaveSizeInfo(size_info, args.output_file)
-
   logging.info('Done')
 
 

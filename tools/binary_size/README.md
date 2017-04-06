@@ -1,17 +1,17 @@
 # map2size.py
 
-Parses a linker .map(.gz) file and outputs the result as a .size(.gz) file.
+Parses a linker .map file and outputs the result as a .size file.
 
 ## Example Usage:
 
     # Android:
     gn gen out/Release --args='target_os="android" is_official_build=true'
     ninja -C out/Release -j 1000 libchrome.so
-    tools/binary_size/map2size.py out/Release/lib.unstripped/libchrome.so.map.gz chrome.size -v
+    tools/binary_size/map2size.py out/Release/lib.unstripped/libchrome.so chrome.size -v
     # Linux:
     gn gen out/Release --args='is_official_build=true'
     ninja -C out/Release -j 1000 chrome
-    tools/binary_size/map2size.py out/Release/chrome.map.gz chrome.size -v
+    tools/binary_size/map2size.py out/Release/chrome chrome.size -v
 
 # create_html_breakdown.py
 

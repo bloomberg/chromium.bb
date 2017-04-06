@@ -193,17 +193,20 @@ def DescribeSizeInfoCoverage(size_info):
 
 
 def _UtcToLocal(utc):
-    epoch = time.mktime(utc.timetuple())
-    offset = (datetime.datetime.fromtimestamp(epoch) -
-              datetime.datetime.utcfromtimestamp(epoch))
-    return utc + offset
+  epoch = time.mktime(utc.timetuple())
+  offset = (datetime.datetime.fromtimestamp(epoch) -
+            datetime.datetime.utcfromtimestamp(epoch))
+  return utc + offset
 
 
 def DescribeSizeInfoMetadata(size_info):
-  time_str = 'Unknown'
-  if size_info.timestamp:
-    time_str = _UtcToLocal(size_info.timestamp).strftime('%Y-%m-%d %H:%M:%S')
-  return 'mapfile mtime=%s \ttag=%s' % (time_str, size_info.tag)
+  display_dict = size_info.metadata.copy()
+  timestamp = display_dict.get(models.METADATA_ELF_MTIME)
+  if timestamp:
+    timestamp_obj = datetime.datetime.utcfromtimestamp(timestamp)
+    display_dict[models.METADATA_ELF_MTIME] = (
+        _UtcToLocal(timestamp_obj).strftime('%Y-%m-%d %H:%M:%S'))
+  return ' '.join(sorted('%s=%s' % t for t in display_dict.iteritems()))
 
 
 def GenerateLines(obj, verbose=False):

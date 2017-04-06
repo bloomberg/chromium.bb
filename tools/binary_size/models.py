@@ -1,7 +1,26 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Classes that comprise the data model for binary size analysis."""
+"""Classes that comprise the data model for binary size analysis.
+
+The primary classes are Symbol, and SymbolGroup.
+
+Description of common properties:
+  * address: The start address of the symbol.
+        May be 0 (e.g. for .bss or for SymbolGroups).
+  * size: The number of bytes this symbol takes up, including padding that comes
+       before |address|.
+  * padding: The number of bytes of padding before |address| due to this symbol.
+  * name: Symbol names with parameter list removed.
+        Never None, but will be '' for anonymous symbols.
+  * full_name: Symbols names with parameter list left in.
+       Never None, but will be '' for anonymous symbols, and for symbols that do
+       not contain a parameter list.
+  * is_anonymous: True when the symbol exists in an anonymous namespace (which
+       are removed from both full_name and name during normalization).
+  * section_name: E.g. ".text", ".rodata", ".data.rel.local"
+  * section: The second character of |section_name|. E.g. "t", "r", "d".
+"""
 
 import collections
 import copy
@@ -10,6 +29,12 @@ import re
 
 import match_util
 
+
+METADATA_GIT_REVISION = 'git_revision'
+METADATA_MAP_FILENAME = 'map_file_name'
+METADATA_ELF_FILENAME = 'elf_file_name'
+METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
+METADATA_ELF_BUILD_ID = 'elf_build_id'
 
 SECTION_TO_SECTION_NAME = {
     'b': '.bss',
@@ -25,25 +50,26 @@ class SizeInfo(object):
   Fields:
     section_sizes: A dict of section_name -> size.
     symbols: A SymbolGroup (or SymbolDiff) with all symbols in it.
+    metadata: A dict.
   """
   __slots__ = (
       'section_sizes',
       'symbols',
-      'tag',
-      'timestamp',
+      'metadata',
   )
 
   """Root size information."""
-  def __init__(self, section_sizes, symbols, timestamp=None, tag=''):
+  def __init__(self, section_sizes, symbols, metadata=None):
     self.section_sizes = section_sizes  # E.g. {'.text': 0}
     self.symbols = symbols  # List of symbols sorted by address per-section.
-    self.timestamp = timestamp  # UTC datetime object.
-    self.tag = tag  # E.g. git revision.
-    assert not tag or '\n' not in tag  # Simplifies file format.
+    self.metadata = metadata or {}
 
 
 class BaseSymbol(object):
-  """Base class for Symbol and SymbolGroup."""
+  """Base class for Symbol and SymbolGroup.
+
+  Refer to module docs for field descriptions.
+  """
   __slots__ = ()
 
   @property
@@ -83,7 +109,10 @@ class BaseSymbol(object):
 
 
 class Symbol(BaseSymbol):
-  """Represents a single symbol within a binary."""
+  """Represents a single symbol within a binary.
+
+  Refer to module docs for field descriptions.
+  """
 
   __slots__ = (
       'address',
