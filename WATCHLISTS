@@ -2171,6 +2171,7 @@
     'subresource_filter': ['subresource-filter-reviews@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'swreporter': ['alito+watch@chromium.org',
+                   'csharp+watch@chromium.org',
                    'ftirelo+watch@chromium.org',
                    'joenotcharles+watch@chromium.org'],
     'sync': ['sync-reviews@chromium.org'],
