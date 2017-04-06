@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -35,8 +37,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction) {
-  if (previous.get() && previous->web_contents() == web_contents &&
-      previous->delegate_.get() == delegate.get() &&
+  if (previous.get() && previous->delegate_.get() == delegate.get() &&
       previous->container_view() == container_view &&
       previous->element_bounds() == element_bounds) {
     previous->ClearState();
@@ -59,18 +60,12 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction)
-    : controller_common_(new PopupControllerCommon(element_bounds,
-                                                   text_direction,
-                                                   container_view,
-                                                   web_contents)),
+    : controller_common_(element_bounds, text_direction, container_view),
       view_(NULL),
       layout_model_(this, delegate->IsCreditCardPopup()),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   ClearState();
-  controller_common_->SetKeyPressCallback(
-      base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
-                 base::Unretained(this)));
 }
 
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
@@ -117,7 +112,10 @@ void AutofillPopupControllerImpl::Show(
     OnSuggestionsChanged();
   }
 
-  controller_common_->RegisterKeyPressCallback();
+  static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
+      ->RegisterKeyPressHandler(
+          base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
+                     base::Unretained(this)));
   delegate_->OnPopupShown();
 
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
@@ -189,9 +187,11 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 }
 
 void AutofillPopupControllerImpl::Hide() {
-  controller_common_->RemoveKeyPressCallback();
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnPopupHidden();
+    static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
+        ->RemoveKeyPressHandler();
+  }
 
   if (view_)
     view_->Hide();
@@ -287,20 +287,16 @@ gfx::Rect AutofillPopupControllerImpl::popup_bounds() const {
   return layout_model_.popup_bounds();
 }
 
-content::WebContents* AutofillPopupControllerImpl::web_contents() {
-  return controller_common_->web_contents();
-}
-
 gfx::NativeView AutofillPopupControllerImpl::container_view() {
-  return controller_common_->container_view();
+  return controller_common_.container_view;
 }
 
 const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
-  return controller_common_->element_bounds();
+  return controller_common_.element_bounds;
 }
 
 bool AutofillPopupControllerImpl::IsRTL() const {
-  return controller_common_->is_rtl();
+  return controller_common_.text_direction == base::i18n::RIGHT_TO_LEFT;
 }
 
 const std::vector<autofill::Suggestion>

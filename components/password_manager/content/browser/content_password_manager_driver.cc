@@ -156,6 +156,11 @@ void ContentPasswordManagerDriver::AllowToRunFormClassifier() {
   GetPasswordGenerationAgent()->AllowToRunFormClassifier();
 }
 
+autofill::AutofillDriver* ContentPasswordManagerDriver::GetAutofillDriver() {
+  return autofill::ContentAutofillDriver::GetForRenderFrameHost(
+      render_frame_host_);
+}
+
 PasswordGenerationManager*
 ContentPasswordManagerDriver::GetPasswordGenerationManager() {
   return &password_generation_manager_;

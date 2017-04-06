@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -41,6 +42,7 @@ ContentAutofillDriver::ContentAutofillDriver(
                                             app_locale,
                                             enable_download_manager)),
       autofill_external_delegate_(autofill_manager_.get(), this),
+      key_press_handler_manager_(this),
       binding_(this) {
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
@@ -265,6 +267,31 @@ const mojom::AutofillAgentPtr& ContentAutofillDriver::GetAutofillAgent() {
   }
 
   return autofill_agent_;
+}
+
+void ContentAutofillDriver::RegisterKeyPressHandler(
+    const content::RenderWidgetHost::KeyPressEventCallback& handler) {
+  key_press_handler_manager_.RegisterKeyPressHandler(handler);
+}
+
+void ContentAutofillDriver::RemoveKeyPressHandler() {
+  key_press_handler_manager_.RemoveKeyPressHandler();
+}
+
+void ContentAutofillDriver::AddHandler(
+    const content::RenderWidgetHost::KeyPressEventCallback& handler) {
+  content::RenderWidgetHostView* view = render_frame_host_->GetView();
+  if (!view)
+    return;
+  view->GetRenderWidgetHost()->AddKeyPressEventCallback(handler);
+}
+
+void ContentAutofillDriver::RemoveHandler(
+    const content::RenderWidgetHost::KeyPressEventCallback& handler) {
+  content::RenderWidgetHostView* view = render_frame_host_->GetView();
+  if (!view)
+    return;
+  view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(handler);
 }
 
 }  // namespace autofill

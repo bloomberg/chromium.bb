@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -138,8 +138,7 @@ PasswordAutofillManager::PasswordAutofillManager(
     autofill::AutofillClient* autofill_client)
     : password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 PasswordAutofillManager::~PasswordAutofillManager() {
 }
@@ -351,6 +350,10 @@ void PasswordAutofillManager::ClearPreviewedForm() {
 
 bool PasswordAutofillManager::IsCreditCardPopup() {
   return false;
+}
+
+autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {
+  return password_manager_driver_->GetAutofillDriver();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

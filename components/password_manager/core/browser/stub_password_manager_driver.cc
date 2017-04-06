@@ -56,4 +56,8 @@ StubPasswordManagerDriver::GetPasswordAutofillManager() {
   return nullptr;
 }
 
+autofill::AutofillDriver* StubPasswordManagerDriver::GetAutofillDriver() {
+  return nullptr;
+}
+
 }  // namespace password_manager

@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 
 namespace autofill {
+class AutofillDriver;
 struct FormData;
 struct PasswordForm;
 struct PasswordFormGenerationData;
@@ -96,6 +97,9 @@ class PasswordManagerDriver
 
   // Allows the form classifier to find generation fields.
   virtual void AllowToRunFormClassifier() {}
+
+  // Return the associated AutofillDriver.
+  virtual autofill::AutofillDriver* GetAutofillDriver() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);

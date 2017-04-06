@@ -77,6 +77,7 @@ class ContentPasswordManagerDriver
   void GeneratePassword() override;
   void SendLoggingAvailability() override;
   void AllowToRunFormClassifier() override;
+  autofill::AutofillDriver* GetAutofillDriver() override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;

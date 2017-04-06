@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/supports_user_data.h"
+#include "components/autofill/content/browser/key_press_handler_manager.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -29,7 +30,8 @@ class AutofillClient;
 // communication from the renderer and from the external world. There is one
 // instance per RenderFrameHost.
 class ContentAutofillDriver : public AutofillDriver,
-                              public mojom::AutofillDriver {
+                              public mojom::AutofillDriver,
+                              public KeyPressHandlerManager::Delegate {
  public:
   ContentAutofillDriver(
       content::RenderFrameHost* render_frame_host,
@@ -103,12 +105,23 @@ class ContentAutofillDriver : public AutofillDriver,
 
   const mojom::AutofillAgentPtr& GetAutofillAgent();
 
+  // Methods forwarded to key_press_handler_manager_.
+  void RegisterKeyPressHandler(
+      const content::RenderWidgetHost::KeyPressEventCallback& handler);
+  void RemoveKeyPressHandler();
+
  protected:
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.
   void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
 
  private:
+  // KeyPressHandlerManager::Delegate:
+  void AddHandler(
+      const content::RenderWidgetHost::KeyPressEventCallback& handler) override;
+  void RemoveHandler(
+      const content::RenderWidgetHost::KeyPressEventCallback& handler) override;
+
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_;
@@ -123,6 +136,8 @@ class ContentAutofillDriver : public AutofillDriver,
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the Autofill native UI is enabled.
   AutofillExternalDelegate autofill_external_delegate_;
+
+  KeyPressHandlerManager key_press_handler_manager_;
 
   mojo::Binding<mojom::AutofillDriver> binding_;
 

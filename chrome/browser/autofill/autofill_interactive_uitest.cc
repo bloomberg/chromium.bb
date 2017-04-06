@@ -42,11 +42,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -60,6 +62,8 @@
 using base::ASCIIToUTF16;
 
 namespace autofill {
+
+namespace {
 
 static const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
 static const char kTestFormString[] =
@@ -205,6 +209,20 @@ class AutofillManagerTestDelegateImpl
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
+
+// Searches all frames of |web_contents| and returns one called |name|. If
+// there are none, returns null, if there are more, returns an arbitrary one.
+content::RenderFrameHost* RenderFrameHostForName(
+    content::WebContents* web_contents,
+    const std::string& name) {
+  for (content::RenderFrameHost* frame : web_contents->GetAllFrames()) {
+    if (frame->GetFrameName() == name)
+      return frame;
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 // AutofillInteractiveTest ----------------------------------------------------
 
@@ -448,12 +466,14 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   void SendKeyToPopupAndWait(ui::DomKey key) {
     ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
     ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    SendKeyToPopupAndWait(key, code, key_code);
+    SendKeyToPopupAndWait(key, code, key_code,
+                          GetRenderViewHost()->GetWidget());
   }
 
   void SendKeyToPopupAndWait(ui::DomKey key,
                              ui::DomCode code,
-                             ui::KeyboardCode key_code) {
+                             ui::KeyboardCode key_code,
+                             content::RenderWidgetHost* widget) {
     // Route popup-targeted key presses via the render view host.
     content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::RawKeyDown,
                                           blink::WebInputEvent::NoModifiers,
@@ -464,12 +484,10 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
-    GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
-        key_press_event_sink_);
-    GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+    widget->AddKeyPressEventCallback(key_press_event_sink_);
+    widget->ForwardKeyboardEvent(event);
     test_delegate_.Wait();
-    GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
-        key_press_event_sink_);
+    widget->RemoveKeyPressEventCallback(key_press_event_sink_);
   }
 
   void SendKeyToDataListPopup(ui::DomKey key) {
@@ -1733,6 +1751,69 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
       "document.getElementById('user').value = 'user';"));
   FocusFieldByName("password");
   PasteStringAndWait("foobar");
+}
+
+// An extension of the test fixture for tests with site isolation.
+class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
+ protected:
+  void SendKeyToPopupAndWait(ui::DomKey key,
+                             content::RenderWidgetHost* widget) {
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    AutofillInteractiveTest::SendKeyToPopupAndWait(key, code, key_code, widget);
+  }
+
+ private:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTest::SetUpCommandLine(command_line);
+    // Append --site-per-process flag.
+    content::IsolateAllSitesForTesting(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
+  // Ensure that |embedded_test_server()| serves both domains used below.
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  CreateTestProfile();
+
+  // Main frame is on a.com, iframe is on b.com.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/cross_origin_iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill/autofill_test_form.html");
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(GetWebContents(), "crossFrame", iframe_url));
+
+  // Let |test_delegate()| also observe autofill events in the iframe.
+  content::RenderFrameHost* cross_frame =
+      RenderFrameHostForName(GetWebContents(), "crossFrame");
+  ASSERT_TRUE(cross_frame);
+  ContentAutofillDriver* cross_driver =
+      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+          ->DriverForFrame(cross_frame);
+  ASSERT_TRUE(cross_driver);
+  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+
+  // Focus the form in the iframe and simulate choosing a suggestion via
+  // keyboard.
+  std::string script_focus("document.getElementById('NAME_FIRST').focus();");
+  ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  content::RenderWidgetHost* widget =
+      cross_frame->GetView()->GetRenderWidgetHost();
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN, widget);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, widget);
+
+  // Check that the suggestion was filled.
+  std::string value;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      cross_frame,
+      "window.domAutomationController.send("
+      "    document.getElementById('NAME_FIRST').value);",
+      &value));
+  EXPECT_EQ("Milton", value);
 }
 
 }  // namespace autofill

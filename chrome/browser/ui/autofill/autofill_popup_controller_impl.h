@@ -21,6 +21,11 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/native_theme/native_theme.h"
 
+namespace content {
+struct NativeWebKeyboardEvent;
+class WebContents;
+}
+
 namespace autofill {
 
 class AutofillPopupDelegate;
@@ -102,8 +107,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
 
-  content::WebContents* web_contents();
-
   // Change which line is currently selected by the user.
   void SetSelectedLine(base::Optional<int> selected_line);
 
@@ -132,7 +135,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Contains common popup functionality such as popup layout. Protected for
   // testing.
-  std::unique_ptr<PopupControllerCommon> controller_common_;
+  const PopupControllerCommon controller_common_;
 
  private:
 #if !defined(OS_ANDROID)

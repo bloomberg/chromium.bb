@@ -285,6 +285,10 @@ bool AutofillExternalDelegate::IsCreditCardPopup() {
   return is_credit_card_popup_;
 }
 
+AutofillDriver* AutofillExternalDelegate::GetAutofillDriver() {
+  return driver_;
+}
+
 void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
 }

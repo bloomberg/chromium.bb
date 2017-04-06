@@ -71,11 +71,6 @@ class PasswordGenerationPopupControllerImpl
   // Hides the popup and destroys |this|.
   void HideAndDestroy();
 
-  // Accessors.
-  content::WebContents* web_contents() {
-    return controller_common_.web_contents();
-  }
-
  protected:
   PasswordGenerationPopupControllerImpl(
       const gfx::RectF& bounds,
@@ -141,8 +136,8 @@ class PasswordGenerationPopupControllerImpl
   // Controls how passwords are generated.
   std::unique_ptr<PasswordGenerator> generator_;
 
-  // Contains common popup functionality.
-  PopupControllerCommon controller_common_;
+  // Contains common popup data.
+  const PopupControllerCommon controller_common_;
 
   // Help text and the range in the text that corresponds to the saved passwords
   // link.
@@ -159,6 +154,8 @@ class PasswordGenerationPopupControllerImpl
   gfx::Rect popup_bounds_;
 
   PopupViewCommon view_common_;
+
+  content::WebContents* const web_contents_;
 
   base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
 

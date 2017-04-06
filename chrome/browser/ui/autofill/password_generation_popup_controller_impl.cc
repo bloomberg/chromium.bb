@@ -20,6 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -51,9 +53,8 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view) {
-  if (previous.get() &&
-      previous->element_bounds() == bounds &&
-      previous->web_contents() == web_contents &&
+  if (previous.get() && previous->element_bounds() == bounds &&
+      previous->web_contents_ == web_contents &&
       previous->container_view() == container_view) {
     return previous;
   }
@@ -84,17 +85,11 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       observer_(observer),
       generator_(new PasswordGenerator(max_length)),
       // TODO(estade): use correct text direction.
-      controller_common_(bounds,
-                         base::i18n::LEFT_TO_RIGHT,
-                         container_view,
-                         web_contents),
+      controller_common_(bounds, base::i18n::LEFT_TO_RIGHT, container_view),
       password_selected_(false),
       display_password_(false),
+      web_contents_(web_contents),
       weak_ptr_factory_(this) {
-  controller_common_.SetKeyPressCallback(
-      base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
-                 base::Unretained(this)));
-
   base::string16 link =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
   size_t offset = 0;
@@ -196,7 +191,10 @@ void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
     view_->UpdateBoundsAndRedrawPopup();
   }
 
-  controller_common_.RegisterKeyPressCallback();
+  static_cast<ContentAutofillDriver*>(driver_->GetAutofillDriver())
+      ->RegisterKeyPressHandler(base::Bind(
+          &PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
+          base::Unretained(this)));
 
   if (observer_)
     observer_->OnPopupShown(display_password_);
@@ -207,7 +205,8 @@ void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
 }
 
 void PasswordGenerationPopupControllerImpl::Hide() {
-  controller_common_.RemoveKeyPressCallback();
+  static_cast<ContentAutofillDriver*>(driver_->GetAutofillDriver())
+      ->RemoveKeyPressHandler();
 
   if (view_)
     view_->Hide();
@@ -229,7 +228,7 @@ void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
   chrome::android::PreferencesLauncher::ShowPasswordSettings();
 #else
   chrome::NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents()),
+      chrome::FindBrowserWithWebContents(web_contents_),
       GURL(password_manager::kPasswordManagerAccountDashboardURL),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -255,7 +254,7 @@ void PasswordGenerationPopupControllerImpl::SelectionCleared() {
 }
 
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
-  return controller_common_.container_view();
+  return controller_common_.container_view;
 }
 
 gfx::Rect PasswordGenerationPopupControllerImpl::popup_bounds() const {
@@ -264,7 +263,7 @@ gfx::Rect PasswordGenerationPopupControllerImpl::popup_bounds() const {
 
 const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
     const {
-  return controller_common_.element_bounds();
+  return controller_common_.element_bounds;
 }
 
 bool PasswordGenerationPopupControllerImpl::IsRTL() const {

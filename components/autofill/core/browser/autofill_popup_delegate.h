@@ -9,6 +9,8 @@
 
 namespace autofill {
 
+class AutofillDriver;
+
 // An interface for interaction with AutofillPopupController. Will be notified
 // of events by the controller.
 class AutofillPopupDelegate {
@@ -46,6 +48,9 @@ class AutofillPopupDelegate {
 
   // Returns true if popup is for credit card.
   virtual bool IsCreditCardPopup() = 0;
+
+  // Returns the associated AutofillDriver.
+  virtual AutofillDriver* GetAutofillDriver() = 0;
 };
 
 }  // namespace autofill

@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 
@@ -27,7 +29,9 @@ class TestPasswordGenerationPopupController :
             PasswordForm(),
             10,
             nullptr /* PasswordManager*/,
-            nullptr /* PasswordManagerDriver*/,
+            password_manager::ContentPasswordManagerDriverFactory::
+                FromWebContents(web_contents)
+                    ->GetDriverForFrame(web_contents->GetMainFrame()),
             nullptr /* PasswordGenerationPopupObserver*/,
             web_contents,
             native_view) {}

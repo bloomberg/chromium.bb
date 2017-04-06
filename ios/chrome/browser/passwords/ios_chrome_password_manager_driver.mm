@@ -82,3 +82,8 @@ IOSChromePasswordManagerDriver::GetPasswordAutofillManager() {
 void IOSChromePasswordManagerDriver::ForceSavePassword() {
   NOTIMPLEMENTED();
 }
+
+autofill::AutofillDriver* IOSChromePasswordManagerDriver::GetAutofillDriver() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}

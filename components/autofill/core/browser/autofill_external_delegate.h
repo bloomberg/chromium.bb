@@ -54,6 +54,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Returns false for all popups prior to |onQuery|, true for credit card
   // popups after call to |onQuery|.
   bool IsCreditCardPopup() override;
+  AutofillDriver* GetAutofillDriver() override;
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
