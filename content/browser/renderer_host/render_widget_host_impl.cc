@@ -1799,11 +1799,12 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
                                &window_snapshot_component)) {
     int sequence_number =
         static_cast<int>(window_snapshot_component.sequence_number);
-#if defined(OS_MACOSX)
-    // On Mac, when using CoreAnimation, there is a delay between when content
-    // is drawn to the screen, and when the snapshot will actually pick up
-    // that content. Insert a manual delay of 1/6th of a second (to simulate
-    // 10 frames at 60 fps) before actually taking the snapshot.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
+    // delay between when content is drawn to the screen, and when the
+    // snapshot will actually pick up that content. Insert a manual delay of
+    // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
+    // taking the snapshot.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,

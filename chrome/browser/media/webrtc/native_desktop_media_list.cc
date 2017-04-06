@@ -27,6 +27,10 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 
+#if defined(USE_AURA)
+#include "ui/snapshot/snapshot_aura.h"
+#endif
+
 using content::BrowserThread;
 using content::DesktopMediaID;
 
@@ -342,7 +346,7 @@ void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
       gfx::Rect(thumbnail_size_), window_rect.size());
 
   pending_aura_capture_requests_++;
-  ui::GrabWindowSnapshotAndScaleAsync(
+  ui::GrabWindowSnapshotAndScaleAsyncAura(
       window, window_rect, scaled_rect.size(), BrowserThread::GetBlockingPool(),
       base::Bind(&NativeDesktopMediaList::OnAuraThumbnailCaptured,
                  weak_factory_.GetWeakPtr(), id));

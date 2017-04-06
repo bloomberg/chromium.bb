@@ -16,14 +16,17 @@ component("snapshot") {
     "snapshot_async.cc",
     "snapshot_async.h",
     "snapshot_aura.cc",
-    "snapshot_export.h",
+    "snapshot_aura.h",
     "snapshot_ios.mm",
     "snapshot_mac.mm",
+    "snapshot_win.cc",
   ]
 
   defines = [ "SNAPSHOT_IMPLEMENTATION" ]
 
   deps = [
+    ":snapshot_export",
+    ":snapshot_win",
     "//base",
     "//skia",
     "//ui/base",
@@ -58,7 +61,10 @@ component("snapshot") {
       "//ui/compositor",
     ]
   } else {
-    sources -= [ "snapshot_aura.cc" ]
+    sources -= [
+      "snapshot_aura.cc",
+      "snapshot_aura.h",
+    ]
   }
 
   if (is_mac) {
@@ -67,6 +73,23 @@ component("snapshot") {
       "CoreGraphics.framework",
     ]
   }
+}
+
+source_set("snapshot_win") {
+  sources = [
+    "snapshot_win.h",
+  ]
+  deps = [
+    ":snapshot_export",
+  ]
+  visibility = [ ":*" ]
+}
+
+source_set("snapshot_export") {
+  sources = [
+    "snapshot_export.h",
+  ]
+  visibility = [ ":*" ]
 }
 
 test("snapshot_unittests") {

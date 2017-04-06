@@ -25,8 +25,11 @@
 
 namespace gl {
 
+// Use BGRA, because StretchDIBits from RGBA causes later PrintWindow or
+// BitBlt from the HWND to return all 0s, which causes the snapshot mechanism
+// not to work.
 GLSurfaceOSMesaWin::GLSurfaceOSMesaWin(gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_RGBA),
+    : GLSurfaceOSMesa(GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_BGRA),
                       gfx::Size(1, 1)),
       window_(window),
       device_context_(NULL) {
@@ -62,32 +65,7 @@ gfx::SwapResult GLSurfaceOSMesaWin::SwapBuffers() {
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();
-
-  // Note: negating the height below causes GDI to treat the bitmap data as row
-  // 0 being at the top.
-  BITMAPV4HEADER info = {sizeof(BITMAPV4HEADER)};
-  info.bV4Width = size.width();
-  info.bV4Height = -size.height();
-  info.bV4Planes = 1;
-  info.bV4BitCount = 32;
-  info.bV4V4Compression = BI_BITFIELDS;
-  info.bV4RedMask = 0x000000FF;
-  info.bV4GreenMask = 0x0000FF00;
-  info.bV4BlueMask = 0x00FF0000;
-  info.bV4AlphaMask = 0xFF000000;
-
-  // Copy the back buffer to the window's device context. Do not check whether
-  // StretchDIBits succeeds or not. It will fail if the window has been
-  // destroyed but it is preferable to allow rendering to silently fail if the
-  // window is destroyed. This is because the primary application of this
-  // class of GLContext is for testing and we do not want every GL related ui /
-  // browser test to become flaky if there is a race condition between GL
-  // context destruction and window destruction.
-  StretchDIBits(device_context_, 0, 0, size.width(), size.height(), 0, 0,
-                size.width(), size.height(), GetHandle(),
-                reinterpret_cast<BITMAPINFO*>(&info), DIB_RGB_COLORS, SRCCOPY);
-
-  return gfx::SwapResult::SWAP_ACK;
+  return PostSubBuffer(0, 0, size.width(), size.height());
 }
 
 bool GLSurfaceOSMesaWin::SupportsPostSubBuffer() {
@@ -110,9 +88,9 @@ gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(int x,
   info.bV4Planes = 1;
   info.bV4BitCount = 32;
   info.bV4V4Compression = BI_BITFIELDS;
-  info.bV4RedMask = 0x000000FF;
+  info.bV4RedMask = 0x00FF0000;
   info.bV4GreenMask = 0x0000FF00;
-  info.bV4BlueMask = 0x00FF0000;
+  info.bV4BlueMask = 0x000000FF;
   info.bV4AlphaMask = 0xFF000000;
 
   // Copy the back buffer to the window's device context. Do not check whether
