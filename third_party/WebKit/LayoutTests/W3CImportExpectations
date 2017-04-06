@@ -35,7 +35,8 @@ external/wpt/annotation-protocol [ Skip ]
 external/wpt/annotation-vocab [ Skip ]
 external/wpt/app-uri [ Skip ]
 external/wpt/battery-status [ Skip ]
-external/wpt/bluetooth [ Skip ]
+## Owners: ortuno@chromium.org,scheib@chromium.org
+# external/wpt/bluetooth [ Pass ]
 ## Owners: none; No tests in the directory.
 # external/wpt/common [ Pass ]
 external/wpt/compat [ Skip ]
