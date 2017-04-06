@@ -35,7 +35,8 @@ class ASH_EXPORT ScreenAsh : public display::Screen {
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   int GetNumDisplays() const override;
   const std::vector<display::Display>& GetAllDisplays() const override;
-  display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeWindow window) const override;
   display::Display GetDisplayNearestPoint(
       const gfx::Point& point) const override;
   display::Display GetDisplayMatching(

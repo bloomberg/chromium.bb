@@ -78,9 +78,10 @@ views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   GetDialogSize(&size);
-  const gfx::Rect rect = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(widget_->GetNativeView())
-                             .work_area();
+  const gfx::Rect rect =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+          .work_area();
   gfx::Rect bounds(rect.x() + (rect.width() - size.width()) / 2,
                    rect.y() + (rect.height() - size.height()) / 2, size.width(),
                    size.height());
@@ -111,7 +112,7 @@ void KeyboardOverlayDelegate::GetDialogSize(gfx::Size* size) const {
   using std::min;
   DCHECK(widget_);
   gfx::Rect rect = display::Screen::GetScreen()
-                       ->GetDisplayNearestWindow(widget_->GetNativeView())
+                       ->GetDisplayNearestWindow(widget_->GetNativeWindow())
                        .work_area();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;

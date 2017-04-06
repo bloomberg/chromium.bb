@@ -503,7 +503,7 @@ void WindowCycleList::OnDisplayMetricsChanged(const display::Display& display,
   if (cycle_ui_widget_ &&
       display.id() ==
           display::Screen::GetScreen()
-              ->GetDisplayNearestWindow(cycle_ui_widget_->GetNativeView())
+              ->GetDisplayNearestWindow(cycle_ui_widget_->GetNativeWindow())
               .id() &&
       (changed_metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION))) {
     Shell::Get()->window_cycle_controller()->CancelCycling();

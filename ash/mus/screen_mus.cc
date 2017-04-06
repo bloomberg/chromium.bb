@@ -39,7 +39,7 @@ void ScreenMus::SetWorkAreaInsets(aura::Window* window,
 }
 
 display::Display ScreenMus::GetDisplayNearestWindow(
-    aura::Window* window) const {
+    gfx::NativeWindow window) const {
   const aura::WindowTreeHost* host = window->GetHost();
   if (!host)
     return GetPrimaryDisplay();

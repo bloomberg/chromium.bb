@@ -547,10 +547,10 @@ void SystemTray::UpdateWebNotifications() {
 
   int height = 0;
   if (bubble_view) {
-    gfx::Rect work_area =
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
-            .work_area();
+    gfx::Rect work_area = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(
+                                  bubble_view->GetWidget()->GetNativeWindow())
+                              .work_area();
     height =
         std::max(0, work_area.bottom() - bubble_view->GetBoundsInScreen().y());
   }
@@ -742,7 +742,7 @@ void SystemTray::RecordSystemMenuMetrics() {
 
   int work_area_height =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
+          ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeWindow())
           .work_area()
           .height();
   if (work_area_height > 0) {

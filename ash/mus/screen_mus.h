@@ -32,7 +32,8 @@ class ScreenMus : public display::ScreenBase {
 
  private:
   // display::ScreenBase:
-  display::Display GetDisplayNearestWindow(aura::Window* window) const override;
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeWindow window) const override;
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;

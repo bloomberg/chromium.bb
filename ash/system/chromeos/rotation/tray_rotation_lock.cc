@@ -203,9 +203,9 @@ bool TrayRotationLock::ShouldBeVisible() {
 }
 
 bool TrayRotationLock::OnPrimaryDisplay() const {
-  gfx::NativeView native_view = system_tray()->GetWidget()->GetNativeView();
+  gfx::NativeView native_window = system_tray()->GetWidget()->GetNativeWindow();
   display::Display parent_display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
+      display::Screen::GetScreen()->GetDisplayNearestWindow(native_window);
   return parent_display.IsInternal();
 }
 

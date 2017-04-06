@@ -34,8 +34,7 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
+#include "ui/base/layout.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -239,9 +238,7 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
   widget_->SetBounds(root_window->GetBoundsInScreen());
   set_owned_by_client();
 
-  scale_factor_ = display::Screen::GetScreen()
-                      ->GetDisplayNearestWindow(widget_->GetNativeView())
-                      .device_scale_factor();
+  scale_factor_ = ui::GetScaleFactorForNativeView(widget_->GetNativeView());
 }
 
 LaserPointerView::~LaserPointerView() {}
