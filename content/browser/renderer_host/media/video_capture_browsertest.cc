@@ -194,6 +194,13 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        ReceiveFramesFromFakeCaptureDevice) {
+// TODO(chfremer): This test case is flaky on Android. Find out cause of
+// flakiness and then re-enable. See crbug.com/709039.
+#if defined(OS_ANDROID)
+  if (GetParam().exercise_accelerated_jpeg_decoding)
+    return;
+#endif
+
   SetUpRequiringBrowserMainLoopOnMainThread();
 
   std::vector<FrameInfo> received_frame_infos;
