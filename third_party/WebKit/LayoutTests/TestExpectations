@@ -63,10 +63,6 @@ crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-re
 crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 # --- End SPV2 Tests ---
 
-crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/webp-color-profile-lossy.html [ Failure ]
-crbug.com/587737 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Failure ]
-crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
-
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 crbug.com/504613 crbug.com/524248 virtual/disable-spinvalidation/paint/images/image-backgrounds-not-antialiased.html [ Failure ]
@@ -97,6 +93,8 @@ crbug.com/703403 paint/inline/focus-ring-under-absolute-with-relative-continuati
 crbug.com/703403 virtual/disable-spinvalidation/paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
 
 ########## Genuinely flaky ##########
+crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
+
 crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
