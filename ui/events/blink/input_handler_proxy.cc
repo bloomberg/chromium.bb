@@ -1502,6 +1502,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       input_handler_->GetEventListenerProperties(
           cc::EventListenerClass::kMouseWheel);
   switch (properties) {
+    case cc::EventListenerProperties::kBlockingAndPassive:
     case cc::EventListenerProperties::kBlocking:
       disposition = DID_NOT_HANDLE;
       break;
