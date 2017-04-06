@@ -78,6 +78,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
@@ -95,12 +96,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/user_script.h"
-#endif
-
-#if defined(USE_SYSTEM_PROTOBUF)
-#include <google/protobuf/repeated_field.h>
-#else
-#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #endif
 
 #if defined(OS_ANDROID)

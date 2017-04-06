@@ -14,12 +14,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/device_event_log/device_event_log.h"
-
-#if defined(USE_SYSTEM_PROTOBUF)
-#include <google/protobuf/repeated_field.h>
-#else
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
-#endif
 
 using chromeos::DBusThreadManager;
 using google::protobuf::RepeatedPtrField;

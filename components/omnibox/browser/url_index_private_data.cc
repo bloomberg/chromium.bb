@@ -30,12 +30,7 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
-
-#if defined(USE_SYSTEM_PROTOBUF)
-#include <google/protobuf/repeated_field.h>
-#else
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
-#endif
 
 namespace {
 

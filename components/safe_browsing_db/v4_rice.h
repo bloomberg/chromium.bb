@@ -12,12 +12,7 @@
 #include <string>
 #include <vector>
 #include "base/gtest_prod_util.h"
-
-#if defined(USE_SYSTEM_PROTOBUF)
-#include <google/protobuf/repeated_field.h>
-#else
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
-#endif
 
 namespace safe_browsing {
 

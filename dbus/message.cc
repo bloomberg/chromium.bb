@@ -13,12 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "dbus/object_path.h"
-
-#if defined(USE_SYSTEM_PROTOBUF)
-#include <google/protobuf/message_lite.h>
-#else
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
-#endif
 
 namespace {
 
