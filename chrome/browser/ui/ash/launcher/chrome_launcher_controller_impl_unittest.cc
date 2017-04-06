@@ -870,6 +870,10 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
   }
 
+  void SendListOfArcShortcuts() {
+    arc_test_.app_instance()->SendInstallShortcuts(arc_test_.fake_shortcuts());
+  }
+
   void UninstallArcApps() {
     arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(
@@ -1857,11 +1861,14 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
   const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
   const arc::mojom::AppInfo& app2 = arc_test_.fake_apps()[1];
   const arc::mojom::AppInfo& app3 = arc_test_.fake_apps()[2];
+  const arc::mojom::ShortcutInfo& shortcut = arc_test_.fake_shortcuts()[0];
   const std::string arc_app_id1 = ArcAppTest::GetAppId(app1);
   const std::string arc_app_id2 = ArcAppTest::GetAppId(app2);
   const std::string arc_app_id3 = ArcAppTest::GetAppId(app3);
+  const std::string arc_shortcut_id = ArcAppTest::GetAppId(shortcut);
 
   SendListOfArcApps();
+  SendListOfArcShortcuts();
 
   arc_test_.StopArcInstance();
 
@@ -1871,12 +1878,14 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+  EXPECT_EQ(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(arc_shortcut_id));
 
   arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
   arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
   arc::LaunchApp(profile(), arc_app_id2, ui::EF_LEFT_MOUSE_BUTTON);
   arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON);
-  arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_shortcut_id, ui::EF_LEFT_MOUSE_BUTTON);
 
   const ash::ShelfID shelf_id_app_1 =
       launcher_controller_->GetShelfIDForAppID(arc_app_id1);
@@ -1884,9 +1893,12 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
       launcher_controller_->GetShelfIDForAppID(arc_app_id2);
   const ash::ShelfID shelf_id_app_3 =
       launcher_controller_->GetShelfIDForAppID(arc_app_id3);
+  const ash::ShelfID shelf_id_shortcut =
+      launcher_controller_->GetShelfIDForAppID(arc_shortcut_id);
   EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_1);
   EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_2);
   EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_3);
+  EXPECT_NE(ash::kInvalidShelfID, shelf_id_shortcut);
 
   // We activated arc_app_id1 twice but expect one close for item controller
   // stops launching request.
@@ -1908,6 +1920,8 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
 
   base::RunLoop().RunUntilIdle();
 
+  // Now deferred contollers should go away together with shelf items and ARC
+  // app instance should receive request for launching apps and shortcuts.
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id1));
   EXPECT_EQ(ash::kInvalidShelfID,
@@ -1916,6 +1930,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
             launcher_controller_->GetShelfIDForAppID(arc_app_id3));
 
   ASSERT_EQ(2U, arc_test_.app_instance()->launch_requests().size());
+  ASSERT_EQ(1U, arc_test_.app_instance()->launch_intents().size());
 
   const arc::FakeAppInstance::Request* request1 =
       arc_test_.app_instance()->launch_requests()[0].get();
@@ -1924,6 +1939,8 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
 
   EXPECT_TRUE((request1->IsForApp(app2) && request2->IsForApp(app3)) ||
               (request1->IsForApp(app3) && request2->IsForApp(app2)));
+  EXPECT_EQ(arc_test_.app_instance()->launch_intents()[0].c_str(),
+            shortcut.intent_uri);
 }
 
 // Ensure the deferred controller does not override the active app controller

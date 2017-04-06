@@ -768,8 +768,9 @@ TEST_P(ArcAppModelBuilderTest, LaunchShortcuts) {
   app_instance()->SendInstallShortcuts(fake_shortcuts());
 
   // Simulate item activate.
+  ASSERT_GE(fake_shortcuts().size(), 2U);
   const arc::mojom::ShortcutInfo& app_first = fake_shortcuts()[0];
-  const arc::mojom::ShortcutInfo& app_last = fake_shortcuts()[0];
+  const arc::mojom::ShortcutInfo& app_last = fake_shortcuts()[1];
   ArcAppItem* item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
   ArcAppItem* item_last = FindArcItem(ArcAppTest::GetAppId(app_last));
   ASSERT_NE(nullptr, item_first);

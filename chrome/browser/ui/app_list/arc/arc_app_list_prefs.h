@@ -377,10 +377,13 @@ class ArcAppListPrefs
   bool IsIconRequestRecorded(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
 
-  // Remove the IconRequestRecord associated with app_id.
+  // Removes the IconRequestRecord associated with app_id.
   void MaybeRemoveIconRequestRecord(const std::string& app_id);
 
   void ClearIconRequestRecord();
+
+  // Dispatches OnAppReadyChanged event to observers.
+  void NotifyAppReadyChanged(const std::string& app_id, bool ready);
 
   Profile* const profile_;
 
