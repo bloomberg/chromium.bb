@@ -154,16 +154,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
           prefs, std::move(category_ranker), std::move(user_classifier),
           std::move(scheduler));
 
-  // Create the BookmarkSuggestionsProvider.
-  if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature)) {
-    BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForBrowserState(chrome_browser_state);
-    std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
-        base::MakeUnique<BookmarkSuggestionsProvider>(service.get(),
-                                                      bookmark_model, prefs);
-    service->RegisterProvider(std::move(bookmark_suggestions_provider));
-  }
-
   // Create the ReadingListSuggestionsProvider.
   ReadingListModel* reading_list_model =
       ReadingListModelFactory::GetForBrowserState(chrome_browser_state);
