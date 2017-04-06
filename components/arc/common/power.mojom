@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 3
+// Next min version: 4
 
 module arc.mojom;
 
@@ -19,7 +19,7 @@ enum DisplayWakeLockType {
   DIM = 1
 };
 
-// Next method ID: 3
+// Next method ID: 4
 interface PowerHost {
   // Acquire and release wake locks on the host side.
   OnAcquireDisplayWakeLock@0(DisplayWakeLockType type);
@@ -27,9 +27,13 @@ interface PowerHost {
 
   // Checks if there is a display on.
   [MinVersion=1] IsDisplayOn@2() => (bool is_on);
+
+  // Request that the screen brightness be changed to |percent|.
+  // |percent| is of the range [0, 100]
+  [MinVersion=3] OnScreenBrightnessUpdateRequest@3(double percent);
 };
 
-// Next method ID: 4
+// Next method ID: 5
 interface PowerInstance {
   // Establishes full-duplex communication with the host.
   Init@0(PowerHost host_ptr);
@@ -43,4 +47,8 @@ interface PowerInstance {
 
   // Called when the system has just resumed.
   [MinVersion=2] Resume@3();
+
+  // Update Android brightness settings.
+  // |percent| is of the range [0, 100]
+  [MinVersion=3] UpdateScreenBrightnessSettings@4(double percent);
 };

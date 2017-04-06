@@ -17,7 +17,7 @@
 namespace arc {
 
 ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
+    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
   arc_bridge_service()->power()->AddObserver(this);
 }
 
@@ -34,6 +34,11 @@ void ArcPowerBridge::OnInstanceReady() {
   ash::Shell::Get()->display_configurator()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->GetScreenBrightnessPercent(
+          base::Bind(&ArcPowerBridge::UpdateAndroidScreenBrightness,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcPowerBridge::OnInstanceClosed() {
@@ -61,6 +66,10 @@ void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
     return;
 
   power_instance->Resume();
+}
+
+void ArcPowerBridge::BrightnessChanged(int level, bool user_initiated) {
+  UpdateAndroidScreenBrightness(static_cast<double>(level));
 }
 
 void ArcPowerBridge::OnPowerStateChanged(
@@ -125,6 +134,12 @@ void ArcPowerBridge::IsDisplayOn(const IsDisplayOnCallback& callback) {
   callback.Run(ash::Shell::Get()->display_configurator()->IsDisplayOn());
 }
 
+void ArcPowerBridge::OnScreenBrightnessUpdateRequest(double percent) {
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->SetScreenBrightnessPercent(percent, true);
+}
+
 void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     LOG(WARNING) << "PowerPolicyController is not available";
@@ -137,6 +152,14 @@ void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {
     controller->RemoveWakeLock(it.second);
   }
   wake_locks_.clear();
+}
+
+void ArcPowerBridge::UpdateAndroidScreenBrightness(double percent) {
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->power(), UpdateScreenBrightnessSettings);
+  if (!power_instance)
+    return;
+  power_instance->UpdateScreenBrightnessSettings(percent);
 }
 
 }  // namespace arc
