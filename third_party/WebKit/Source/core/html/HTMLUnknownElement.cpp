@@ -19,4 +19,11 @@ HTMLUnknownElement::HTMLUnknownElement(const QualifiedName& tagName,
     UseCounter::count(document, UseCounter::MenuItemElement);
 }
 
+void HTMLUnknownElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == HTMLNames::iconAttr && hasTagName(HTMLNames::menuitemTag))
+    UseCounter::count(document(), UseCounter::MenuItemElementIconAttribute);
+  HTMLElement::parseAttribute(params);
+}
+
 }  // namespace blink

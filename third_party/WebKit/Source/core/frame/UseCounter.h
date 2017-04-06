@@ -1524,6 +1524,7 @@ class CORE_EXPORT UseCounter {
     OrientationSensorPopulateMatrix = 1908,
     WindowOpenWithInvalidURL = 1909,
     CrossOriginMainFrameNulledNameAccessed = 1910,
+    MenuItemElementIconAttribute = 1911,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

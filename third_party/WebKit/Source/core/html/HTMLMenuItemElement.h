@@ -18,6 +18,7 @@ class HTMLMenuItemElement final : public HTMLElement {
  private:
   explicit HTMLMenuItemElement(Document&);
   bool isURLAttribute(const Attribute&) const override;
+  void parseAttribute(const AttributeModificationParams&) override;
   void defaultEventHandler(Event*) override;
 };
 

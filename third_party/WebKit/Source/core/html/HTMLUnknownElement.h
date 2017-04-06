@@ -46,6 +46,7 @@ class HTMLUnknownElement final : public HTMLElement {
  private:
   HTMLUnknownElement(const QualifiedName&, Document&);
 
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isHTMLUnknownElement() const override { return true; }
 };
 

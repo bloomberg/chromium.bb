@@ -22,6 +22,13 @@ bool HTMLMenuItemElement::isURLAttribute(const Attribute& attribute) const {
   return attribute.name() == iconAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+void HTMLMenuItemElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == iconAttr)
+    UseCounter::count(document(), UseCounter::MenuItemElementIconAttribute);
+  HTMLElement::parseAttribute(params);
+}
+
 void HTMLMenuItemElement::defaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
     if (equalIgnoringCase(fastGetAttribute(typeAttr), "checkbox")) {
