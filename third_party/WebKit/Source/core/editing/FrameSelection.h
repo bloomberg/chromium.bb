@@ -291,7 +291,7 @@ class CORE_EXPORT FrameSelection final
   void nodeWillBeRemoved(Node&) final;
 
   Member<LocalFrame> m_frame;
-  const Member<LayoutSelection> m_pendingSelection;
+  const Member<LayoutSelection> m_layoutSelection;
   const Member<SelectionEditor> m_selectionEditor;
 
   TextGranularity m_granularity;

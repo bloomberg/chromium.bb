@@ -94,7 +94,7 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 
 FrameSelection::FrameSelection(LocalFrame& frame)
     : m_frame(frame),
-      m_pendingSelection(LayoutSelection::create(*this)),
+      m_layoutSelection(LayoutSelection::create(*this)),
       m_selectionEditor(SelectionEditor::create(frame)),
       m_granularity(CharacterGranularity),
       m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation()),
@@ -759,11 +759,11 @@ bool FrameSelection::isFocusedAndActive() const {
 }
 
 bool FrameSelection::isAppearanceDirty() const {
-  return m_pendingSelection->hasPendingSelection();
+  return m_layoutSelection->hasPendingSelection();
 }
 
 void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView) {
-  return m_pendingSelection->commit(layoutView);
+  return m_layoutSelection->commit(layoutView);
 }
 
 void FrameSelection::didLayout() {
@@ -773,7 +773,7 @@ void FrameSelection::didLayout() {
 void FrameSelection::updateAppearance() {
   DCHECK(!m_frame->contentLayoutItem().isNull());
   m_frameCaret->scheduleVisualUpdateForPaintInvalidationIfNeeded();
-  m_pendingSelection->setHasPendingSelection();
+  m_layoutSelection->setHasPendingSelection();
 }
 
 void FrameSelection::notifyLayoutObjectOfSelectionChange(
@@ -1014,7 +1014,7 @@ void FrameSelection::showTreeForThis() const {
 
 DEFINE_TRACE(FrameSelection) {
   visitor->trace(m_frame);
-  visitor->trace(m_pendingSelection);
+  visitor->trace(m_layoutSelection);
   visitor->trace(m_selectionEditor);
   visitor->trace(m_frameCaret);
   SynchronousMutationObserver::trace(visitor);
