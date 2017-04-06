@@ -6,8 +6,8 @@
 #define FuzzedDataProvider_h
 
 #include "base/test/fuzzed_data_provider.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

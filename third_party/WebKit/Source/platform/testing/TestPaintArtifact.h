@@ -5,15 +5,15 @@
 #ifndef TestPaintArtifact_h
 #define TestPaintArtifact_h
 
+#include <memory>
 #include "base/memory/ref_counted.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace cc {
 class Layer;

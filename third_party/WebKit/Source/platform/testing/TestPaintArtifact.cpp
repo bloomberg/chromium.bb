@@ -4,6 +4,7 @@
 
 #include "platform/testing/TestPaintArtifact.h"
 
+#include <memory>
 #include "cc/layers/layer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
@@ -13,9 +14,8 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

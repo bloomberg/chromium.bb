@@ -5,7 +5,7 @@
 #ifndef FontTestHelpers_h
 #define FontTestHelpers_h
 
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

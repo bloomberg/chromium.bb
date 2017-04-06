@@ -30,6 +30,7 @@
 
 #include "platform/testing/TestingPlatformSupport.h"
 
+#include <memory>
 #include "base/command_line.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ptr_util.h"
@@ -49,17 +50,16 @@
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/WTF.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebScrollbarLayer.h"
-#include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/WTF.h"
-#include "wtf/allocator/Partitions.h"
-#include <memory>
 
 namespace blink {
 

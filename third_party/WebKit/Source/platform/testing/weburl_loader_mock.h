@@ -5,10 +5,10 @@
 #ifndef WebURLLoaderMock_h
 #define WebURLLoaderMock_h
 
-#include "base/macros.h"
-#include "public/platform/WebURLLoader.h"
-#include "wtf/WeakPtr.h"
 #include <memory>
+#include "base/macros.h"
+#include "platform/wtf/WeakPtr.h"
+#include "public/platform/WebURLLoader.h"
 
 namespace blink {
 

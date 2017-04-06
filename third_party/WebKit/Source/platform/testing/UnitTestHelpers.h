@@ -26,8 +26,8 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

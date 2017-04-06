@@ -31,18 +31,18 @@
 #ifndef TestingPlatformSupport_h
 #define TestingPlatformSupport_h
 
+#include <memory>
+#include <utility>
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
-#include <utility>
 
 namespace base {
 class SimpleTestTickClock;

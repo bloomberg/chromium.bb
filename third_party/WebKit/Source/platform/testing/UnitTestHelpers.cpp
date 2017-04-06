@@ -34,12 +34,12 @@
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 namespace testing {

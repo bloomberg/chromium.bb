@@ -5,7 +5,7 @@
 #include "platform/testing/HistogramTester.h"
 
 #include "base/test/histogram_tester.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

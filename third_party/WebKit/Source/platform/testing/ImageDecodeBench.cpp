@@ -17,14 +17,14 @@
 // using the image corpii used to assess Blink image decode performance. Refer
 // to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
+#include <memory>
 #include "base/command_line.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "ui/gfx/test/icc_profiles.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 #if defined(_WIN32)
 #include <mmsystem.h>

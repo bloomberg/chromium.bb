@@ -27,6 +27,7 @@
 #define WTF_WeakPtr_h
 
 #include "base/memory/weak_ptr.h"
+#include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace WTF {

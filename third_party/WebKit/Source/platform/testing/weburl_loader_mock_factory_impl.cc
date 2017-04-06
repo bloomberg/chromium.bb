@@ -12,13 +12,13 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/weburl_loader_mock.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -11,13 +11,13 @@
 #include "base/macros.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/HashMap.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
