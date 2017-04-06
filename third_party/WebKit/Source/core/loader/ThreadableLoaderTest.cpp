@@ -114,7 +114,7 @@ class ThreadableLoaderTestHelper {
   virtual void cancelLoader() = 0;
   virtual void cancelAndClearLoader() = 0;
   virtual void clearLoader() = 0;
-  virtual Checkpoint& checkpoint() = 0;
+  virtual Checkpoint& getCheckpoint() = 0;
   virtual void callCheckpoint(int) = 0;
   virtual void onSetUp() = 0;
   virtual void onServeRequests() = 0;
@@ -147,7 +147,7 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     m_loader = nullptr;
   }
   void clearLoader() override { m_loader = nullptr; }
-  Checkpoint& checkpoint() override { return m_checkpoint; }
+  Checkpoint& getCheckpoint() override { return m_checkpoint; }
   void callCheckpoint(int n) override { m_checkpoint.Call(n); }
 
   void onSetUp() override {}
@@ -222,7 +222,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     m_loader = nullptr;
   }
 
-  Checkpoint& checkpoint() override { return m_checkpoint; }
+  Checkpoint& getCheckpoint() override { return m_checkpoint; }
 
   void callCheckpoint(int n) override {
     testing::runPendingTasks();
@@ -374,7 +374,7 @@ class ThreadableLoaderTest
   void cancelLoader() { m_helper->cancelLoader(); }
   void cancelAndClearLoader() { m_helper->cancelAndClearLoader(); }
   void clearLoader() { m_helper->clearLoader(); }
-  Checkpoint& checkpoint() { return m_helper->checkpoint(); }
+  Checkpoint& getCheckpoint() { return m_helper->getCheckpoint(); }
   void callCheckpoint(int n) { m_helper->callCheckpoint(n); }
 
   void serveRequests() {
@@ -467,14 +467,14 @@ TEST_P(ThreadableLoaderTest, StartAndStop) {}
 
 TEST_P(ThreadableLoaderTest, CancelAfterStart) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2))
+  EXPECT_CALL(getCheckpoint(), Call(2))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
   EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
-  EXPECT_CALL(checkpoint(), Call(3));
+  EXPECT_CALL(getCheckpoint(), Call(3));
 
   startLoader(successURL());
   callCheckpoint(2);
@@ -484,15 +484,15 @@ TEST_P(ThreadableLoaderTest, CancelAfterStart) {
 
 TEST_P(ThreadableLoaderTest, CancelAndClearAfterStart) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2))
+  EXPECT_CALL(getCheckpoint(), Call(2))
       .WillOnce(
           InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelAndClearLoader));
   EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
-  EXPECT_CALL(checkpoint(), Call(3));
+  EXPECT_CALL(getCheckpoint(), Call(3));
 
   startLoader(successURL());
   callCheckpoint(2);
@@ -502,11 +502,11 @@ TEST_P(ThreadableLoaderTest, CancelAndClearAfterStart) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidReceiveResponse) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
   EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
@@ -518,11 +518,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidReceiveResponse) {
 
 TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveResponse) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _))
       .WillOnce(
           InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelAndClearLoader));
@@ -535,11 +535,11 @@ TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveResponse) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidReceiveData) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(_, _))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
@@ -552,11 +552,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidReceiveData) {
 
 TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveData) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(_, _))
       .WillOnce(
@@ -570,11 +570,11 @@ TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveData) {
 
 TEST_P(ThreadableLoaderTest, DidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
   // We expect didReceiveResourceTiming() calls in DocumentThreadableLoader;
@@ -590,11 +590,11 @@ TEST_P(ThreadableLoaderTest, DidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(_, _));
   EXPECT_CALL(*client(), didReceiveResourceTiming(_));
@@ -608,11 +608,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, ClearInDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(_, _));
   EXPECT_CALL(*client(), didReceiveResourceTiming(_));
@@ -626,11 +626,11 @@ TEST_P(ThreadableLoaderTest, ClearInDidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, DidFail) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didFail(Truly(isNotCancellation)));
 
@@ -641,11 +641,11 @@ TEST_P(ThreadableLoaderTest, DidFail) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidFail) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
@@ -657,11 +657,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidFail) {
 
 TEST_P(ThreadableLoaderTest, ClearInDidFail) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
@@ -673,7 +673,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFail) {
 
 TEST_P(ThreadableLoaderTest, DidFailInStart) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(DenyCrossOriginRequests);
   callCheckpoint(1);
 
@@ -681,7 +681,7 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
       *client(),
       didFail(ResourceError(errorDomainBlinkInternal, 0, errorURL().getString(),
                             "Cross origin requests are not supported.")));
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
 
   startLoader(errorURL());
   callCheckpoint(2);
@@ -690,13 +690,13 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(DenyCrossOriginRequests);
   callCheckpoint(1);
 
   EXPECT_CALL(*client(), didFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
 
   startLoader(errorURL());
   callCheckpoint(2);
@@ -705,13 +705,13 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(DenyCrossOriginRequests);
   callCheckpoint(1);
 
   EXPECT_CALL(*client(), didFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
 
   startLoader(errorURL());
   callCheckpoint(2);
@@ -720,11 +720,11 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
 
 TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(
       *client(),
       didFailAccessControlCheck(ResourceError(
@@ -739,11 +739,11 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didFailAccessControlCheck(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
 
@@ -754,11 +754,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didFailAccessControlCheck(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
 
@@ -769,11 +769,11 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailAccessControlCheck) {
 
 TEST_P(ThreadableLoaderTest, RedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
   EXPECT_CALL(*client(), didReceiveResourceTiming(_));
@@ -786,11 +786,11 @@ TEST_P(ThreadableLoaderTest, RedirectDidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, CancelInRedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
   EXPECT_CALL(*client(), didReceiveResourceTiming(_));
@@ -804,11 +804,11 @@ TEST_P(ThreadableLoaderTest, CancelInRedirectDidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, ClearInRedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader();
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
   EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
   EXPECT_CALL(*client(), didReceiveResourceTiming(_));
@@ -822,11 +822,11 @@ TEST_P(ThreadableLoaderTest, ClearInRedirectDidFinishLoading) {
 
 TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didFailRedirectCheck());
 
   startLoader(redirectLoopURL());
@@ -836,11 +836,11 @@ TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
 
@@ -851,11 +851,11 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
   EXPECT_CALL(*client(), didFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
 
@@ -868,12 +868,12 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
 // synchronously.
 TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   InSequence s;
-  EXPECT_CALL(checkpoint(), Call(1));
+  EXPECT_CALL(getCheckpoint(), Call(1));
   createLoader(UseAccessControl);
   callCheckpoint(1);
 
   EXPECT_CALL(*client(), didFailAccessControlCheck(_));
-  EXPECT_CALL(checkpoint(), Call(2));
+  EXPECT_CALL(getCheckpoint(), Call(2));
 
   // Currently didFailAccessControlCheck is dispatched synchronously. This
   // test is not saying that didFailAccessControlCheck should be dispatched
