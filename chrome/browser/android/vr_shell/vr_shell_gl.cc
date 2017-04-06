@@ -37,10 +37,6 @@
 namespace vr_shell {
 
 namespace {
-// TODO(mthiesse): If gvr::PlatformInfo().GetPosePredictionTime() is ever
-// exposed, use that instead (it defaults to 50ms on most platforms).
-static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
-
 static constexpr float kZNear = 0.1f;
 static constexpr float kZFar = 1000.0f;
 
@@ -808,19 +804,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
   } else {
-    gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-    target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-    head_pose = gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
-  }
-
-  gvr::Vec3f position = GetTranslation(head_pose);
-  if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f) {
-    // This appears to be a 3DOF pose without a neck model. Add one.
-    // The head pose has redundant data. Assume we're only using the
-    // object_from_reference_matrix, we're not updating position_external.
-    // TODO: Not sure what object_from_reference_matrix is. The new api removed
-    // it. For now, removing it seems working fine.
-    gvr_api_->ApplyNeckModel(head_pose, 1.0f);
+    head_pose = device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get());
   }
 
   // Update the render position of all UI elements (including desktop).
@@ -1278,17 +1262,14 @@ void VrShellGl::SendVSync(base::TimeDelta time,
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
 
-  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-
-  gvr::Mat4f head_mat =
-      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
-  head_mat = gvr_api_->ApplyNeckModel(head_mat, 1.0f);
+  gvr::Mat4f head_mat;
+  device::mojom::VRPosePtr pose =
+      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
-  callback.Run(device::GvrDelegate::VRPosePtrFromGvrPose(head_mat), time,
-               frame_index, device::mojom::VRVSyncProvider::Status::SUCCESS);
+  callback.Run(std::move(pose), time, frame_index,
+               device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void VrShellGl::CreateVRDisplayInfo(

@@ -17,6 +17,9 @@ namespace device {
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
   static mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
+  static gvr::Mat4f GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api);
+  static mojom::VRPosePtr GetVRPosePtrWithNeckModel(gvr::GvrApi* gvr_api,
+                                                    gvr::Mat4f* head_mat_out);
   static gvr::Sizei GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
   static mojom::VRDisplayInfoPtr CreateVRDisplayInfo(
       gvr::GvrApi* gvr_api,

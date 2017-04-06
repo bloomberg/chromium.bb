@@ -110,8 +110,12 @@ device::GvrGamepadData VrController::GetGamepadData() {
   pad.timestamp = controller_state_->GetLastOrientationTimestamp();
   pad.touch_pos = controller_state_->GetTouchPos();
   pad.orientation = controller_state_->GetOrientation();
-  pad.accel = controller_state_->GetAccel();
-  pad.gyro = controller_state_->GetGyro();
+
+  // Use orientation to rotate acceleration/gyro into seated space.
+  gvr::Mat4f pose_mat = QuatToMatrix(pad.orientation);
+  pad.accel = MatrixVectorMul(pose_mat, controller_state_->GetAccel());
+  pad.gyro = MatrixVectorMul(pose_mat, controller_state_->GetGyro());
+
   pad.is_touching = controller_state_->IsTouching();
   pad.controller_button_pressed =
       controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
@@ -234,9 +238,10 @@ void VrController::Initialize(gvr_context* gvr_context) {
 
   int32_t options = gvr::ControllerApi::DefaultOptions();
 
-  // Enable non-default options - WebVR needs gyro, and since VrShell
-  // implements GvrGamepadDataProvider we need this always.
+  // Enable non-default options - WebVR needs gyro and linear acceleration, and
+  // since VrShell implements GvrGamepadDataProvider we need this always.
   options |= GVR_CONTROLLER_ENABLE_GYRO;
+  options |= GVR_CONTROLLER_ENABLE_ACCEL;
 
   CHECK(controller_api_->Init(options, gvr_context));
 

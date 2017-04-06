@@ -18,6 +18,93 @@ namespace {
 // twice before handing off to GVR. For comparison, the polyfill
 // uses approximately 0.55 on a Pixel XL.
 static constexpr float kWebVrRecommendedResolutionScale = 0.5;
+
+// TODO(mthiesse): If gvr::PlatformInfo().GetPosePredictionTime() is ever
+// exposed, use that instead (it defaults to 50ms on most platforms).
+static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
+
+// Time offset used for calculating angular velocity from a pair of predicted
+// poses. The precise value shouldn't matter as long as it's nonzero and much
+// less than a frame.
+static constexpr int64_t kAngularVelocityEpsilonNanos = 1000000;
+
+// Matrix math copied from vr_shell's vr_math.cc, can't use that here
+// due to dependency ordering. TODO(mthiesse): move the vr_math code
+// to this directory so that both locations can use it.
+
+// Rotation only, ignore translation components.
+gvr::Vec3f MatrixVectorRotate(const gvr::Mat4f& m, const gvr::Vec3f& v) {
+  gvr::Vec3f res;
+  res.x = m.m[0][0] * v.x + m.m[0][1] * v.y + m.m[0][2] * v.z;
+  res.y = m.m[1][0] * v.x + m.m[1][1] * v.y + m.m[1][2] * v.z;
+  res.z = m.m[2][0] * v.x + m.m[2][1] * v.y + m.m[2][2] * v.z;
+  return res;
+}
+
+gvr::Mat4f MatrixMul(const gvr::Mat4f& matrix1, const gvr::Mat4f& matrix2) {
+  gvr::Mat4f result;
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result.m[i][j] = 0.0f;
+      for (int k = 0; k < 4; ++k) {
+        result.m[i][j] += matrix1.m[i][k] * matrix2.m[k][j];
+      }
+    }
+  }
+  return result;
+}
+
+gvr::Vec3f GetAngularVelocityFromPoses(gvr::Mat4f head_mat,
+                                       gvr::Mat4f head_mat_2,
+                                       double epsilon_seconds) {
+  // The angular velocity is a 3-element vector pointing along the rotation
+  // axis with magnitude equal to rotation speed in radians/second, expressed
+  // in the seated frame of reference.
+  //
+  // The 1.1 spec isn't very clear on details, clarification requested in
+  // https://github.com/w3c/webvr/issues/212 . For now, assuming that we
+  // want a vector in the sitting reference frame.
+  //
+  // Assuming that pose prediction is simply based on adding a time * angular
+  // velocity rotation to the pose, we can approximate the angular velocity
+  // from the difference between two successive poses. This is a first order
+  // estimate that assumes small enough rotations so that we can do linear
+  // approximation.
+  //
+  // See:
+  // https://en.wikipedia.org/wiki/Angular_velocity#Calculation_from_the_orientation_matrix
+
+  gvr::Mat4f delta_mat;
+  gvr::Mat4f inverse_head_mat;
+  // Calculate difference matrix, and inverse head matrix rotation.
+  // For the inverse rotation, just transpose the 3x3 subsection.
+  //
+  // Assume that epsilon is nonzero since it's based on a compile-time constant
+  // provided by the caller.
+  for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 3; ++i) {
+      delta_mat.m[j][i] =
+          (head_mat_2.m[j][i] - head_mat.m[j][i]) / epsilon_seconds;
+      inverse_head_mat.m[j][i] = head_mat.m[i][j];
+    }
+    delta_mat.m[j][3] = delta_mat.m[3][j] = 0.0;
+    inverse_head_mat.m[j][3] = inverse_head_mat.m[3][j] = 0.0;
+  }
+  delta_mat.m[3][3] = 1.0;
+  inverse_head_mat.m[3][3] = 1.0;
+  gvr::Mat4f omega_mat = device::MatrixMul(delta_mat, inverse_head_mat);
+  gvr::Vec3f omega_vec;
+  omega_vec.x = -omega_mat.m[2][1];
+  omega_vec.y = omega_mat.m[2][0];
+  omega_vec.z = -omega_mat.m[1][0];
+
+  // Rotate by inverse head matrix to bring into seated space.
+  gvr::Vec3f angular_velocity =
+      device::MatrixVectorRotate(inverse_head_mat, omega_vec);
+
+  return angular_velocity;
+}
+
 }  // namespace
 
 /* static */
@@ -47,6 +134,49 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
     pose->position.value()[1] = decomposed_transform.translate[1];
     pose->position.value()[2] = decomposed_transform.translate[2];
   }
+
+  return pose;
+}
+
+/* static */
+gvr::Mat4f GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api) {
+  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
+  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+
+  gvr::Mat4f head_mat = gvr_api->ApplyNeckModel(
+      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
+
+  return head_mat;
+}
+
+/* static */
+mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
+    gvr::GvrApi* gvr_api,
+    gvr::Mat4f* head_mat_out) {
+  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
+  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+
+  gvr::Mat4f head_mat = gvr_api->ApplyNeckModel(
+      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
+
+  if (head_mat_out)
+    *head_mat_out = head_mat;
+
+  mojom::VRPosePtr pose = GvrDelegate::VRPosePtrFromGvrPose(head_mat);
+
+  // Get a second pose a bit later to calculate angular velocity.
+  target_time.monotonic_system_time_nanos += kAngularVelocityEpsilonNanos;
+  gvr::Mat4f head_mat_2 =
+      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
+
+  // Add headset angular velocity to the pose.
+  pose->angularVelocity.emplace(3);
+  double epsilon_seconds = kAngularVelocityEpsilonNanos * 1e-9;
+  gvr::Vec3f angular_velocity =
+      GetAngularVelocityFromPoses(head_mat, head_mat_2, epsilon_seconds);
+  pose->angularVelocity.value()[0] = angular_velocity.x;
+  pose->angularVelocity.value()[1] = angular_velocity.y;
+  pose->angularVelocity.value()[2] = angular_velocity.z;
 
   return pose;
 }

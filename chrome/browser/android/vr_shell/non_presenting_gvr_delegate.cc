@@ -11,10 +11,6 @@
 
 namespace vr_shell {
 
-namespace {
-static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
-}  // namespace
-
 NonPresentingGvrDelegate::NonPresentingGvrDelegate(gvr_context* context)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
@@ -141,19 +137,14 @@ void NonPresentingGvrDelegate::UpdateVSyncInterval(int64_t timebase_nanos,
 
 void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
                                          const GetVSyncCallback& callback) {
-  gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
-  target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-
   if (!gvr_api_) {
     callback.Run(device::mojom::VRPosePtr(nullptr), time, -1,
                  device::mojom::VRVSyncProvider::Status::SUCCESS);
     return;
   }
 
-  gvr::Mat4f head_mat = gvr_api_->ApplyNeckModel(
-      gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
-  callback.Run(GvrDelegate::VRPosePtrFromGvrPose(head_mat), time, -1,
-               device::mojom::VRVSyncProvider::Status::SUCCESS);
+  callback.Run(GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr),
+               time, -1, device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void NonPresentingGvrDelegate::CreateVRDisplayInfo(
