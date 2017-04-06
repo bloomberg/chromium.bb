@@ -92,7 +92,7 @@
         role="none"
         show-menu>
     </cr-toolbar>
-    <dialog id="drawer" is="cr-drawer">
+    <dialog id="drawer" is="cr-drawer" on-close="onMenuClosed_">
       <div class="drawer-header" tabindex="-1">$i18n{settings}</div>
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
@@ -108,7 +108,8 @@
     <div id="container">
       <!-- Used by IntersectionObserver, has a 0px height intentionally -->
       <div id="intersectionProbe"></div>
-      <settings-main id="main" prefs="{{prefs}}"
+      <settings-main id="main" prefs="{{prefs}}" tabindex="-1"
+          class="no-outline"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           show-android-apps="[[showAndroidApps_]]"

@@ -264,6 +264,11 @@ Polymer({
   },
 
   /** @private */
+  onMenuClosed_: function() {
+    this.$$('settings-main').focus();
+  },
+
+  /** @private */
   directionDelegateChanged_: function() {
     this.$.drawer.align = this.directionDelegate.isRtl() ?
         'right' : 'left';
