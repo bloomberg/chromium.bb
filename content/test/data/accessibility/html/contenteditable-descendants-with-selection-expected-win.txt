@@ -11,7 +11,7 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0>' caret_offset=1 n_
 ++++++ROLE_SYSTEM_STATICTEXT name='.' IA2_STATE_EDITABLE ia2_hypertext='.' n_selections=1 selection_start=0 selection_end=1
 ++++ROLE_SYSTEM_TABLE IA2_STATE_EDITABLE ia2_hypertext='<obj0><obj1><obj2>' n_selections=1 selection_start=0 selection_end=3
 ++++++ROLE_SYSTEM_ROW IA2_STATE_EDITABLE ia2_hypertext='<obj0>' n_selections=1 selection_start=0 selection_end=1
-++++++++ROLE_SYSTEM_CELL IA2_STATE_EDITABLE ia2_hypertext='Always expose editable tables as tables.' n_selections=1 selection_start=0 selection_end=40
+++++++++ROLE_SYSTEM_CELL name='Always expose editable tables as tables.' IA2_STATE_EDITABLE ia2_hypertext='Always expose editable tables as tables.' n_selections=1 selection_start=0 selection_end=40
 ++++++++++ROLE_SYSTEM_STATICTEXT name='Always expose editable tables as tables.' IA2_STATE_EDITABLE ia2_hypertext='Always expose editable tables as tables.' n_selections=1 selection_start=0 selection_end=40
 ++++++ROLE_SYSTEM_COLUMN n_selections=0
 ++++++IA2_ROLE_SECTION n_selections=0

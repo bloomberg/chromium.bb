@@ -173,18 +173,18 @@ element
             AXRole: AXStaticText "Caption"
                 AXRole: AXInlineTextBox "Caption"
         AXRole: AXRow
-            AXRole: AXCell
+            AXRole: AXCell "Cell1"
                 AXRole: AXStaticText "Cell1"
                     AXRole: AXInlineTextBox "Cell1"
-            AXRole: AXCell
+            AXRole: AXCell "Cell2"
                 AXRole: AXStaticText "Cell2"
                     AXRole: AXInlineTextBox "Cell2"
         AXRole: AXColumn
-            AXRole: AXCell
+            AXRole: AXCell "Cell1"
                 AXRole: AXStaticText "Cell1"
                     AXRole: AXInlineTextBox "Cell1"
         AXRole: AXColumn
-            AXRole: AXCell
+            AXRole: AXCell "Cell2"
                 AXRole: AXStaticText "Cell2"
                     AXRole: AXInlineTextBox "Cell2"
         AXRole: AXTableHeaderContainer

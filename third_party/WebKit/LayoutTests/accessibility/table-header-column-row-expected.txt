@@ -30,33 +30,33 @@ AXRole: AXWebArea
             AXRole: AXStaticText "scope test"
                 AXRole: AXInlineTextBox "scope test"
         AXRole: AXRow
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
         AXRole: AXRow
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
     AXRole: AXTable "row header and column header (1)"
@@ -64,33 +64,33 @@ AXRole: AXWebArea
             AXRole: AXStaticText "row header and column header (1)"
                 AXRole: AXInlineTextBox "row header and column header (1)"
         AXRole: AXRow
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
         AXRole: AXRow
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
     AXRole: AXTable "row header and column header (2)"
@@ -98,33 +98,33 @@ AXRole: AXWebArea
             AXRole: AXStaticText "row header and column header (2)"
                 AXRole: AXInlineTextBox "row header and column header (2)"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
         AXRole: AXRow
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "column head"
                 AXRole: AXStaticText "column head"
                     AXRole: AXInlineTextBox "column head"
         AXRole: AXRow
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
     AXRole: AXTable "row header and column header (3)"
@@ -133,24 +133,24 @@ AXRole: AXWebArea
                 AXRole: AXInlineTextBox "row header and column header (3)"
         AXRole: AXRow
             AXRole: AXCell
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
         AXRole: AXRow
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
-            AXRole: AXCell
+            AXRole: AXCell "data"
                 AXRole: AXStaticText "data"
                     AXRole: AXInlineTextBox "data"
     AXRole: AXTable "row header and column header (4)"
@@ -158,14 +158,14 @@ AXRole: AXWebArea
             AXRole: AXStaticText "row header and column header (4)"
                 AXRole: AXInlineTextBox "row header and column header (4)"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
-            AXRole: AXColumnHeader
+            AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"
                     AXRole: AXInlineTextBox "col head"
         AXRole: AXRow
-            AXRole: AXRowHeader
+            AXRole: AXRowHeader "row head"
                 AXRole: AXStaticText "row head"
                     AXRole: AXInlineTextBox "row head"
     AXRole: AXParagraph

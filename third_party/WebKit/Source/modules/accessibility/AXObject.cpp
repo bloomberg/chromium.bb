@@ -1731,10 +1731,13 @@ bool AXObject::includesARIAWidgetRole(const String& role) {
 }
 
 bool AXObject::nameFromContents() const {
+  // ARIA 1.1, section 5.2.7.5.
   switch (roleValue()) {
     case AnchorRole:
     case ButtonRole:
+    case CellRole:
     case CheckBoxRole:
+    case ColumnHeaderRole:
     case DirectoryRole:
     case DisclosureTriangleRole:
     case HeadingRole:
@@ -1748,12 +1751,14 @@ bool AXObject::nameFromContents() const {
     case MenuListOptionRole:
     case PopUpButtonRole:
     case RadioButtonRole:
+    case RowHeaderRole:
     case StaticTextRole:
     case StatusRole:
     case SwitchRole:
     case TabRole:
     case ToggleButtonRole:
     case TreeItemRole:
+    case UserInterfaceTooltipRole:
       return true;
     default:
       return false;
