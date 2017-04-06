@@ -285,8 +285,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             return true;
         }
 
-        if (!ChromeWebApkHost.areUpdatesEnabled()) return false;
-
         if (isShellApkVersionOutOfDate(info)) return true;
 
         return mStorage.shouldCheckForUpdate();

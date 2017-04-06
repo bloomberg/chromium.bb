@@ -45,11 +45,6 @@ public class ChromeWebApkHost {
         return isEnabledInPrefs();
     }
 
-    // Returns whether updating the WebAPK is enabled.
-    public static boolean areUpdatesEnabled() {
-        return canInstallWebApk();
-    }
-
     /** Computes the GooglePlayInstallState. */
     private static int computeGooglePlayInstallState() {
         if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
