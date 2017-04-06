@@ -149,6 +149,9 @@ using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
+// crbug.com/708158
+#if !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
+
 // Prerender tests work as follows:
 //
 // A page with a prefetch link to the test page is loaded.  Once prerendered,
@@ -2038,52 +2041,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderPageNavigateFragment \
-  DISABLED_PrerenderPageNavigateFragment
-#else
-#define MAYBE_PrerenderPageNavigateFragment PrerenderPageNavigateFragment
-#endif
 // Checks that we do not use a prerendered page when navigating from
 // the main page to a fragment.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderPageNavigateFragment) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNavigateFragment) {
   PrerenderTestURL("/prerender/no_prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
                                WindowOpenDisposition::CURRENT_TAB, false);
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderFragmentNavigatePage \
-  DISABLED_PrerenderFragmentNavigatePage
-#else
-#define MAYBE_PrerenderFragmentNavigatePage PrerenderFragmentNavigatePage
-#endif
 // Checks that we do not use a prerendered page when we prerender a fragment
 // but navigate to the main page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderFragmentNavigatePage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFragmentNavigatePage) {
   PrerenderTestURL("/prerender/no_prerender_page.html#fragment",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html",
                                WindowOpenDisposition::CURRENT_TAB, false);
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderFragmentNavigateFragment \
-  DISABLED_PrerenderFragmentNavigateFragment
-#else
-#define MAYBE_PrerenderFragmentNavigateFragment \
-  PrerenderFragmentNavigateFragment
-#endif
 // Checks that we do not use a prerendered page when we prerender a fragment
 // but navigate to a different fragment on the same page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderFragmentNavigateFragment) {
+                       PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("/prerender/no_prerender_page.html#other_fragment",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
@@ -3104,15 +3083,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
   ui_test_utils::NavigateToURL(current_browser(), dest_url());
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderExtraHeadersNoSwap DISABLED_PrerenderExtraHeadersNoSwap
-#else
-#define MAYBE_PrerenderExtraHeadersNoSwap PrerenderExtraHeadersNoSwap
-#endif
 // Checks that prerenders are not swapped for navigations with extra headers.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderExtraHeadersNoSwap) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExtraHeadersNoSwap) {
   PrerenderTestURL("/prerender/prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING, 1);
 
@@ -3818,5 +3790,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   ASSERT_TRUE(display_test_result);
 }
 #endif  // !defined(DISABLE_NACL)
+
+#endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
 
 }  // namespace prerender
