@@ -449,9 +449,6 @@ class HttpStreamFactoryImpl::Job {
   // True if this job used an existing QUIC session.
   bool using_existing_quic_session_;
 
-  // Force quic for a specific port.
-  int force_quic_port_;
-
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
 
