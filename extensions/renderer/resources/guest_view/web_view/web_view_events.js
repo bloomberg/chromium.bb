@@ -11,7 +11,7 @@ var EventBindings = require('event_bindings');
 var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
-var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
+var WebRequestEvent = require('webRequestEvent').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebViewActionRequests =

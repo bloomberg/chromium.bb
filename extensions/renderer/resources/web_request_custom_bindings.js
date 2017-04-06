@@ -6,7 +6,7 @@
 
 var binding = require('binding').Binding.create('webRequest');
 var sendRequest = require('sendRequest').sendRequest;
-var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
+var WebRequestEvent = require('webRequestEvent').WebRequestEvent;
 
 binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
