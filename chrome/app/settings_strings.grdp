@@ -2596,8 +2596,8 @@
     <message name="IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL" desc="Label for the setting for restricting sign in to specific users.">
       Restrict sign-in to the following users:
     </message>
-    <message name="IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL" desc="Label for the device owner.">
-      (owner)
+    <message name="IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL" desc="Label for a user who is the device owner.">
+      <ph name="USER_NAME">$1<ex>John Smith</ex></ph> (owner)
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
       Add person

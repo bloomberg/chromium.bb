@@ -212,6 +212,7 @@
       'target_name': 'user_list',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):users_private',
       ],

@@ -15,9 +15,7 @@
 Polymer({
   is: 'settings-user-list',
 
-  behaviors: [
-    settings.RouteObserverBehavior,
-  ],
+  behaviors: [I18nBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -26,7 +24,9 @@ Polymer({
      */
     users_: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
       notify: true
     },
 
@@ -37,7 +37,7 @@ Polymer({
      */
     disabled: {
       type: Boolean,
-      value: false
+      value: false,
     }
   },
 
@@ -61,6 +61,15 @@ Polymer({
         this.setUsers_(users);
       }.bind(this));
     }
+  },
+
+  /**
+   * @param {!chrome.usersPrivate.User} user
+   * @return {string}
+   * @private
+   */
+  getUserName_: function(user) {
+    return user.isOwner ? this.i18n('deviceOwnerLabel', user.name) : user.name;
   },
 
   /**

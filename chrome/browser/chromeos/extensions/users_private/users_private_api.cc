@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
@@ -99,8 +100,12 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
   for (size_t i = 0; i < email_list->GetSize(); ++i) {
     api::users_private::User user;
     email_list->GetString(i, &user.email);
-    user.name =
-        user_manager->GetUserDisplayEmail(AccountId::FromUserEmail(user.email));
+    AccountId account_id = AccountId::FromUserEmail(user.email);
+    user.name = base::UTF16ToUTF8(user_manager->GetUserDisplayName(account_id));
+    if (user.name.empty()) {
+      // User is not associated with a gaia account.
+      user.name = user_manager->GetUserDisplayEmail(account_id);
+    }
     user.is_owner = chromeos::ProfileHelper::IsOwnerProfile(profile) &&
                     user.email == profile->GetProfileUserName();
     user_list->Append(user.ToValue());

@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -37,10 +38,7 @@
         <div class="user layout horizontal center two-line">
           <img class="user-icon" src="[[getProfilePictureUrl_(item.name)]]">
           <div class="flex user-info">
-            <div>
-              [[item.name]]
-              <span hidden="[[!item.isOwner]]">$i18n{deviceOwnerLabel}</span>
-            </div>
+            <div>[[getUserName_(item)]]</div>
             <div class="secondary">[[item.email]]</div>
           </div>
           <paper-icon-button icon="cr:clear" class="clear-icon"
