@@ -74,17 +74,6 @@ TextControlElement::TextControlElement(const QualifiedName& tagName,
 
 TextControlElement::~TextControlElement() {}
 
-Node::InsertionNotificationRequest TextControlElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLFormControlElementWithState::insertedInto(insertionPoint);
-  if (!insertionPoint->isConnected())
-    return InsertionDone;
-  String initialValue = value();
-  setTextAsOfLastFormControlChangeEvent(initialValue.isNull() ? emptyString
-                                                              : initialValue);
-  return InsertionDone;
-}
-
 void TextControlElement::dispatchFocusEvent(
     Element* oldFocusedElement,
     WebFocusType type,
@@ -204,24 +193,30 @@ void TextControlElement::select() {
   restoreCachedSelection();
 }
 
-void TextControlElement::setChangedSinceLastFormControlChangeEvent(
-    bool changed) {
-  m_wasChangedSinceLastFormControlChangeEvent = changed;
+void TextControlElement::setValueBeforeFirstUserEditIfNotSet() {
+  if (!m_valueBeforeFirstUserEdit.isNull())
+    return;
+  String value = this->value();
+  m_valueBeforeFirstUserEdit = value.isNull() ? emptyString : value;
+}
+
+void TextControlElement::checkIfValueWasReverted(const String& value) {
+  DCHECK(!m_valueBeforeFirstUserEdit.isNull())
+      << "setValueBeforeFirstUserEditIfNotSet should be called beforehand.";
+  String nonNullValue = value.isNull() ? emptyString : value;
+  if (m_valueBeforeFirstUserEdit == nonNullValue)
+    clearValueBeforeFirstUserEdit();
+}
+
+void TextControlElement::clearValueBeforeFirstUserEdit() {
+  m_valueBeforeFirstUserEdit = String();
 }
 
 void TextControlElement::setFocused(bool flag) {
   HTMLFormControlElementWithState::setFocused(flag);
 
-  if (!flag) {
-    if (wasChangedSinceLastFormControlChangeEvent()) {
-      dispatchFormControlChangeEvent();
-    } else {
-      // |value| IDL attribute setter haven't updated
-      // textAsOfLastFormControlChangeEvent while this is focused. So we
-      // synchronize now.
-      setTextAsOfLastFormControlChangeEvent(value());
-    }
-  }
+  if (!flag)
+    dispatchFormControlChangeEvent();
 }
 
 bool TextControlElement::shouldDispatchFormControlChangeEvent(
@@ -232,28 +227,30 @@ bool TextControlElement::shouldDispatchFormControlChangeEvent(
 
 void TextControlElement::dispatchFormControlChangeEvent() {
   String newValue = value();
-  if (shouldDispatchFormControlChangeEvent(m_textAsOfLastFormControlChangeEvent,
+  if (!m_valueBeforeFirstUserEdit.isNull() &&
+      shouldDispatchFormControlChangeEvent(m_valueBeforeFirstUserEdit,
                                            newValue)) {
-    setTextAsOfLastFormControlChangeEvent(newValue);
+    clearValueBeforeFirstUserEdit();
     dispatchChangeEvent();
+  } else {
+    clearValueBeforeFirstUserEdit();
   }
-  setChangedSinceLastFormControlChangeEvent(false);
 }
 
 void TextControlElement::enqueueChangeEvent() {
   String newValue = value();
-  if (shouldDispatchFormControlChangeEvent(m_textAsOfLastFormControlChangeEvent,
+  if (!m_valueBeforeFirstUserEdit.isNull() &&
+      shouldDispatchFormControlChangeEvent(m_valueBeforeFirstUserEdit,
                                            newValue)) {
-    setTextAsOfLastFormControlChangeEvent(newValue);
     Event* event = Event::createBubble(EventTypeNames::change);
     event->setTarget(this);
     document().enqueueAnimationFrameEvent(event);
   }
-  setChangedSinceLastFormControlChangeEvent(false);
+  clearValueBeforeFirstUserEdit();
 }
 
+// TODO(tkent): Remove this function.
 void TextControlElement::dispatchFormControlInputEvent() {
-  setChangedSinceLastFormControlChangeEvent(true);
   HTMLFormControlElementWithState::dispatchInputEvent();
 }
 

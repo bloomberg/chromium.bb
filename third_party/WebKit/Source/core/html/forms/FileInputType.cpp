@@ -319,7 +319,6 @@ void FileInputType::setFiles(FileList* files) {
     // input instance is safe since it is ref-counted.
     element().dispatchChangeEvent();
   }
-  element().setChangedSinceLastFormControlChangeEvent(false);
 }
 
 void FileInputType::filesChosen(const Vector<FileChooserFileInfo>& files) {

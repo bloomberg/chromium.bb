@@ -523,7 +523,10 @@ void InputType::setValue(const String& sanitizedValue,
   // TextFieldInputType. That is to say, type=color, type=range, and temporal
   // input types.
   DCHECK_EQ(valueMode(), ValueMode::kValue);
-  element().setNonAttributeValue(sanitizedValue);
+  if (eventBehavior == DispatchNoEvent)
+    element().setNonAttributeValue(sanitizedValue);
+  else
+    element().setNonAttributeValueByUserEdit(sanitizedValue);
   if (!valueChanged)
     return;
   switch (eventBehavior) {
@@ -535,7 +538,6 @@ void InputType::setValue(const String& sanitizedValue,
       element().dispatchFormControlChangeEvent();
       break;
     case DispatchNoEvent:
-      element().setTextAsOfLastFormControlChangeEvent(element().value());
       break;
   }
 }

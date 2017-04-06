@@ -20,6 +20,36 @@ function elementDesc(element) {
   return 'INPUT[type=' + element.type + ']';
 }
 
+function escape(str) {
+  if (str === null || str === undefined)
+    return 'null';
+  var result ='\x22';
+  for (var i = 0; i < str.length; ++i) {
+    if (str[i] == '\b')
+      result += '\\b';
+    else if (str[i] == '\x22')
+      result += '\\\x22';
+    else
+      result += str[i];
+  }
+  return result + '\x22';
+}
+
+function typeAsUser(userInput) {
+  if (!userInput)
+    return;
+  if (userInput.indexOf('\b') < 0) {
+    document.execCommand('InsertText', false, userInput);
+    return;
+  }
+  for (var i = 0; i < userInput.length; ++i) {
+    if (userInput[i] == '\b')
+      document.execCommand('Delete', false, '');
+    else
+      document.execCommand('InsertText', false, userInput[i]);
+  }
+}
+
 function testValueUpdateOnChange(element, userInput) {
   test(() => {
     changeEventCounter = 0;
@@ -38,42 +68,56 @@ function testValueUpdateOnChange(element, userInput) {
   }, elementDesc(element) + ': Updating value in a CHANGE event handler');
 }
 
-function testValueUpdateWithoutUserEdit(element, jsInput) {
+function testUserEditSetValueUserEdit(element, initial, userInput1, jsInput, userInput2, expectation) {
   test(() => {
     changeEventCounter = 0;
-    element.value = '';
+    element.value = initial;
     element.focus();
+    typeAsUser(userInput1);
     element.value = jsInput;
+    typeAsUser(userInput2);
     element.blur();
-    assert_equals(changeEventCounter, 0);
-  }, elementDesc(element) + ': Updating value while element is focused');
-}
-
-function testValueUpdateAfterUserEdit(element, userInput, jsInput) {
-  test(() => {
-    changeEventCounter = 0;
-    element.value = '0';
-    element.focus();
-    document.execCommand('InsertText', false, userInput);
-    element.value = jsInput;
-    element.blur();
-    assert_equals(changeEventCounter, 1);
-  }, elementDesc(element) + ': Updating value after a user edit');
+    assert_equals(changeEventCounter, expectation ? 1 : 0);
+  }, `${elementDesc(element)}: Sequence of User-edit ${escape(userInput1)}, element.value=${escape(jsInput)}, User-edit ${escape(userInput2)} should dispatch ${expectation ? 'a' : 'no'} CHANGE event.`);
 }
 
 var element = document.getElementById('input');
 testValueUpdateOnChange(element, 'foo bar');
-testValueUpdateWithoutUserEdit(element, 'FOO BAR');
-testValueUpdateAfterUserEdit(element, 'foo bar', 'FOO BAR');
+testUserEditSetValueUserEdit(element, '', null, 'FOO BAR', null, false);
+testUserEditSetValueUserEdit(element, '0', 'foo bar', 'FOO BAR', null, true);
+testUserEditSetValueUserEdit(element, '', null, 'hello', '\b\b\b\b\b', true);
+testUserEditSetValueUserEdit(element, '', null, 'hello', 'abc\b\b\b', false);
+testUserEditSetValueUserEdit(element, '', 'foo', 'hello', null, true);
+testUserEditSetValueUserEdit(element, '', 'hello', 'hello', null, true);
+testUserEditSetValueUserEdit(element, '', 'foo', 'hello', '\b\b\b\b\b', false);
+testUserEditSetValueUserEdit(element, '', 'foo\b\b\b', 'hello', null, false);
+testUserEditSetValueUserEdit(element, '', 'foo', '', null, false);
+testUserEditSetValueUserEdit(element, '0', 'foo', '', '0', false);
 
 element = document.getElementById('number');
 testValueUpdateOnChange(element, '123');
-testValueUpdateWithoutUserEdit(element, '999');
-testValueUpdateAfterUserEdit(element, '123', '999');
+testUserEditSetValueUserEdit(element, '', null, '999', null, false);
+testUserEditSetValueUserEdit(element, '0', '123', '999', null, true);
+testUserEditSetValueUserEdit(element, '', null, '234', '\b\b\b', true);
+testUserEditSetValueUserEdit(element, '', null, '234', '56\b\b', false);
+testUserEditSetValueUserEdit(element, '', '1', '234', null, true);
+testUserEditSetValueUserEdit(element, '', '234', '234', null, true);
+testUserEditSetValueUserEdit(element, '', '1', '234', '\b\b\b', false);
+testUserEditSetValueUserEdit(element, '', '1\b', '234', null, false);
+testUserEditSetValueUserEdit(element, '', '1', '', null, false);
+testUserEditSetValueUserEdit(element, '0', '1', '', '0', false);
 
 element = document.getElementById('textarea');
 testValueUpdateOnChange(element, 'foo bar');
-testValueUpdateWithoutUserEdit(element, 'FOO BAR');
-testValueUpdateAfterUserEdit(element, 'foo bar', 'FOO BAR');
+testUserEditSetValueUserEdit(element, '', null, 'FOO BAR', null, false);
+testUserEditSetValueUserEdit(element, '0', 'foo bar', 'FOO BAR', null, true);
+testUserEditSetValueUserEdit(element, '', null, 'hello', '\b\b\b\b\b', true);
+testUserEditSetValueUserEdit(element, '', null, 'hello', 'abc\b\b\b', false);
+testUserEditSetValueUserEdit(element, '', 'foo', 'hello', null, true);
+testUserEditSetValueUserEdit(element, '', 'hello', 'hello', null, true);
+testUserEditSetValueUserEdit(element, '', 'foo', 'hello', '\b\b\b\b\b', false);
+testUserEditSetValueUserEdit(element, '', 'foo\b\b\b', 'hello', null, false);
+testUserEditSetValueUserEdit(element, '', 'foo', '', null, false);
+testUserEditSetValueUserEdit(element, '0', 'foo', '', '0', false);
 </script>
 </body>

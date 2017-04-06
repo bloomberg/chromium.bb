@@ -232,6 +232,7 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
 
   // Functions for InputType classes.
   void setNonAttributeValue(const String&);
+  void setNonAttributeValueByUserEdit(const String&);
   bool valueAttributeWasUpdatedAfterParsing() const {
     return m_valueAttributeWasUpdatedAfterParsing;
   }

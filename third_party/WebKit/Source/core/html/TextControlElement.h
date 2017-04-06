@@ -64,7 +64,6 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void forwardEvent(Event*);
 
   void setFocused(bool flag) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
   // The derived class should return true if placeholder processing is needed.
   virtual bool isPlaceholderVisible() const = 0;
@@ -112,21 +111,19 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void setMaxLength(int, ExceptionState&);
   void setMinLength(int, ExceptionState&);
 
-  // Dispatch 'input' event, and update
-  // m_wasChangedSinceLastFormControlChangeEvent flag.
+  // Dispatch 'input' event.
   void dispatchFormControlInputEvent();
   // Dispatch 'change' event if the value is updated.
   void dispatchFormControlChangeEvent();
   // Enqueue 'change' event if the value is updated.
   void enqueueChangeEvent();
-  void setTextAsOfLastFormControlChangeEvent(const String& text) {
-    m_textAsOfLastFormControlChangeEvent = text;
-  }
-  // A user has changed the value since the last 'change' event.
-  bool wasChangedSinceLastFormControlChangeEvent() const {
-    return m_wasChangedSinceLastFormControlChangeEvent;
-  }
-  void setChangedSinceLastFormControlChangeEvent(bool);
+  // This should be called on every user-input, before the user-input changes
+  // the value.
+  void setValueBeforeFirstUserEditIfNotSet();
+  // This should be called on every user-input, after the user-input changed the
+  // value. The argument is the updated value.
+  void checkIfValueWasReverted(const String&);
+  void clearValueBeforeFirstUserEdit();
 
   virtual String value() const = 0;
   virtual void setValue(
@@ -197,8 +194,10 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   bool placeholderShouldBeVisible() const;
 
-  String m_textAsOfLastFormControlChangeEvent;
-  bool m_wasChangedSinceLastFormControlChangeEvent = false;
+  // In m_valueBeforeFirstUserEdit, we distinguish a null String and zero-length
+  // String. Null String means the field doesn't have any data yet, and
+  // zero-length String is a valid data.
+  String m_valueBeforeFirstUserEdit;
   bool m_lastChangeWasUserEdit;
 
   unsigned m_cachedSelectionStart;

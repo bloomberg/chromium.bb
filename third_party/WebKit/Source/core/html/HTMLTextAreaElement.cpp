@@ -285,8 +285,9 @@ void HTMLTextAreaElement::subtreeHasChanged() {
   }
 #endif
   addPlaceholderBreakElementIfNecessary();
-  setChangedSinceLastFormControlChangeEvent(true);
+  setValueBeforeFirstUserEditIfNotSet();
   updateValue();
+  checkIfValueWasReverted(value());
   setNeedsValidityCheck();
   setAutofilled(false);
   updatePlaceholderVisibility();
@@ -400,10 +401,14 @@ void HTMLTextAreaElement::setValueCommon(
   if (normalizedValue == value())
     return;
 
+  if (eventBehavior != DispatchNoEvent)
+    setValueBeforeFirstUserEditIfNotSet();
   m_value = normalizedValue;
   setInnerEditorValue(m_value);
   if (eventBehavior == DispatchNoEvent)
     setLastChangeWasNotUserEdit();
+  else
+    checkIfValueWasReverted(m_value);
   updatePlaceholderVisibility();
   setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(
                                               StyleChangeReason::ControlValue));
@@ -428,11 +433,6 @@ void HTMLTextAreaElement::setValueCommon(
       break;
 
     case DispatchNoEvent:
-      // We need to update textAsOfLastFormControlChangeEvent for |value| IDL
-      // setter without focus because input-assist features use setValue("...",
-      // DispatchChangeEvent) without setting focus.
-      if (!isFocused())
-        setTextAsOfLastFormControlChangeEvent(normalizedValue);
       break;
   }
 }

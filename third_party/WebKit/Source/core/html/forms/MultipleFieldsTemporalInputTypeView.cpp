@@ -197,7 +197,7 @@ void MultipleFieldsTemporalInputTypeView::editControlValueChanged() {
   if ((oldValue.isEmpty() && newValue.isEmpty()) || oldValue == newValue) {
     element().setNeedsValidityCheck();
   } else {
-    element().setNonAttributeValue(newValue);
+    element().setNonAttributeValueByUserEdit(newValue);
     element().setNeedsStyleRecalc(
         SubtreeStyleChange,
         StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));

@@ -152,7 +152,10 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
                                   TextControlSetValueSelection selection) {
   // We don't use InputType::setValue.  TextFieldInputType dispatches events
   // different way from InputType::setValue.
-  element().setNonAttributeValue(sanitizedValue);
+  if (eventBehavior == DispatchNoEvent)
+    element().setNonAttributeValue(sanitizedValue);
+  else
+    element().setNonAttributeValueByUserEdit(sanitizedValue);
 
   if (valueChanged)
     element().updateView();
@@ -183,11 +186,6 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
     }
 
     case DispatchNoEvent:
-      // We need to update textAsOfLastFormControlChangeEvent for |value| IDL
-      // setter without focus because input-assist features use setValue("...",
-      // DispatchChangeEvent) without setting focus.
-      if (!element().isFocused())
-        element().setTextAsOfLastFormControlChangeEvent(element().value());
       break;
   }
 }
@@ -499,7 +497,6 @@ String TextFieldInputType::convertFromVisibleValue(
 }
 
 void TextFieldInputType::subtreeHasChanged() {
-  element().setChangedSinceLastFormControlChangeEvent(true);
   element().setValueFromRenderer(sanitizeUserInputValue(
       convertFromVisibleValue(element().innerEditorValue())));
   element().updatePlaceholderVisibility();

@@ -387,8 +387,6 @@ void HTMLInputElement::initializeTypeInParsing() {
     m_inputType->warnIfValueIsInvalid(defaultValue);
 
   m_inputTypeView->updateView();
-  setTextAsOfLastFormControlChangeEvent(value());
-  setChangedSinceLastFormControlChangeEvent(false);
 }
 
 void HTMLInputElement::updateType() {
@@ -504,8 +502,8 @@ void HTMLInputElement::updateType() {
   if (document().focusedElement() == this)
     document().updateFocusAppearanceLater();
 
-  setTextAsOfLastFormControlChangeEvent(value());
-  setChangedSinceLastFormControlChangeEvent(false);
+  // TODO(tkent): Should we dispatch a change event?
+  clearValueBeforeFirstUserEdit();
 
   addToRadioButtonGroup();
 
@@ -713,10 +711,8 @@ void HTMLInputElement::parseAttribute(
     // We only need to setChanged if the form is looking at the default value
     // right now.
     if (!hasDirtyValue()) {
-      if (m_inputType->valueMode() == ValueMode::kValue) {
+      if (m_inputType->valueMode() == ValueMode::kValue)
         m_nonAttributeValue = sanitizeValue(value);
-        setTextAsOfLastFormControlChangeEvent(m_nonAttributeValue);
-      }
       updatePlaceholderVisibility();
       setNeedsStyleRecalc(
           SubtreeStyleChange,
@@ -952,7 +948,6 @@ void HTMLInputElement::setChecked(bool nowChecked,
   // definitely wrong in practice for these types of elements.
   if (eventBehavior != DispatchNoEvent && isConnected() &&
       m_inputType->shouldSendChangeEventAfterCheckedChanged()) {
-    setTextAsOfLastFormControlChangeEvent(String());
     if (eventBehavior == DispatchInputAndChangeEvent)
       dispatchFormControlInputEvent();
   }
@@ -1105,6 +1100,13 @@ void HTMLInputElement::setNonAttributeValue(const String& sanitizedValue) {
   m_inputType->inRangeChanged();
 }
 
+void HTMLInputElement::setNonAttributeValueByUserEdit(
+    const String& sanitizedValue) {
+  setValueBeforeFirstUserEditIfNotSet();
+  setNonAttributeValue(sanitizedValue);
+  checkIfValueWasReverted(sanitizedValue);
+}
+
 void HTMLInputElement::setNonDirtyValue(const String& newValue) {
   setValue(newValue);
   m_hasDirtyValue = false;
@@ -1157,9 +1159,11 @@ void HTMLInputElement::setValueFromRenderer(const String& value) {
          m_inputType->sanitizeUserInputValue(value).isEmpty());
 
   DCHECK(!value.isNull());
+  setValueBeforeFirstUserEditIfNotSet();
   m_nonAttributeValue = value;
   m_hasDirtyValue = true;
   m_needsToUpdateViewValue = false;
+  checkIfValueWasReverted(value);
 
   // Input event is fired by the Node::defaultEventHandler for editable
   // controls.
@@ -1260,19 +1264,13 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
     }
     // Form submission finishes editing, just as loss of focus does.
     // If there was a change, send the event now.
-    if (wasChangedSinceLastFormControlChangeEvent())
-      dispatchFormControlChangeEvent();
+    dispatchFormControlChangeEvent();
 
     HTMLFormElement* formForSubmission = m_inputTypeView->formForSubmission();
     // Form may never have been present, or may have been destroyed by code
     // responding to the change event.
     if (formForSubmission)
       formForSubmission->submitImplicitly(evt, canTriggerImplicitSubmission());
-
-    // We treat implicit submission is something like blur()-then-focus(). So
-    // we reset the last value. crbug.com/695349 and crbug.com/700842.
-    setTextAsOfLastFormControlChangeEvent(value());
-
     evt->setDefaultHandled();
     return;
   }
