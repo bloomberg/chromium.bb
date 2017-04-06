@@ -5,17 +5,17 @@
 #ifndef WebProcessMemoryDump_h
 #define WebProcessMemoryDump_h
 
+#include <map>
+#include <memory>
+#include <vector>
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "platform/PlatformExport.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
-#include <map>
-#include <memory>
-#include <vector>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
 
 class SkTraceMemoryDump;
 

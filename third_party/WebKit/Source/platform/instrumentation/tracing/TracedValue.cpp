@@ -4,8 +4,8 @@
 
 #include "platform/instrumentation/tracing/TracedValue.h"
 
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 

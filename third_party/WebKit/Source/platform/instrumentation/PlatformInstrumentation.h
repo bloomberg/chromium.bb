@@ -7,7 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

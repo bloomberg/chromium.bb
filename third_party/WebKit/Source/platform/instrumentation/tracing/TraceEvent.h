@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/text/CString.h"
 
 namespace WTF {
 

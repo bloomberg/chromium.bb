@@ -12,8 +12,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
-#include "wtf/text/StringUTF8Adaptor.h"
 
 #include <stddef.h>
 
