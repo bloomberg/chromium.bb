@@ -560,7 +560,11 @@
         { "kind" : "IdRef",                            "name" : "'Element'" },
         { "kind" : "IdRef",        "quantifier" : "*", "name" : "'Indexes'" }
       ],
-      "capabilities" : [ "Addresses" ]
+      "capabilities" : [
+        "Addresses",
+        "VariablePointers",
+        "VariablePointersStorageBuffer"
+      ]
     },
     {
       "opname" : "OpArrayLength",
@@ -3357,6 +3361,10 @@
         {
           "enumerant" : "OpenCL_CPP",
           "value" : 4
+        },
+        {
+          "enumerant" : "HLSL",
+          "value" : 5
         }
       ]
     },
@@ -3678,6 +3686,14 @@
         {
           "enumerant" : "Image",
           "value" : 11
+        },
+        {
+          "enumerant" : "StorageBuffer",
+          "value" : 12,
+          "extensions" : [
+            "SPV_KHR_storage_buffer_storage_class",
+            "SPV_KHR_variable_pointers"
+          ]
         }
       ]
     },
@@ -5240,14 +5256,31 @@
           "extensions" : [ "SPV_KHR_subgroup_vote" ]
         },
         {
+          "enumerant" : "StorageBuffer16BitAccess",
+          "value" : 4433,
+          "extensions" : [ "SPV_KHR_16bit_storage" ]
+        },
+        {
           "enumerant" : "StorageUniformBufferBlock16",
           "value" : 4433,
           "extensions" : [ "SPV_KHR_16bit_storage" ]
         },
         {
+          "enumerant" : "UniformAndStorageBuffer16BitAccess",
+          "value" : 4434,
+          "capabilities" : [
+            "StorageBuffer16BitAccess",
+            "StorageUniformBufferBlock16"
+          ],
+          "extensions" : [ "SPV_KHR_16bit_storage" ]
+        },
+        {
           "enumerant" : "StorageUniform16",
           "value" : 4434,
-          "capabilities" : [ "StorageUniformBufferBlock16" ],
+          "capabilities" : [
+            "StorageBuffer16BitAccess",
+            "StorageUniformBufferBlock16"
+          ],
           "extensions" : [ "SPV_KHR_16bit_storage" ]
         },
         {
@@ -5270,6 +5303,18 @@
           "value" : 4439,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_KHR_multiview" ]
+        },
+        {
+          "enumerant" : "VariablePointersStorageBuffer",
+          "value" : 4441,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_KHR_variable_pointers" ]
+        },
+        {
+          "enumerant" : "VariablePointers",
+          "value" : 4442,
+          "capabilities" : [ "VariablePointersStorageBuffer" ],
+          "extensions" : [ "SPV_KHR_variable_pointers" ]
         },
         {
           "enumerant" : "SampleMaskOverrideCoverageNV",

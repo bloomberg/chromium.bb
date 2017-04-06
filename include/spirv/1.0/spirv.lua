@@ -52,6 +52,7 @@ spv = {
         GLSL = 2,
         OpenCL_C = 3,
         OpenCL_CPP = 4,
+        HLSL = 5,
     },
 
     ExecutionModel = {
@@ -123,6 +124,7 @@ spv = {
         PushConstant = 9,
         AtomicCounter = 10,
         Image = 11,
+        StorageBuffer = 12,
     },
 
     Dim = {
@@ -578,12 +580,16 @@ spv = {
         SubgroupBallotKHR = 4423,
         DrawParameters = 4427,
         SubgroupVoteKHR = 4431,
+        StorageBuffer16BitAccess = 4433,
         StorageUniformBufferBlock16 = 4433,
         StorageUniform16 = 4434,
+        UniformAndStorageBuffer16BitAccess = 4434,
         StoragePushConstant16 = 4435,
         StorageInputOutput16 = 4436,
         DeviceGroup = 4437,
         MultiView = 4439,
+        VariablePointersStorageBuffer = 4441,
+        VariablePointers = 4442,
         SampleMaskOverrideCoverageNV = 5249,
         GeometryShaderPassthroughNV = 5251,
         ShaderViewportIndexLayerNV = 5254,
