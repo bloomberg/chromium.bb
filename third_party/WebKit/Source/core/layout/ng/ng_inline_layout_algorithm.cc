@@ -348,10 +348,12 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
   NGLogicalOffset origin_offset =
       GetOriginPointForFloats(ConstraintSpace(), content_size_);
   NGLogicalOffset from_offset = ConstraintSpace().BfcOffset();
-  // TODO(glebl): add margins calculation.
-  NGBoxStrut margins;
+  const ComputedStyle& float_style = node->Style();
+  NGBoxStrut margins = ComputeMargins(ConstraintSpace(), float_style,
+                                      ConstraintSpace().WritingMode(),
+                                      ConstraintSpace().Direction());
   RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
-      node->Style(), float_space->WritingMode(), current_opportunity_.size,
+      float_style, float_space->WritingMode(), current_opportunity_.size,
       origin_offset, from_offset, margins,
       layout_result->PhysicalFragment().get());
 

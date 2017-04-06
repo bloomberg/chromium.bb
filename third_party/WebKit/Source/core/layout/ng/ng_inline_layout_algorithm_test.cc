@@ -270,5 +270,34 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   EXPECT_EQ(wide_float->offsetTop(), narrow_float->offsetTop());
 }
 
+// Verifies that InlineLayoutAlgorithm positions floats with respect to their
+// margins.
+TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        height: 200px; width: 200px; outline: solid orange;
+      }
+      #left {
+        float: left; width: 5px; height: 30px; background-color: blue;
+        margin: 10%;
+      }
+    </style>
+    <div id="container">
+      <span id="text">
+        The quick <div id="left"></div> brown fox jumps over the lazy dog
+      </span>
+    </div>
+  )HTML");
+  LayoutText* layout_text =
+      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
+  ASSERT(layout_text->hasTextBoxes());
+
+  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
+  // 45 = sum of left's inline margins: 40 + left's width: 5
+  EXPECT_EQ(LayoutUnit(45), inline_text_box1->x());
+}
+
 }  // namespace
 }  // namespace blink
