@@ -269,10 +269,15 @@ window.Audit = (function () {
      *   should(() => { let a = b; }, 'A bad code').throw();
      *   should(() => { let c = d; }, 'Assigning d to c.')
      *       .throw('ReferenceError');
+     *   should(() => { let e = f; }, 'Assigning e to f.')
+     *       .throw('ReferenceError', { omitErrorMessage: true });
      *
      * @result
-     *   "PASS   A bad code threw an exception of ReferenceError."
-     *   "PASS   Assigning d to c threw ReferenceError."
+     *   "PASS   A bad code threw an exception of ReferenceError: b is not
+     *       defined."
+     *   "PASS   Assigning d to c threw ReferenceError: d is not defined."
+     *   "PASS   Assigning e to f threw ReferenceError: [error message
+     *       omitted]."
      */
     throw () {
       this._processArguments(arguments);
@@ -287,16 +292,17 @@ window.Audit = (function () {
         // Catch did not happen, so the test is failed.
         failDetail = '${actual} did not throw an exception.';
       } catch (error) {
+        let errorMessage = this._options.omitErrorMessage
+            ? ': [error message omitted]'
+            : ': "' + error.message + '"';
         if (this._expected === null || this._expected === undefined) {
           // The expected error type was not given.
           didThrowCorrectly = true;
-          passDetail = '${actual} threw ' + error.name + ': "'
-              + error.message + '".';
+          passDetail = '${actual} threw ' + error.name + errorMessage + '.';
         } else if (error.name === this._expected) {
           // The expected error type match the actual one.
           didThrowCorrectly = true;
-          passDetail = '${actual} threw ${expected}: "'
-              + error.message + '".';
+          passDetail = '${actual} threw ${expected}' + errorMessage + '.';
         } else {
           didThrowCorrectly = false;
           failDetail = '${actual} threw "' + error.name

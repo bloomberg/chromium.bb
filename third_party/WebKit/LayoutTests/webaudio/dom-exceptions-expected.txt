@@ -96,7 +96,7 @@ PASS   node.channelCountMode = "fancy" did not throw an exception.
 PASS   node.channelCountMode is equal to max. 
 PASS   node.channelInterpretation = mode did not throw an exception. 
 PASS   node.channelInterpretation is equal to speakers. 
-PASS   context.destination.channelCount = 99 threw IndexSizeError: "Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 2].". 
+PASS   context.destination.channelCount = 99 threw IndexSizeError: [error message omitted]. 
 PASS < [channel-stuff] All assertions passed. (total 7 assertions) 
 PASS > [audioparam]  
 PASS   param.setValueCurveAtTime(null, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': parameter 1 is not of type 'Float32Array'.". 

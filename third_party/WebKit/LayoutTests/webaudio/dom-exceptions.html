@@ -323,7 +323,7 @@ audit.define(
       should(
           () => context.destination.channelCount = 99,
           'context.destination.channelCount = 99')
-          .throw('IndexSizeError');
+          .throw('IndexSizeError', { omitErrorMessage: true });
 
       task.done();
     });
