@@ -23,6 +23,8 @@ PASS input setSelectionRange({},1)
 PASS input setSelectionRange(NaN,1) 
 PASS input setSelectionRange(null,1) 
 PASS input setSelectionRange(undefined,1) 
+PASS input setSelectionRange(Math.pow(2,32) - 2, Math.pow(2,32) - 1) 
+PASS input setSelectionRange(Math.pow(2,31), Math.pow(2,32) - 1) 
 PASS input setSelectionRange fires a select event 
 PASS test of textarea.setSelectionRange 
 PASS textarea typeof(input.setSelectionRange)' 
@@ -44,5 +46,7 @@ PASS textarea setSelectionRange({},1)
 PASS textarea setSelectionRange(NaN,1) 
 PASS textarea setSelectionRange(null,1) 
 PASS textarea setSelectionRange(undefined,1) 
+PASS textarea setSelectionRange(Math.pow(2,32) - 2, Math.pow(2,32) - 1) 
+PASS textarea setSelectionRange(Math.pow(2,31), Math.pow(2,32) - 1) 
 Harness: the test ran to completion.
 

@@ -589,7 +589,7 @@ def process_results(log, iterations):
     results = handler.results
     for test_name, test in results.iteritems():
         if is_inconsistent(test["status"], iterations):
-            inconsistent.append((test_name, None, test["status"], None))
+            inconsistent.append((test_name, None, test["status"], []))
         for subtest_name, subtest in test["subtests"].iteritems():
             if is_inconsistent(subtest["status"], iterations):
                 inconsistent.append((test_name, subtest_name, subtest["status"], subtest["messages"]))
@@ -709,7 +709,7 @@ def get_parser():
                         action="store",
                         # Travis docs say do not depend on USER env variable.
                         # This is a workaround to get what should be the same value
-                        default=os.environ.get("TRAVIS_REPO_SLUG").split('/')[0],
+                        default=os.environ.get("TRAVIS_REPO_SLUG", "w3c").split('/')[0],
                         help="Travis user name")
     parser.add_argument("--output-bytes",
                         action="store",
