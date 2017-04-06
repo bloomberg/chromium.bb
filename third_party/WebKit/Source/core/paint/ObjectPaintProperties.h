@@ -299,8 +299,6 @@ class CORE_EXPORT ObjectPaintProperties {
     return true;
   }
 
-  void updateContentsProperties() const;
-
   // ATTENTION! Make sure to keep FindPropertiesNeedingUpdate.h in sync when
   // new properites are added!
   RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;

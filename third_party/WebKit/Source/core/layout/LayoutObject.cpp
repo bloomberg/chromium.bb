@@ -77,8 +77,8 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/RarePaintData.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
 #include "platform/InstanceCounters.h"
@@ -3557,59 +3557,7 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(
     frameView()->removeBackgroundAttachmentFixedObject(this);
 }
 
-LayoutObject::RarePaintData::RarePaintData() {}
-
-LayoutObject::RarePaintData::~RarePaintData() {}
-
-ObjectPaintProperties& LayoutObject::RarePaintData::ensurePaintProperties() {
-  if (!m_paintProperties)
-    m_paintProperties = ObjectPaintProperties::create();
-  return *m_paintProperties.get();
-}
-
-void LayoutObject::RarePaintData::clearLocalBorderBoxProperties() {
-  m_localBorderBoxProperties = nullptr;
-
-  // The contents properties are based on the border box so we need to clear
-  // the cached value.
-  m_contentsProperties = nullptr;
-}
-
-void LayoutObject::RarePaintData::setLocalBorderBoxProperties(
-    PropertyTreeState& state) {
-  if (!m_localBorderBoxProperties)
-    m_localBorderBoxProperties = WTF::makeUnique<PropertyTreeState>(state);
-  else
-    *m_localBorderBoxProperties = state;
-
-  // The contents properties are based on the border box so we need to clear
-  // the cached value.
-  m_contentsProperties = nullptr;
-}
-
-const PropertyTreeState* LayoutObject::RarePaintData::contentsProperties()
-    const {
-  if (!m_contentsProperties) {
-    if (m_localBorderBoxProperties) {
-      m_contentsProperties = ObjectPaintProperties::contentsProperties(
-          m_localBorderBoxProperties.get(), m_paintProperties.get());
-    }
-  } else {
-#if DCHECK_IS_ON()
-    // Check that the cached contents properties are valid by checking that they
-    // do not change if recalculated.
-    DCHECK(m_localBorderBoxProperties);
-    std::unique_ptr<PropertyTreeState> oldProperties =
-        std::move(m_contentsProperties);
-    m_contentsProperties = ObjectPaintProperties::contentsProperties(
-        m_localBorderBoxProperties.get(), m_paintProperties.get());
-    DCHECK(*m_contentsProperties == *oldProperties);
-#endif
-  }
-  return m_contentsProperties.get();
-}
-
-LayoutObject::RarePaintData& LayoutObject::ensureRarePaintData() {
+RarePaintData& LayoutObject::ensureRarePaintData() {
   if (!m_rarePaintData)
     m_rarePaintData = WTF::makeUnique<RarePaintData>();
   return *m_rarePaintData.get();
