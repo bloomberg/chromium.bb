@@ -9347,14 +9347,13 @@
               'type': 'object',
               'id': 'PpdResource',
               'properties': {
-                'effective_manufacturer': { 'type': 'string' },
                 'effective_model': { 'type': 'string' }
               }
             }
           }
         }
       },
-      'supported_on': [ 'chrome_os:56-' ],
+      'supported_on': [ 'chrome_os:57-' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -9367,8 +9366,7 @@
         "uri": "ipps://print-server.intranet.example.com:443/ipp/cl2k4",
         "uuid": "1c395fdb-5d93-4904-b246-b2c046e79d12",
         "ppd_resource": {
-          "effective_manufacturer": "MakesPrinters",
-          "effective_model": "ColorLaser2k4"
+          "effective_model": "Printer Manufacturer ColorLaser2k4"
         }
       }],
       'id': 350,
@@ -9383,13 +9381,19 @@
       name="PRINTER_DESCRIPTION">description</ph> are free form strings that
       can be customized for ease of printer selection. <ph
       name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph
-      name="PRINTER_MODEL">model</ph> should match one of the <ph
-      name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported
-      printers.  <ph name="PRINTER_URI">uri</ph> should be an address reachable
+      name="PRINTER_MODEL">model</ph> serve to ease printer identification by
+      end users. They represent the manufcaturer and model of the printer. <ph
+      name="PRINTER_URI">uri</ph> should be an address reachable
       from a client computer including the <ph name="URI_SCHEME">scheme</ph>,
       <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>.  <ph
       name="PRINTER_UUID">uuid</ph> is optional.  If provided, it is used to
       help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of
+      the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome
+      OS</ex></ph> supported printer. The string will be used to identify and
+      install the appropriate PPD for the printer. More information can be
+      found at https://support.google.com/chrome?p=noncloudprint.
 
       Printer setup is completed upon the first use of a printer.  PPDs are not
       downloaded until the printer is used.  After that time, frequently used
