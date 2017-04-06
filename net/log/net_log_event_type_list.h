@@ -1084,6 +1084,9 @@ EVENT_TYPE(HTTP_STREAM_REQUEST_STARTED_JOB)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_PROXY_SERVER_RESOLVED)
 
+// Emitted when a job is asked to initialize a connection.
+EVENT_TYPE(HTTP_STREAM_JOB_INIT_CONNECTION)
+
 // Identifies the NetLogSource() for the Job that fulfilled the Request.
 // The event parameters are:
 //   {

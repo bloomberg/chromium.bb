@@ -849,6 +849,7 @@ int HttpStreamFactoryImpl::Job::DoWaitComplete(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnection() {
+  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_INIT_CONNECTION);
   int result = DoInitConnectionImpl();
   if (result != ERR_SPDY_SESSION_ALREADY_EXISTS)
     delegate_->OnConnectionInitialized(this, result);
@@ -1020,6 +1021,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
+  net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_INIT_CONNECTION);
   if (job_type_ == PRECONNECT) {
     if (using_quic_)
       return result;
