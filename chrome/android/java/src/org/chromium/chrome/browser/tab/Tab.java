@@ -94,6 +94,7 @@ import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -373,20 +374,6 @@ public class Tab
     private boolean mIsAllowedToReturnToExternalApp;
 
     private class TabContentViewClient extends ContentViewClient {
-        @Override
-        public void onImeEvent() {
-            // Some text was set in the page. Don't reuse it if a tab is
-            // open from the same external application, we might lose some
-            // user data.
-            mAppAssociatedWith = null;
-        }
-
-        @Override
-        public void onFocusedNodeEditabilityChanged(boolean editable) {
-            if (getFullscreenManager() == null) return;
-            updateFullscreenEnabledState();
-        }
-
         @Override
         public int getSystemWindowInsetBottom() {
             ChromeActivity activity = getActivity();
@@ -1326,6 +1313,22 @@ public class Tab
             } else {
                 setContentViewCore(contentViewCore);
             }
+
+            mContentViewCore.addImeEventObserver(new ImeEventObserver() {
+                @Override
+                public void onImeEvent() {
+                    // Some text was set in the page. Don't reuse it if a tab is
+                    // open from the same external application, we might lose some
+                    // user data.
+                    mAppAssociatedWith = null;
+                }
+
+                @Override
+                public void onNodeAttributeUpdated(boolean editable, boolean password) {
+                    if (getFullscreenManager() == null) return;
+                    updateFullscreenEnabledState();
+                }
+            });
 
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
                 didStartPageLoad(webContents.getUrl(), false);
