@@ -425,7 +425,7 @@ bool IsBlacklistedInstanceMethodName(llvm::StringRef name) {
 
       // https://crbug.com/672902: Should not rewrite names that mimick methods
       // from std library.
-      "back", "empty", "erase", "front", "insert", "length", "size",
+      "at", "back", "empty", "erase", "front", "insert", "length", "size",
   };
   for (const auto& b : kBlacklistedNames) {
     if (name == b)
