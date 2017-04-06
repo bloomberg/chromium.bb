@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -50,7 +51,7 @@ class GcdRestClientTest : public testing::Test {
   GcdRestClient::Result last_result_ = GcdRestClient::OTHER_ERROR;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(GcdRestClientTest, NetworkErrorGettingToken) {
