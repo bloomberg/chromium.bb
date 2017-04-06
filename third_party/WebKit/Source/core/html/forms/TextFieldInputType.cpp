@@ -174,13 +174,13 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
       // than a change event.  The change event will be dispatched when editing
       // finishes.
       if (element().isFocused())
-        element().dispatchFormControlInputEvent();
+        element().dispatchInputEvent();
       else
         element().dispatchFormControlChangeEvent();
       break;
 
     case DispatchInputAndChangeEvent: {
-      element().dispatchFormControlInputEvent();
+      element().dispatchInputEvent();
       element().dispatchFormControlChangeEvent();
       break;
     }

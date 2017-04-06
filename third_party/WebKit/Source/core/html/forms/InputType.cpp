@@ -529,7 +529,7 @@ void InputType::setValue(const String& sanitizedValue,
       element().dispatchFormControlChangeEvent();
       break;
     case DispatchInputAndChangeEvent:
-      element().dispatchFormControlInputEvent();
+      element().dispatchInputEvent();
       element().dispatchFormControlChangeEvent();
       break;
     case DispatchNoEvent:

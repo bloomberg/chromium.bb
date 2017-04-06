@@ -111,8 +111,6 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void setMaxLength(int, ExceptionState&);
   void setMinLength(int, ExceptionState&);
 
-  // Dispatch 'input' event.
-  void dispatchFormControlInputEvent();
   // Dispatch 'change' event if the value is updated.
   void dispatchFormControlChangeEvent();
   // Enqueue 'change' event if the value is updated.

@@ -428,7 +428,7 @@ void HTMLTextAreaElement::setValueCommon(
       break;
 
     case DispatchInputAndChangeEvent:
-      dispatchFormControlInputEvent();
+      dispatchInputEvent();
       dispatchFormControlChangeEvent();
       break;
 

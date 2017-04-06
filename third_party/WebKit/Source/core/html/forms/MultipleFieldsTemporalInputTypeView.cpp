@@ -201,7 +201,7 @@ void MultipleFieldsTemporalInputTypeView::editControlValueChanged() {
     element().setNeedsStyleRecalc(
         SubtreeStyleChange,
         StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
-    element().dispatchFormControlInputEvent();
+    element().dispatchInputEvent();
   }
   element().notifyFormStateChanged();
   element().updateClearButtonVisibility();

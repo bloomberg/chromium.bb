@@ -949,7 +949,7 @@ void HTMLInputElement::setChecked(bool nowChecked,
   if (eventBehavior != DispatchNoEvent && isConnected() &&
       m_inputType->shouldSendChangeEventAfterCheckedChanged()) {
     if (eventBehavior == DispatchInputAndChangeEvent)
-      dispatchFormControlInputEvent();
+      dispatchInputEvent();
   }
 
   pseudoStateChanged(CSSSelector::PseudoChecked);

@@ -239,11 +239,6 @@ void TextControlElement::enqueueChangeEvent() {
   clearValueBeforeFirstUserEdit();
 }
 
-// TODO(tkent): Remove this function.
-void TextControlElement::dispatchFormControlInputEvent() {
-  HTMLFormControlElementWithState::dispatchInputEvent();
-}
-
 void TextControlElement::setRangeText(const String& replacement,
                                       ExceptionState& exceptionState) {
   setRangeText(replacement, selectionStart(), selectionEnd(), "preserve",
