@@ -238,6 +238,12 @@ DEFINE_TRACE(NGBlockNode) {
 }
 
 bool NGBlockNode::CanUseNewLayout() {
+  // [Multicol]: for the 1st phase of LayoutNG's multicol implementation we want
+  // to utilize the existing ColumnBalancer class. That's why a multicol block
+  // should be processed by Legacy Layout engine.
+  if (Style().specifiesColumns())
+    return false;
+
   if (!layout_box_->isLayoutBlockFlow())
     return false;
   return RuntimeEnabledFeatures::layoutNGEnabled() || !HasInlineChildren();
