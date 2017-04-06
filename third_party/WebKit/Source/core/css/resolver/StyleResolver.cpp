@@ -707,9 +707,8 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
     state.style()->setIsLink();
     EInsideLink linkState = state.elementLinkState();
     if (linkState != EInsideLink::kNotInsideLink) {
-      bool forceVisited = false;
-      probe::forcePseudoState(element, CSSSelector::PseudoVisited,
-                              &forceVisited);
+      bool forceVisited =
+          probe::forcePseudoState(element, CSSSelector::PseudoVisited);
       if (forceVisited)
         linkState = EInsideLink::kInsideVisitedLink;
     }

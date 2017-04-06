@@ -56,8 +56,8 @@ class CORE_EXPORT InspectorWorkerAgent final
   void restore() override;
   void didCommitLoadForLocalFrame(LocalFrame*) override;
 
-  // Probes
-  void shouldWaitForDebuggerOnWorkerStart(bool* result);
+  // Called from InspectorInstrumentation
+  bool shouldWaitForDebuggerOnWorkerStart();
   void didStartWorker(WorkerInspectorProxy*, bool waitingForDebugger);
   void workerTerminated(WorkerInspectorProxy*);
 

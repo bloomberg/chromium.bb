@@ -124,13 +124,19 @@ class Method(object):
             sys.stderr.write("Cannot parse %s\n" % source)
             sys.exit(1)
 
+        self.return_type = match.group(1) or ""
         self.name = match.group(2)
-        self.is_scoped = not match.group(1)
-        if not self.is_scoped and match.group(1) != "void":
-            raise Exception("Instant probe must return void: %s" % self.name)
+        self.is_scoped = self.return_type == ""
 
         # Splitting parameters by a comma, assuming that attribute lists contain no more than one attribute.
         self.params = map(Parameter, map(str.strip, match.group(3).split(",")))
+
+        self.returns_value = self.return_type != "" and self.return_type != "void"
+        if self.return_type == "bool":
+            self.default_return_value = "false"
+        elif self.returns_value:
+            sys.stderr.write("Can only return bool: %s\n" % self.name)
+            sys.exit(1)
 
 
 class Parameter(object):
@@ -207,6 +213,8 @@ def build_observers():
     for f in files:
         for probe in f.declarations:
             probe.agents = observers_by_probe[probe.name]
+            if probe.returns_value and len(probe.agents) > 1:
+                raise Exception("Can only return value from a single observer: %s\n" % probe.name)
     return all_observers
 
 

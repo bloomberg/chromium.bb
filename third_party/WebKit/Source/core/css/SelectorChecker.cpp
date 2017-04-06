@@ -727,7 +727,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
                                        MatchResult& result) const {
   Element& element = *context.element;
   const CSSSelector& selector = *context.selector;
-  bool forcePseudoState = false;
 
   if (context.hasScrollbarPseudo) {
     // CSS scrollbars match a specific subset of pseudo classes, and they have
@@ -922,9 +921,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       }
       if (!shouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::PseudoHover,
-                              &forcePseudoState);
-      if (forcePseudoState)
+      if (probe::forcePseudoState(&element, CSSSelector::PseudoHover))
         return true;
       return element.isHovered();
     case CSSSelector::PseudoActive:
@@ -940,9 +937,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       }
       if (!shouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::PseudoActive,
-                              &forcePseudoState);
-      if (forcePseudoState)
+      if (probe::forcePseudoState(&element, CSSSelector::PseudoActive))
         return true;
       return element.isActive();
     case CSSSelector::PseudoEnabled:
@@ -1324,10 +1319,8 @@ bool SelectorChecker::checkScrollbarPseudoClass(
 }
 
 bool SelectorChecker::matchesFocusPseudoClass(const Element& element) {
-  bool forcePseudoState = false;
-  probe::forcePseudoState(const_cast<Element*>(&element),
-                          CSSSelector::PseudoFocus, &forcePseudoState);
-  if (forcePseudoState)
+  if (probe::forcePseudoState(const_cast<Element*>(&element),
+                              CSSSelector::PseudoFocus))
     return true;
   return element.isFocused() && isFrameFocused(element);
 }

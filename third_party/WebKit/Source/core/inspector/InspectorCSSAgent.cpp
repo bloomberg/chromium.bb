@@ -835,41 +835,33 @@ void InspectorCSSAgent::documentDetached(Document* document) {
   setActiveStyleSheets(document, HeapVector<Member<CSSStyleSheet>>());
 }
 
-void InspectorCSSAgent::forcePseudoState(Element* element,
-                                         CSSSelector::PseudoType pseudoType,
-                                         bool* result) {
+bool InspectorCSSAgent::forcePseudoState(Element* element,
+                                         CSSSelector::PseudoType pseudoType) {
   if (m_nodeIdToForcedPseudoState.isEmpty())
-    return;
+    return false;
 
   int nodeId = m_domAgent->boundNodeId(element);
   if (!nodeId)
-    return;
+    return false;
 
   NodeIdToForcedPseudoState::iterator it =
       m_nodeIdToForcedPseudoState.find(nodeId);
   if (it == m_nodeIdToForcedPseudoState.end())
-    return;
+    return false;
 
-  bool force = false;
   unsigned forcedPseudoState = it->value;
   switch (pseudoType) {
     case CSSSelector::PseudoActive:
-      force = forcedPseudoState & PseudoActive;
-      break;
+      return forcedPseudoState & PseudoActive;
     case CSSSelector::PseudoFocus:
-      force = forcedPseudoState & PseudoFocus;
-      break;
+      return forcedPseudoState & PseudoFocus;
     case CSSSelector::PseudoHover:
-      force = forcedPseudoState & PseudoHover;
-      break;
+      return forcedPseudoState & PseudoHover;
     case CSSSelector::PseudoVisited:
-      force = forcedPseudoState & PseudoVisited;
-      break;
+      return forcedPseudoState & PseudoVisited;
     default:
-      break;
+      return false;
   }
-  if (force)
-    *result = true;
 }
 
 Response InspectorCSSAgent::getMediaQueries(

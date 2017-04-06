@@ -110,7 +110,7 @@ class CORE_EXPORT InspectorCSSAgent final
   ~InspectorCSSAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void forcePseudoState(Element*, CSSSelector::PseudoType, bool* result);
+  bool forcePseudoState(Element*, CSSSelector::PseudoType);
   void didCommitLoadForLocalFrame(LocalFrame*) override;
   void restore() override;
   void flushPendingProtocolNotifications() override;

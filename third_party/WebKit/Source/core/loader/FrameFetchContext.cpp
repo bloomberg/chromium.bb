@@ -48,6 +48,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -723,9 +724,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     SecurityViolationReportingPolicy reportingPolicy,
     FetchRequest::OriginRestriction originRestriction,
     ResourceRequest::RedirectStatus redirectStatus) const {
-  bool shouldBlockRequest = false;
-  probe::shouldBlockRequest(frame(), resourceRequest, &shouldBlockRequest);
-  if (shouldBlockRequest)
+  if (probe::shouldBlockRequest(frame(), resourceRequest))
     return ResourceRequestBlockedReason::Inspector;
 
   SecurityOrigin* securityOrigin = options.securityOrigin.get();

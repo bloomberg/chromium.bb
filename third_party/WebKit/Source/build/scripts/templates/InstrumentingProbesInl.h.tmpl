@@ -46,7 +46,7 @@ class {{export_symbol}} {{probe.name}} : public ProbeBase {
 };
 {%- else %}
 
-{{export_symbol}} void {{probe.name}}({{ params_decl(probe) }});
+{{export_symbol}} {{probe.return_type}} {{probe.name}}({{ params_decl(probe) }});
 
 {%- endif %}
 {%- endfor %}
