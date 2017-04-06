@@ -1374,9 +1374,8 @@ static int64_t sum_squares_visible(const MACROBLOCKD *xd, int plane,
 static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                        BLOCK_SIZE plane_bsize, int block, int blk_row,
                        int blk_col, TX_SIZE tx_size, int64_t *out_dist,
-                       int64_t *out_sse) {
+                       int64_t *out_sse, int dst_has_residue) {
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_DAALA_DIST
@@ -1444,7 +1443,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_DAALA_DIST
     if (plane == 0) {
       if (bsw >= 8 && bsh >= 8) {
-        if (!is_inter_block(mbmi)) {
+        if (dst_has_residue) {
           const int pred_stride = block_size_wide[plane_bsize];
           const int16_t *pred = &pd->pred[(blk_row * pred_stride + blk_col)
                                           << tx_size_wide_log2[0]];
@@ -1476,7 +1475,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     *out_sse = (int64_t)tmp * 16;
 
     if (eob) {
-      if (!is_inter_block(mbmi)) {
+      if (dst_has_residue) {
 #if CONFIG_DAALA_DIST
         if (plane == 0) {
           if (bsw >= 8 && bsh >= 8)
@@ -1581,7 +1580,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
     dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-               tx_size, &this_rd_stats.dist, &this_rd_stats.sse);
+               tx_size, &this_rd_stats.dist, &this_rd_stats.sse, 1);
   } else {
     // full forward transform and quantization
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -1589,7 +1588,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
       av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
     dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-               tx_size, &this_rd_stats.dist, &this_rd_stats.sse);
+               tx_size, &this_rd_stats.dist, &this_rd_stats.sse, 0);
   }
 
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
@@ -5241,7 +5240,7 @@ static int64_t encode_inter_mb_segment_sub8x8(
       if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
         av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
       dist_block(cpi, x, 0, BLOCK_8X8, block, idy + (i >> 1), idx + (i & 0x1),
-                 tx_size, &dist, &ssz);
+                 tx_size, &dist, &ssz, 0);
       thisdistortion += dist;
       thissse += ssz;
 #if !CONFIG_PVQ
