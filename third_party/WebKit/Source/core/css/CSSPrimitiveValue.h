@@ -321,6 +321,24 @@ using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 
+template <>
+int CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+
+template <>
+Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+
+template <>
+unsigned CSSPrimitiveValue::computeLength(
+    const CSSToLengthConversionData&) const;
+
+template <>
+short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+
+template <>
+float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
+
+template <>
+double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData&) const;
 }  // namespace blink
 
 #endif  // CSSPrimitiveValue_h
