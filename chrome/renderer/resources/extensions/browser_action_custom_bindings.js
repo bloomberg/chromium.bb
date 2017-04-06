@@ -9,7 +9,7 @@ var binding = apiBridge || require('binding').Binding.create('browserAction');
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
 var sendRequest = bindingUtil ?
-    bindingUtil.sendRequest.bind(bindingUtil) :
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
 var lastError = require('lastError');
 

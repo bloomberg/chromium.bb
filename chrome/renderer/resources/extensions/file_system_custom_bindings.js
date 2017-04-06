@@ -6,7 +6,7 @@
 
 var binding = apiBridge || require('binding').Binding.create('fileSystem');
 var sendRequest = bindingUtil ?
-    bindingUtil.sendRequest.bind(bindingUtil) :
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
 var getFileBindingsForApi =
     require('fileEntryBindingUtil').getFileBindingsForApi;
