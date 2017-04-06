@@ -463,7 +463,6 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
   constexpr proto::ElementType kImage = proto::ELEMENT_TYPE_IMAGE;
   constexpr proto::ElementType kFont = proto::ELEMENT_TYPE_FONT;
   constexpr proto::ElementType kScript = proto::ELEMENT_TYPE_SCRIPT;
-  constexpr proto::ElementType kSubdoc = proto::ELEMENT_TYPE_SUBDOCUMENT;
   constexpr proto::ElementType kPopup = proto::ELEMENT_TYPE_POPUP;
   constexpr proto::ElementType kWebSocket = proto::ELEMENT_TYPE_WEBSOCKET;
 
@@ -490,8 +489,6 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
       {"ex.com", kAll & ~kFont & ~kScript, "http://ex.com/font", kFont, true},
       {"ex.com", kAll & ~kFont & ~kScript, "http://ex.com/scr", kScript, true},
       {"ex.com", kAll & ~kFont & ~kScript, "http://ex.com/img", kImage, false},
-      {"ex.com$subdocument,~subdocument", kSubdoc & ~kSubdoc,
-       "http://ex.com/sub", kSubdoc, true},
 
       {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_OTHER, false},
       {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_UNSPECIFIED, true},
@@ -520,6 +517,8 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
 TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
   constexpr proto::ActivationType kNone = proto::ACTIVATION_TYPE_UNSPECIFIED;
   constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
+  constexpr proto::ActivationType kGenericBlock =
+      proto::ACTIVATION_TYPE_GENERICBLOCK;
 
   const struct {
     const char* url_pattern;
@@ -533,9 +532,9 @@ TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
       {"xample.com", kDocument, "http://example.com", kDocument, true},
       {"exampl.com", kDocument, "http://example.com", kDocument, false},
 
-      {"example.com", kNone, "http://example.com", kDocument, false},
+      {"example.com", kGenericBlock, "http://example.com", kDocument, false},
       {"example.com", kDocument, "http://example.com", kNone, false},
-      {"example.com", kNone, "http://example.com", kNone, false},
+      {"example.com", kGenericBlock, "http://example.com", kNone, false},
 
       // Invalid GURL.
       {"example.com", kDocument, "http;//example.com", kDocument, false},
@@ -689,18 +688,32 @@ TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
 }
 
 TEST_F(IndexedRulesetTest, RuleWithUnsupportedOptions) {
-  UrlRuleBuilder builder(UrlPattern("exmpl"), proto::SOURCE_TYPE_ANY, false);
-  builder.rule().set_activation_types(builder.rule().activation_types() |
-                                      (proto::ACTIVATION_TYPE_MAX << 1));
-  builder.rule().set_element_types(builder.rule().element_types() |
-                                   (proto::ELEMENT_TYPE_MAX << 1));
-  EXPECT_FALSE(indexer_.AddUrlRule(builder.rule()));
+  const struct {
+    int element_types;
+    int activation_types;
+  } kRules[] = {
+      {proto::ELEMENT_TYPE_MAX << 1, 0},
+      {0, proto::ACTIVATION_TYPE_MAX << 1},
+      {proto::ELEMENT_TYPE_MAX << 1, proto::ACTIVATION_TYPE_MAX << 1},
 
-  AddSimpleRule(UrlPattern("example.com", kSubstring), false);
+      {proto::ELEMENT_TYPE_POPUP, 0},
+      {0, proto::ACTIVATION_TYPE_ELEMHIDE},
+      {0, proto::ACTIVATION_TYPE_GENERICHIDE},
+      {0, proto::ACTIVATION_TYPE_ELEMHIDE | proto::ACTIVATION_TYPE_GENERICHIDE},
+      {proto::ELEMENT_TYPE_POPUP, proto::ACTIVATION_TYPE_ELEMHIDE},
+  };
+
+  for (const auto& rule : kRules) {
+    UrlRuleBuilder builder(UrlPattern("example.com"));
+    builder.rule().set_element_types(rule.element_types);
+    builder.rule().set_activation_types(rule.activation_types);
+    EXPECT_FALSE(indexer_.AddUrlRule(builder.rule()));
+  }
+  AddSimpleRule(UrlPattern("exmpl.com", kSubstring), false);
+
   Finish();
-
-  EXPECT_TRUE(ShouldAllow("https://exmpl.com"));
-  EXPECT_FALSE(ShouldAllow("https://example.com"));
+  EXPECT_TRUE(ShouldAllow("http://example.com/"));
+  EXPECT_FALSE(ShouldAllow("https://exmpl.com/"));
 }
 
 }  // namespace subresource_filter

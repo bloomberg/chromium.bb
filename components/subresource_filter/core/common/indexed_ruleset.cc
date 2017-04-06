@@ -30,7 +30,8 @@ class UrlRuleFlatBufferConverter {
   // |rule| to FlatBuffer, are initialized (|options|, |anchor_right|, etc.).
   UrlRuleFlatBufferConverter(const proto::UrlRule& rule) : rule_(rule) {
     is_convertible_ = InitializeOptions() && InitializeElementTypes() &&
-                      InitializeActivationTypes() && InitializeUrlPattern();
+                      InitializeActivationTypes() && InitializeUrlPattern() &&
+                      IsMeaningful();
   }
 
   // Returns whether the |rule| can be converted to its FlatBuffers equivalent.
@@ -125,10 +126,15 @@ class UrlRuleFlatBufferConverter {
       return false;  // Unsupported element types.
     }
     element_types_ = static_cast<uint16_t>(rule_.element_types());
+
     // Note: Normally we can not distinguish between the main plugin resource
     // and any other loads it makes. We treat them both as OBJECT requests.
     if (element_types_ & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
       element_types_ |= proto::ELEMENT_TYPE_OBJECT;
+
+    // Filtering popups is not supported.
+    element_types_ &= ~proto::ELEMENT_TYPE_POPUP;
+
     return true;
   }
 
@@ -141,6 +147,11 @@ class UrlRuleFlatBufferConverter {
       return false;  // Unsupported activation types.
     }
     activation_types_ = static_cast<uint8_t>(rule_.activation_types());
+
+    // No need in CSS activation, because the CSS rules are not supported.
+    activation_types_ &=
+        ~(proto::ACTIVATION_TYPE_ELEMHIDE | proto::ACTIVATION_TYPE_GENERICHIDE);
+
     return true;
   }
 
@@ -169,6 +180,9 @@ class UrlRuleFlatBufferConverter {
     return true;
   }
 
+  // Returns whether the rule is not a no-op after all the modifications above.
+  bool IsMeaningful() const { return element_types_ || activation_types_; }
+
   const proto::UrlRule& rule_;
 
   uint8_t options_ = 0;
@@ -186,7 +200,7 @@ class UrlRuleFlatBufferConverter {
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 13;
+const int RulesetIndexer::kIndexedFormatVersion = 14;
 
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;
