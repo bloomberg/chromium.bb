@@ -770,8 +770,9 @@ public class PostMessageTest extends AwTestBase {
     // 3. Java sends a message using the new channel in 2.
     // 4. Js responds to this message using the channel in 2.
     // 5. Java responds to message in 4 using the channel in 2.
-    @SmallTest
-    @Feature({"AndroidWebView", "Android-PostMessage"})
+    // @SmallTest
+    // @Feature({"AndroidWebView", "Android-PostMessage"})
+    @DisabledTest
     public void testCanUseReceivedAwMessagePortFromJS() throws Throwable {
         loadPage(RECEIVE_JS_MESSAGE_CHANNEL_PAGE);
         runTestOnUiThread(new Runnable() {
