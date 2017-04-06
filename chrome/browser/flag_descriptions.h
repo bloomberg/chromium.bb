@@ -2500,6 +2500,13 @@ extern const char kEnableContentSuggestionsNewFaviconServerName[];
 // on the New Tab Page.
 extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 
+// Name for the flag to enable the settings entry for content suggestions.
+extern const char kEnableContentSuggestionsSettingsName[];
+
+// Description for the flag to enable the settings entry for content
+// suggestions.
+extern const char kEnableContentSuggestionsSettingsDescription[];
+
 // Name for the flag to enable server-side suggestions on the New Tab Page.
 extern const char kEnableNtpRemoteSuggestionsName[];
 

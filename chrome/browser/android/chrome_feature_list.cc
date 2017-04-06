@@ -123,7 +123,7 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsSettings{
-    "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ContentSuggestionsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_ENABLED_BY_DEFAULT};

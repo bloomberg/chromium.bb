@@ -2298,6 +2298,13 @@ const char kEnableContentSuggestionsNewFaviconServerDescription[] =
     "If enabled, the content suggestions (on the NTP) will get favicons from a "
     "new favicon server.";
 
+const char kEnableContentSuggestionsSettingsName[] =
+    "Show content suggestions settings.";
+
+const char kEnableContentSuggestionsSettingsDescription[] =
+    "If enabled, the content suggestions settings will be available from the "
+    "main settings menu.";
+
 const char kEnableNtpRemoteSuggestionsName[] =
     "Show server-side suggestions on the New Tab page";
 
