@@ -20,8 +20,8 @@ rangeRight.setEnd(elt, 4);
 if (!window.internals) {
     alert('This test requires window.interals to run!');
 } else {
-    window.internals.addTextMatchMarker(rangeLeft, true);
-    window.internals.addTextMatchMarker(rangeRight, true);
+    window.internals.addTextMatchMarker(rangeLeft, 'kActive');
+    window.internals.addTextMatchMarker(rangeRight, 'kActive');
 
     shouldBe('window.internals.markerCountForNode(elt, "textmatch")', '2');
 }

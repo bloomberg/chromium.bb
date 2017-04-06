@@ -7,7 +7,7 @@ function highlightRange(id, start, end) {
   var elem = frameWindow.document.getElementById(id).firstChild;
   range.setStart(elem, start);
   range.setEnd(elem, end);
-  frameWindow.internals.addTextMatchMarker(range, false);
+  frameWindow.internals.addTextMatchMarker(range, 'kInactive');
 }
 
 function repaintTest() {

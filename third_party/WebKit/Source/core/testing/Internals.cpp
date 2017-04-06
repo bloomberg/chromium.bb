@@ -1004,15 +1004,34 @@ String Internals::markerDescriptionForNode(Node* node,
   return marker->description();
 }
 
-void Internals::addTextMatchMarker(const Range* range, bool isActive) {
+static WTF::Optional<DocumentMarker::MatchStatus> matchStatusFrom(
+    const String& matchStatus) {
+  if (equalIgnoringASCIICase(matchStatus, "kActive"))
+    return DocumentMarker::MatchStatus::kActive;
+  if (equalIgnoringASCIICase(matchStatus, "kInactive"))
+    return DocumentMarker::MatchStatus::kInactive;
+  return WTF::nullopt;
+}
+
+void Internals::addTextMatchMarker(const Range* range,
+                                   const String& matchStatus,
+                                   ExceptionState& exceptionState) {
   DCHECK(range);
   if (!range->ownerDocument().view())
     return;
 
+  WTF::Optional<DocumentMarker::MatchStatus> matchStatusEnum =
+      matchStatusFrom(matchStatus);
+  if (!matchStatusEnum) {
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "The match status provided ('" + matchStatus + "') is invalid.");
+    return;
+  }
+
   range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
-  range->ownerDocument().markers().addTextMatchMarker(
-      EphemeralRange(range), isActive ? DocumentMarker::MatchStatus::kActive
-                                      : DocumentMarker::MatchStatus::kInactive);
+  range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range),
+                                                      matchStatusEnum.value());
 
   // This simulates what the production code does after
   // DocumentMarkerController::addTextMatchMarker().

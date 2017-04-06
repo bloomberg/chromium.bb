@@ -183,7 +183,9 @@ class Internals final : public GarbageCollected<Internals>,
                                   const String& markerType,
                                   unsigned index,
                                   ExceptionState&);
-  void addTextMatchMarker(const Range*, bool isActive);
+  void addTextMatchMarker(const Range*,
+                          const String& matchStatus,
+                          ExceptionState&);
   void addCompositionMarker(const Range*,
                             const String& underlineColorValue,
                             bool thick,

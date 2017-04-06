@@ -17,7 +17,7 @@ range.setEnd(elt, 3);
 if (!window.internals) {
     alert('This test requires window.interals to run!');
 } else {
-    window.internals.addTextMatchMarker(range, false);
+    window.internals.addTextMatchMarker(range, 'kInactive');
 
     window.internals.setMarkersActive(elt, 0, 1, true);
     shouldBe('window.internals.activeMarkerCountForNode(elt)', '0');

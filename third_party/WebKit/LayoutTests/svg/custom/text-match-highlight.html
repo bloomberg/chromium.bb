@@ -11,15 +11,15 @@
       window.internals.setMarkedTextMatchesAreHighlighted(document, true);
     }
     function highlightTest() {
-      highlightRange('1', 0, 6, false);
-      highlightRange('2', 0, 6, false);
-      highlightRange('3', 0, 6, false);
-      highlightRange('4', 0, 6, false);
-      highlightRange('5', 0, 6, false);
-      highlightRange('svg1', 8, 14, true);
-      highlightRange('svg2', 0, 6, false);
-      highlightRange('svg3', 0, 6, false);
-      highlightRange('svg3', 26, 32, false);
+      highlightRange('1', 0, 6, 'kInactive');
+      highlightRange('2', 0, 6, 'kInactive');
+      highlightRange('3', 0, 6, 'kInactive');
+      highlightRange('4', 0, 6, 'kInactive');
+      highlightRange('5', 0, 6, 'kInactive');
+      highlightRange('svg1', 8, 14, 'kActive');
+      highlightRange('svg2', 0, 6, 'kInactive');
+      highlightRange('svg3', 0, 6, 'kInactive');
+      highlightRange('svg3', 26, 32, 'kInactive');
     }
   </script>
 </head>
