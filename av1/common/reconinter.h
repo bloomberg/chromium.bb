@@ -56,14 +56,14 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 #if CONFIG_DUAL_FILTER
   if (interp_filter_params_x.taps == SUBPEL_TAPS &&
       interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2 &&
-      conv_params->round == CONVOLVE_OPT_ROUND) {
+      conv_params->round == CONVOLVE_OPT_ROUND && xs == 16 && ys == 16) {
     const int16_t *kernel_x =
         av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
     const int16_t *kernel_y =
         av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
 #else
   if (interp_filter_params.taps == SUBPEL_TAPS && w > 2 && h > 2 &&
-      conv_params->round == CONVOLVE_OPT_ROUND) {
+      conv_params->round == CONVOLVE_OPT_ROUND && xs == 16 && ys == 16) {
     const int16_t *kernel_x =
         av1_get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
     const int16_t *kernel_y =
@@ -76,7 +76,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 // first reference frame's prediction result is already in dst
 // therefore we need to average the first and second results
 #if CONFIG_CONVOLVE_ROUND
-    if (conv_params->round == CONVOLVE_OPT_NO_ROUND)
+    if (conv_params->round == CONVOLVE_OPT_NO_ROUND && xs == 16 && ys == 16)
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
 #if CONFIG_DUAL_FILTER
                              interp_filter,
@@ -86,8 +86,17 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                              subpel_x, xs, subpel_y, ys, conv_params);
     else
 #endif
-      av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                   subpel_x, xs, subpel_y, ys, conv_params);
+    {
+      if (xs == 16 && ys == 16) {
+        av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                     subpel_x, xs, subpel_y, ys, conv_params);
+      } else {
+        // If xs == 16 || ys == 16 scaling is happening and the SSE2
+        // instructions don't support scaling; use the C versions to be safe.
+        av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                       subpel_x, xs, subpel_y, ys, conv_params);
+      }
+    }
   }
 }
 
