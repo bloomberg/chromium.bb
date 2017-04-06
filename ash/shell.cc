@@ -802,6 +802,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(),
         make_scoped_refptr(new PrefRegistrySimple()),
+        std::vector<PrefValueStore::PrefStoreType>(),
         base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
         prefs::mojom::kForwarderServiceName);
   }*/

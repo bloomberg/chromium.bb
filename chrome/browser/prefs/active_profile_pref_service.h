@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_PREFS_ACTIVE_PROFILE_PREF_SERVICE_H_
 #define CHROME_BROWSER_PREFS_ACTIVE_PROFILE_PREF_SERVICE_H_
 
+#include <vector>
+
 #include "base/macros.h"
+#include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -27,8 +30,10 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
 
  private:
   // prefs::mojom::PrefStoreConnector:
-  void Connect(prefs::mojom::PrefRegistryPtr pref_registry,
-               const ConnectCallback& callback) override;
+  void Connect(
+      prefs::mojom::PrefRegistryPtr pref_registry,
+      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+      const ConnectCallback& callback) override;
 
   // service_manager::InterfaceFactory<PrefStoreConnector>:
   void Create(const service_manager::Identity& remote_identity,

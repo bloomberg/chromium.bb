@@ -155,8 +155,10 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
       feature_list_.InitAndEnableFeature(features::kPrefService);
       service_manager::mojom::ServicePtr service_ptr;
       pref_service_context_ = base::MakeUnique<service_manager::ServiceContext>(
-          prefs::CreatePrefService(std::set<PrefValueStore::PrefStoreType>(),
-                                   worker_pool_->pool()),
+          prefs::CreatePrefService(
+              std::set<PrefValueStore::PrefStoreType>(
+                  {PrefValueStore::USER_STORE, PrefValueStore::DEFAULT_STORE}),
+              worker_pool_->pool()),
           mojo::MakeRequest(&service_ptr));
       connector_ = service_manager::Connector::Create(&connector_request_);
       service_manager::Connector::TestApi test_api(connector_.get());
@@ -226,8 +228,10 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
 
     service_manager::mojom::ServicePtr service_ptr;
     pref_service_context_ = base::MakeUnique<service_manager::ServiceContext>(
-        prefs::CreatePrefService(std::set<PrefValueStore::PrefStoreType>(),
-                                 worker_pool_->pool()),
+        prefs::CreatePrefService(
+            std::set<PrefValueStore::PrefStoreType>(
+                {PrefValueStore::USER_STORE, PrefValueStore::DEFAULT_STORE}),
+            worker_pool_->pool()),
         mojo::MakeRequest(&service_ptr));
   }
 

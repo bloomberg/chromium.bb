@@ -90,9 +90,12 @@ interface PrefStoreRegistry {
 interface PrefStoreConnector {
   // Connect to all registered pref stores, retrieving the current values of all
   // prefs in each store and an |observer| interfaces through which updates can
-  // be received.
+  // be received. The client asserts that it is already connected to the
+  // |already_connected_types| pref stores through some other means, so the
+  // Connect call will not connect to those.
   [Sync]
-  Connect(PrefRegistry pref_registry) =>
+  Connect(PrefRegistry pref_registry,
+          array<PrefStoreType> already_connected_types) =>
       (PersistentPrefStoreConnection connection,
        map<PrefStoreType, PrefStoreConnection> connections);
 };

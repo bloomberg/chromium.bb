@@ -43,23 +43,29 @@ class PrefStoreManagerImpl
       public service_manager::Service {
  public:
   // Only replies to Connect calls when all |expected_pref_stores| have
-  // registered.
+  // registered. |expected_pref_stores| must contain
+  // PrefValueStore::DEFAULT_STORE and PrefValueStore::USER_STORE for
+  // consistency, as the service always registers these
+  // internally. |worker_pool| is used for any I/O performed by the service.
   PrefStoreManagerImpl(
       std::set<PrefValueStore::PrefStoreType> expected_pref_stores,
       scoped_refptr<base::SequencedWorkerPool> worker_pool);
   ~PrefStoreManagerImpl() override;
 
  private:
-  using PrefStorePtrs =
-      std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStorePtr>;
+  struct PendingConnect;
 
   // mojom::PrefStoreRegistry:
   void Register(PrefValueStore::PrefStoreType type,
                 mojom::PrefStorePtr pref_store_ptr) override;
 
-  // mojom::PrefStoreConnector:
-  void Connect(mojom::PrefRegistryPtr pref_registry,
-               const ConnectCallback& callback) override;
+  // mojom::PrefStoreConnector: |already_connected_types| must not include
+  // PrefValueStore::DEFAULT_STORE and PrefValueStore::USER_STORE as these must
+  // always be accessed through the service.
+  void Connect(
+      mojom::PrefRegistryPtr pref_registry,
+      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+      const ConnectCallback& callback) override;
 
   // service_manager::InterfaceFactory<PrefStoreConnector>:
   void Create(const service_manager::Identity& remote_identity,
@@ -89,21 +95,24 @@ class PrefStoreManagerImpl
 
   void ProcessPendingConnects();
 
-  void ConnectImpl(mojom::PrefRegistryPtr pref_registry,
-                   const ConnectCallback& callback);
+  void ConnectImpl(
+      mojom::PrefRegistryPtr pref_registry,
+      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+      const ConnectCallback& callback);
 
   void OnPersistentPrefStoreReady();
 
-  // PrefStores that need to register before replying to any Connect calls.
+  // PrefStores that need to register before replying to any Connect calls. This
+  // does not include the PersistentPrefStore, which is handled separately.
   std::set<PrefValueStore::PrefStoreType> expected_pref_stores_;
 
   // Registered pref stores.
-  PrefStorePtrs pref_store_ptrs_;
+  std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStorePtr>
+      pref_store_ptrs_;
 
   // We hold on to the connection request callbacks until all expected
   // PrefStores have registered.
-  std::vector<std::pair<ConnectCallback, mojom::PrefRegistryPtr>>
-      pending_connects_;
+  std::vector<PendingConnect> pending_connects_;
 
   mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;

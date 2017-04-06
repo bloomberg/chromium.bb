@@ -95,10 +95,12 @@ void OnConnectError(
 
 }  // namespace
 
-void ConnectToPrefService(service_manager::Connector* connector,
-                          scoped_refptr<PrefRegistry> pref_registry,
-                          ConnectCallback callback,
-                          base::StringPiece service_name) {
+void ConnectToPrefService(
+    service_manager::Connector* connector,
+    scoped_refptr<PrefRegistry> pref_registry,
+    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+    ConnectCallback callback,
+    base::StringPiece service_name) {
   auto connector_ptr = make_scoped_refptr(
       new RefCountedInterfacePtr<mojom::PrefStoreConnector>());
   connector->BindInterface(service_name.as_string(), &connector_ptr->get());
@@ -106,7 +108,7 @@ void ConnectToPrefService(service_manager::Connector* connector,
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));
   auto serialized_pref_registry = SerializePrefRegistry(*pref_registry);
   connector_ptr->get()->Connect(
-      std::move(serialized_pref_registry),
+      std::move(serialized_pref_registry), already_connected_types,
       base::Bind(&OnConnect, connector_ptr, base::Passed(&pref_registry),
                  base::Passed(&callback)));
 }

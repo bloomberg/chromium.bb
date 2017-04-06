@@ -7,9 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/prefs/persistent_pref_store.h"
+#include "components/prefs/pref_value_store.h"
 #include "services/preferences/public/cpp/pref_store_client_mixin.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 
@@ -26,8 +28,10 @@ namespace prefs {
 class PersistentPrefStoreClient
     : public PrefStoreClientMixin<PersistentPrefStore> {
  public:
-  PersistentPrefStoreClient(mojom::PrefStoreConnectorPtr connector,
-                            scoped_refptr<PrefRegistry> pref_registry);
+  PersistentPrefStoreClient(
+      mojom::PrefStoreConnectorPtr connector,
+      scoped_refptr<PrefRegistry> pref_registry,
+      std::vector<PrefValueStore::PrefStoreType> already_connected_types);
 
   explicit PersistentPrefStoreClient(
       mojom::PersistentPrefStoreConnectionPtr connection);
@@ -69,6 +73,7 @@ class PersistentPrefStoreClient
   mojom::PersistentPrefStorePtr pref_store_;
 
   std::unique_ptr<ReadErrorDelegate> error_delegate_;
+  std::vector<PrefValueStore::PrefStoreType> already_connected_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentPrefStoreClient);
 };

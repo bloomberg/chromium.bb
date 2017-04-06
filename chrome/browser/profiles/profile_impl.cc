@@ -1075,7 +1075,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   if (features::PrefServiceEnabled()) {
     content::ServiceInfo info;
     info.factory = base::Bind(
-        &prefs::CreatePrefService, std::set<PrefValueStore::PrefStoreType>(),
+        &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
     info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);

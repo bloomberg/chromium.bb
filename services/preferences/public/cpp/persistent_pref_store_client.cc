@@ -15,9 +15,11 @@ namespace prefs {
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
     mojom::PrefStoreConnectorPtr connector,
-    scoped_refptr<PrefRegistry> pref_registry)
+    scoped_refptr<PrefRegistry> pref_registry,
+    std::vector<PrefValueStore::PrefStoreType> already_connected_types)
     : connector_(std::move(connector)),
-      pref_registry_(std::move(pref_registry)) {
+      pref_registry_(std::move(pref_registry)),
+      already_connected_types_(std::move(already_connected_types)) {
   DCHECK(connector_);
 }
 
@@ -84,7 +86,8 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
                      prefs::mojom::PrefStoreConnectionPtr>
       other_pref_stores;
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
-  if (!connector_->Connect(SerializePrefRegistry(*pref_registry_), &connection,
+  if (!connector_->Connect(SerializePrefRegistry(*pref_registry_),
+                           already_connected_types_, &connection,
                            &other_pref_stores)) {
     NOTREACHED();
   }
@@ -97,6 +100,7 @@ void PersistentPrefStoreClient::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate) {
   error_delegate_.reset(error_delegate);
   connector_->Connect(SerializePrefRegistry(*pref_registry_),
+                      already_connected_types_,
                       base::Bind(&PersistentPrefStoreClient::OnConnect,
                                  base::Unretained(this)));
   pref_registry_ = nullptr;

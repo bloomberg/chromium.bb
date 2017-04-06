@@ -4,9 +4,11 @@
 
 #include "services/preferences/pref_store_manager_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_value_store.h"
@@ -21,7 +23,7 @@ namespace {
 
 using ConnectCallback = mojom::PrefStoreConnector::ConnectCallback;
 using PrefStorePtrs =
-    std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStorePtr>;
+    std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStore*>;
 
 // Used to make sure all pref stores have been registered before replying to any
 // Connect calls.
@@ -114,10 +116,25 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
           defaults_,
           mojo::MakeRequest(&pref_store_ptrs_[PrefValueStore::DEFAULT_STORE]))),
       worker_pool_(std::move(worker_pool)) {
-  expected_pref_stores_.insert(PrefValueStore::DEFAULT_STORE);
+  DCHECK(
+      base::ContainsValue(expected_pref_stores_, PrefValueStore::USER_STORE) &&
+      base::ContainsValue(expected_pref_stores_, PrefValueStore::DEFAULT_STORE))
+      << "expected_pref_stores must always include PrefValueStore::USER_STORE "
+         "and PrefValueStore::DEFAULT_STORE.";
+  // The user store is not actually connected to in the implementation, but
+  // accessed directly.
+  expected_pref_stores_.erase(PrefValueStore::USER_STORE);
 }
 
 PrefStoreManagerImpl::~PrefStoreManagerImpl() = default;
+
+struct PrefStoreManagerImpl::PendingConnect {
+  mojom::PrefRegistryPtr pref_registry;
+  // Pref stores the caller already is connected to (and hence we won't
+  // connect to these).
+  std::vector<PrefValueStore::PrefStoreType> already_connected_types;
+  ConnectCallback callback;
+};
 
 void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
                                     mojom::PrefStorePtr pref_store_ptr) {
@@ -139,13 +156,15 @@ void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
   }
 }
 
-void PrefStoreManagerImpl::Connect(mojom::PrefRegistryPtr pref_registry,
-                                   const ConnectCallback& callback) {
+void PrefStoreManagerImpl::Connect(
+    mojom::PrefRegistryPtr pref_registry,
+    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+    const ConnectCallback& callback) {
   if (AllConnected()) {
-    ConnectImpl(std::move(pref_registry), callback);
+    ConnectImpl(std::move(pref_registry), already_connected_types, callback);
   } else {
     pending_connects_.push_back(
-        std::make_pair(callback, std::move(pref_registry)));
+        {std::move(pref_registry), already_connected_types, callback});
   }
 }
 
@@ -211,12 +230,15 @@ bool PrefStoreManagerImpl::AllConnected() const {
 
 void PrefStoreManagerImpl::ProcessPendingConnects() {
   for (auto& connect : pending_connects_)
-    ConnectImpl(std::move(connect.second), connect.first);
+    ConnectImpl(std::move(connect.pref_registry),
+                connect.already_connected_types, connect.callback);
   pending_connects_.clear();
 }
 
-void PrefStoreManagerImpl::ConnectImpl(mojom::PrefRegistryPtr pref_registry,
-                                       const ConnectCallback& callback) {
+void PrefStoreManagerImpl::ConnectImpl(
+    mojom::PrefRegistryPtr pref_registry,
+    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+    const ConnectCallback& callback) {
   std::vector<std::string> observed_prefs;
   for (auto& registration : pref_registry->registrations) {
     observed_prefs.push_back(registration.first);
@@ -230,8 +252,16 @@ void PrefStoreManagerImpl::ConnectImpl(mojom::PrefRegistryPtr pref_registry,
     else
       defaults_->SetDefaultValue(key, std::move(default_value));
   }
+
+  // Only connect to pref stores the client isn't already connected to.
+  PrefStorePtrs ptrs;
+  for (const auto& entry : pref_store_ptrs_) {
+    if (!base::ContainsValue(already_connected_types, entry.first)) {
+      ptrs.insert(std::make_pair(entry.first, entry.second.get()));
+    }
+  }
   ConnectionBarrier::Create(
-      pref_store_ptrs_,
+      ptrs,
       persistent_pref_store_->CreateConnection(
           PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
                                                  observed_prefs.end())),

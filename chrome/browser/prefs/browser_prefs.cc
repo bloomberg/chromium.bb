@@ -793,4 +793,25 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   }
 }
 
+std::set<PrefValueStore::PrefStoreType> ExpectedPrefStores() {
+  return std::set<PrefValueStore::PrefStoreType>({
+      PrefValueStore::MANAGED_STORE,
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      PrefValueStore::SUPERVISED_USER_STORE,
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+      PrefValueStore::EXTENSION_STORE,
+#endif
+      PrefValueStore::COMMAND_LINE_STORE, PrefValueStore::RECOMMENDED_STORE,
+      PrefValueStore::USER_STORE, PrefValueStore::DEFAULT_STORE
+  });
+}
+
+std::set<PrefValueStore::PrefStoreType> InProcessPrefStores() {
+  auto pref_stores = ExpectedPrefStores();
+  pref_stores.erase(PrefValueStore::DEFAULT_STORE);
+  pref_stores.erase(PrefValueStore::USER_STORE);
+  return pref_stores;
+}
+
 }  // namespace chrome

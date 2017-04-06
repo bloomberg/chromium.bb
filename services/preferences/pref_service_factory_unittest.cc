@@ -47,9 +47,11 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                      const std::string& name) override {
     if (name == prefs::mojom::kServiceName) {
       pref_service_context_.reset(new service_manager::ServiceContext(
-          CreatePrefService({PrefValueStore::COMMAND_LINE_STORE,
-                             PrefValueStore::RECOMMENDED_STORE},
-                            worker_pool_),
+          CreatePrefService(
+              {PrefValueStore::COMMAND_LINE_STORE,
+               PrefValueStore::RECOMMENDED_STORE, PrefValueStore::USER_STORE,
+               PrefValueStore::DEFAULT_STORE},
+              worker_pool_),
           std::move(request)));
     }
   }
@@ -126,6 +128,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
     pref_registry->RegisterIntegerPref(kKey, kInitialValue);
     pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
     ConnectToPrefService(connector(), pref_registry,
+                         std::vector<PrefValueStore::PrefStoreType>(),
                          base::Bind(&PrefServiceFactoryTest::OnCreate,
                                     run_loop.QuitClosure(), &pref_service));
     run_loop.Run();

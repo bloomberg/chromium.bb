@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -99,8 +100,12 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
                          std::move(validation_delegate), connector);
     prefs::mojom::PrefStoreConnectorPtr pref_connector;
     connector->BindInterface(prefs::mojom::kServiceName, &pref_connector);
+    auto in_process_types_set = chrome::InProcessPrefStores();
+    std::vector<PrefValueStore::PrefStoreType> in_process_types(
+        in_process_types_set.begin(), in_process_types_set.end());
     return new prefs::PersistentPrefStoreClient(std::move(pref_connector),
-                                                std::move(pref_registry));
+                                                std::move(pref_registry),
+                                                std::move(in_process_types));
   }
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(

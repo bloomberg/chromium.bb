@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 #define CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 
+#include <set>
+
 #include "build/build_config.h"
+#include "components/prefs/pref_value_store.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -43,6 +46,13 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state);
 // should never go away (even if it becomes an empty call for some time) as it
 // should remain *the* place to drop deprecated profile prefs at.
 void MigrateObsoleteProfilePrefs(Profile* profile);
+
+// The pref stores Chrome expects to exist.
+std::set<PrefValueStore::PrefStoreType> ExpectedPrefStores();
+
+// The pref stores Chrome creates in-process (and thus doesn't need to connect
+// to through the pref service).
+std::set<PrefValueStore::PrefStoreType> InProcessPrefStores();
 
 }  // namespace chrome
 
