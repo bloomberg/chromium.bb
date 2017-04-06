@@ -224,6 +224,64 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
 }
 
 // static
+#define STATIC_ASSERT_MATCHING_ENUM(chromium_name, chromecast_name)          \
+  static_assert(static_cast<int>(::media::VideoColorSpace::chromium_name) == \
+                    static_cast<int>(::chromecast::media::chromecast_name),  \
+                "mismatching status enum values: " #chromium_name)
+
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::BT709, PrimaryID::BT709);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::UNSPECIFIED, PrimaryID::UNSPECIFIED);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::BT470M, PrimaryID::BT470M);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::BT470BG, PrimaryID::BT470BG);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::SMPTE170M, PrimaryID::SMPTE170M);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::SMPTE240M, PrimaryID::SMPTE240M);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::FILM, PrimaryID::FILM);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::BT2020, PrimaryID::BT2020);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::SMPTEST428_1, PrimaryID::SMPTEST428_1);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::SMPTEST431_2, PrimaryID::SMPTEST431_2);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::SMPTEST432_1, PrimaryID::SMPTEST432_1);
+STATIC_ASSERT_MATCHING_ENUM(PrimaryID::EBU_3213_E, PrimaryID::EBU_3213_E);
+
+STATIC_ASSERT_MATCHING_ENUM(TransferID::BT709, TransferID::BT709);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::UNSPECIFIED, TransferID::UNSPECIFIED);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::GAMMA22, TransferID::GAMMA22);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::GAMMA28, TransferID::GAMMA28);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::SMPTE170M, TransferID::SMPTE170M);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::SMPTE240M, TransferID::SMPTE240M);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::LINEAR, TransferID::LINEAR);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::LOG, TransferID::LOG);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::LOG_SQRT, TransferID::LOG_SQRT);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::IEC61966_2_4, TransferID::IEC61966_2_4);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::BT1361_ECG, TransferID::BT1361_ECG);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::IEC61966_2_1, TransferID::IEC61966_2_1);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::BT2020_10, TransferID::BT2020_10);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::BT2020_12, TransferID::BT2020_12);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::SMPTEST2084, TransferID::SMPTEST2084);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::SMPTEST428_1, TransferID::SMPTEST428_1);
+STATIC_ASSERT_MATCHING_ENUM(TransferID::ARIB_STD_B67, TransferID::ARIB_STD_B67);
+
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::RGB, MatrixID::RGB);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::BT709, MatrixID::BT709);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::UNSPECIFIED, MatrixID::UNSPECIFIED);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::FCC, MatrixID::FCC);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::BT470BG, MatrixID::BT470BG);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::SMPTE170M, MatrixID::SMPTE170M);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::SMPTE240M, MatrixID::SMPTE240M);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::YCOCG, MatrixID::YCOCG);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::BT2020_NCL, MatrixID::BT2020_NCL);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::BT2020_CL, MatrixID::BT2020_CL);
+STATIC_ASSERT_MATCHING_ENUM(MatrixID::YDZDX, MatrixID::YDZDX);
+
+#define STATIC_ASSERT_MATCHING_ENUM2(chromium_name, chromecast_name)        \
+  static_assert(static_cast<int>(::gfx::ColorSpace::chromium_name) ==       \
+                    static_cast<int>(::chromecast::media::chromecast_name), \
+                "mismatching status enum values: " #chromium_name)
+
+STATIC_ASSERT_MATCHING_ENUM2(RangeID::INVALID, RangeID::INVALID);
+STATIC_ASSERT_MATCHING_ENUM2(RangeID::LIMITED, RangeID::LIMITED);
+STATIC_ASSERT_MATCHING_ENUM2(RangeID::FULL, RangeID::FULL);
+STATIC_ASSERT_MATCHING_ENUM2(RangeID::DERIVED, RangeID::DERIVED);
+
 VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
     StreamId id,
     const ::media::VideoDecoderConfig& config) {
@@ -239,16 +297,12 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
   video_config.encryption_scheme = ToEncryptionScheme(
       config.encryption_scheme());
 
-  // TODO(servolk): gfx::ColorSpace currently doesn't provide getters for color
-  // space components. We'll need to way to fix this. crbug.com/649758
-  // video_config.primaries =
-  //     static_cast<PrimaryID>(config.color_space_info().primaries());
-  // video_config.transfer =
-  //     static_cast<TransferID>(config.color_space_info().transfer());
-  // video_config.matrix =
-  //     static_cast<MatrixID>(config.color_space_info().matrix());
-  // video_config.range =
-  //     static_cast<RangeID>(config.color_space_info().range());
+  video_config.primaries =
+      static_cast<PrimaryID>(config.color_space_info().primaries);
+  video_config.transfer =
+      static_cast<TransferID>(config.color_space_info().transfer);
+  video_config.matrix = static_cast<MatrixID>(config.color_space_info().matrix);
+  video_config.range = static_cast<RangeID>(config.color_space_info().range);
 
   base::Optional<::media::HDRMetadata> hdr_metadata = config.hdr_metadata();
   if (hdr_metadata) {
