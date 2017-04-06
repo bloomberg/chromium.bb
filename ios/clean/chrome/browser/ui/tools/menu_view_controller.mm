@@ -12,7 +12,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,8 +54,7 @@ const CGFloat kMenuItemHeight = 48;
     menuButton.tintColor = [UIColor blackColor];
     [menuButton setTitle:item.title forState:UIControlStateNormal];
     [menuButton setContentEdgeInsets:UIEdgeInsetsMakeDirected(0, 10.0f, 0, 0)];
-    [menuButton.titleLabel
-        setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
+    [menuButton.titleLabel setFont:[MDCTypography subheadFont]];
     [menuButton.titleLabel setTextAlignment:NSTextAlignmentNatural];
     [menuButton addTarget:self
                    action:@selector(closeToolsMenu:)
