@@ -25,19 +25,24 @@ cr.define('settings', function() {
   ManageProfileBrowserProxy.prototype = {
     /**
      * Gets the available profile icons to choose from.
-     * @return {!Promise<!Array<string>>}
+     * @return {!Promise<!Array<!AvatarIcon>>}
      */
     getAvailableIcons: function() {},
 
     /**
-     * Sets the profile's icon.
-     * @param {!string} iconUrl The new profile URL.
+     * Sets the profile's icon to the GAIA avatar.
      */
-    setProfileIcon: function(iconUrl) {},
+    setProfileIconToGaiaAvatar: function() {},
+
+    /**
+     * Sets the profile's icon to one of the default avatars.
+     * @param {string} iconUrl The new profile URL.
+     */
+    setProfileIconToDefaultAvatar: function(iconUrl) {},
 
     /**
      * Sets the profile's name.
-     * @param {!string} name The new profile name.
+     * @param {string} name The new profile name.
      */
     setProfileName: function(name) {},
 
@@ -74,8 +79,13 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    setProfileIcon: function(iconUrl) {
-      chrome.send('setProfileIcon', [iconUrl]);
+    setProfileIconToGaiaAvatar: function() {
+      chrome.send('setProfileIconToGaiaAvatar');
+    },
+
+    /** @override */
+    setProfileIconToDefaultAvatar: function(iconUrl) {
+      chrome.send('setProfileIconToDefaultAvatar', [iconUrl]);
     },
 
     /** @override */

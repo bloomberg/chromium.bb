@@ -62,8 +62,13 @@ void ManageProfileHandler::RegisterMessages() {
       base::Bind(&ManageProfileHandler::HandleGetAvailableIcons,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setProfileIcon", base::Bind(&ManageProfileHandler::HandleSetProfileIcon,
-                                   base::Unretained(this)));
+      "setProfileIconToGaiaAvatar",
+      base::Bind(&ManageProfileHandler::HandleSetProfileIconToGaiaAvatar,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setProfileIconToDefaultAvatar",
+      base::Bind(&ManageProfileHandler::HandleSetProfileIconToDefaultAvatar,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setProfileName", base::Bind(&ManageProfileHandler::HandleSetProfileName,
                                    base::Unretained(this)));
@@ -121,12 +126,13 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
     const gfx::Image* icon = entry->GetGAIAPicture();
     if (icon) {
       auto gaia_picture_info = base::MakeUnique<base::DictionaryValue>();
-      gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
-      gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-      gaia_picture_info->SetString("url", gaia_picture_url_);
+      gfx::Image avatar_icon = profiles::GetAvatarIconForWebUI(*icon, true);
+      gaia_picture_info->SetString(
+          "url", webui::GetBitmapDataUrl(avatar_icon.AsBitmap()));
       gaia_picture_info->SetString(
           "label",
           l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO));
+      gaia_picture_info->SetBoolean("isGaiaAvatar", true);
       image_url_list->Insert(0, std::move(gaia_picture_info));
     }
   }
@@ -134,7 +140,28 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
   return image_url_list;
 }
 
-void ManageProfileHandler::HandleSetProfileIcon(const base::ListValue* args) {
+void ManageProfileHandler::HandleSetProfileIconToGaiaAvatar(
+    const base::ListValue* /* args */) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  PrefService* pref_service = profile_->GetPrefs();
+  bool previously_using_gaia_icon =
+      pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar);
+
+  pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
+  pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, true);
+  if (!previously_using_gaia_icon) {
+    // Only log if they changed to the GAIA photo.
+    // Selection of GAIA photo as avatar is logged as part of the function
+    // below.
+    ProfileMetrics::LogProfileSwitchGaia(ProfileMetrics::GAIA_OPT_IN);
+  }
+
+  ProfileMetrics::LogProfileUpdate(profile_->GetPath());
+}
+
+void ManageProfileHandler::HandleSetProfileIconToDefaultAvatar(
+    const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(args);
   DCHECK_EQ(1u, args->GetSize());
@@ -142,33 +169,15 @@ void ManageProfileHandler::HandleSetProfileIcon(const base::ListValue* args) {
   std::string icon_url;
   CHECK(args->GetString(0, &icon_url));
 
+  size_t new_icon_index = 0;
+  CHECK(profiles::IsDefaultAvatarIconUrl(icon_url, &new_icon_index));
+
   PrefService* pref_service = profile_->GetPrefs();
-  // Updating the profile preferences will cause the cache to be updated.
+  pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
+  pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
+  pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
 
-  // Metrics logging variable.
-  bool previously_using_gaia_icon =
-      pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar);
-
-  size_t new_icon_index;
-  if (icon_url == gaia_picture_url_) {
-    pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
-    pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, true);
-    if (!previously_using_gaia_icon) {
-      // Only log if they changed to the GAIA photo.
-      // Selection of GAIA photo as avatar is logged as part of the function
-      // below.
-      ProfileMetrics::LogProfileSwitchGaia(ProfileMetrics::GAIA_OPT_IN);
-    }
-  } else if (profiles::IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
-    ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
-    pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
-    pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
-    pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
-  } else {
-    // Only default avatars and Gaia account photos are supported.
-    CHECK(false);
-  }
-
+  ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
   ProfileMetrics::LogProfileUpdate(profile_->GetPath());
 }
 

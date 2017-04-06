@@ -77,10 +77,18 @@ class ManageProfileHandlerTest : public testing::Test {
   std::unique_ptr<TestManageProfileHandler> handler_;
 };
 
-TEST_F(ManageProfileHandlerTest, HandleSetProfileIcon) {
+TEST_F(ManageProfileHandlerTest, HandleSetProfileIconToGaiaAvatar) {
+  handler()->HandleSetProfileIconToGaiaAvatar(nullptr);
+
+  PrefService* pref_service = profile()->GetPrefs();
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kProfileUsingDefaultAvatar));
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar));
+}
+
+TEST_F(ManageProfileHandlerTest, HandleSetProfileIconToDefaultAvatar) {
   base::ListValue list_args;
   list_args.AppendString("chrome://theme/IDR_PROFILE_AVATAR_15");
-  handler()->HandleSetProfileIcon(&list_args);
+  handler()->HandleSetProfileIconToDefaultAvatar(&list_args);
 
   PrefService* pref_service = profile()->GetPrefs();
   EXPECT_EQ(15, pref_service->GetInteger(prefs::kProfileAvatarIndex));

@@ -7,7 +7,11 @@
  * profile avatar icons and allows an avatar to be selected.
  */
 
-/** @typedef {{url: string, label: string}} */
+/**
+ * @typedef {{url: string,
+ *            label: string,
+ *            isGaiaAvatar: (boolean|undefined)}}
+ */
 var AvatarIcon;
 
 Polymer({

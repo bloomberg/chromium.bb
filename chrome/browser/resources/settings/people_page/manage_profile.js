@@ -34,7 +34,9 @@ Polymer({
      */
     availableIcons: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /**
@@ -119,7 +121,15 @@ Polymer({
    * @private
    */
   onIconActivate_: function(event) {
-    this.browserProxy_.setProfileIcon(event.detail.selected);
+    // Explicitly test against undefined, because even when an element has the
+    // data-is-gaia-avatar attribute, dataset.isGaiaAvatar returns an empty
+    // string, which is falsy.
+    var isGaiaAvatar = event.detail.item.dataset.isGaiaAvatar !== undefined;
+
+    if (isGaiaAvatar)
+      this.browserProxy_.setProfileIconToGaiaAvatar();
+    else
+      this.browserProxy_.setProfileIconToDefaultAvatar(event.detail.selected);
   },
 
   /**

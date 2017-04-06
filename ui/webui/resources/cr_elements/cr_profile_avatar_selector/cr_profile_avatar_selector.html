@@ -46,7 +46,7 @@
         ignore-modified-key-events="[[ignoreModifiedKeyEvents]]">
       <template is="dom-repeat" items="[[avatars]]">
         <paper-button class="avatar" data-avatar-url$="[[item.url]]"
-            title="[[item.label]]"
+            title="[[item.label]]" data-is-gaia-avatar$="[[item.isGaiaAvatar]]"
             style$="background-image: [[getIconImageset_(item.url)]]">
         </paper-button>
       </template>

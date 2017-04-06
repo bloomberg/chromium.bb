@@ -33,7 +33,10 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileIcon);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
+                           HandleSetProfileIconToGaiaAvatar);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
+                           HandleSetProfileIconToDefaultAvatar);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileName);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleGetAvailableIcons);
 
@@ -44,8 +47,11 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   // Get all the available profile icons to choose from.
   std::unique_ptr<base::ListValue> GetAvailableIcons();
 
-  // Callback for the "setProfileIcon" message.
-  void HandleSetProfileIcon(const base::ListValue* args);
+  // Callback for the "setProfileIconToGaiaAvatar" message.
+  void HandleSetProfileIconToGaiaAvatar(const base::ListValue* args);
+
+  // Callback for the "setProfileIconToDefaultAvatar" message.
+  void HandleSetProfileIconToDefaultAvatar(const base::ListValue* args);
 
   // Callback for the "setProfileName" message.
   void HandleSetProfileName(const base::ListValue* args);
@@ -72,9 +78,6 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
 
   // Non-owning pointer to the associated profile.
   Profile* profile_;
-
-  // URL for the current profile's GAIA picture.
-  std::string gaia_picture_url_;
 
   // Used to observe profile avatar updates.
   ScopedObserver<ProfileAttributesStorage, ManageProfileHandler> observer_;
