@@ -5,6 +5,7 @@
 #ifndef HTMLMediaElementControlsList_h
 #define HTMLMediaElementControlsList_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DOMTokenList.h"
 #include "platform/heap/Handle.h"
 
@@ -26,9 +27,9 @@ class HTMLMediaElementControlsList final : public DOMTokenList,
   DECLARE_VIRTUAL_TRACE();
 
   // Whether the list dictates to hide a certain control.
-  bool shouldHideDownload() const;
-  bool shouldHideFullscreen() const;
-  bool shouldHideRemotePlayback() const;
+  CORE_EXPORT bool shouldHideDownload() const;
+  CORE_EXPORT bool shouldHideFullscreen() const;
+  CORE_EXPORT bool shouldHideRemotePlayback() const;
 
  private:
   explicit HTMLMediaElementControlsList(HTMLMediaElement*);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/shadow/MediaControlsOrientationLockDelegate.h"
+#include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -10,9 +10,9 @@
 #include "core/frame/ScreenOrientationController.h"
 #include "core/html/HTMLAudioElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/html/shadow/MediaControls.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -132,7 +132,8 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
   }
 
   static bool hasDelegate(const MediaControls& mediaControls) {
-    return !!mediaControls.m_orientationLockDelegate;
+    return !!static_cast<const MediaControlsImpl*>(&mediaControls)
+                 ->m_orientationLockDelegate;
   }
 
   void simulateEnterFullscreen() {
@@ -165,30 +166,33 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
     video().setNetworkState(state);
   }
 
+  MediaControlsImpl* mediaControls() const {
+    return static_cast<MediaControlsImpl*>(m_video->mediaControls());
+  }
+
   void checkStatePendingFullscreen() const {
     EXPECT_EQ(MediaControlsOrientationLockDelegate::State::PendingFullscreen,
-              m_video->mediaControls()->m_orientationLockDelegate->m_state);
+              mediaControls()->m_orientationLockDelegate->m_state);
   }
 
   void checkStatePendingMetadata() const {
     EXPECT_EQ(MediaControlsOrientationLockDelegate::State::PendingMetadata,
-              m_video->mediaControls()->m_orientationLockDelegate->m_state);
+              mediaControls()->m_orientationLockDelegate->m_state);
   }
 
   void checkStateMaybeLockedFullscreen() const {
     EXPECT_EQ(
         MediaControlsOrientationLockDelegate::State::MaybeLockedFullscreen,
-        m_video->mediaControls()->m_orientationLockDelegate->m_state);
+        mediaControls()->m_orientationLockDelegate->m_state);
   }
 
   bool delegateWillUnlockFullscreen() const {
-    return m_video->mediaControls()
+    return mediaControls()
         ->m_orientationLockDelegate->m_shouldUnlockOrientation;
   }
 
   WebScreenOrientationLockType computeOrientationLock() const {
-    return m_video->mediaControls()
-        ->m_orientationLockDelegate->computeOrientationLock();
+    return mediaControls()->m_orientationLockDelegate->computeOrientationLock();
   }
 
   MockChromeClient& chromeClient() const { return *m_chromeClient; }

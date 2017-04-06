@@ -6,7 +6,8 @@
 
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/html/shadow/MediaControls.h"
+#include "core/html/media/MediaControls.h"
+#include "core/html/shadow/MediaControlElements.h"
 
 namespace blink {
 
@@ -49,7 +50,7 @@ void MediaControlsWindowEventListener::start() {
   if (m_isActive)
     return;
 
-  if (LocalDOMWindow* window = m_mediaControls->document().domWindow()) {
+  if (LocalDOMWindow* window = m_mediaControls->ownerDocument().domWindow()) {
     window->addEventListener(EventTypeNames::click, this, true);
 
     if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {
@@ -75,7 +76,7 @@ void MediaControlsWindowEventListener::stop() {
   if (!m_isActive)
     return;
 
-  if (LocalDOMWindow* window = m_mediaControls->document().domWindow()) {
+  if (LocalDOMWindow* window = m_mediaControls->ownerDocument().domWindow()) {
     window->removeEventListener(EventTypeNames::click, this, true);
 
     if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {

@@ -46,7 +46,7 @@
 #include "core/html/TimeRanges.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
-#include "core/html/shadow/MediaControls.h"
+#include "core/html/media/MediaControls.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/api/LayoutSliderItem.h"
@@ -138,7 +138,7 @@ MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
       m_isDisplayed(false),
       m_opaque(true),
       m_transitionTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
-                                              &mediaControls.document()),
+                                              &mediaControls.ownerDocument()),
                         this,
                         &MediaControlPanelElement::transitionTimerFired) {}
 

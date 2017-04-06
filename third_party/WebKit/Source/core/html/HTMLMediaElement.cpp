@@ -56,9 +56,9 @@
 #include "core/html/media/AutoplayUmaHelper.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
+#include "core/html/media/MediaControls.h"
 #include "core/html/media/MediaError.h"
 #include "core/html/media/MediaFragmentURIParser.h"
-#include "core/html/shadow/MediaControls.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/AudioTrackList.h"
 #include "core/html/track/AutomaticTrackSelection.h"
@@ -327,6 +327,12 @@ bool computeLockedPendingUserGesture(Document& document) {
   return document.settings()->getMediaPlaybackRequiresUserGesture();
 }
 
+std::unique_ptr<MediaControls::Factory>& mediaControlsFactory() {
+  DEFINE_STATIC_LOCAL(std::unique_ptr<MediaControls::Factory>,
+                      s_mediaControlsFactory, ());
+  return s_mediaControlsFactory;
+}
+
 }  // anonymous namespace
 
 MIMETypeRegistry::SupportsType HTMLMediaElement::supportsType(
@@ -377,6 +383,7 @@ bool HTMLMediaElement::mediaTracksEnabledInternally() {
          RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled();
 }
 
+// static
 void HTMLMediaElement::onMediaControlsEnabledChange(Document* document) {
   auto it = documentToElementSetMap().find(document);
   if (it == documentToElementSetMap().end())
@@ -388,6 +395,13 @@ void HTMLMediaElement::onMediaControlsEnabledChange(Document* document) {
     if (element->mediaControls())
       element->mediaControls()->onMediaControlsEnabledChange();
   }
+}
+
+// static
+void HTMLMediaElement::registerMediaControlsFactory(
+    std::unique_ptr<MediaControls::Factory> factory) {
+  DCHECK(!mediaControlsFactory());
+  mediaControlsFactory() = std::move(factory);
 }
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
@@ -3699,11 +3713,11 @@ MediaControls* HTMLMediaElement::mediaControls() const {
 }
 
 void HTMLMediaElement::ensureMediaControls() {
-  if (mediaControls())
+  if (mediaControls() || !mediaControlsFactory())
     return;
 
   ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
-  m_mediaControls = MediaControls::create(*this, shadowRoot);
+  m_mediaControls = mediaControlsFactory()->create(*this, shadowRoot);
 
   // The media controls should be inserted after the text track container,
   // so that they are rendered in front of captions and subtitles. This check

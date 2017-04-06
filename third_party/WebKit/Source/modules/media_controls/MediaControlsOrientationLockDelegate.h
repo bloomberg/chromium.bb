@@ -5,8 +5,8 @@
 #ifndef MediaControlsOrientationLockDelegate_h
 #define MediaControlsOrientationLockDelegate_h
 
-#include "core/CoreExport.h"
 #include "core/events/EventListener.h"
+#include "modules/ModulesExport.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace blink {
@@ -38,8 +38,7 @@ class HTMLVideoElement;
 //   fullscreen);
 // - MaybeLockedFullscreen => PendingFullscreen: on fullscreenchange event
 //   (leaving fullscreen).
-class CORE_EXPORT MediaControlsOrientationLockDelegate final
-    : public EventListener {
+class MediaControlsOrientationLockDelegate final : public EventListener {
  public:
   explicit MediaControlsOrientationLockDelegate(HTMLVideoElement&);
 
@@ -74,7 +73,7 @@ class CORE_EXPORT MediaControlsOrientationLockDelegate final
 
   // Returns the orientation in which the video should be locked based on its
   // size.
-  WebScreenOrientationLockType computeOrientationLock() const;
+  MODULES_EXPORT WebScreenOrientationLockType computeOrientationLock() const;
 
   // Locks the screen orientation if the video has metadata information
   // available. Delays locking orientation until metadata are available

@@ -39,7 +39,8 @@ class TextTrack;
 
 // ----------------------------
 
-class MediaControlPanelElement final : public MediaControlDivElement {
+class CORE_EXPORT MediaControlPanelElement final
+    : public MediaControlDivElement {
  public:
   static MediaControlPanelElement* create(MediaControls&);
 
@@ -68,7 +69,8 @@ class MediaControlPanelElement final : public MediaControlDivElement {
 
 // ----------------------------
 
-class MediaControlPanelEnclosureElement final : public MediaControlDivElement {
+class CORE_EXPORT MediaControlPanelEnclosureElement final
+    : public MediaControlDivElement {
  public:
   static MediaControlPanelEnclosureElement* create(MediaControls&);
 
@@ -78,7 +80,7 @@ class MediaControlPanelEnclosureElement final : public MediaControlDivElement {
 
 // ----------------------------
 
-class MediaControlOverlayEnclosureElement final
+class CORE_EXPORT MediaControlOverlayEnclosureElement final
     : public MediaControlDivElement {
  public:
   static MediaControlOverlayEnclosureElement* create(MediaControls&);
@@ -90,7 +92,8 @@ class MediaControlOverlayEnclosureElement final
 
 // ----------------------------
 
-class MediaControlMuteButtonElement final : public MediaControlInputElement {
+class CORE_EXPORT MediaControlMuteButtonElement final
+    : public MediaControlInputElement {
  public:
   static MediaControlMuteButtonElement* create(MediaControls&);
 
@@ -109,7 +112,8 @@ class MediaControlMuteButtonElement final : public MediaControlInputElement {
 
 // ----------------------------
 
-class MediaControlPlayButtonElement final : public MediaControlInputElement {
+class CORE_EXPORT MediaControlPlayButtonElement final
+    : public MediaControlInputElement {
  public:
   static MediaControlPlayButtonElement* create(MediaControls&);
 
@@ -128,7 +132,7 @@ class MediaControlPlayButtonElement final : public MediaControlInputElement {
 
 // ----------------------------
 
-class MediaControlOverlayPlayButtonElement final
+class CORE_EXPORT MediaControlOverlayPlayButtonElement final
     : public MediaControlInputElement {
  public:
   static MediaControlOverlayPlayButtonElement* create(MediaControls&);
@@ -144,7 +148,7 @@ class MediaControlOverlayPlayButtonElement final
 
 // ----------------------------
 
-class MediaControlToggleClosedCaptionsButtonElement final
+class CORE_EXPORT MediaControlToggleClosedCaptionsButtonElement final
     : public MediaControlInputElement {
  public:
   static MediaControlToggleClosedCaptionsButtonElement* create(MediaControls&);
@@ -165,7 +169,8 @@ class MediaControlToggleClosedCaptionsButtonElement final
 
 // ----------------------------
 
-class MediaControlTextTrackListElement final : public MediaControlDivElement {
+class CORE_EXPORT MediaControlTextTrackListElement final
+    : public MediaControlDivElement {
  public:
   static MediaControlTextTrackListElement* create(MediaControls&);
 
@@ -191,7 +196,7 @@ class MediaControlTextTrackListElement final : public MediaControlDivElement {
 // ----------------------------
 // Represents the overflow menu which is displayed when the width of the media
 // player is small enough that at least two buttons are no longer visible.
-class MediaControlOverflowMenuButtonElement final
+class CORE_EXPORT MediaControlOverflowMenuButtonElement final
     : public MediaControlInputElement {
  public:
   static MediaControlOverflowMenuButtonElement* create(MediaControls&);
@@ -208,7 +213,7 @@ class MediaControlOverflowMenuButtonElement final
 
 // ----------------------------
 // Holds a list of elements within the overflow menu.
-class MediaControlOverflowMenuListElement final
+class CORE_EXPORT MediaControlOverflowMenuListElement final
     : public MediaControlDivElement {
  public:
   static MediaControlOverflowMenuListElement* create(MediaControls&);
@@ -222,7 +227,7 @@ class MediaControlOverflowMenuListElement final
 // ----------------------------
 // Represents a button that allows users to download media if the file is
 // downloadable.
-class MediaControlDownloadButtonElement final
+class CORE_EXPORT MediaControlDownloadButtonElement final
     : public MediaControlInputElement {
  public:
   static MediaControlDownloadButtonElement* create(MediaControls&);
@@ -262,7 +267,8 @@ class MediaControlDownloadButtonElement final
   bool m_showUseCounted = false;
 };
 
-class MediaControlTimelineElement final : public MediaControlInputElement {
+class CORE_EXPORT MediaControlTimelineElement final
+    : public MediaControlInputElement {
  public:
   static MediaControlTimelineElement* create(MediaControls&);
 
@@ -282,7 +288,7 @@ class MediaControlTimelineElement final : public MediaControlInputElement {
 
 // ----------------------------
 
-class MediaControlFullscreenButtonElement final
+class CORE_EXPORT MediaControlFullscreenButtonElement final
     : public MediaControlInputElement {
  public:
   static MediaControlFullscreenButtonElement* create(MediaControls&);
@@ -303,7 +309,8 @@ class MediaControlFullscreenButtonElement final
 
 // ----------------------------
 
-class MediaControlCastButtonElement final : public MediaControlInputElement {
+class CORE_EXPORT MediaControlCastButtonElement final
+    : public MediaControlInputElement {
  public:
   static MediaControlCastButtonElement* create(MediaControls&,
                                                bool isOverlayButton);
@@ -346,7 +353,8 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
 
 // ----------------------------
 
-class MediaControlVolumeSliderElement final : public MediaControlInputElement {
+class CORE_EXPORT MediaControlVolumeSliderElement final
+    : public MediaControlInputElement {
  public:
   static MediaControlVolumeSliderElement* create(MediaControls&);
 
@@ -363,7 +371,7 @@ class MediaControlVolumeSliderElement final : public MediaControlInputElement {
 
 // ----------------------------
 
-class MediaControlTimeRemainingDisplayElement final
+class CORE_EXPORT MediaControlTimeRemainingDisplayElement final
     : public MediaControlTimeDisplayElement {
  public:
   static MediaControlTimeRemainingDisplayElement* create(MediaControls&);
@@ -374,7 +382,7 @@ class MediaControlTimeRemainingDisplayElement final
 
 // ----------------------------
 
-class MediaControlCurrentTimeDisplayElement final
+class CORE_EXPORT MediaControlCurrentTimeDisplayElement final
     : public MediaControlTimeDisplayElement {
  public:
   static MediaControlCurrentTimeDisplayElement* create(MediaControls&);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/shadow/MediaControls.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 
 #include <limits>
 #include <memory>
@@ -144,7 +144,7 @@ enum DownloadActionMetrics {
 
 }  // namespace
 
-class MediaControlsTest : public ::testing::Test {
+class MediaControlsImplTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), nullptr,
@@ -154,7 +154,7 @@ class MediaControlsTest : public ::testing::Test {
     document.write("<video>");
     HTMLVideoElement& video =
         toHTMLVideoElement(*document.querySelector("video"));
-    m_mediaControls = video.mediaControls();
+    m_mediaControls = static_cast<MediaControlsImpl*>(video.mediaControls());
 
     // If scripts are not enabled, controls will always be shown.
     m_pageHolder->frame().settings()->setScriptEnabled(true);
@@ -178,7 +178,7 @@ class MediaControlsTest : public ::testing::Test {
 
   void simulateLoadedMetadata() { m_mediaControls->onLoadedMetadata(); }
 
-  MediaControls& mediaControls() { return *m_mediaControls; }
+  MediaControlsImpl& mediaControls() { return *m_mediaControls; }
   MockVideoWebMediaPlayer* webMediaPlayer() {
     return static_cast<MockVideoWebMediaPlayer*>(
         mediaControls().mediaElement().webMediaPlayer());
@@ -199,11 +199,11 @@ class MediaControlsTest : public ::testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<MediaControls> m_mediaControls;
+  Persistent<MediaControlsImpl> m_mediaControls;
   HistogramTester m_histogramTester;
 };
 
-TEST_F(MediaControlsTest, HideAndShow) {
+TEST_F(MediaControlsImplTest, HideAndShow) {
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
@@ -218,7 +218,7 @@ TEST_F(MediaControlsTest, HideAndShow) {
   ASSERT_TRUE(isElementVisible(*panel));
 }
 
-TEST_F(MediaControlsTest, Reset) {
+TEST_F(MediaControlsImplTest, Reset) {
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
@@ -231,7 +231,7 @@ TEST_F(MediaControlsTest, Reset) {
   ASSERT_TRUE(isElementVisible(*panel));
 }
 
-TEST_F(MediaControlsTest, HideAndReset) {
+TEST_F(MediaControlsImplTest, HideAndReset) {
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
 
@@ -246,7 +246,7 @@ TEST_F(MediaControlsTest, HideAndReset) {
   ASSERT_FALSE(isElementVisible(*panel));
 }
 
-TEST_F(MediaControlsTest, ResetDoesNotTriggerInitialLayout) {
+TEST_F(MediaControlsImplTest, ResetDoesNotTriggerInitialLayout) {
   Document& document = this->document();
   int oldElementCount = document.styleEngine().styleForElementCount();
   // Also assert that there are no layouts yet.
@@ -256,7 +256,7 @@ TEST_F(MediaControlsTest, ResetDoesNotTriggerInitialLayout) {
   ASSERT_EQ(oldElementCount, newElementCount);
 }
 
-TEST_F(MediaControlsTest, CastButtonRequiresRoute) {
+TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
   ensureSizing();
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
@@ -271,7 +271,7 @@ TEST_F(MediaControlsTest, CastButtonRequiresRoute) {
   ASSERT_TRUE(isElementVisible(*castButton));
 }
 
-TEST_F(MediaControlsTest, CastButtonDisableRemotePlaybackAttr) {
+TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
   ensureSizing();
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
                                                      true);
@@ -293,7 +293,7 @@ TEST_F(MediaControlsTest, CastButtonDisableRemotePlaybackAttr) {
   ASSERT_TRUE(isElementVisible(*castButton));
 }
 
-TEST_F(MediaControlsTest, CastOverlayDefault) {
+TEST_F(MediaControlsImplTest, CastOverlayDefault) {
   Element* castOverlayButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, castOverlayButton);
@@ -302,7 +302,7 @@ TEST_F(MediaControlsTest, CastOverlayDefault) {
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 }
 
-TEST_F(MediaControlsTest, CastOverlayDisableRemotePlaybackAttr) {
+TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
   Element* castOverlayButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, castOverlayButton);
@@ -320,7 +320,7 @@ TEST_F(MediaControlsTest, CastOverlayDisableRemotePlaybackAttr) {
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 }
 
-TEST_F(MediaControlsTest, CastOverlayMediaControlsDisabled) {
+TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
   Element* castOverlayButton = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, castOverlayButton);
@@ -336,7 +336,7 @@ TEST_F(MediaControlsTest, CastOverlayMediaControlsDisabled) {
   EXPECT_TRUE(isElementVisible(*castOverlayButton));
 }
 
-TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
+TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
   Element* overflowList = getElementByShadowPseudoId(
       mediaControls(), "-internal-media-controls-overflow-menu-list");
   ASSERT_NE(nullptr, overflowList);
@@ -358,7 +358,7 @@ TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
   EXPECT_TRUE(isElementVisible(*panel));
 }
 
-TEST_F(MediaControlsTest, DownloadButtonDisplayed) {
+TEST_F(MediaControlsImplTest, DownloadButtonDisplayed) {
   ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
@@ -373,7 +373,7 @@ TEST_F(MediaControlsTest, DownloadButtonDisplayed) {
   EXPECT_TRUE(isElementVisible(*downloadButton));
 }
 
-TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
+TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedEmptyUrl) {
   ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
@@ -387,7 +387,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
   EXPECT_FALSE(isElementVisible(*downloadButton));
 }
 
-TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
+TEST_F(MediaControlsImplTest, DownloadButtonDisplayedHiddenAndDisplayed) {
   ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
@@ -417,7 +417,7 @@ TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
                                       DownloadActionMetrics::Shown, 1);
 }
 
-TEST_F(MediaControlsTest, DownloadButtonRecordsClickOnlyOnce) {
+TEST_F(MediaControlsImplTest, DownloadButtonRecordsClickOnlyOnce) {
   ensureSizing();
 
   MediaControlDownloadButtonElement* downloadButton =
@@ -447,7 +447,7 @@ TEST_F(MediaControlsTest, DownloadButtonRecordsClickOnlyOnce) {
                                       DownloadActionMetrics::Clicked, 1);
 }
 
-TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {
+TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
   ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
@@ -464,7 +464,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {
   EXPECT_FALSE(isElementVisible(*downloadButton));
 }
 
-TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
+TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
   ensureSizing();
 
   Element* downloadButton = getElementByShadowPseudoId(
@@ -478,7 +478,7 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
   EXPECT_FALSE(isElementVisible(*downloadButton));
 }
 
-TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
+TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   ensureSizing();
 
   MediaControlTimelineElement* timeline =
@@ -503,7 +503,7 @@ TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
   EXPECT_EQ(exactDuration, mediaControls().mediaElement().currentTime());
 }
 
-TEST_F(MediaControlsTest, TimelineImmediatelyUpdatesCurrentTime) {
+TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
   ensureSizing();
 
   MediaControlTimelineElement* timeline =
@@ -526,7 +526,7 @@ TEST_F(MediaControlsTest, TimelineImmediatelyUpdatesCurrentTime) {
   EXPECT_EQ(duration / 2, currentTimeDisplay->currentValue());
 }
 
-TEST_F(MediaControlsTest, VolumeSliderPaintInvalidationOnInput) {
+TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
   ensureSizing();
 
   MediaControlVolumeSliderElement* volumeSlider =

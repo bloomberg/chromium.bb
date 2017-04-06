@@ -37,7 +37,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/shadow/MediaControls.h"
+#include "core/html/media/MediaControls.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/text/PlatformLocale.h"
 
@@ -148,7 +148,7 @@ DEFINE_TRACE(MediaControlElement) {
 MediaControlDivElement::MediaControlDivElement(
     MediaControls& mediaControls,
     MediaControlElementType displayType)
-    : HTMLDivElement(mediaControls.document()),
+    : HTMLDivElement(mediaControls.ownerDocument()),
       MediaControlElement(mediaControls, displayType, this) {}
 
 DEFINE_TRACE(MediaControlDivElement) {
@@ -161,7 +161,7 @@ DEFINE_TRACE(MediaControlDivElement) {
 MediaControlInputElement::MediaControlInputElement(
     MediaControls& mediaControls,
     MediaControlElementType displayType)
-    : HTMLInputElement(mediaControls.document(), false),
+    : HTMLInputElement(mediaControls.ownerDocument(), false),
       MediaControlElement(mediaControls, displayType, this) {}
 
 bool MediaControlInputElement::isMouseFocusable() const {
@@ -177,11 +177,11 @@ HTMLElement* MediaControlInputElement::createOverflowElement(
   // We don't want the button visible within the overflow menu.
   button->setIsWanted(false);
 
-  m_overflowMenuText =
-      Text::create(mediaControls.document(), button->getOverflowMenuString());
+  m_overflowMenuText = Text::create(mediaControls.ownerDocument(),
+                                    button->getOverflowMenuString());
 
   HTMLLabelElement* element =
-      HTMLLabelElement::create(mediaControls.document());
+      HTMLLabelElement::create(mediaControls.ownerDocument());
   element->setShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   // Appending a button to a label element ensures that clicks on the label

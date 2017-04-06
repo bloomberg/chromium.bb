@@ -37,6 +37,7 @@
 #include "core/dom/SuspendableObject.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/media/MediaControls.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
@@ -61,7 +62,6 @@ class HTMLMediaElementControlsList;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class KURL;
-class MediaControls;
 class MediaError;
 class MediaStreamDescriptor;
 class HTMLMediaSource;
@@ -103,6 +103,11 @@ class CORE_EXPORT HTMLMediaElement
   // Notify the HTMLMediaElement that the media controls settings have changed
   // for the given document.
   static void onMediaControlsEnabledChange(Document*);
+
+  // Called by the module implementing the media controls to notify of the
+  // factory to use. It should only be called once at process initialisation.
+  static void registerMediaControlsFactory(
+      std::unique_ptr<MediaControls::Factory>);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -740,7 +745,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class AutoplayUmaHelperTest;
   friend class Internals;
   friend class TrackDisplayUpdateScope;
-  friend class MediaControlsTest;
+  friend class MediaControlsImplTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;

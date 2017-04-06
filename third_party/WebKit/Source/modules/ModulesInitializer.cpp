@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
@@ -23,6 +24,7 @@
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/installation/InstallationServiceImpl.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -89,6 +91,10 @@ void ModulesInitializer::initialize() {
     frame->interfaceRegistry()->addInterface(WTF::bind(
         &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame)));
   });
+
+  HTMLMediaElement::registerMediaControlsFactory(
+      WTF::makeUnique<MediaControlsImpl::Factory>());
+
   ASSERT(isInitialized());
 }
 

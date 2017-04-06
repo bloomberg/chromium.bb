@@ -5,6 +5,7 @@
 #ifndef MediaControlsMediaEventListener_h
 #define MediaControlsMediaEventListener_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 
 namespace blink {
@@ -12,7 +13,7 @@ namespace blink {
 class HTMLMediaElement;
 class MediaControls;
 
-class MediaControlsMediaEventListener final : public EventListener {
+class CORE_EXPORT MediaControlsMediaEventListener final : public EventListener {
  public:
   explicit MediaControlsMediaEventListener(MediaControls*);
 

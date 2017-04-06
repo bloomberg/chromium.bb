@@ -6,7 +6,7 @@
 
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/shadow/MediaControls.h"
+#include "core/html/media/MediaControls.h"
 #include "core/html/track/TextTrackList.h"
 
 namespace blink {
@@ -34,8 +34,8 @@ void MediaControlsMediaEventListener::attach() {
   // old APIs are handled.
   mediaElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
                                   false);
-  m_mediaControls->document().addEventListener(EventTypeNames::fullscreenchange,
-                                               this, false);
+  m_mediaControls->ownerDocument().addEventListener(
+      EventTypeNames::fullscreenchange, this, false);
 
   // TextTracks events.
   TextTrackList* textTracks = mediaElement().textTracks();
@@ -47,7 +47,7 @@ void MediaControlsMediaEventListener::attach() {
 void MediaControlsMediaEventListener::detach() {
   DCHECK(!mediaElement().isConnected());
 
-  m_mediaControls->document().removeEventListener(
+  m_mediaControls->ownerDocument().removeEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
   TextTrackList* textTracks = mediaElement().textTracks();

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/MediaControls.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ClientRect.h"
@@ -40,12 +40,12 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/shadow/MediaControlsMediaEventListener.h"
-#include "core/html/shadow/MediaControlsOrientationLockDelegate.h"
 #include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
+#include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -65,13 +65,11 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
                                                kAndroidMediaPanelHeight +
                                                (2 * kOverlayBottomMargin);
 
-}  // anonymous namespace
-
 // If you change this value, then also update the corresponding value in
 // LayoutTests/media/media-controls.js.
-static const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
+const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
-static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement) {
+bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement) {
   // Unconditionally allow the user to exit fullscreen if we are in it
   // now.  Especially on android, when we might not yet know if
   // fullscreen is supported, we sometimes guess incorrectly and show
@@ -98,7 +96,7 @@ static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement) {
   return true;
 }
 
-static bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
+bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
   if (mediaElement.fastHasAttribute(HTMLNames::disableremoteplaybackAttr))
     return false;
 
@@ -118,17 +116,19 @@ static bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
   return mediaElement.hasRemoteRoutes();
 }
 
-static bool preferHiddenVolumeControls(const Document& document) {
+bool preferHiddenVolumeControls(const Document& document) {
   return !document.settings() ||
          document.settings()->getPreferHiddenVolumeControls();
 }
 
-class MediaControls::BatchedControlUpdate {
+}  // anonymous namespace
+
+class MediaControlsImpl::BatchedControlUpdate {
   WTF_MAKE_NONCOPYABLE(BatchedControlUpdate);
   STACK_ALLOCATED();
 
  public:
-  explicit BatchedControlUpdate(MediaControls* controls)
+  explicit BatchedControlUpdate(MediaControlsImpl* controls)
       : m_controls(controls) {
     DCHECK(isMainThread());
     DCHECK_GE(s_batchDepth, 0);
@@ -142,17 +142,17 @@ class MediaControls::BatchedControlUpdate {
   }
 
  private:
-  Member<MediaControls> m_controls;
+  Member<MediaControlsImpl> m_controls;
   static int s_batchDepth;
 };
 
 // Count of number open batches for controls visibility.
-int MediaControls::BatchedControlUpdate::s_batchDepth = 0;
+int MediaControlsImpl::BatchedControlUpdate::s_batchDepth = 0;
 
-class MediaControls::MediaControlsResizeObserverCallback final
+class MediaControlsImpl::MediaControlsResizeObserverCallback final
     : public ResizeObserverCallback {
  public:
-  explicit MediaControlsResizeObserverCallback(MediaControls* controls)
+  explicit MediaControlsResizeObserverCallback(MediaControlsImpl* controls)
       : m_controls(controls) {
     DCHECK(controls);
   }
@@ -161,7 +161,7 @@ class MediaControls::MediaControlsResizeObserverCallback final
   void handleEvent(const HeapVector<Member<ResizeObserverEntry>>& entries,
                    ResizeObserver* observer) override {
     DCHECK_EQ(1u, entries.size());
-    DCHECK_EQ(entries[0]->target(), m_controls->m_mediaElement);
+    DCHECK_EQ(entries[0]->target(), m_controls->mediaElement());
     m_controls->notifyElementSizeChanged(entries[0]->contentRect());
   }
 
@@ -171,12 +171,18 @@ class MediaControls::MediaControlsResizeObserverCallback final
   }
 
  private:
-  Member<MediaControls> m_controls;
+  Member<MediaControlsImpl> m_controls;
 };
 
-MediaControls::MediaControls(HTMLMediaElement& mediaElement)
+MediaControls* MediaControlsImpl::Factory::create(
+    HTMLMediaElement& mediaElement,
+    ShadowRoot& shadowRoot) {
+  return MediaControlsImpl::create(mediaElement, shadowRoot);
+}
+
+MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document()),
-      m_mediaElement(&mediaElement),
+      MediaControls(mediaElement),
       m_overlayEnclosure(nullptr),
       m_overlayPlayButton(nullptr),
       m_overlayCastButton(nullptr),
@@ -197,29 +203,31 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_mediaEventListener(new MediaControlsMediaEventListener(this)),
       m_windowEventListener(MediaControlsWindowEventListener::create(
           this,
-          WTF::bind(&MediaControls::hideAllMenus, wrapWeakPersistent(this)))),
+          WTF::bind(&MediaControlsImpl::hideAllMenus,
+                    wrapWeakPersistent(this)))),
       m_orientationLockDelegate(nullptr),
       m_hideMediaControlsTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
                                                      &mediaElement.document()),
                                this,
-                               &MediaControls::hideMediaControlsTimerFired),
+                               &MediaControlsImpl::hideMediaControlsTimerFired),
       m_hideTimerBehaviorFlags(IgnoreNone),
       m_isMouseOverControls(false),
       m_isPausedForScrubbing(false),
       m_resizeObserver(ResizeObserver::create(
           mediaElement.document(),
           new MediaControlsResizeObserverCallback(this))),
-      m_elementSizeChangedTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
-                                                      &mediaElement.document()),
-                                this,
-                                &MediaControls::elementSizeChangedTimerFired),
+      m_elementSizeChangedTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                &mediaElement.document()),
+          this,
+          &MediaControlsImpl::elementSizeChangedTimerFired),
       m_keepShowingUntilTimerFires(false) {
-  m_resizeObserver->observe(m_mediaElement);
+  m_resizeObserver->observe(&mediaElement);
 }
 
-MediaControls* MediaControls::create(HTMLMediaElement& mediaElement,
-                                     ShadowRoot& shadowRoot) {
-  MediaControls* controls = new MediaControls(mediaElement);
+MediaControlsImpl* MediaControlsImpl::create(HTMLMediaElement& mediaElement,
+                                             ShadowRoot& shadowRoot) {
+  MediaControlsImpl* controls = new MediaControlsImpl(mediaElement);
   controls->setShadowPseudoId(AtomicString("-webkit-media-controls"));
   controls->initializeControls();
   controls->reset();
@@ -238,7 +246,7 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement,
 
 // The media controls DOM structure looks like:
 //
-// MediaControls
+// MediaControlsImpl
 //     (-webkit-media-controls)
 // +-MediaControlOverlayEnclosureElement
 // |    (-webkit-media-controls-overlay-enclosure)
@@ -282,7 +290,7 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement,
 //  |    (-internal-media-controls-text-track-list-kind-captions)
 //  +-MediaControlTextTrackListItemSubtitles
 //       (-internal-media-controls-text-track-list-kind-subtitles)
-void MediaControls::initializeControls() {
+void MediaControlsImpl::initializeControls() {
   MediaControlOverlayEnclosureElement* overlayEnclosure =
       MediaControlOverlayEnclosureElement::create(*this);
 
@@ -401,7 +409,7 @@ void MediaControls::initializeControls() {
           *this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
 }
 
-Node::InsertionNotificationRequest MediaControls::insertedInto(
+Node::InsertionNotificationRequest MediaControlsImpl::insertedInto(
     ContainerNode* root) {
   if (!mediaElement().isConnected())
     return HTMLDivElement::insertedInto(root);
@@ -417,15 +425,16 @@ Node::InsertionNotificationRequest MediaControls::insertedInto(
 
   if (!m_resizeObserver) {
     m_resizeObserver =
-        ResizeObserver::create(m_mediaElement->document(),
+        ResizeObserver::create(mediaElement().document(),
                                new MediaControlsResizeObserverCallback(this));
-    m_resizeObserver->observe(m_mediaElement);
+    HTMLMediaElement& htmlMediaElement = mediaElement();
+    m_resizeObserver->observe(&htmlMediaElement);
   }
 
   return HTMLDivElement::insertedInto(root);
 }
 
-void MediaControls::removedFrom(ContainerNode*) {
+void MediaControlsImpl::removedFrom(ContainerNode*) {
   DCHECK(!mediaElement().isConnected());
 
   // TODO(mlamouri): we hide show the controls instead of having
@@ -439,7 +448,7 @@ void MediaControls::removedFrom(ContainerNode*) {
   m_resizeObserver.clear();
 }
 
-void MediaControls::reset() {
+void MediaControlsImpl::reset() {
   EventDispatchForbiddenScope::AllowUserAgentEvents allowEventsInShadow;
   BatchedControlUpdate batch(this);
 
@@ -473,7 +482,7 @@ void MediaControls::reset() {
   onControlsListUpdated();
 }
 
-void MediaControls::onControlsListUpdated() {
+void MediaControlsImpl::onControlsListUpdated() {
   BatchedControlUpdate batch(this);
 
   m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
@@ -484,11 +493,15 @@ void MediaControls::onControlsListUpdated() {
       m_downloadButton->shouldDisplayDownloadButton());
 }
 
-LayoutObject* MediaControls::layoutObjectForTextTrackLayout() {
+LayoutObject* MediaControlsImpl::panelLayoutObject() {
   return m_panel->layoutObject();
 }
 
-void MediaControls::show() {
+LayoutObject* MediaControlsImpl::containerLayoutObject() {
+  return layoutObject();
+}
+
+void MediaControlsImpl::show() {
   makeOpaque();
   m_panel->setIsWanted(true);
   m_panel->setIsDisplayed(true);
@@ -496,26 +509,26 @@ void MediaControls::show() {
     m_overlayPlayButton->updateDisplayType();
 }
 
-void MediaControls::hide() {
+void MediaControlsImpl::hide() {
   m_panel->setIsWanted(false);
   m_panel->setIsDisplayed(false);
   if (m_overlayPlayButton)
     m_overlayPlayButton->setIsWanted(false);
 }
 
-bool MediaControls::isVisible() const {
+bool MediaControlsImpl::isVisible() const {
   return m_panel->isOpaque();
 }
 
-void MediaControls::makeOpaque() {
+void MediaControlsImpl::makeOpaque() {
   m_panel->makeOpaque();
 }
 
-void MediaControls::makeTransparent() {
+void MediaControlsImpl::makeTransparent() {
   m_panel->makeTransparent();
 }
 
-bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
+bool MediaControlsImpl::shouldHideMediaControls(unsigned behaviorFlags) const {
   // Never hide for a media element without visual representation.
   if (!mediaElement().isHTMLVideoElement() || !mediaElement().hasVideo() ||
       mediaElement().isPlayingRemotely()) {
@@ -553,7 +566,7 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
   return true;
 }
 
-void MediaControls::updatePlayState() {
+void MediaControlsImpl::updatePlayState() {
   if (m_isPausedForScrubbing)
     return;
 
@@ -562,14 +575,14 @@ void MediaControls::updatePlayState() {
   m_playButton->updateDisplayType();
 }
 
-void MediaControls::beginScrubbing() {
+void MediaControlsImpl::beginScrubbing() {
   if (!mediaElement().paused()) {
     m_isPausedForScrubbing = true;
     mediaElement().pause();
   }
 }
 
-void MediaControls::endScrubbing() {
+void MediaControlsImpl::endScrubbing() {
   if (m_isPausedForScrubbing) {
     m_isPausedForScrubbing = false;
     if (mediaElement().paused())
@@ -577,7 +590,7 @@ void MediaControls::endScrubbing() {
   }
 }
 
-void MediaControls::updateCurrentTimeDisplay() {
+void MediaControlsImpl::updateCurrentTimeDisplay() {
   double now = mediaElement().currentTime();
   double duration = mediaElement().duration();
 
@@ -588,7 +601,7 @@ void MediaControls::updateCurrentTimeDisplay() {
   m_currentTimeDisplay->setCurrentValue(now);
 }
 
-void MediaControls::toggleTextTrackList() {
+void MediaControlsImpl::toggleTextTrackList() {
   if (!mediaElement().hasClosedCaptions()) {
     m_textTrackList->setVisible(false);
     return;
@@ -600,7 +613,7 @@ void MediaControls::toggleTextTrackList() {
   m_textTrackList->setVisible(!m_textTrackList->isWanted());
 }
 
-void MediaControls::showTextTrackAtIndex(unsigned indexToEnable) {
+void MediaControlsImpl::showTextTrackAtIndex(unsigned indexToEnable) {
   TextTrackList* trackList = mediaElement().textTracks();
   if (indexToEnable >= trackList->length())
     return;
@@ -609,7 +622,7 @@ void MediaControls::showTextTrackAtIndex(unsigned indexToEnable) {
     track->setMode(TextTrack::showingKeyword());
 }
 
-void MediaControls::disableShowingTextTracks() {
+void MediaControlsImpl::disableShowingTextTracks() {
   TextTrackList* trackList = mediaElement().textTracks();
   for (unsigned i = 0; i < trackList->length(); ++i) {
     TextTrack* track = trackList->anonymousIndexedGetter(i);
@@ -618,12 +631,12 @@ void MediaControls::disableShowingTextTracks() {
   }
 }
 
-void MediaControls::refreshCastButtonVisibility() {
+void MediaControlsImpl::refreshCastButtonVisibility() {
   refreshCastButtonVisibilityWithoutUpdate();
   BatchedControlUpdate batch(this);
 }
 
-void MediaControls::refreshCastButtonVisibilityWithoutUpdate() {
+void MediaControlsImpl::refreshCastButtonVisibilityWithoutUpdate() {
   if (!shouldShowCastButton(mediaElement())) {
     m_castButton->setIsWanted(false);
     m_overlayCastButton->setIsWanted(false);
@@ -655,7 +668,7 @@ void MediaControls::refreshCastButtonVisibilityWithoutUpdate() {
   }
 }
 
-void MediaControls::showOverlayCastButtonIfNeeded() {
+void MediaControlsImpl::showOverlayCastButtonIfNeeded() {
   if (mediaElement().shouldShowControls() ||
       !shouldShowCastButton(mediaElement()))
     return;
@@ -664,25 +677,25 @@ void MediaControls::showOverlayCastButtonIfNeeded() {
   resetHideMediaControlsTimer();
 }
 
-void MediaControls::enterFullscreen() {
+void MediaControlsImpl::enterFullscreen() {
   Fullscreen::requestFullscreen(mediaElement());
 }
 
-void MediaControls::exitFullscreen() {
+void MediaControlsImpl::exitFullscreen() {
   Fullscreen::exitFullscreen(document());
 }
 
-void MediaControls::startedCasting() {
+void MediaControlsImpl::startedCasting() {
   m_castButton->setIsPlayingRemotely(true);
   m_overlayCastButton->setIsPlayingRemotely(true);
 }
 
-void MediaControls::stoppedCasting() {
+void MediaControlsImpl::stoppedCasting() {
   m_castButton->setIsPlayingRemotely(false);
   m_overlayCastButton->setIsPlayingRemotely(false);
 }
 
-void MediaControls::defaultEventHandler(Event* event) {
+void MediaControlsImpl::defaultEventHandler(Event* event) {
   HTMLDivElement::defaultEventHandler(event);
 
   // Do not handle events to not interfere with the rest of the page if no
@@ -754,7 +767,7 @@ void MediaControls::defaultEventHandler(Event* event) {
   }
 }
 
-void MediaControls::hideMediaControlsTimerFired(TimerBase*) {
+void MediaControlsImpl::hideMediaControlsTimerFired(TimerBase*) {
   unsigned behaviorFlags =
       m_hideTimerBehaviorFlags | IgnoreFocus | IgnoreVideoHover;
   m_hideTimerBehaviorFlags = IgnoreNone;
@@ -770,23 +783,23 @@ void MediaControls::hideMediaControlsTimerFired(TimerBase*) {
   m_overlayCastButton->setIsWanted(false);
 }
 
-void MediaControls::startHideMediaControlsTimer() {
+void MediaControlsImpl::startHideMediaControlsTimer() {
   m_hideMediaControlsTimer.startOneShot(
       timeWithoutMouseMovementBeforeHidingMediaControls, BLINK_FROM_HERE);
 }
 
-void MediaControls::stopHideMediaControlsTimer() {
+void MediaControlsImpl::stopHideMediaControlsTimer() {
   m_keepShowingUntilTimerFires = false;
   m_hideMediaControlsTimer.stop();
 }
 
-void MediaControls::resetHideMediaControlsTimer() {
+void MediaControlsImpl::resetHideMediaControlsTimer() {
   stopHideMediaControlsTimer();
   if (!mediaElement().paused())
     startHideMediaControlsTimer();
 }
 
-bool MediaControls::containsRelatedTarget(Event* event) {
+bool MediaControlsImpl::containsRelatedTarget(Event* event) {
   if (!event->isMouseEvent())
     return false;
   EventTarget* relatedTarget = toMouseEvent(event)->relatedTarget();
@@ -795,7 +808,7 @@ bool MediaControls::containsRelatedTarget(Event* event) {
   return contains(relatedTarget->toNode());
 }
 
-void MediaControls::onVolumeChange() {
+void MediaControlsImpl::onVolumeChange() {
   m_muteButton->updateDisplayType();
   m_volumeSlider->setVolume(mediaElement().muted() ? 0
                                                    : mediaElement().volume());
@@ -809,7 +822,7 @@ void MediaControls::onVolumeChange() {
   m_muteButton->setIsWanted(mediaElement().hasAudio());
 }
 
-void MediaControls::onFocusIn() {
+void MediaControlsImpl::onFocusIn() {
   if (!mediaElement().shouldShowControls())
     return;
 
@@ -817,7 +830,7 @@ void MediaControls::onFocusIn() {
   resetHideMediaControlsTimer();
 }
 
-void MediaControls::onTimeUpdate() {
+void MediaControlsImpl::onTimeUpdate() {
   m_timeline->setPosition(mediaElement().currentTime());
   updateCurrentTimeDisplay();
 
@@ -832,7 +845,7 @@ void MediaControls::onTimeUpdate() {
     makeTransparent();
 }
 
-void MediaControls::onDurationChange() {
+void MediaControlsImpl::onDurationChange() {
   const double duration = mediaElement().duration();
 
   // Update the displayed current time/duration.
@@ -845,7 +858,7 @@ void MediaControls::onDurationChange() {
   m_timeline->setDuration(duration);
 }
 
-void MediaControls::onPlay() {
+void MediaControlsImpl::onPlay() {
   updatePlayState();
   m_timeline->setPosition(mediaElement().currentTime());
   updateCurrentTimeDisplay();
@@ -853,7 +866,7 @@ void MediaControls::onPlay() {
   startHideMediaControlsTimer();
 }
 
-void MediaControls::onPause() {
+void MediaControlsImpl::onPause() {
   updatePlayState();
   m_timeline->setPosition(mediaElement().currentTime());
   updateCurrentTimeDisplay();
@@ -862,40 +875,40 @@ void MediaControls::onPause() {
   stopHideMediaControlsTimer();
 }
 
-void MediaControls::onTextTracksAddedOrRemoved() {
+void MediaControlsImpl::onTextTracksAddedOrRemoved() {
   m_toggleClosedCaptionsButton->setIsWanted(mediaElement().hasClosedCaptions());
   BatchedControlUpdate batch(this);
 }
 
-void MediaControls::onTextTracksChanged() {
+void MediaControlsImpl::onTextTracksChanged() {
   m_toggleClosedCaptionsButton->updateDisplayType();
 }
 
-void MediaControls::onError() {
+void MediaControlsImpl::onError() {
   // TODO(mlamouri): we should only change the aspects of the control that need
   // to be changed.
   reset();
 }
 
-void MediaControls::onLoadedMetadata() {
+void MediaControlsImpl::onLoadedMetadata() {
   // TODO(mlamouri): we should only change the aspects of the control that need
   // to be changed.
   reset();
 }
 
-void MediaControls::onEnteredFullscreen() {
+void MediaControlsImpl::onEnteredFullscreen() {
   m_fullscreenButton->setIsFullscreen(true);
   stopHideMediaControlsTimer();
   startHideMediaControlsTimer();
 }
 
-void MediaControls::onExitedFullscreen() {
+void MediaControlsImpl::onExitedFullscreen() {
   m_fullscreenButton->setIsFullscreen(false);
   stopHideMediaControlsTimer();
   startHideMediaControlsTimer();
 }
 
-void MediaControls::notifyElementSizeChanged(ClientRect* newSize) {
+void MediaControlsImpl::notifyElementSizeChanged(ClientRect* newSize) {
   // Note that this code permits a bad frame on resize, since it is
   // run after the relayout / paint happens.  It would be great to improve
   // this, but it would be even greater to move this code entirely to
@@ -918,11 +931,11 @@ void MediaControls::notifyElementSizeChanged(ClientRect* newSize) {
     m_elementSizeChangedTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void MediaControls::elementSizeChangedTimerFired(TimerBase*) {
+void MediaControlsImpl::elementSizeChangedTimerFired(TimerBase*) {
   computeWhichControlsFit();
 }
 
-void MediaControls::computeWhichControlsFit() {
+void MediaControlsImpl::computeWhichControlsFit() {
   // Hide all controls that don't fit, and show the ones that do.
   // This might be better suited for a layout, but since JS media controls
   // won't benefit from that anwyay, we just do it here like JS will.
@@ -1035,16 +1048,17 @@ void MediaControls::computeWhichControlsFit() {
   }
 }
 
-void MediaControls::invalidate(Element* element) {
+void MediaControlsImpl::invalidate(Element* element) {
   if (!element)
     return;
 
-  if (LayoutObject* layoutObject = element->layoutObject())
+  if (LayoutObject* layoutObject = element->layoutObject()) {
     layoutObject
         ->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+  }
 }
 
-void MediaControls::networkStateChanged() {
+void MediaControlsImpl::networkStateChanged() {
   invalidate(m_playButton);
   invalidate(m_overlayPlayButton);
   invalidate(m_muteButton);
@@ -1059,11 +1073,11 @@ void MediaControls::networkStateChanged() {
       m_downloadButton->shouldDisplayDownloadButton());
 }
 
-bool MediaControls::overflowMenuVisible() {
+bool MediaControlsImpl::overflowMenuVisible() {
   return m_overflowList ? m_overflowList->isWanted() : false;
 }
 
-void MediaControls::toggleOverflowMenu() {
+void MediaControlsImpl::toggleOverflowMenu() {
   DCHECK(m_overflowList);
 
   if (!m_overflowList->isWanted())
@@ -1071,7 +1085,7 @@ void MediaControls::toggleOverflowMenu() {
   m_overflowList->setIsWanted(!m_overflowList->isWanted());
 }
 
-void MediaControls::hideAllMenus() {
+void MediaControlsImpl::hideAllMenus() {
   m_windowEventListener->stop();
 
   if (m_overflowList->isWanted())
@@ -1080,9 +1094,8 @@ void MediaControls::hideAllMenus() {
     m_textTrackList->setVisible(false);
 }
 
-DEFINE_TRACE(MediaControls) {
+DEFINE_TRACE(MediaControlsImpl) {
   visitor->trace(m_resizeObserver);
-  visitor->trace(m_mediaElement);
   visitor->trace(m_panel);
   visitor->trace(m_overlayPlayButton);
   visitor->trace(m_overlayEnclosure);
@@ -1104,6 +1117,7 @@ DEFINE_TRACE(MediaControls) {
   visitor->trace(m_mediaEventListener);
   visitor->trace(m_windowEventListener);
   visitor->trace(m_orientationLockDelegate);
+  MediaControls::trace(visitor);
   HTMLDivElement::trace(visitor);
 }
 

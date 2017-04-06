@@ -5,6 +5,7 @@
 #ifndef MediaControlsWindowEventListener_h
 #define MediaControlsWindowEventListener_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 #include "wtf/Functional.h"
 
@@ -12,7 +13,8 @@ namespace blink {
 
 class MediaControls;
 
-class MediaControlsWindowEventListener final : public EventListener {
+class CORE_EXPORT MediaControlsWindowEventListener final
+    : public EventListener {
  public:
   using Callback = Function<void(), WTF::SameThreadAffinity>;
 

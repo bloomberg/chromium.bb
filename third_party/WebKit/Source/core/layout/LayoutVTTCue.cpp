@@ -26,7 +26,8 @@
 #include "core/layout/LayoutVTTCue.h"
 
 #include "core/frame/Settings.h"
-#include "core/html/shadow/MediaControls.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/MediaControls.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutState.h"
 #include "wtf/MathExtras.h"
@@ -326,28 +327,37 @@ void LayoutVTTCue::repositionCueSnapToLinesNotSet() {
 }
 
 IntRect LayoutVTTCue::computeControlsRect() const {
-  // Determine the area covered by the media controls, if any. If the controls
-  // are present, they are the next sibling of the text track container, which
-  // is our parent. (LayoutMedia ensures that the media controls are laid out
-  // before text tracks, so that the layout is up to date here.)
+  // Determine the area covered by the media controls, if any. For this, the
+  // LayoutVTTCue will walk the tree up to the HTMLMediaElement, then ask for
+  // the MediaControls.
   DCHECK(parent()->node()->isTextTrackContainer());
-  LayoutObject* controlsContainer = parent()->nextSibling();
-  if (!controlsContainer)
+  DCHECK(isHTMLMediaElement(parent()->parent()->node()));
+
+  HTMLMediaElement* mediaElement =
+      toHTMLMediaElement(parent()->parent()->node());
+  DCHECK(mediaElement);
+
+  MediaControls* controls = mediaElement->mediaControls();
+  if (!controls || !controls->containerLayoutObject())
     return IntRect();
+
   // Only a part of the media controls is used for overlap avoidance.
-  MediaControls* controls = toMediaControls(controlsContainer->node());
-  LayoutObject* controlsLayout = controls->layoutObjectForTextTrackLayout();
+  LayoutObject* panelLayoutObject =
+      mediaElement->mediaControls()->panelLayoutObject();
+
   // The (second part of the) following is mostly defensive - in general
   // there should be a LayoutBox representing the part of the controls that
   // are relevant for overlap avoidance. (The controls pseudo elements are
   // generally reachable from outside the shadow tree though, hence the
   // "mostly".)
-  if (!controlsLayout || !controlsLayout->isBox())
+  if (!panelLayoutObject || !panelLayoutObject->isBox())
     return IntRect();
+
   // Assume that the controls container are positioned in the same relative
   // position as the text track container. (LayoutMedia::layout ensures this.)
-  return contentBoxRelativeToAncestor(toLayoutBox(*controlsLayout),
-                                      toLayoutBox(*controlsContainer));
+  return contentBoxRelativeToAncestor(
+      toLayoutBox(*panelLayoutObject),
+      toLayoutBox(*controls->containerLayoutObject()));
 }
 
 void LayoutVTTCue::layout() {

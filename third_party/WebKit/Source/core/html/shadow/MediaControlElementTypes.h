@@ -79,7 +79,7 @@ CORE_EXPORT MediaControlElementType mediaControlElementType(const Node*);
 
 // TODO(mustaq): The Media control elements that use MouseEvents should be
 // ported to use PointerEvents instead.
-class MediaControlElement : public GarbageCollectedMixin {
+class CORE_EXPORT MediaControlElement : public GarbageCollectedMixin {
  public:
   // These hold the state about whether this control should be shown if
   // space permits.  These will also show / hide as needed.
@@ -151,8 +151,8 @@ class MediaControlElement : public GarbageCollectedMixin {
 
 // ----------------------------
 
-class MediaControlDivElement : public HTMLDivElement,
-                               public MediaControlElement {
+class CORE_EXPORT MediaControlDivElement : public HTMLDivElement,
+                                           public MediaControlElement {
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 
  public:
@@ -167,8 +167,8 @@ class MediaControlDivElement : public HTMLDivElement,
 
 // ----------------------------
 
-class MediaControlInputElement : public HTMLInputElement,
-                                 public MediaControlElement {
+class CORE_EXPORT MediaControlInputElement : public HTMLInputElement,
+                                             public MediaControlElement {
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
 
  public:
@@ -193,7 +193,8 @@ class MediaControlInputElement : public HTMLInputElement,
 
 // ----------------------------
 
-class MediaControlTimeDisplayElement : public MediaControlDivElement {
+class CORE_EXPORT MediaControlTimeDisplayElement
+    : public MediaControlDivElement {
  public:
   void setCurrentValue(double);
   double currentValue() const { return m_currentValue; }
