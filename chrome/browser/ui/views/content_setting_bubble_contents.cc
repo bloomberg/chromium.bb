@@ -34,7 +34,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -47,6 +46,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/native_cursor.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -171,7 +171,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(content_setting_bubble_model),
       custom_link_(nullptr),
       manage_link_(nullptr),
-      manage_button_(nullptr),
+      manage_checkbox_(nullptr),
       learn_more_link_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
@@ -416,6 +416,15 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
+  if (bubble_content.show_manage_text_as_checkbox) {
+    manage_checkbox_ =
+        new views::Checkbox(base::UTF8ToUTF16(bubble_content.manage_text));
+    manage_checkbox_->set_listener(this);
+    layout->AddPaddingRow(0, related_control_vertical_spacing);
+    layout->StartRow(0, indented_kSingleColumnSetId);
+    layout->AddView(manage_checkbox_);
+  }
+
   if (!bubble_content_empty) {
     if (!layout_delegate->IsHarmonyMode()) {
       layout->AddPaddingRow(0, related_control_vertical_spacing);
@@ -428,18 +437,15 @@ void ContentSettingBubbleContents::Init() {
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
-  if (content_setting_bubble_model_->bubble_content()
-          .show_manage_text_as_button) {
-    manage_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, base::UTF8ToUTF16(
-                  content_setting_bubble_model_->bubble_content().manage_text));
-    return manage_button_;
-  } else {
-    manage_link_ = new views::Link(base::UTF8ToUTF16(
-        content_setting_bubble_model_->bubble_content().manage_text));
-    manage_link_->set_listener(this);
-    return manage_link_;
-  }
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model_->bubble_content();
+  // Added as part of the primary view.
+  if (bubble_content.show_manage_text_as_checkbox)
+    return nullptr;
+
+  manage_link_ = new views::Link(base::UTF8ToUTF16(bubble_content.manage_text));
+  manage_link_->set_listener(this);
+  return manage_link_;
 }
 
 bool ContentSettingBubbleContents::Accept() {
@@ -457,6 +463,10 @@ int ContentSettingBubbleContents::GetDialogButtons() const {
 
 base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  const base::string16& done_text =
+      content_setting_bubble_model_->bubble_content().done_button_text;
+  if (!done_text.empty())
+    return done_text;
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
@@ -472,9 +482,12 @@ void ContentSettingBubbleContents::DidFinishNavigation(
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (manage_button_ == sender) {
-    GetWidget()->Close();
-    content_setting_bubble_model_->OnManageLinkClicked();
+  if (manage_checkbox_ == sender) {
+    content_setting_bubble_model_->OnManageCheckboxChecked(
+        manage_checkbox_->checked());
+
+    // Toggling the check state may change the dialog button text.
+    GetDialogClientView()->UpdateDialogButtons();
   } else {
     RadioGroup::const_iterator i(
         std::find(radio_group_.begin(), radio_group_.end(), sender));

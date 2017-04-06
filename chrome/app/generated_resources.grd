@@ -12291,9 +12291,6 @@ read aloud to screenreader users to announce that a completion is available.">
         Load full site
       </message>
     </if>
-    <message name="IDS_FILTERED_DECEPTIVE_CONTENT_RELOAD_ACTION" desc="Button which reloads the page after a toggle is checked which prompts the user to reload.">
-      Reload
-    </message>
     <if expr="use_titlecase">
       <message  name="IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE" desc="In Title Case: title of the prompt which is shown to inform the user when Chrome blocks some potentially deceptive content on the site. This happens as an additional layer of protection when users proceed through the Safe Browsing interstitial to view the site regardless.">
         Content Blocked

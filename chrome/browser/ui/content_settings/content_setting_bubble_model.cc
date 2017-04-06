@@ -1247,7 +1247,7 @@ void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
 void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
   set_manage_text(
       l10n_util::GetStringUTF8(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
-  set_show_manage_text_as_button(true);
+  set_show_manage_text_as_checkbox(true);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
@@ -1255,11 +1255,22 @@ void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
       IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
 }
 
-void ContentSettingSubresourceFilterBubbleModel::OnManageLinkClicked() {
-  subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
-      subresource_filter::ContentSubresourceFilterDriverFactory::
-          FromWebContents(web_contents());
-  driver_factory->OnReloadRequested();
+void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
+    bool is_checked) {
+  if (is_checked)
+    set_done_button_text(l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD));
+  else
+    set_done_button_text(base::string16());
+  is_checked_ = is_checked;
+}
+
+void ContentSettingSubresourceFilterBubbleModel::OnDoneClicked() {
+  if (is_checked_) {
+    subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
+        subresource_filter::ContentSubresourceFilterDriverFactory::
+            FromWebContents(web_contents());
+    driver_factory->OnReloadRequested();
+  }
 }
 
 ContentSettingSubresourceFilterBubbleModel*
@@ -1554,10 +1565,7 @@ ContentSettingBubbleModel::MediaMenu::MediaMenu(const MediaMenu& other) =
 
 ContentSettingBubbleModel::MediaMenu::~MediaMenu() {}
 
-ContentSettingBubbleModel::BubbleContent::BubbleContent()
-    : radio_group_enabled(false),
-      custom_link_enabled(false),
-      show_manage_text_as_button(false) {}
+ContentSettingBubbleModel::BubbleContent::BubbleContent() {}
 
 ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}
 

@@ -118,14 +118,15 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     base::string16 message;
     ListItems list_items;
     RadioGroup radio_group;
-    bool radio_group_enabled;
+    bool radio_group_enabled = false;
     std::vector<DomainList> domain_lists;
     std::string custom_link;
-    bool custom_link_enabled;
+    bool custom_link_enabled = false;
     std::string manage_text;
-    bool show_manage_text_as_button;
+    bool show_manage_text_as_checkbox = false;
     MediaMenuMap media_menus;
     std::string learn_more_link;
+    base::string16 done_button_text;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
@@ -154,6 +155,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnListItemClicked(int index) {}
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
+  virtual void OnManageCheckboxChecked(bool is_checked) {}
   virtual void OnLearnMoreLinkClicked() {}
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
                                   const std::string& selected_device_id) {}
@@ -220,20 +222,23 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_custom_link_enabled(bool enabled) {
     bubble_content_.custom_link_enabled = enabled;
   }
-  void set_manage_text(const std::string& link) {
-    bubble_content_.manage_text = link;
+  void set_manage_text(const std::string& text) {
+    bubble_content_.manage_text = text;
   }
-  void set_show_manage_text_as_button(bool show_manage_text_as_button) {
-    bubble_content_.show_manage_text_as_button = show_manage_text_as_button;
-  }
-  void set_learn_more_link(const std::string& link) {
-    bubble_content_.learn_more_link = link;
+  void set_show_manage_text_as_checkbox(bool show_manage_text_as_checkbox) {
+    bubble_content_.show_manage_text_as_checkbox = show_manage_text_as_checkbox;
   }
   void add_media_menu(content::MediaStreamType type, const MediaMenu& menu) {
     bubble_content_.media_menus[type] = menu;
   }
   void set_selected_device(const content::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
+  }
+  void set_learn_more_link(const std::string& link) {
+    bubble_content_.learn_more_link = link;
+  }
+  void set_done_button_text(const base::string16& done_button_text) {
+    bubble_content_.done_button_text = done_button_text;
   }
   rappor::RapporServiceImpl* rappor_service() const { return rappor_service_; }
 
@@ -318,9 +323,6 @@ class ContentSettingSubresourceFilterBubbleModel
 
   ~ContentSettingSubresourceFilterBubbleModel() override;
 
-  void OnManageLinkClicked() override;
-  ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
-      override;
 
  private:
   void SetMessage();
@@ -328,6 +330,12 @@ class ContentSettingSubresourceFilterBubbleModel
   // ContentSettingBubbleModel:
   void SetTitle() override;
   void SetManageText() override;
+  void OnManageCheckboxChecked(bool is_checked) override;
+  ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
+      override;
+  void OnDoneClicked() override;
+
+  bool is_checked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterBubbleModel);
 };

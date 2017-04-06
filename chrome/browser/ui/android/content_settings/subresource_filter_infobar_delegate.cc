@@ -71,7 +71,7 @@ base::string16 SubresourceFilterInfobarDelegate::GetButtonLabel(
 
   return l10n_util::GetStringUTF16(
       using_experimental_infobar_
-          ? IDS_FILTERED_DECEPTIVE_CONTENT_RELOAD_ACTION
+          ? IDS_APP_MENU_RELOAD
           : IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
 }
 
