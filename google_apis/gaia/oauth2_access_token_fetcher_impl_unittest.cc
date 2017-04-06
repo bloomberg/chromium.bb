@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -124,7 +125,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockUrlFetcherFactory factory_;
   MockOAuth2AccessTokenConsumer consumer_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
