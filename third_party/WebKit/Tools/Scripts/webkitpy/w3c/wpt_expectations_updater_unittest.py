@@ -153,11 +153,17 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             updater.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}),
             {'Pass'})
         self.assertEqual(
-            updater.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
+            updater.get_expectations({'expected': 'PASS', 'actual': 'TEXT PASS'}),
+            {'Pass', 'Failure'})
+        self.assertEqual(
+            updater.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH TEXT'}),
             {'Crash', 'Failure', 'Timeout'})
         self.assertEqual(
             updater.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}),
             {'Pass'})
+        self.assertEqual(
+            updater.get_expectations({'expected': 'Pass', 'actual': 'IMAGE+TEXT IMAGE IMAGE'}),
+            {'Failure'})
 
     def test_create_line_list_old_tests(self):
         # In this example, there are two failures that are not in w3c tests.
@@ -176,7 +182,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
             'external/fake/test/zzzz.html': {
-                'test-mac-mac10.10': {'expected': 'PASS', 'actual': 'FAIL', 'bug': 'crbug.com/test'},
+                'test-mac-mac10.10': {'expected': 'PASS', 'actual': 'TEXT', 'bug': 'crbug.com/test'},
             },
             'external/fake/test/path.html': {
                 'test-linux-trusty': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},

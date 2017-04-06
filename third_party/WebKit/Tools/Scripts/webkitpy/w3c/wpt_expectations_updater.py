@@ -197,10 +197,11 @@ class WPTExpectationsUpdater(object):
         return merged_dict
 
     def get_expectations(self, results):
-        """Returns a set of test expectations for a given test dict.
+        """Returns a set of test expectations to use based on results.
 
         Returns a set of one or more test expectations based on the expected
-        and actual results of a given test name.
+        and actual results of a given test name. This function is to decide
+        expectations for tests that could not be rebaselined.
 
         Args:
             results: A dictionary that maps one test to its results. Example:
@@ -217,16 +218,13 @@ class WPTExpectationsUpdater(object):
             capitalized. Example: set(['Failure', 'Timeout']).
         """
         expectations = set()
-        failure_types = ['TEXT', 'FAIL', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'MISSING', 'LEAK']
-        test_expectation_types = ['SLOW', 'TIMEOUT', 'CRASH', 'PASS', 'REBASELINE', 'NEEDSREBASELINE', 'NEEDSMANUALREBASELINE']
-        for expected in results['expected'].split():
-            for actual in results['actual'].split():
-                if expected in test_expectation_types and actual in failure_types:
-                    expectations.add('Failure')
-                if expected in failure_types and actual in test_expectation_types:
-                    expectations.add(actual.capitalize())
-                if expected in test_expectation_types and actual in test_expectation_types:
-                    expectations.add(actual.capitalize())
+        failure_types = ('TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO')
+        other_types = ('TIMEOUT', 'CRASH', 'PASS')
+        for actual in results['actual'].split():
+            if actual in failure_types:
+                expectations.add('Failure')
+            if actual in other_types:
+                expectations.add(actual.capitalize())
         return expectations
 
     def create_line_list(self, merged_results):
