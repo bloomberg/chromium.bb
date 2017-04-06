@@ -37,6 +37,7 @@ class CustomTabObserver extends EmptyTabObserver {
 
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
+    private long mFirstCommitTimestamp;
 
     private boolean mScreenshotTakenForCurrentNavigation;
 
@@ -152,6 +153,22 @@ class CustomTabObserver extends EmptyTabObserver {
             RecordHistogram.recordCustomTimesHistogram(histogramPrefix + ".IntentToPageLoadedTime",
                     timeToPageLoadFinishedMs, 10, TimeUnit.MINUTES.toMillis(10),
                     TimeUnit.MILLISECONDS, 100);
+
+            // Not all page loads go through a navigation commit (prerender for instance).
+            if (mPageLoadStartedTimestamp != 0) {
+                long timeToFirstCommitMs = mFirstCommitTimestamp - mIntentReceivedTimestamp;
+                // Current median is 550ms, and long tail is very long. ZoomedIn gives good view of
+                // the median and ZoomedOut gives a good overview.
+                RecordHistogram.recordCustomTimesHistogram(
+                        "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedIn",
+                        timeToFirstCommitMs, 200, 1000, TimeUnit.MILLISECONDS, 100);
+                // For ZoomedOut very rarely is it under 50ms and this range matches
+                // CustomTabs.IntentToFirstCommitNavigationTime2.ZoomedOut.
+                RecordHistogram.recordCustomTimesHistogram(
+                        "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedOut",
+                        timeToFirstCommitMs, 50, TimeUnit.MINUTES.toMillis(10),
+                        TimeUnit.MILLISECONDS, 50);
+            }
         }
         resetPageLoadTracking();
         captureNavigationInfo(tab);
@@ -174,6 +191,17 @@ class CustomTabObserver extends EmptyTabObserver {
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.NAVIGATION_FAILED);
         }
+    }
+
+    @Override
+    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
+            boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+            int httpStatusCode) {
+        boolean firstNavigation = mFirstCommitTimestamp == 0;
+        boolean isFirstMainFrameCommit = firstNavigation && hasCommitted && !isErrorPage
+                && isInMainFrame && !isSameDocument && !isFragmentNavigation;
+        if (isFirstMainFrameCommit) mFirstCommitTimestamp = SystemClock.elapsedRealtime();
     }
 
     private void resetPageLoadTracking() {
