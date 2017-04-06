@@ -287,6 +287,7 @@ define('media_router_bindings', [
       MediaStatusObserverPtr: mediaStatusMojom.MediaStatusObserverPtr,
       Sink: mediaRouterMojom.MediaSink,
       SinkExtraData: mediaRouterMojom.MediaSinkExtraData,
+      TimeDelta: timeMojom.TimeDelta,
       Url: urlMojom.Url,
     };
   };
@@ -661,8 +662,8 @@ define('media_router_bindings', [
    *     requesting presentation. TODO(mfoltz): Remove.
    * @param {!originMojom.Origin} origin Origin of site requesting presentation.
    * @param {!number} tabId ID of tab requesting presentation.
-   * @param {!TimeDelta} timeout If positive, the timeout duration for the
-   *     request. Otherwise, the default duration will be used.
+   * @param {!timeMojom.TimeDelta} timeout If positive, the timeout duration for
+   *     the request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
@@ -692,8 +693,8 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!originMojom.Origin} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
-   * @param {!TimeDelta} timeout If positive, the timeout duration for the
-   *     request. Otherwise, the default duration will be used.
+   * @param {!timeMojom.TimeDelta} timeout If positive, the timeout duration for
+   *     the request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
@@ -724,8 +725,8 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!originMojom.Origin} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
-   * @param {!TimeDelta} timeout If positive, the timeout duration for the
-   *     request. Otherwise, the default duration will be used.
+   * @param {!timeMojom.TimeDelta} timeout If positive, the timeout duration for
+   *     the request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
