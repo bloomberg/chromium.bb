@@ -1693,16 +1693,12 @@ crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write/document
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/constructor.html [ Failure Timeout ]
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/finished.html [ Pass Failure ]
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Pass Failure ]
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/playbackRate.html [ Pass Failure ]
-# This test may either fail a DCHECK or time out:
-# https://storage.googleapis.com/chromium-layout-test-archives/mac_chromium_rel_ng/364861/layout-test-results/results.html
-# However, this test seems to just fail now.  Allowing this, with a TODO(https://crbug.com/678077) to fix.
-crbug.com/600248 external/wpt/web-animations/interfaces/Animation/cancel.html [ Pass Failure Crash Timeout ]
-crbug.com/600248 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
+crbug.com/600248 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure ]
+crbug.com/600248 external/wpt/web-animations/interfaces/Animation/cancel.html [ Pass Failure Crash ]
+crbug.com/600248 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
+crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Timeout ]
+crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
@@ -2182,15 +2178,6 @@ crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/asyn
 #crbug.com/626703 external/wpt/css/css-writing-modes-3/sizing-orthog-vlr-in-htb-004.xht [ Failure ]
 #crbug.com/626703 external/wpt/css/css-writing-modes-3/sizing-orthog-prct-vrl-in-htb-001.xht [ Failure ]
 #crbug.com/626703 external/wpt/css/css-writing-modes-3/sizing-orthog-prct-htb-in-vlr-002.xht [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-transform.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Timeout ]
-crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffectReadOnly/copy-contructor.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-shapes.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
-crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/composite.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/combining-effects/effect-composition.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/copy-contructor.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-filters.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
@@ -2218,7 +2205,6 @@ crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopen
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Failure Pass ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
-crbug.com/626703 external/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
