@@ -2060,10 +2060,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                                WindowOpenDisposition::CURRENT_TAB, false);
 }
 
+// crbug.com/708158
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_PrerenderFragmentNavigateFragment \
+  DISABLED_PrerenderFragmentNavigateFragment
+#else
+#define MAYBE_PrerenderFragmentNavigateFragment \
+  PrerenderFragmentNavigateFragment
+#endif
 // Checks that we do not use a prerendered page when we prerender a fragment
 // but navigate to a different fragment on the same page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderFragmentNavigateFragment) {
+                       MAYBE_PrerenderFragmentNavigateFragment) {
   PrerenderTestURL("/prerender/no_prerender_page.html#other_fragment",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
