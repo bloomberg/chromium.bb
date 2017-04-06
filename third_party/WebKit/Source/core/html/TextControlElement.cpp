@@ -219,17 +219,9 @@ void TextControlElement::setFocused(bool flag) {
     dispatchFormControlChangeEvent();
 }
 
-bool TextControlElement::shouldDispatchFormControlChangeEvent(
-    String& oldValue,
-    String& newValue) {
-  return !equalIgnoringNullity(oldValue, newValue);
-}
-
 void TextControlElement::dispatchFormControlChangeEvent() {
-  String newValue = value();
   if (!m_valueBeforeFirstUserEdit.isNull() &&
-      shouldDispatchFormControlChangeEvent(m_valueBeforeFirstUserEdit,
-                                           newValue)) {
+      !equalIgnoringNullity(m_valueBeforeFirstUserEdit, value())) {
     clearValueBeforeFirstUserEdit();
     dispatchChangeEvent();
   } else {
@@ -238,10 +230,8 @@ void TextControlElement::dispatchFormControlChangeEvent() {
 }
 
 void TextControlElement::enqueueChangeEvent() {
-  String newValue = value();
   if (!m_valueBeforeFirstUserEdit.isNull() &&
-      shouldDispatchFormControlChangeEvent(m_valueBeforeFirstUserEdit,
-                                           newValue)) {
+      !equalIgnoringNullity(m_valueBeforeFirstUserEdit, value())) {
     Event* event = Event::createBubble(EventTypeNames::change);
     event->setTarget(this);
     document().enqueueAnimationFrameEvent(event);

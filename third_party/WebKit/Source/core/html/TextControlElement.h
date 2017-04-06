@@ -158,7 +158,6 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void addPlaceholderBreakElementIfNecessary();
   String valueWithHardLineBreaks() const;
 
-  virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
   void copyNonAttributePropertiesFromElement(const Element&) override;
 
  private:

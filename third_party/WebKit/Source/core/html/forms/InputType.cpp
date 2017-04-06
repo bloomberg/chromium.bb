@@ -508,11 +508,6 @@ bool InputType::shouldSendChangeEventAfterCheckedChanged() {
   return true;
 }
 
-bool InputType::shouldDispatchFormControlChangeEvent(String& oldValue,
-                                                     String& newValue) {
-  return !equalIgnoringNullity(oldValue, newValue);
-}
-
 void InputType::dispatchSearchEvent() {}
 
 void InputType::setValue(const String& sanitizedValue,

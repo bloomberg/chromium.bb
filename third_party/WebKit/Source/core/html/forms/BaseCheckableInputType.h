@@ -67,7 +67,6 @@ class BaseCheckableInputType : public InputType, public InputTypeView {
                 TextControlSetValueSelection) final;
   void readingChecked() const final;
   bool isCheckable() final;
-  bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 };
 
 }  // namespace blink

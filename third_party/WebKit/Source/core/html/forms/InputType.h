@@ -224,7 +224,6 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual unsigned height() const;
   virtual unsigned width() const;
 
-  virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
   virtual void dispatchSearchEvent();
 
   // For test purpose

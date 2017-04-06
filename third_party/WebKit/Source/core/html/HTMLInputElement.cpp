@@ -1858,11 +1858,6 @@ PassRefPtr<ComputedStyle> HTMLInputElement::customStyleForLayoutObject() {
       originalStyleForLayoutObject());
 }
 
-bool HTMLInputElement::shouldDispatchFormControlChangeEvent(String& oldValue,
-                                                            String& newValue) {
-  return m_inputType->shouldDispatchFormControlChangeEvent(oldValue, newValue);
-}
-
 void HTMLInputElement::didNotifySubtreeInsertionsToDocument() {
   listAttributeTargetChanged();
 }

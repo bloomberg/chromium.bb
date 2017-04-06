@@ -399,8 +399,6 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   void removeFromRadioButtonGroup();
   PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
 
-  bool shouldDispatchFormControlChangeEvent(String&, String&) override;
-
   AtomicString m_name;
   // The value string in |value| value mode.
   String m_nonAttributeValue;

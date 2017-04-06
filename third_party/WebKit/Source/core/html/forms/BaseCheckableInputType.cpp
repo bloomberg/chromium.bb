@@ -119,10 +119,4 @@ bool BaseCheckableInputType::isCheckable() {
   return true;
 }
 
-bool BaseCheckableInputType::shouldDispatchFormControlChangeEvent(
-    String& oldValue,
-    String& newValue) {
-  return oldValue != newValue;
-}
-
 }  // namespace blink
