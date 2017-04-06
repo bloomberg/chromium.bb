@@ -749,12 +749,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #if !CONFIG_PVQ
   ENTROPY_CONTEXT *a, *l;
 #endif
-  INV_TXFM_PARAM inv_txfm_param;
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
-#if CONFIG_PVQ
-  int tx_width_pixels, tx_height_pixels;
-  int j;
-#endif
 #if CONFIG_VAR_TX
   int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
 #endif
@@ -804,36 +799,10 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
 
   if (x->pvq_skip[plane]) return;
-
-  // transform block size in pixels
-  tx_width_pixels = tx_size_wide[tx_size];
-  tx_height_pixels = tx_size_high[tx_size];
-
-  // Since av1 does not have separate function which does inverse transform
-  // but av1_inv_txfm_add_*x*() also does addition of predicted image to
-  // inverse transformed image,
-  // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-  for (j = 0; j < tx_height_pixels; j++) {
-    int i;
-    for (i = 0; i < tx_width_pixels; i++) dst[j * pd->dst.stride + i] = 0;
-  }
 #endif
-
-  // inverse transform parameters
-  inv_txfm_param.tx_type =
-      get_tx_type(pd->plane_type, xd, block_raster_idx, tx_size);
-  inv_txfm_param.tx_size = tx_size;
-  inv_txfm_param.eob = p->eobs[block];
-  inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    inv_txfm_param.bd = xd->bd;
-    av1_highbd_inv_txfm_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
-    return;
-  }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-  av1_inv_txfm_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
+  TX_TYPE tx_type = get_tx_type(pd->plane_type, xd, block_raster_idx, tx_size);
+  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst,
+                              pd->dst.stride, p->eobs[block]);
 }
 
 #if CONFIG_VAR_TX
