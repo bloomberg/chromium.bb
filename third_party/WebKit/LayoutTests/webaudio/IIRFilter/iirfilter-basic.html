@@ -119,17 +119,17 @@
         success = Should("createIIRFilter([1], [1, NaN, Infinity])", function () {
           // Feedback coefficients must be finite.
           context.createIIRFilter([1], [1, Infinity, NaN]);
-        }).throw("InvalidStateError") && success;
+        }).throw("TypeError") && success;
 
         success = Should("createIIRFilter([1, NaN, Infinity], [1])", function () {
           // Feedforward coefficients must be finite.
           context.createIIRFilter([1, Infinity, NaN], [1]);
-        }).throw("InvalidStateError") && success;
+        }).throw("TypeError") && success;
 
         success = Should("createIIRFilter([1, 'abc', []], [1])", function () {
           // Test that random junk in the array is converted to NaN.
           context.createIIRFilter([1, "abc", []], [1]);
-        }).throw("InvalidStateError") && success;
+        }).throw("TypeError") && success;
 
         Should("Exceptions for createIIRFilter", success)
           .summarize("were all correctly thrown",

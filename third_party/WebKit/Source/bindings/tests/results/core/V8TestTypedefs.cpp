@@ -136,7 +136,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
     impl->voidMethodArrayOfLongsArg();
     return;
   }
-  arrayOfLongsArg = toImplArray<Vector<int32_t>>(info[0], 1, info.GetIsolate(), exceptionState);
+  arrayOfLongsArg = toImplArray<Vector<int32_t>, IDLLong>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 

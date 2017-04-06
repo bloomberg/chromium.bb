@@ -10,7 +10,7 @@ test(function () {
 }, "IntersectionObserver constructor with { threshold: [1.1] }");
 
 test(function () {
-  assert_throws(RangeError(), function() {
+  assert_throws(TypeError(), function() {
     new IntersectionObserver(e => {}, {threshold: ["foo"]})
   })
 }, 'IntersectionObserver constructor with { threshold: ["foo"] }');

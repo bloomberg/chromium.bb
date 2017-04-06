@@ -504,13 +504,12 @@ double toDoubleSlow(v8::Isolate* isolate,
                     ExceptionState& exceptionState) {
   ASSERT(!value->IsNumber());
   v8::TryCatch block(isolate);
-  double doubleValue;
-  if (!v8Call(value->NumberValue(isolate->GetCurrentContext()), doubleValue,
-              block)) {
+  v8::Local<v8::Number> numberValue;
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&numberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return 0;
   }
-  return doubleValue;
+  return numberValue->Value();
 }
 
 double toRestrictedDouble(v8::Isolate* isolate,

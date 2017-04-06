@@ -639,7 +639,16 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
             vector_type = 'HeapVector'
         else:
             vector_type = 'Vector'
-        expression_format = 'toImplArray<%s<{cpp_type}>>({v8_value}, {index}, {isolate}, exceptionState)' % vector_type
+        if native_array_element_type.is_primitive_type:
+            value_type = native_value_traits_type_name(native_array_element_type)
+            expression_format = ('toImplArray<%s<{cpp_type}>, %s>'
+                                 '({v8_value}, {index}, {isolate}, '
+                                 'exceptionState)' % (vector_type, value_type))
+        else:
+            expression_format = ('toImplArray<%s<{cpp_type}>>'
+                                 '({v8_value}, {index}, {isolate}, '
+                                 'exceptionState)' % vector_type)
+
     expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type,
                                           index=index, v8_value=v8_value, isolate=isolate)
     return expression

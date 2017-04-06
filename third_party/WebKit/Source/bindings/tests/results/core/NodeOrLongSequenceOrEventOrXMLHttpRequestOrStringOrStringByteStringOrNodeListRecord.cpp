@@ -162,7 +162,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
   }
 
   if (v8Value->IsArray()) {
-    Vector<int32_t> cppValue = toImplArray<Vector<int32_t>>(v8Value, 0, isolate, exceptionState);
+    Vector<int32_t> cppValue = toImplArray<Vector<int32_t>, IDLLong>(v8Value, 0, isolate, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setLongSequence(cppValue);
