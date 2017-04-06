@@ -15,7 +15,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Records user action and histograms related to the {@link BottomSheet}.
+ * Records user actions and histograms related to the {@link BottomSheet}.
  */
 public class BottomSheetMetrics extends EmptyBottomSheetObserver {
     /**

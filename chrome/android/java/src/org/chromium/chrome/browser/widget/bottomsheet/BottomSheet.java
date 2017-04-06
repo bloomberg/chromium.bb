@@ -50,7 +50,6 @@ import java.lang.annotation.RetentionPolicy;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-
 public class BottomSheet
         extends FrameLayout implements FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
@@ -128,6 +127,9 @@ public class BottomSheet
     /** The animator used to move the sheet to a fixed state when released by the user. */
     private ValueAnimator mSettleAnimator;
 
+    /** The animator used for the toolbar fades. */
+    private ValueAnimator mToolbarFadeAnimator;
+
     /** The height of the toolbar. */
     private float mToolbarHeight;
 
@@ -138,10 +140,12 @@ public class BottomSheet
     private float mContainerHeight;
 
     /** The current state that the sheet is in. */
-    private int mCurrentState;
+    @SheetState
+    private int mCurrentState = SHEET_STATE_PEEK;
 
     /** The target sheet state. This is the state that the sheet is currently moving to. */
-    private int mTargetState;
+    @SheetState
+    private int mTargetState = SHEET_STATE_NONE;
 
     /** Used for getting the current tab. */
     private TabModelSelector mTabModelSelector;
@@ -210,7 +214,7 @@ public class BottomSheet
         int getVerticalScrollOffset();
 
         /**
-         * Called to destroy the BottomSheetContent when it is no longer in use.
+         * Called to destroy the {@link BottomSheetContent} when it is no longer in use.
          */
         void destroy();
 
@@ -418,8 +422,6 @@ public class BottomSheet
 
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
 
-        mCurrentState = SHEET_STATE_PEEK;
-
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -530,8 +532,6 @@ public class BottomSheet
         return mContainerHeight - getTranslationY();
     }
 
-    private ValueAnimator mToolbarFadeAnimator;
-
     /**
      * Show content in the bottom sheet's content area.
      * @param content The {@link BottomSheetContent} to show.
@@ -564,8 +564,8 @@ public class BottomSheet
      * Fade between a new toolbar and the old toolbar to be shown. A null parameter can be used to
      * refer to the default omnibox toolbar. Normally, the new toolbar is attached to the toolbar
      * container and faded in. In the case of the default toolbar, the old toolbar is faded out.
-     * This is because the default toolbar it is always attached to the view hierarchy and sits
-     * behind the attach point for the other toolbars.
+     * This is because the default toolbar is always attached to the view hierarchy and sits behind
+     * the attach point for the other toolbars.
      * @param newToolbar The toolbar that will be shown.
      * @param oldToolbar The toolbar being replaced.
      */
@@ -875,6 +875,7 @@ public class BottomSheet
      * @return The current state of the bottom sheet. If the sheet is animating, this will be the
      *         state the sheet is animating to.
      */
+    @SheetState
     public int getSheetState() {
         return mCurrentState;
     }
@@ -943,6 +944,7 @@ public class BottomSheet
      *                  bottom to top.
      * @return The target state of the bottom sheet.
      */
+    @SheetState
     private int getTargetSheetState(float sheetHeight, float yVelocity) {
         if (sheetHeight <= getMinOffset()) return SHEET_STATE_PEEK;
         if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
