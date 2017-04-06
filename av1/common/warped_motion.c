@@ -1424,10 +1424,10 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   Det = (int64_t)A[0][0] * A[1][1] - (int64_t)A[0][1] * A[0][1];
   if (Det == 0) return 1;
   iDet = resolve_divisor_64(labs(Det), &shift) * (Det < 0 ? -1 : 1);
-  if (shift > WARPEDMODEL_PREC_BITS) {
-    shift -= WARPEDMODEL_PREC_BITS;
-  } else {
-    iDet <<= WARPEDMODEL_PREC_BITS;
+  shift -= WARPEDMODEL_PREC_BITS;
+  if (shift < 0) {
+    iDet <<= (-shift);
+    shift = 0;
   }
 
   v = Px[0] * iDet;
@@ -1561,10 +1561,10 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   int16_t shift;
   int64_t iDet;
   iDet = resolve_divisor_64(labs(Det), &shift) * (Det < 0 ? -1 : 1);
-  if (shift > WARPEDMODEL_PREC_BITS) {
-    shift -= WARPEDMODEL_PREC_BITS;
-  } else {
-    iDet <<= WARPEDMODEL_PREC_BITS;
+  shift -= WARPEDMODEL_PREC_BITS;
+  if (shift < 0) {
+    iDet <<= (-shift);
+    shift = 0;
   }
 
   v = Px[0] * iDet;
