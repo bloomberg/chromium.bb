@@ -41,7 +41,7 @@ LayoutUnit NoXPosForVerticalArrowNavigation() {
   return LayoutUnit::min();
 }
 
-static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
+bool SelectionModifier::shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
   return !frame ||
          frame->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
