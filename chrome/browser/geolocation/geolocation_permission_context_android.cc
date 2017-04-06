@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
@@ -32,12 +33,39 @@
 namespace {
 
 int g_day_offset_for_testing = 0;
-
 const char* g_dse_origin_for_testing = nullptr;
+
+const char kLocationSettingsShowMetricBase[] =
+    "Geolocation.SettingsDialog.ShowEvent.";
+const char kLocationSettingsSuppressMetricBase[] =
+    "Geolocation.SettingsDialog.SuppressEvent.";
+const char kLocationSettingsAcceptMetricBase[] =
+    "Geolocation.SettingsDialog.AcceptEvent.";
+const char kLocationSettingsDenyMetricBase[] =
+    "Geolocation.SettingsDialog.DenyEvent.";
+
+const char kLocationSettingsMetricDSESuffix[] = "DSE";
+const char kLocationSettingsMetricNonDSESuffix[] = "NonDSE";
 
 base::Time GetTimeNow() {
   return base::Time::Now() +
          base::TimeDelta::FromDays(g_day_offset_for_testing);
+}
+
+void LogLocationSettingsMetric(
+    const std::string& metric_base,
+    bool is_default_search,
+    GeolocationPermissionContextAndroid::LocationSettingsDialogBackOff
+        backoff) {
+  std::string metric_name = metric_base;
+  if (is_default_search)
+    metric_name.append(kLocationSettingsMetricDSESuffix);
+  else
+    metric_name.append(kLocationSettingsMetricNonDSESuffix);
+
+  base::UmaHistogramEnumeration(metric_name, backoff,
+                                GeolocationPermissionContextAndroid::
+                                    LocationSettingsDialogBackOff::kCount);
 }
 
 }  // namespace
@@ -173,7 +201,7 @@ void GeolocationPermissionContextAndroid::UserMadePermissionDecision(
   // If the user has accepted geolocation, reset the location settings dialog
   // backoff.
   if (content_setting == CONTENT_SETTING_ALLOW)
-    ResetLocationSettingsBackOff(requesting_origin);
+    ResetLocationSettingsBackOff(IsRequestingOriginDSE(requesting_origin));
 }
 
 void GeolocationPermissionContextAndroid::NotifyPermissionSet(
@@ -183,6 +211,7 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
     const BrowserPermissionCallback& callback,
     bool persist,
     ContentSetting content_setting) {
+  bool is_default_search = IsRequestingOriginDSE(requesting_origin);
   if (content_setting == CONTENT_SETTING_ALLOW &&
       !location_settings_->IsSystemLocationSettingEnabled()) {
     // There is no need to check CanShowLocationSettingsDialog here again, as it
@@ -191,20 +220,25 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
     // content setting is ASK the backoff should be ignored. However if we get
     // here and the content setting was ASK, the user must have accepted which
     // would reset the backoff.
-    if (IsInLocationSettingsBackOff(requesting_origin)) {
+    if (IsInLocationSettingsBackOff(is_default_search)) {
       FinishNotifyPermissionSet(id, requesting_origin, embedding_origin,
                                 callback, false /* persist */,
                                 CONTENT_SETTING_BLOCK);
+      LogLocationSettingsMetric(
+          kLocationSettingsSuppressMetricBase, is_default_search,
+          LocationSettingsBackOffLevel(is_default_search));
       return;
     }
 
+    LogLocationSettingsMetric(kLocationSettingsShowMetricBase,
+                              is_default_search,
+                              LocationSettingsBackOffLevel(is_default_search));
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(
             content::RenderFrameHost::FromID(id.render_process_id(),
                                              id.render_frame_id()));
     location_settings_->PromptToEnableSystemLocationSetting(
-        IsRequestingOriginDSE(requesting_origin) ? SEARCH : DEFAULT,
-        web_contents,
+        is_default_search ? SEARCH : DEFAULT, web_contents,
         base::BindOnce(
             &GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown,
             weak_factory_.GetWeakPtr(), id, requesting_origin, embedding_origin,
@@ -259,67 +293,73 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
 
 std::string
 GeolocationPermissionContextAndroid::GetLocationSettingsBackOffLevelPref(
-    const GURL& requesting_origin) const {
-  if (IsRequestingOriginDSE(requesting_origin))
-    return prefs::kLocationSettingsBackoffLevelDSE;
-
-  return prefs::kLocationSettingsBackoffLevelDefault;
+    bool is_default_search) const {
+  return is_default_search ? prefs::kLocationSettingsBackoffLevelDSE
+                           : prefs::kLocationSettingsBackoffLevelDefault;
 }
 
 std::string
 GeolocationPermissionContextAndroid::GetLocationSettingsNextShowPref(
-    const GURL& requesting_origin) const {
-  if (IsRequestingOriginDSE(requesting_origin))
-    return prefs::kLocationSettingsNextShowDSE;
-
-  return prefs::kLocationSettingsNextShowDefault;
+    bool is_default_search) const {
+  return is_default_search ? prefs::kLocationSettingsNextShowDSE
+                           : prefs::kLocationSettingsNextShowDefault;
 }
 
 bool GeolocationPermissionContextAndroid::IsInLocationSettingsBackOff(
-    const GURL& requesting_origin) const {
+    bool is_default_search) const {
   base::Time next_show =
       base::Time::FromInternalValue(profile()->GetPrefs()->GetInt64(
-          GetLocationSettingsNextShowPref(requesting_origin)));
+          GetLocationSettingsNextShowPref(is_default_search)));
 
   return GetTimeNow() < next_show;
 }
 
 void GeolocationPermissionContextAndroid::ResetLocationSettingsBackOff(
-    const GURL& requesting_origin) {
+    bool is_default_search) {
   PrefService* prefs = profile()->GetPrefs();
-  prefs->ClearPref(GetLocationSettingsNextShowPref(requesting_origin));
-  prefs->ClearPref(GetLocationSettingsBackOffLevelPref(requesting_origin));
+  prefs->ClearPref(GetLocationSettingsNextShowPref(is_default_search));
+  prefs->ClearPref(GetLocationSettingsBackOffLevelPref(is_default_search));
 }
 
 void GeolocationPermissionContextAndroid::UpdateLocationSettingsBackOff(
-    const GURL& requesting_origin) {
-  // Backoff levels:
-  // 0: 1 week
-  // 1: 1 month
-  // 2: 3 months
-  PrefService* prefs = profile()->GetPrefs();
-  int backoff_level =
-      prefs->GetInteger(GetLocationSettingsBackOffLevelPref(requesting_origin));
+    bool is_default_search) {
+  LocationSettingsDialogBackOff backoff_level =
+      LocationSettingsBackOffLevel(is_default_search);
 
   base::Time next_show = GetTimeNow();
   switch (backoff_level) {
-    case 0:
+    case LocationSettingsDialogBackOff::kNoBackOff:
+      backoff_level = LocationSettingsDialogBackOff::kOneWeek;
       next_show += base::TimeDelta::FromDays(7);
       break;
-    case 1:
+    case LocationSettingsDialogBackOff::kOneWeek:
+      backoff_level = LocationSettingsDialogBackOff::kOneMonth;
       next_show += base::TimeDelta::FromDays(30);
       break;
-    default:
+    case LocationSettingsDialogBackOff::kOneMonth:
+      backoff_level = LocationSettingsDialogBackOff::kThreeMonths;
+    // fall through
+    case LocationSettingsDialogBackOff::kThreeMonths:
       next_show += base::TimeDelta::FromDays(90);
+      break;
+    default:
+      NOTREACHED();
   }
 
-  if (backoff_level < 2)
-    backoff_level++;
-
-  prefs->SetInteger(GetLocationSettingsBackOffLevelPref(requesting_origin),
-                    backoff_level);
-  prefs->SetInt64(GetLocationSettingsNextShowPref(requesting_origin),
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetInteger(GetLocationSettingsBackOffLevelPref(is_default_search),
+                    static_cast<int>(backoff_level));
+  prefs->SetInt64(GetLocationSettingsNextShowPref(is_default_search),
                   next_show.ToInternalValue());
+}
+
+GeolocationPermissionContextAndroid::LocationSettingsDialogBackOff
+GeolocationPermissionContextAndroid::LocationSettingsBackOffLevel(
+    bool is_default_search) const {
+  PrefService* prefs = profile()->GetPrefs();
+  int int_backoff =
+      prefs->GetInteger(GetLocationSettingsBackOffLevelPref(is_default_search));
+  return static_cast<LocationSettingsDialogBackOff>(int_backoff);
 }
 
 bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
@@ -379,12 +419,13 @@ bool GeolocationPermissionContextAndroid::CanShowLocationSettingsDialog(
   if (!base::FeatureList::IsEnabled(features::kLsdPermissionPrompt))
     return false;
 
+  bool is_default_search = IsRequestingOriginDSE(requesting_origin);
   // If this isn't the default search engine, a gesture is needed.
-  if (!IsRequestingOriginDSE(requesting_origin) && !user_gesture) {
+  if (!is_default_search && !user_gesture) {
     return false;
   }
 
-  if (!ignore_backoff && IsInLocationSettingsBackOff(requesting_origin))
+  if (!ignore_backoff && IsInLocationSettingsBackOff(is_default_search))
     return false;
 
   return location_settings_->CanPromptToEnableSystemLocationSetting();
@@ -398,10 +439,17 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
     bool persist,
     ContentSetting content_setting,
     LocationSettingsDialogOutcome prompt_outcome) {
+  bool is_default_search = IsRequestingOriginDSE(requesting_origin);
   if (prompt_outcome == GRANTED) {
-    ResetLocationSettingsBackOff(requesting_origin);
+    LogLocationSettingsMetric(kLocationSettingsAcceptMetricBase,
+                              is_default_search,
+                              LocationSettingsBackOffLevel(is_default_search));
+    ResetLocationSettingsBackOff(is_default_search);
   } else {
-    UpdateLocationSettingsBackOff(requesting_origin);
+    LogLocationSettingsMetric(kLocationSettingsDenyMetricBase,
+                              is_default_search,
+                              LocationSettingsBackOffLevel(is_default_search));
+    UpdateLocationSettingsBackOff(is_default_search);
     content_setting = CONTENT_SETTING_BLOCK;
     persist = false;
   }

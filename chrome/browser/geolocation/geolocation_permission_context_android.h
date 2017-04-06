@@ -45,6 +45,16 @@ class PrefRegistrySimple;
 class GeolocationPermissionContextAndroid
     : public GeolocationPermissionContext {
  public:
+  // This enum is used in histograms, thus is append only. Do not re-order or
+  // remove any entries, or add any except at the end.
+  enum class LocationSettingsDialogBackOff {
+    kNoBackOff,
+    kOneWeek,
+    kOneMonth,
+    kThreeMonths,
+    kCount,
+  };
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit GeolocationPermissionContextAndroid(Profile* profile);
@@ -88,13 +98,13 @@ class GeolocationPermissionContextAndroid
       const GURL& embedding_origin) const override;
 
   // Functions to handle back off for showing the Location Settings Dialog.
-  std::string GetLocationSettingsBackOffLevelPref(
-      const GURL& requesting_origin) const;
-  std::string GetLocationSettingsNextShowPref(
-      const GURL& requesting_origin) const;
-  bool IsInLocationSettingsBackOff(const GURL& requesting_origin) const;
-  void ResetLocationSettingsBackOff(const GURL& requesting_origin);
-  void UpdateLocationSettingsBackOff(const GURL& requesting_origin);
+  std::string GetLocationSettingsBackOffLevelPref(bool is_default_search) const;
+  std::string GetLocationSettingsNextShowPref(bool is_default_search) const;
+  bool IsInLocationSettingsBackOff(bool is_default_search) const;
+  void ResetLocationSettingsBackOff(bool is_default_search);
+  void UpdateLocationSettingsBackOff(bool is_default_search);
+  LocationSettingsDialogBackOff LocationSettingsBackOffLevel(
+      bool is_default_search) const;
 
   // Returns whether location access is possible for the given origin. Ignores
   // Location Settings Dialog backoff, as the backoff is ignored if the user

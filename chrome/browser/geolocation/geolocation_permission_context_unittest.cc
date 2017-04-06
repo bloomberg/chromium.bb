@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -620,6 +621,7 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOnNoLSD) {
 }
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDAccept) {
+  base::HistogramTester tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
@@ -640,9 +642,14 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDAccept) {
   CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
   CheckPermissionMessageSent(0, true);
   EXPECT_TRUE(MockLocationSettings::HasShownLocationSettingsDialog());
+
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.AcceptEvent.NonDSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.DenyEvent.NonDSE", 0);
 }
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDReject) {
+  base::HistogramTester tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
@@ -663,9 +670,14 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDReject) {
   CheckTabContentsState(requesting_frame, CONTENT_SETTING_BLOCK);
   CheckPermissionMessageSent(0, false);
   EXPECT_TRUE(MockLocationSettings::HasShownLocationSettingsDialog());
+
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.AcceptEvent.NonDSE", 0);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.DenyEvent.NonDSE", 1);
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffDifferentSites) {
+  base::HistogramTester tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
@@ -702,15 +714,28 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffDifferentSites) {
   // Now ask on the other non-DSE origin and check backoff prevented the prompt.
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame_2));
 
+  // Test that the right histograms are updated.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.DSE", 0);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.SuppressEvent.NonDSE", 2);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.SuppressEvent.DSE", 0);
+
   // Now request on the DSE and check that the LSD is shown, as the non-DSE
   // backoff should not apply.
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame_dse));
 
   // Now check that the DSE is in backoff.
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame_dse));
+
+  // Test that the right histograms are updated.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.DSE", 1);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.SuppressEvent.NonDSE", 2);
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.SuppressEvent.DSE", 1);
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
+  base::HistogramTester tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
@@ -732,6 +757,14 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
   AddDayOffsetForTesting(6);
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
 
+  // Check histograms so far.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 1);
+  tester.ExpectBucketCount("Geolocation.SettingsDialog.ShowEvent.NonDSE",
+                           static_cast<base::HistogramBase::Sample>(
+                               GeolocationPermissionContextAndroid::
+                                   LocationSettingsDialogBackOff::kNoBackOff),
+                           1);
+
   // Check it is shown in one more days time, but then not straight after..
   AddDayOffsetForTesting(1);
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
@@ -741,6 +774,31 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
   AddDayOffsetForTesting(29);
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
 
+  // Check histograms so far.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 2);
+  tester.ExpectBucketCount("Geolocation.SettingsDialog.ShowEvent.NonDSE",
+                           static_cast<base::HistogramBase::Sample>(
+                               GeolocationPermissionContextAndroid::
+                                   LocationSettingsDialogBackOff::kOneWeek),
+                           1);
+
+  // Check it is shown in one more days time, but then not straight after..
+  AddDayOffsetForTesting(1);
+  EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
+  EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
+
+  // Check that it isn't shown 89 days after that.
+  AddDayOffsetForTesting(89);
+  EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
+
+  // Check histograms so far.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 3);
+  tester.ExpectBucketCount("Geolocation.SettingsDialog.ShowEvent.NonDSE",
+                           static_cast<base::HistogramBase::Sample>(
+                               GeolocationPermissionContextAndroid::
+                                   LocationSettingsDialogBackOff::kOneMonth),
+                           1);
+
   // Check it is shown in one more days time, but then not straight after..
   AddDayOffsetForTesting(1);
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
@@ -755,14 +813,13 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
 
-  // Check that it isn't shown 89 days after that.
-  AddDayOffsetForTesting(89);
-  EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
-
-  // Check it is shown in one more days time, but then not straight after..
-  AddDayOffsetForTesting(1);
-  EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
-  EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
+  // Check histograms so far.
+  tester.ExpectTotalCount("Geolocation.SettingsDialog.ShowEvent.NonDSE", 5);
+  tester.ExpectBucketCount("Geolocation.SettingsDialog.ShowEvent.NonDSE",
+                           static_cast<base::HistogramBase::Sample>(
+                               GeolocationPermissionContextAndroid::
+                                   LocationSettingsDialogBackOff::kThreeMonths),
+                           2);
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffPermissionStatus) {
