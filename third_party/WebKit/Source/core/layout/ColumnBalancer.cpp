@@ -243,9 +243,6 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line) {
     minimumLogialHeight += lineTopInFlowThread;
   m_tallestUnbreakableLogicalHeight =
       std::max(m_tallestUnbreakableLogicalHeight, minimumLogialHeight);
-  DCHECK(
-      isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut() ||
-      !isLogicalTopWithinBounds(lineTopInFlowThread - line.paginationStrut()));
   if (isFirstAfterBreak(lineTopInFlowThread) &&
       m_lastBreakSeen != lineTopInFlowThread) {
     m_lastBreakSeen = lineTopInFlowThread;
