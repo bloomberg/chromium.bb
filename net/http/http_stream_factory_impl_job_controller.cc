@@ -49,7 +49,8 @@ HttpStreamFactoryImpl::JobController::JobController(
     JobFactory* job_factory,
     const HttpRequestInfo& request_info,
     bool is_preconnect,
-    bool enable_ip_based_pooling)
+    bool enable_ip_based_pooling,
+    bool enable_alternative_services)
     : factory_(factory),
       session_(session),
       job_factory_(job_factory),
@@ -57,6 +58,7 @@ HttpStreamFactoryImpl::JobController::JobController(
       delegate_(delegate),
       is_preconnect_(is_preconnect),
       enable_ip_based_pooling_(enable_ip_based_pooling),
+      enable_alternative_services_(enable_alternative_services),
       alternative_job_net_error_(OK),
       job_bound_(false),
       main_job_is_blocked_(false),
@@ -926,6 +928,9 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
     const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type) {
+  if (!enable_alternative_services_)
+    return AlternativeService();
+
   AlternativeService alternative_service =
       GetAlternativeServiceForInternal(request_info, delegate, stream_type);
   AlternativeServiceType type;
@@ -1064,6 +1069,10 @@ bool HttpStreamFactoryImpl::JobController::
         const GURL& url,
         ProxyServer* alternative_proxy_server) const {
   DCHECK(!alternative_proxy_server->is_valid());
+
+  if (!enable_alternative_services_)
+    return false;
+
   if (!can_start_alternative_proxy_job_) {
     // Either an alternative service job or an alternative proxy server job has
     // already been started.

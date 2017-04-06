@@ -377,6 +377,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // even if the SpdySessionKey is different.
   bool enable_ip_based_pooling_;
 
+  // Enable using alternative services for the request.
+  bool enable_alternative_services_;
+
   // The helper object to use to create WebSocketHandshakeStreamBase
   // objects. Only relevant when establishing a WebSocket connection.
   WebSocketHandshakeStreamBase::CreateHelper*

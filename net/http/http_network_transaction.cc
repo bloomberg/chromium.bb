@@ -102,6 +102,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       next_state_(STATE_NONE),
       establishing_tunnel_(false),
       enable_ip_based_pooling_(true),
+      enable_alternative_services_(true),
       websocket_handshake_stream_base_create_helper_(NULL),
       net_error_details_() {}
 
@@ -850,17 +851,21 @@ int HttpNetworkTransaction::DoCreateStream() {
   response_.network_accessed = true;
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
+  // IP based pooling and Alternative Services are disabled under the same
+  // circumstances: on a retry after 421 Misdirected Request is received.
+  DCHECK(enable_ip_based_pooling_ == enable_alternative_services_);
   if (ForWebSocketHandshake()) {
     stream_request_.reset(
         session_->http_stream_factory_for_websocket()
             ->RequestWebSocketHandshakeStream(
                 *request_, priority_, server_ssl_config_, proxy_ssl_config_,
                 this, websocket_handshake_stream_base_create_helper_,
-                enable_ip_based_pooling_, net_log_));
+                enable_ip_based_pooling_, enable_alternative_services_,
+                net_log_));
   } else {
     stream_request_.reset(session_->http_stream_factory()->RequestStream(
         *request_, priority_, server_ssl_config_, proxy_ssl_config_, this,
-        enable_ip_based_pooling_, net_log_));
+        enable_ip_based_pooling_, enable_alternative_services_, net_log_));
   }
   DCHECK(stream_request_.get());
   return ERR_IO_PENDING;
@@ -1553,11 +1558,12 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       break;
     case ERR_MISDIRECTED_REQUEST:
       // If this is the second try, just give up.
-      if (!enable_ip_based_pooling_)
+      if (!enable_ip_based_pooling_ && !enable_alternative_services_)
         return OK;
-      // Otherwise, since the response status was 421 Misdirected Request,
-      // retry the request with IP based pooling disabled.
+      // Otherwise retry the request with both IP based pooling
+      // and Alternative Services disabled.
       enable_ip_based_pooling_ = false;
+      enable_alternative_services_ = false;
       net_log_.AddEventWithNetErrorCode(
           NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
       ResetConnectionAndRequestForResend();

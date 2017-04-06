@@ -129,6 +129,8 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
       : session_deps_(ProxyService::CreateDirect()),
         use_alternative_proxy_(false),
         is_preconnect_(false),
+        enable_ip_based_pooling_(true),
+        enable_alternative_services_(true),
         test_proxy_delegate_(nullptr) {
     session_deps_.enable_quic = true;
   }
@@ -141,6 +143,16 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   void SetPreconnect() {
     ASSERT_FALSE(test_proxy_delegate_);
     is_preconnect_ = true;
+  }
+
+  void DisableIPBasedPooling() {
+    ASSERT_FALSE(test_proxy_delegate_);
+    enable_ip_based_pooling_ = false;
+  }
+
+  void DisableAlternativeServices() {
+    ASSERT_FALSE(test_proxy_delegate_);
+    enable_alternative_services_ = false;
   }
 
   void Initialize(const HttpRequestInfo& request_info) {
@@ -164,7 +176,8 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
         static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
     job_controller_ = new HttpStreamFactoryImpl::JobController(
         factory_, &request_delegate_, session_.get(), &job_factory_,
-        request_info, is_preconnect_, /* enable_ip_based_pooling = */ true);
+        request_info, is_preconnect_, enable_ip_based_pooling_,
+        enable_alternative_services_);
     HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
   }
 
@@ -205,6 +218,8 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
  private:
   bool use_alternative_proxy_;
   bool is_preconnect_;
+  bool enable_ip_based_pooling_;
+  bool enable_alternative_services_;
 
   // Not owned by |this|.
   TestProxyDelegate* test_proxy_delegate_;
@@ -1342,6 +1357,64 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
+class HttpStreamFactoryImplJobControllerMisdirectedRequestRetry
+    : public HttpStreamFactoryImplJobControllerTest,
+      public ::testing::WithParamInterface<::testing::tuple<bool, bool>> {};
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HttpStreamFactoryImplJobControllerMisdirectedRequestRetry,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
+TEST_P(HttpStreamFactoryImplJobControllerMisdirectedRequestRetry,
+       DisableIPBasedPoolingAndAlternativeServices) {
+  const bool enable_ip_based_pooling = ::testing::get<0>(GetParam());
+  const bool enable_alternative_services = ::testing::get<1>(GetParam());
+
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  // Use asynchronous proxy resolver.
+  MockAsyncProxyResolverFactory* proxy_resolver_factory =
+      new MockAsyncProxyResolverFactory(false);
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  if (!enable_ip_based_pooling)
+    DisableIPBasedPooling();
+  if (!enable_alternative_services)
+    DisableAlternativeServices();
+
+  Initialize(request_info);
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_.reset(
+      job_controller_->Start(request_info, &request_delegate_, nullptr,
+                             NetLogWithSource(), HttpStreamRequest::HTTP_STREAM,
+                             DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
+  EXPECT_TRUE(job_controller_->main_job());
+  if (enable_alternative_services) {
+    EXPECT_TRUE(job_controller_->alternative_job());
+  } else {
+    EXPECT_FALSE(job_controller_->alternative_job());
+  }
+
+  // |main_job| succeeds and should report status to Request.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+  job_factory_.main_job()->SetStream(http_stream);
+
+  EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
+      .WillOnce(Invoke(DeleteHttpStreamPointer));
+  job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig());
+}
+
 class HttpStreamFactoryImplJobControllerPreconnectTest
     : public HttpStreamFactoryImplJobControllerTest,
       public ::testing::WithParamInterface<bool> {
@@ -1364,7 +1437,8 @@ class HttpStreamFactoryImplJobControllerPreconnectTest
     job_controller_ = new HttpStreamFactoryImpl::JobController(
         factory_, &request_delegate_, session_.get(), &job_factory_,
         request_info_, /* is_preconnect = */ true,
-        /* enable_ip_based_pooling = */ true);
+        /* enable_ip_based_pooling = */ true,
+        /* enable_alternative_services = */ true);
     HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
   }
 

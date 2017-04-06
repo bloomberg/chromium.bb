@@ -25,7 +25,8 @@ class HttpStreamFactoryImpl::JobController
                 JobFactory* job_factory,
                 const HttpRequestInfo& request_info,
                 bool is_preconnect,
-                bool enable_ip_based_pooling);
+                bool enable_ip_based_pooling,
+                bool enable_alternative_services);
 
   ~JobController() override;
 
@@ -289,6 +290,9 @@ class HttpStreamFactoryImpl::JobController
   // Enable pooling to a SpdySession with matching IP and certificate even if
   // the SpdySessionKey is different.
   const bool enable_ip_based_pooling_;
+
+  // Enable using alternative services for the request.
+  const bool enable_alternative_services_;
 
   // |main_job_| is a job waiting to see if |alternative_job_| can reuse a
   // connection. If |alternative_job_| is unable to do so, |this| will notify

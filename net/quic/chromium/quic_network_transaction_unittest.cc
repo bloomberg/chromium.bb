@@ -1052,6 +1052,69 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+// Regression test for https://crbug.com/546991.
+// The server might not be able to serve a request on an alternative connection,
+// and might send a 421 Misdirected Request response status to indicate this.
+// HttpNetworkTransaction should reset the request and retry without using
+// alternative services.
+TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
+  // Set up alternative service to use QUIC.
+  // Note that |origins_to_force_quic_on| cannot be used in this test, because
+  // that overrides |enable_alternative_services|.
+  url::SchemeHostPort server(request_.url);
+  AlternativeService alternative_service(kProtoQUIC, kDefaultServerHostName,
+                                         443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  http_server_properties_.SetAlternativeService(server, alternative_service,
+                                                expiration);
+
+  // First try: alternative job uses QUIC, gets 421 Misdirected Request error.
+  MockQuicData mock_quic_data;
+  QuicStreamOffset request_header_offset = 0;
+  mock_quic_data.AddWrite(ConstructSettingsPacket(
+      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
+      &request_header_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/"), &request_header_offset));
+  mock_quic_data.AddRead(
+      ConstructServerResponseHeadersPacket(1, kClientDataStreamId1, false, true,
+                                           GetResponseHeaders("421"), nullptr));
+  mock_quic_data.AddWrite(ConstructClientAckAndRstPacket(
+      3, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1));
+  mock_quic_data.AddRead(ASYNC, OK);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // First try: main job uses TCP, connection fails.
+  // (A hanging connection would not work here, because the main Job on the
+  // second try would pool to that socket and hang.)
+  StaticSocketDataProvider failing_data;
+  MockConnect failing_connect(SYNCHRONOUS, ERR_CONNECTION_CLOSED);
+  failing_data.set_connect_data(failing_connect);
+  socket_factory_.AddSocketDataProvider(&failing_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // Second try: there is only one job, which succeeds over HTTP/1.1.
+  // There is no open TCP socket (the previous TCP connection got closed), so a
+  // new one is opened.
+  // Note that if there was an alternative QUIC Job created for the second try,
+  // that would read these data, and would fail with ERR_QUIC_PROTOCOL_ERROR.
+  // Therefore this test ensures that no alternative Job is created on retry.
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello!"),
+                      MockRead(ASYNC, OK)};
+  StaticSocketDataProvider http_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // Retry logic hides ERR_MISDIRECTED_REQUEST: transaction succeeds.
+  CreateSession();
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  RunTransaction(&trans);
+  CheckWasHttpResponse(&trans);
+  CheckResponsePort(&trans, 443);
+  CheckResponseData(&trans, "hello!");
+}
+
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));

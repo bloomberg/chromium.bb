@@ -15085,6 +15085,7 @@ class FakeStreamFactory : public HttpStreamFactory {
                                    const SSLConfig& proxy_ssl_config,
                                    HttpStreamRequest::Delegate* delegate,
                                    bool enable_ip_based_pooling,
+                                   bool enable_alternative_services,
                                    const NetLogWithSource& net_log) override {
     FakeStreamRequest* fake_request = new FakeStreamRequest(priority, delegate);
     last_stream_request_ = fake_request->AsWeakPtr();
@@ -15098,6 +15099,7 @@ class FakeStreamFactory : public HttpStreamFactory {
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
       bool enable_ip_based_pooling,
+      bool enable_alternative_services,
       const NetLogWithSource& net_log) override {
     NOTREACHED();
     return nullptr;
@@ -15111,6 +15113,7 @@ class FakeStreamFactory : public HttpStreamFactory {
       HttpStreamRequest::Delegate* delegate,
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       bool enable_ip_based_pooling,
+      bool enable_alternative_services,
       const NetLogWithSource& net_log) override {
     FakeStreamRequest* fake_request =
         new FakeStreamRequest(priority, delegate, create_helper);
