@@ -1242,7 +1242,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsAppWindow) {
   CloseAppWindow(app_window);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, FilteredEvents) {
+// Crashes on Mac/Win only.  http://crbug.com/708996
+#if defined(OS_MACOSX)
+#define MAYBE_FilteredEvents DISABLED_FilteredEvents
+#else
+#define MAYBE_FilteredEvents FilteredEvents
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
   extensions::ResultCatcher catcher;
   ExtensionTestMessageListener listener("ready", true);
   ASSERT_TRUE(
