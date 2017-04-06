@@ -174,7 +174,11 @@ cast_test_group("cast_tests") {
 
   content_unittests_filter = {
     test_name = "content_unittests"
-    gtest_excludes = []
+
+    # IsSupportedVideoConfig_VP9TransferFunctions fails on all cast builds since
+    # the cast IsSupporedVideoConfigs ignore the transfer function parameter.
+    # (b/36984215).
+    gtest_excludes = [ "*.IsSupportedVideoConfig_VP9TransferFunctions" ]
     if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
