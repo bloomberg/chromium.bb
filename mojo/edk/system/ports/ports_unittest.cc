@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/node.h"
@@ -427,7 +428,7 @@ class PortsTest : public testing::Test, public MessageRouter {
     }
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Acquired before any operation which makes a Node busy, and before testing
   // if all nodes are idle.
