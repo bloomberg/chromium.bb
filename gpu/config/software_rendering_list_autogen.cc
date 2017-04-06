@@ -15,7 +15,7 @@
 
 namespace gpu {
 
-const char kSoftwareRenderingListVersion[] = "13.0";
+const char kSoftwareRenderingListVersion[] = "13.1";
 
 const size_t kSoftwareRenderingListEntryCount = 83;
 const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
@@ -2049,8 +2049,7 @@ const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
     },
     {
         135,  // id
-        "Key parts of WebGL 2 broken on old Qualcomm drivers (depth texture, "
-        "MSAA)",
+        "ES3 MSAA not fully trusted on some Qualcomm 4xx, also disable WebGL2",
         arraysize(kFeatureListForEntry135),  // features size
         kFeatureListForEntry135,             // features
         0,                                   // DisabledExtensions size
@@ -2181,8 +2180,7 @@ const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
     },
     {
         140,  // id
-        "Some old Qualcomm scissor bug workaround needs disabling MSAA to "
-        "work, which is a core part of WebGL 2.",
+        "MSAA and depth texture buggy on Adreno 3xx, also disable WebGL2",
         arraysize(kFeatureListForEntry140),  // features size
         kFeatureListForEntry140,             // features
         0,                                   // DisabledExtensions size
@@ -2200,7 +2198,7 @@ const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
             &kGLStringsForEntry140,                 // GL strings
-            &kMachineModelInfoForEntry140,          // machine model info
+            nullptr,                                // machine model info
             nullptr,                                // more conditions
         },
         0,        // exceptions count

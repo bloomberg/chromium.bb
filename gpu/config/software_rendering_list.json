@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.0",
+  "version": "13.1",
   "entries": [
     {
       "id": 1,
@@ -1415,8 +1415,8 @@
     },
     {
       "id": 135,
-      "description": "Key parts of WebGL 2 broken on old Qualcomm drivers (depth texture, MSAA)",
-      "cr_bugs": [682753, 682075],
+      "description": "ES3 MSAA not fully trusted on some Qualcomm 4xx, also disable WebGL2",
+      "cr_bugs": [471200],
       "os": {
         "type": "android",
         "version": {
@@ -1424,7 +1424,7 @@
           "value": "6.0"
         }
       },
-      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
         "webgl2"
       ]
@@ -1503,11 +1503,10 @@
     },
     {
       "id": 140,
-      "comment": "Corresponds to GPU driver bug #214",
-      "description": "Some old Qualcomm scissor bug workaround needs disabling MSAA to work, which is a core part of WebGL 2.",
-      "cr_bugs": [670607, 696627, 698197],
-      "gl_vendor": "Qualcomm.*",
-      "machine_model_name": ["Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA"],
+      "comment": "Corresponds to GPU driver bugs #19, #214",
+      "description": "MSAA and depth texture buggy on Adreno 3xx, also disable WebGL2",
+      "cr_bugs": [449116, 698197],
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "webgl2"
       ]

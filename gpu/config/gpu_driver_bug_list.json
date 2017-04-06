@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.0",
+  "version": "10.1",
   "entries": [
     {
       "id": 1,
@@ -64,16 +64,9 @@
     },
     {
       "id": 19,
-      "description": "Disable depth textures on Android with Qualcomm GPUs",
+      "description": "Disable depth textures on older Qualcomm GPUs (legacy blacklist entry, original problem unclear)",
       "cr_bugs": [682075],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": "Adreno \\(TM\\) [23].*",
       "features": [
         "disable_depth_texture"
       ],
@@ -406,7 +399,7 @@
     {
       "id": 52,
       "cr_bugs": [449116, 471200, 612474, 682075],
-      "description": "ES3 MSAA is broken on Qualcomm",
+      "description": "ES3 MSAA was observed problematic on some Adreno 4xx (see crbug.com/471200#c9)",
       "os": {
         "type": "android",
         "version": {
@@ -414,7 +407,7 @@
           "value": "6.0"
         }
       },
-      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
         "disable_chromium_framebuffer_multisample"
       ]
@@ -2291,10 +2284,9 @@
         "Somehow the first workaround won't work without the second",
         "See https://crbug.com/698197 for details"
       ],
-      "description": "Certain versions of Qualcomm driver don't setup scissor state correctly when FBO0 is bound.",
-      "cr_bugs": [670607, 696627, 698197],
-      "gl_vendor": "Qualcomm.*",
-      "machine_model_name": ["Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA"],
+      "description": "Some Adreno 3xx don't setup scissor state correctly when FBO0 is bound, nor support MSAA properly.",
+      "cr_bugs": [670607, 696627, 698197, 707839],
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "force_update_scissor_state_when_binding_fbo0",
         "disable_chromium_framebuffer_multisample"

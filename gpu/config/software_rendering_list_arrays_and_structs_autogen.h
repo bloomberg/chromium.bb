@@ -1683,12 +1683,12 @@ const int kFeatureListForEntry135[1] = {
     GPU_FEATURE_TYPE_WEBGL2,
 };
 
-const uint32_t kCrBugsForEntry135[2] = {
-    682753, 682075,
+const uint32_t kCrBugsForEntry135[1] = {
+    471200,
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry135 = {
-    "Qualcomm.*", nullptr, nullptr, nullptr,
+    nullptr, "Adreno \\(TM\\) 4.*", nullptr, nullptr,
 };
 
 const int kFeatureListForEntry136[1] = {
@@ -1747,23 +1747,12 @@ const int kFeatureListForEntry140[1] = {
     GPU_FEATURE_TYPE_WEBGL2,
 };
 
-const uint32_t kCrBugsForEntry140[3] = {
-    670607, 696627, 698197,
+const uint32_t kCrBugsForEntry140[2] = {
+    449116, 698197,
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry140 = {
-    "Qualcomm.*", nullptr, nullptr, nullptr,
-};
-
-const char* kMachineModelNameForEntry140[7] = {
-    "Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA",
-};
-
-const GpuControlList::MachineModelInfo kMachineModelInfoForEntry140 = {
-    arraysize(kMachineModelNameForEntry140),  // machine model name size
-    kMachineModelNameForEntry140,             // machine model names
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // machine model version
+    nullptr, "Adreno \\(TM\\) 3.*", nullptr, nullptr,
 };
 
 }  // namespace gpu

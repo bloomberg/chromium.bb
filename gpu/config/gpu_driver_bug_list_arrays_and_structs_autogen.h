@@ -67,7 +67,7 @@ const uint32_t kCrBugsForEntry19[1] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry19 = {
-    "Qualcomm.*", nullptr, nullptr, nullptr,
+    nullptr, "Adreno \\(TM\\) [23].*", nullptr, nullptr,
 };
 
 const int kFeatureListForEntry20[1] = {
@@ -364,7 +364,7 @@ const uint32_t kCrBugsForEntry52[4] = {
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry52 = {
-    "Qualcomm.*", nullptr, nullptr, nullptr,
+    nullptr, "Adreno \\(TM\\) 4.*", nullptr, nullptr,
 };
 
 const int kFeatureListForEntry54[1] = {
@@ -2053,23 +2053,12 @@ const int kFeatureListForEntry214[2] = {
     FORCE_UPDATE_SCISSOR_STATE_WHEN_BINDING_FBO0,
 };
 
-const uint32_t kCrBugsForEntry214[3] = {
-    670607, 696627, 698197,
+const uint32_t kCrBugsForEntry214[4] = {
+    670607, 696627, 698197, 707839,
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry214 = {
-    "Qualcomm.*", nullptr, nullptr, nullptr,
-};
-
-const char* kMachineModelNameForEntry214[7] = {
-    "Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA",
-};
-
-const GpuControlList::MachineModelInfo kMachineModelInfoForEntry214 = {
-    arraysize(kMachineModelNameForEntry214),  // machine model name size
-    kMachineModelNameForEntry214,             // machine model names
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // machine model version
+    nullptr, "Adreno \\(TM\\) 3.*", nullptr, nullptr,
 };
 
 const int kFeatureListForEntry215[1] = {

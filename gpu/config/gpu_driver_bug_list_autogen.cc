@@ -15,7 +15,7 @@
 
 namespace gpu {
 
-const char kGpuDriverBugListVersion[] = "10.0";
+const char kGpuDriverBugListVersion[] = "10.1";
 
 const size_t kGpuDriverBugListEntryCount = 172;
 const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
@@ -154,7 +154,8 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
     },
     {
         19,  // id
-        "Disable depth textures on Android with Qualcomm GPUs",
+        "Disable depth textures on older Qualcomm GPUs (legacy blacklist "
+        "entry, original problem unclear)",
         arraysize(kFeatureListForEntry19),         // features size
         kFeatureListForEntry19,                    // features
         arraysize(kDisabledExtensionsForEntry19),  // DisabledExtensions size
@@ -162,9 +163,9 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
         arraysize(kCrBugsForEntry19),              // CrBugs size
         kCrBugsForEntry19,                         // CrBugs
         {
-            GpuControlList::kOsAndroid,  // os_type
-            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "6.0",
-             nullptr},                              // os_version
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                     // os_version
             0x00,                                   // vendor_id
             0,                                      // DeviceIDs size
             nullptr,                                // DeviceIDs
@@ -834,7 +835,8 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
     },
     {
         52,  // id
-        "ES3 MSAA is broken on Qualcomm",
+        "ES3 MSAA was observed problematic on some Adreno 4xx (see "
+        "crbug.com/471200#c9)",
         arraysize(kFeatureListForEntry52),  // features size
         kFeatureListForEntry52,             // features
         0,                                  // DisabledExtensions size
@@ -4367,8 +4369,8 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
     },
     {
         214,  // id
-        "Certain versions of Qualcomm driver don't setup scissor state "
-        "correctly when FBO0 is bound.",
+        "Some Adreno 3xx don't setup scissor state correctly when FBO0 is "
+        "bound, nor support MSAA properly.",
         arraysize(kFeatureListForEntry214),  // features size
         kFeatureListForEntry214,             // features
         0,                                   // DisabledExtensions size
@@ -4386,7 +4388,7 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
             &kGLStringsForEntry214,                 // GL strings
-            &kMachineModelInfoForEntry214,          // machine model info
+            nullptr,                                // machine model info
             nullptr,                                // more conditions
         },
         0,        // exceptions count
