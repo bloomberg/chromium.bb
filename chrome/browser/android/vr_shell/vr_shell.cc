@@ -386,6 +386,13 @@ void VrShell::CreateVRDisplayInfo(
                                      device_id));
 }
 
+void VrShell::SetSubmitClient(
+    device::mojom::VRSubmitFrameClientPtr submit_client) {
+  PostToGlThreadWhenReady(
+      base::Bind(&VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
+                 base::Passed(submit_client.PassInterface())));
+}
+
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -420,10 +427,6 @@ void VrShell::ContentSurfaceChanged(jobject surface) {
 }
 
 void VrShell::GvrDelegateReady() {
-  PostToGlThreadWhenReady(base::Bind(
-      &VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
-      base::Passed(
-          delegate_provider_->TakeSubmitFrameClient().PassInterface())));
   delegate_provider_->SetPresentingDelegate(this, gvr_api_);
 }
 

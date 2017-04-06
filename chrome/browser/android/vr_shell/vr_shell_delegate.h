@@ -41,7 +41,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   void SetPresentResult(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jboolean result);
+                        jboolean success);
   void DisplayActivate(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
   void UpdateVSyncInterval(JNIEnv* env,
@@ -51,7 +51,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  device::mojom::VRSubmitFrameClientPtr TakeSubmitFrameClient();
 
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
 
@@ -75,6 +74,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
+  bool pending_successful_present_request_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

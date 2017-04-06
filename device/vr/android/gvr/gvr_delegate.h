@@ -46,7 +46,11 @@ class DEVICE_VR_EXPORT GvrDelegate {
 };
 
 // GvrDelegate, which allows WebVR presentation.
-class DEVICE_VR_EXPORT PresentingGvrDelegate : public GvrDelegate {};
+class DEVICE_VR_EXPORT PresentingGvrDelegate : public GvrDelegate {
+ public:
+  virtual void SetSubmitClient(
+      device::mojom::VRSubmitFrameClientPtr submit_client) = 0;
+};
 
 }  // namespace device
 

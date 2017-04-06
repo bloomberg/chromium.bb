@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -28,6 +29,9 @@ VrShellDelegate::~VrShellDelegate() {
   if (device_provider_) {
     device_provider_->Device()->OnExitPresent();
     device_provider_->Device()->OnDelegateChanged();
+  }
+  if (!present_callback_.is_null()) {
+    base::ResetAndReturn(&present_callback_).Run(false);
   }
 }
 
@@ -63,6 +67,12 @@ void VrShellDelegate::SetPresentingDelegate(
   }
 
   presenting_delegate_->UpdateVSyncInterval(timebase_nanos_, interval_seconds_);
+
+  if (pending_successful_present_request_) {
+    presenting_delegate_->SetSubmitClient(std::move(submit_client_));
+    base::ResetAndReturn(&present_callback_).Run(true);
+    pending_successful_present_request_ = false;
+  }
 }
 
 void VrShellDelegate::RemoveDelegate() {
@@ -76,10 +86,21 @@ void VrShellDelegate::RemoveDelegate() {
 
 void VrShellDelegate::SetPresentResult(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
-                                       jboolean result) {
+                                       jboolean success) {
   CHECK(!present_callback_.is_null());
-  present_callback_.Run(result);
-  present_callback_.Reset();
+  if (success && !presenting_delegate_) {
+    // We have to wait until the GL thread is ready since we have to pass it
+    // the VRSubmitFrameClient.
+    pending_successful_present_request_ = true;
+    return;
+  }
+
+  if (success) {
+    presenting_delegate_->SetSubmitClient(std::move(submit_client_));
+  }
+
+  base::ResetAndReturn(&present_callback_).Run(success);
+  pending_successful_present_request_ = false;
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
@@ -120,10 +141,6 @@ void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
-}
-
-device::mojom::VRSubmitFrameClientPtr VrShellDelegate::TakeSubmitFrameClient() {
-  return std::move(submit_client_);
 }
 
 void VrShellDelegate::SetDeviceProvider(

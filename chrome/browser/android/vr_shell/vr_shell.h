@@ -196,7 +196,7 @@ class VrShell : public device::PresentingGvrDelegate,
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
 
-  // device::GvrDelegate implementation
+  // device::GvrDelegate implementation.
   void SetWebVRSecureOrigin(bool secure_origin) override;
   void SubmitWebVRFrame(int16_t frame_index,
                         const gpu::MailboxHolder& mailbox) override;
@@ -211,6 +211,10 @@ class VrShell : public device::PresentingGvrDelegate,
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) override;
+
+  // device::PresentingGvrDelegate implementation.
+  void SetSubmitClient(
+      device::mojom::VRSubmitFrameClientPtr submit_client) override;
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
