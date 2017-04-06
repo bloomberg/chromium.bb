@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -152,7 +151,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::MessageLoop message_loop_;
   net::FakeURLFetcherFactory factory_;
   std::unique_ptr<TestSigninClient> client_;
   std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>

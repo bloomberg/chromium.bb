@@ -27,7 +27,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread.h"
@@ -258,7 +257,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     kill_callbacks_++;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   base::ScopedTempDir temp_dir_;
   base::WaitableEvent wait_event_;
