@@ -31,6 +31,8 @@
 
 #include "platform/mediastream/MediaStreamCenter.h"
 
+#include <memory>
+
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "public/platform/Platform.h"
@@ -40,7 +42,6 @@
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -114,6 +115,12 @@ void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream) {
 void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track) {
   if (m_private)
     m_private->didCreateMediaStreamTrack(track);
+}
+
+void MediaStreamCenter::didCloneMediaStreamTrack(MediaStreamComponent* original,
+                                                 MediaStreamComponent* clone) {
+  if (m_private)
+    m_private->didCloneMediaStreamTrack(original, clone);
 }
 
 void MediaStreamCenter::didSetContentHint(MediaStreamComponent* track) {

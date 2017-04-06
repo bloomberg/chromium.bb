@@ -61,15 +61,13 @@ void CreateNativeAudioMediaStreamTrack(
     LOG(DFATAL) << "WebMediaStreamSource missing its MediaStreamAudioSource.";
 }
 
-void CreateNativeVideoMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
+void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
   DCHECK(track.getTrackData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  blink::WebMediaStreamTrack writable_track(track);
   if (IsOldVideoConstraints()) {
     // TODO(perkj): The constraints to use here should be passed from blink when
     // a new track is created. For cloning, it should be the constraints of the
@@ -79,16 +77,46 @@ void CreateNativeVideoMediaStreamTrack(
     blink::WebMediaConstraints constraints = source.constraints();
     if (constraints.isNull())
       constraints.initialize();
-    writable_track.setTrackData(new MediaStreamVideoTrack(
+    track.setTrackData(new MediaStreamVideoTrack(
         native_source, constraints,
         MediaStreamVideoSource::ConstraintsCallback(), track.isEnabled()));
   } else {
-    // TODO(guidou): All existing uses are without constraints except for the
-    // case of cloning a track. To fix this, create a new function in
-    // MediaStreamCenter specifically for cloning.
-    writable_track.setTrackData(new MediaStreamVideoTrack(
+    track.setTrackData(new MediaStreamVideoTrack(
         native_source, MediaStreamVideoSource::ConstraintsCallback(),
         track.isEnabled()));
+  }
+}
+
+void CloneNativeVideoMediaStreamTrack(
+    const blink::WebMediaStreamTrack& original,
+    blink::WebMediaStreamTrack clone) {
+  DCHECK(!clone.getTrackData());
+  blink::WebMediaStreamSource source = clone.source();
+  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeVideo);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
+  DCHECK(native_source);
+  if (IsOldVideoConstraints()) {
+    // TODO(perkj): The constraints to use here should be passed from blink when
+    // a new track is created. For cloning, it should be the constraints of the
+    // cloned track and not the originating source.
+    // Also - source.constraints() returns an uninitialized constraint if the
+    // source is coming from a remote video track. See http://crbug/287805.
+    blink::WebMediaConstraints constraints = source.constraints();
+    if (constraints.isNull())
+      constraints.initialize();
+    clone.setTrackData(new MediaStreamVideoTrack(
+        native_source, constraints,
+        MediaStreamVideoSource::ConstraintsCallback(), clone.isEnabled()));
+  } else {
+    MediaStreamVideoTrack* original_track =
+        MediaStreamVideoTrack::GetVideoTrack(original);
+    DCHECK(original_track);
+    clone.setTrackData(new MediaStreamVideoTrack(
+        native_source, original_track->adapter_settings(),
+        original_track->noise_reduction(), original_track->is_screencast(),
+        original_track->min_frame_rate(),
+        MediaStreamVideoSource::ConstraintsCallback(), clone.isEnabled()));
   }
 }
 
@@ -112,6 +140,23 @@ void MediaStreamCenter::didCreateMediaStreamTrack(
       break;
     case blink::WebMediaStreamSource::TypeVideo:
       CreateNativeVideoMediaStreamTrack(track);
+      break;
+  }
+}
+
+void MediaStreamCenter::didCloneMediaStreamTrack(
+    const blink::WebMediaStreamTrack& original,
+    const blink::WebMediaStreamTrack& clone) {
+  DCHECK(!clone.isNull());
+  DCHECK(!clone.getTrackData());
+  DCHECK(!clone.source().isNull());
+
+  switch (clone.source().getType()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      CreateNativeAudioMediaStreamTrack(clone);
+      break;
+    case blink::WebMediaStreamSource::TypeVideo:
+      CloneNativeVideoMediaStreamTrack(original, clone);
       break;
   }
 }

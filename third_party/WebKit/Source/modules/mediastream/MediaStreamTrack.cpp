@@ -212,7 +212,8 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* scriptState) {
   MediaStreamComponent* clonedComponent = component()->clone();
   MediaStreamTrack* clonedTrack = MediaStreamTrack::create(
       scriptState->getExecutionContext(), clonedComponent);
-  MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent);
+  MediaStreamCenter::instance().didCloneMediaStreamTrack(component(),
+                                                         clonedComponent);
   return clonedTrack;
 }
 

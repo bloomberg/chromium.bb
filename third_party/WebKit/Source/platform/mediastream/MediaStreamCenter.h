@@ -58,6 +58,8 @@ class PLATFORM_EXPORT MediaStreamCenter final
   static MediaStreamCenter& instance();
 
   void didCreateMediaStreamTrack(MediaStreamComponent*);
+  void didCloneMediaStreamTrack(MediaStreamComponent* original,
+                                MediaStreamComponent* clone);
   void didSetMediaStreamTrackEnabled(MediaStreamComponent*);
   void didSetContentHint(MediaStreamComponent*);
   bool didStopMediaStreamTrack(MediaStreamComponent*);

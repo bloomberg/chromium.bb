@@ -53,6 +53,8 @@ class WebMediaStreamCenter {
 
   // Track functionality.
   virtual void didCreateMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual void didCloneMediaStreamTrack(const WebMediaStreamTrack& original,
+                                        const WebMediaStreamTrack& clone) {}
   virtual void didSetContentHint(const WebMediaStreamTrack&) {}
   virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
   virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
