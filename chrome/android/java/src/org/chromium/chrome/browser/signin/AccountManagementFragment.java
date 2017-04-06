@@ -651,7 +651,7 @@ public class AccountManagementFragment extends PreferenceFragment
         }
         sChildAccountId = accountId;
         Bitmap picture = getUserPicture(accountId, res);
-        Bitmap badge = BitmapFactory.decodeResource(res, R.drawable.ic_account_child);
+        Bitmap badge = BitmapFactory.decodeResource(res, R.drawable.ic_account_child_20dp);
         sCachedBadgedPicture = overlayChildBadgeOnUserPicture(picture, badge, res);
         return sCachedBadgedPicture;
     }
