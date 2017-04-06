@@ -210,4 +210,25 @@ public class WebApkInfoTest {
         Assert.assertEquals(1, iconUrlToMurmur2HashMap.size());
         Assert.assertTrue(iconUrlToMurmur2HashMap.containsValue(hash));
     }
+
+    /**
+     * Prior to SHELL_APK_VERSION 2, WebAPKs did not specify
+     * {@link WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION} in the intent. Test that
+     * {@link WebApkInfo#shouldForceNavigation()} defaults to true when the intent extra is not
+     * specified.
+     */
+    @Test
+    public void testForceNavigationNotSpecified() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+
+        Intent intent = new Intent();
+        intent.putExtra(
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertTrue(info.shouldForceNavigation());
+    }
 }

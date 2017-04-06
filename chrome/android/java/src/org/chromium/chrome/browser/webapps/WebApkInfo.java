@@ -56,8 +56,12 @@ public class WebApkInfo extends WebappInfo {
 
         String url = urlFromIntent(intent);
         int source = sourceFromIntent(intent);
+
+        // Force navigation if the extra is not specified to avoid breaking deep linking for old
+        // WebAPKs which don't specify the {@link WebApkConstants#EXTRA_WEBAPK_FORCE_NAVIGATION}
+        // intent extra.
         boolean forceNavigation = IntentUtils.safeGetBooleanExtra(
-                intent, WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, false);
+                intent, WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
 
         return create(webApkPackageName, url, source, forceNavigation);
     }
