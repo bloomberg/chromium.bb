@@ -69,6 +69,14 @@ const GURL& FakeDownloadItem::GetURL() const {
   return url_;
 }
 
+void FakeDownloadItem::SetUrlChain(const std::vector<GURL>& url_chain) {
+  url_chain_ = url_chain;
+}
+
+const std::vector<GURL>& FakeDownloadItem::GetUrlChain() const {
+  return url_chain_;
+}
+
 void FakeDownloadItem::SetLastReason(DownloadInterruptReason last_reason) {
   last_reason_ = last_reason;
 }
@@ -204,11 +212,6 @@ bool FakeDownloadItem::CanResume() const {
 bool FakeDownloadItem::IsDone() const {
   NOTREACHED();
   return true;
-}
-
-const std::vector<GURL>& FakeDownloadItem::GetUrlChain() const {
-  NOTREACHED();
-  return dummy_url_vector;
 }
 
 const GURL& FakeDownloadItem::GetReferrerUrl() const {

@@ -174,7 +174,8 @@ void BackgroundFetchContext::DidCompleteJob(
   // The `backgroundfetched` and/or `backgroundfetchfail` event will only be
   // invoked for Background Fetch jobs which have been completed.
   if (controller->state() != BackgroundFetchJobController::State::COMPLETED) {
-    DeleteRegistration(registration_id);
+    DeleteRegistration(registration_id,
+                       std::vector<std::unique_ptr<BlobHandle>>());
     return;
   }
 
@@ -191,7 +192,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<BlobHandle>> blob_handles) {
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    DeleteRegistration(registration_id);
+    DeleteRegistration(registration_id, std::move(blob_handles));
     return;
   }
 
@@ -202,11 +203,12 @@ void BackgroundFetchContext::DidGetSettledFetches(
   event_dispatcher_->DispatchBackgroundFetchedEvent(
       registration_id, std::move(settled_fetches),
       base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
-                 registration_id));
+                 registration_id, std::move(blob_handles)));
 }
 
 void BackgroundFetchContext::DeleteRegistration(
-    const BackgroundFetchRegistrationId& registration_id) {
+    const BackgroundFetchRegistrationId& registration_id,
+    const std::vector<std::unique_ptr<BlobHandle>>& blob_handles) {
   DCHECK_GT(active_fetches_.count(registration_id), 0u);
 
   // Delete all persistent information associated with the |registration_id|.

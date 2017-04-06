@@ -6,6 +6,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -55,9 +57,10 @@ class RespondingDownloadManager : public MockDownloadManager {
         base::MakeUnique<FakeDownloadItem>();
 
     download_item->SetURL(params->url());
+    download_item->SetUrlChain({params->url()});
     download_item->SetState(DownloadItem::DownloadState::IN_PROGRESS);
     download_item->SetGuid(base::GenerateGUID());
-    download_item->SetStartTime(base::Time());
+    download_item->SetStartTime(base::Time::Now());
 
     // Asynchronously invoke the callback set on the |params|, and then continue
     // dealing with the response in this class.
@@ -81,9 +84,21 @@ class RespondingDownloadManager : public MockDownloadManager {
     const ResponseInfo& response_info = iter->second;
 
     download_item->SetState(DownloadItem::DownloadState::COMPLETE);
-    download_item->SetEndTime(base::Time());
+    download_item->SetEndTime(base::Time::Now());
 
-    // TODO(peter): Set response body, status code and so on.
+    base::FilePath response_path;
+    if (!temp_directory_.IsValid())
+      ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
+
+    // Write the |response_info|'s response_text to a temporary file.
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory_.GetPath(),
+                                               &response_path));
+
+    ASSERT_NE(-1 /* error */,
+              base::WriteFile(response_path, response_info.second.c_str(),
+                              response_info.second.size()));
+
+    download_item->SetTargetFilePath(response_path);
     download_item->SetReceivedBytes(response_info.second.size());
 
     // Notify the Job Controller about the download having been updated.
@@ -98,6 +113,9 @@ class RespondingDownloadManager : public MockDownloadManager {
 
   // Only used to guarantee the lifetime of the created FakeDownloadItems.
   std::vector<std::unique_ptr<FakeDownloadItem>> download_items_;
+
+  // Temporary directory in which successfully downloaded files will be stored.
+  base::ScopedTempDir temp_directory_;
 
   base::WeakPtrFactory<RespondingDownloadManager> weak_ptr_factory_;
 
@@ -441,7 +459,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
       "This text describes a scenario involving a funny cat."));
   requests.push_back(CreateRequestWithProvidedResponse(
       "GET", "https://example.com/crazy_cat.txt", 200 /* status_code */,
-      "This text descrubes a scenario involving a crazy cat."));
+      "This text describes another scenario that involves a crazy cat."));
 
   // Create the registration with the given |requests|.
   {
@@ -482,11 +500,14 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     EXPECT_TRUE(fetches[i].response.headers.empty());
     EXPECT_EQ(fetches[i].response.error,
               blink::WebServiceWorkerResponseErrorUnknown);
-    EXPECT_TRUE(fetches[i].response.response_time.is_null());
 
-    // TODO(peter): Change-detector tests for when bodies are supported.
-    EXPECT_TRUE(fetches[i].response.blob_uuid.empty());
-    EXPECT_EQ(fetches[i].response.blob_size, 0u);
+    // Verify that all properties have a sensible value.
+    EXPECT_FALSE(fetches[i].response.response_time.is_null());
+
+    // Verify that the response blobs have been populated. We cannot consume
+    // their data here since the handles have already been released.
+    ASSERT_FALSE(fetches[i].response.blob_uuid.empty());
+    ASSERT_GT(fetches[i].response.blob_size, 0u);
   }
 }
 

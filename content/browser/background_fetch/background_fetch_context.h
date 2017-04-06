@@ -113,7 +113,9 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   // Called when all processing for the |registration_id| has been finished and
   // the job, including its associated data, is ready to be deleted.
-  void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id);
+  void DeleteRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::vector<std::unique_ptr<BlobHandle>>& blob_handles);
 
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;

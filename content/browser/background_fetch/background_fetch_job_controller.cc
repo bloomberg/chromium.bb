@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -49,12 +50,14 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
         BrowserContext::GetDownloadManager(browser_context_);
     DCHECK(download_manager);
 
+    const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
+
     std::unique_ptr<DownloadUrlParameters> download_parameters(
-        base::MakeUnique<DownloadUrlParameters>(request->GetURL(),
+        base::MakeUnique<DownloadUrlParameters>(fetch_request.url,
                                                 request_context_.get()));
 
     // TODO(peter): The |download_parameters| should be populated with all the
-    // properties set in the |request|'s ServiceWorkerFetchRequest member.
+    // properties set in the |fetch_request| structure.
 
     download_parameters->set_callback(base::Bind(&Core::DidStartRequest,
                                                  weak_ptr_factory_.GetWeakPtr(),
@@ -64,25 +67,24 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   }
 
   // DownloadItem::Observer overrides:
-  void OnDownloadUpdated(DownloadItem* item) override {
+  void OnDownloadUpdated(DownloadItem* download_item) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    auto iter = downloads_.find(item);
+    auto iter = downloads_.find(download_item);
     DCHECK(iter != downloads_.end());
 
-    const scoped_refptr<BackgroundFetchRequestInfo>& request = iter->second;
+    scoped_refptr<BackgroundFetchRequestInfo> request = iter->second;
 
-    switch (item->GetState()) {
+    switch (download_item->GetState()) {
       case DownloadItem::DownloadState::COMPLETE:
-        // TODO(peter): Populate the responses' information in the |request|.
-
-        item->RemoveObserver(this);
+        request->PopulateResponseFromDownloadItem(download_item);
+        download_item->RemoveObserver(this);
 
         // Inform the host about |host| having completed.
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             base::Bind(&BackgroundFetchJobController::DidCompleteRequest,
-                       io_parent_, request));
+                       io_parent_, std::move(request)));
 
         // Clear the local state for the |request|, it no longer is our concern.
         downloads_.erase(iter);
@@ -103,12 +105,12 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     }
   }
 
-  void OnDownloadDestroyed(DownloadItem* item) override {
+  void OnDownloadDestroyed(DownloadItem* download_item) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK_EQ(downloads_.count(item), 1u);
-    downloads_.erase(item);
+    DCHECK_EQ(downloads_.count(download_item), 1u);
+    downloads_.erase(download_item);
 
-    item->RemoveObserver(this);
+    download_item->RemoveObserver(this);
   }
 
  private:
@@ -121,6 +123,8 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(interrupt_reason, DOWNLOAD_INTERRUPT_REASON_NONE);
     DCHECK(download_item);
+
+    request->PopulateDownloadState(download_item, interrupt_reason);
 
     // TODO(peter): The above two DCHECKs are assumptions our implementation
     // currently makes, but are not fit for production. We need to handle such

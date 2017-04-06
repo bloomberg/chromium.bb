@@ -45,6 +45,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetURL(const GURL& url);
   const GURL& GetURL() const override;
 
+  void SetUrlChain(const std::vector<GURL>& url_chain);
+  const std::vector<GURL>& GetUrlChain() const override;
+
   void SetTargetFilePath(const base::FilePath& file_path);
   const base::FilePath& GetTargetFilePath() const override;
 
@@ -89,7 +92,6 @@ class FakeDownloadItem : public DownloadItem {
   bool IsTemporary() const override;
   bool CanResume() const override;
   bool IsDone() const override;
-  const std::vector<GURL>& GetUrlChain() const override;
   const GURL& GetReferrerUrl() const override;
   const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
@@ -138,6 +140,7 @@ class FakeDownloadItem : public DownloadItem {
   uint32_t id_ = 0;
   std::string guid_;
   GURL url_;
+  std::vector<GURL> url_chain_;
   base::FilePath file_path_;
   bool is_file_externally_removed_ = false;
   base::Time start_time_;
@@ -154,7 +157,6 @@ class FakeDownloadItem : public DownloadItem {
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;
-  std::vector<GURL> dummy_url_vector;
   GURL dummy_url;
   base::FilePath dummy_file_path;
 

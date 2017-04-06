@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -19,6 +20,8 @@
 #include "url/gurl.h"
 
 namespace content {
+
+class DownloadItem;
 
 // Simple class to encapsulate the components of a fetch request.
 // TODO(peter): This can likely change to have a single owner, and thus become
@@ -29,63 +32,61 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   BackgroundFetchRequestInfo(int request_index,
                              const ServiceWorkerFetchRequest& fetch_request);
 
-  // Returns the index of this request in the larger Background Fetch fetch.
-  // Should only be consumed by the BackgroundFetchDataManager.
+  // Populates the cached state for the in-progress |download_item|.
+  void PopulateDownloadState(DownloadItem* download_item,
+                             DownloadInterruptReason download_interrupt_reason);
+
+  // Populates the response portion of this object from the information made
+  // available in the |download_item|.
+  void PopulateResponseFromDownloadItem(DownloadItem* download_item);
+
+  // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }
 
-  // Returns the Fetch API request object this object encapsulates.
+  // Returns the Fetch API Request object that details the developer's request.
   const ServiceWorkerFetchRequest& fetch_request() const {
     return fetch_request_;
   }
 
-  const GURL& GetURL() const;
+  // Returns the URL chain for the response, including redirects.
+  const std::vector<GURL>& GetURLChain() const;
 
-  DownloadItem::DownloadState state() const { return state_; }
-  void set_state(DownloadItem::DownloadState state) { state_ = state; }
+  // Returns the absolute path to the file in which the response is stored.
+  const base::FilePath& GetFilePath() const;
 
-  const std::string& download_guid() const { return download_guid_; }
-  void set_download_guid(const std::string& download_guid) {
-    download_guid_ = download_guid;
-  }
+  // Returns the size of the file containing the response, in bytes.
+  int64_t GetFileSize() const;
 
-  DownloadInterruptReason interrupt_reason() const { return interrupt_reason_; }
-  void set_interrupt_reason(DownloadInterruptReason reason) {
-    interrupt_reason_ = reason;
-  }
-
-  const base::FilePath& file_path() const { return file_path_; }
-  void set_file_path(const base::FilePath& file_path) {
-    file_path_ = file_path;
-  }
-
-  int64_t received_bytes() const { return received_bytes_; }
-  void set_received_bytes(int64_t received_bytes) {
-    received_bytes_ = received_bytes;
-  }
-
-  bool IsComplete() const;
+  // Returns the time at which the response was completed.
+  const base::Time& GetResponseTime() const;
 
  private:
   friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
 
   ~BackgroundFetchRequestInfo();
 
-  // Index of this request within a Background Fetch registration.
-  int request_index_ = kInvalidBackgroundFetchRequestIndex;
+  // ---- Data associated with the request -------------------------------------
 
-  // The request information provided by the developer.
+  int request_index_ = kInvalidBackgroundFetchRequestIndex;
   ServiceWorkerFetchRequest fetch_request_;
 
-  std::string download_guid_;
+  // ---- Data associated with the in-progress download ------------------------
 
-  // The following members do not need to be persisted, they can be reset after
-  // a chrome restart.
-  DownloadItem::DownloadState state_ =
-      DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
-  DownloadInterruptReason interrupt_reason_ =
-      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
+  // Indicates whether download progress data has been populated.
+  bool download_state_populated_ = false;
+
+  std::string download_guid_;
+  DownloadItem::DownloadState download_state_ = DownloadItem::IN_PROGRESS;
+
+  // ---- Data associated with the response ------------------------------------
+
+  // Indicates whether response data has been populated.
+  bool response_data_populated_ = false;
+
+  std::vector<GURL> url_chain_;
   base::FilePath file_path_;
-  int64_t received_bytes_ = 0;
+  int64_t file_size_ = 0;
+  base::Time response_time_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestInfo);
 };

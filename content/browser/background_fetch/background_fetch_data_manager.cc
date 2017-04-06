@@ -205,31 +205,31 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     BackgroundFetchSettledFetch settled_fetch;
     settled_fetch.request = request->fetch_request();
 
-    settled_fetch.response.url_list.push_back(request->GetURL());
+    settled_fetch.response.url_list = request->GetURLChain();
     // TODO: settled_fetch.response.status_code
     // TODO: settled_fetch.response.status_text
     // TODO: settled_fetch.response.response_type
     // TODO: settled_fetch.response.headers
 
-    if (request->received_bytes() > 0) {
-      DCHECK(!request->file_path().empty());
+    if (request->GetFileSize() > 0) {
+      DCHECK(!request->GetFilePath().empty());
 
       std::unique_ptr<BlobHandle> blob_handle =
           blob_storage_context_->CreateFileBackedBlob(
-              request->file_path(), 0 /* offset */, request->received_bytes(),
+              request->GetFilePath(), 0 /* offset */, request->GetFileSize(),
               base::Time() /* expected_modification_time */);
 
       // TODO(peter): Appropriately handle !blob_handle
       if (blob_handle) {
         settled_fetch.response.blob_uuid = blob_handle->GetUUID();
-        settled_fetch.response.blob_size = request->received_bytes();
+        settled_fetch.response.blob_size = request->GetFileSize();
 
         blob_handles.push_back(std::move(blob_handle));
       }
     }
 
     // TODO: settled_fetch.response.error
-    // TODO: settled_fetch.response.response_time
+    settled_fetch.response.response_time = request->GetResponseTime();
     // TODO: settled_fetch.response.cors_exposed_header_names
 
     settled_fetches.push_back(settled_fetch);
