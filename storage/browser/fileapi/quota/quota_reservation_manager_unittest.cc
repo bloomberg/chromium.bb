@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
@@ -208,7 +209,7 @@ class QuotaReservationManagerTest : public testing::Test {
   const base::FilePath& file_path() const { return file_path_; }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir work_dir_;
   base::FilePath file_path_;
   std::unique_ptr<QuotaReservationManager> reservation_manager_;
