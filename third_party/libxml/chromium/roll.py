@@ -75,6 +75,10 @@ PATCHES = [
     'chromium-issue-620679.patch',
     'chromium-issue-628581.patch',
     'chromium-issue-683629.patch',
+    'libxml2-2.9.4-security-CVE-2017-7375-xmlParsePEReference-xxe.patch',
+    'libxml2-2.9.4-security-CVE-2017-7376-nanohttp-out-of-bounds-write.patch',
+    'libxml2-2.9.4-security-xpath-nodetab-uaf.patch',
+    'libxml2-2.9.4-xmlDumpElementContent-null-deref.patch',
 ]
 
 
