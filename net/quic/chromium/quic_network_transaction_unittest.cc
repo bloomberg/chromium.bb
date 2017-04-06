@@ -454,6 +454,17 @@ class QuicNetworkTransactionTest
                                                std::move(headers), nullptr);
   }
 
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientMultipleDataFramesPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      const std::vector<std::string>& data,
+      QuicStreamOffset offset) {
+    return client_maker_.MakeMultipleDataFramesPacket(
+        packet_number, stream_id, should_include_version, fin, offset, data);
+  }
+
   std::unique_ptr<QuicEncryptedPacket> ConstructServerPushPromisePacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
@@ -717,7 +728,7 @@ class QuicNetworkTransactionTest
 
   const QuicVersion version_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
-  MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
+  MockClock* clock_;     // Owned by QuicStreamFactory after CreateSession.
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -1019,8 +1030,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   // TODO(rch): the connection should be "to" the origin, so if the cert is
   // valid for the origin but not the alternative, that should work too.
   EXPECT_TRUE(cert->VerifyNameMatch(origin.host(), false));
-  EXPECT_TRUE(
-      cert->VerifyNameMatch(alternative.host(), false));
+  EXPECT_TRUE(cert->VerifyNameMatch(alternative.host(), false));
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = cert;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3579,6 +3589,79 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
   SendRequestAndExpectQuicResponse(origin2_);
 
   EXPECT_TRUE(AllDataConsumed());
+}
+
+// crbug.com/705109 - this confirms that matching request with a body
+// triggers a crash (pre-fix).
+TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(ConstructSettingsPacket(
+      1, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize,
+      &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  QuicStreamOffset server_header_offset = 0;
+  mock_quic_data.AddRead(ConstructServerPushPromisePacket(
+      1, kClientDataStreamId1, kServerDataStreamId1, false,
+      GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_header_offset,
+      &server_maker_));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      2, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, kServerDataStreamId1, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(4, kClientDataStreamId1,
+                                                   false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(4, 4, 3, 1));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      5, kServerDataStreamId1, false, true, 0, "and hello!"));
+
+  // Because the matching request has a body, we will see the push
+  // stream get cancelled, and the matching request go out on the
+  // wire.
+  mock_quic_data.AddWrite(ConstructClientAckAndRstPacket(
+      5, kServerDataStreamId1, QUIC_STREAM_CANCELLED, 5, 5, 1));
+  const char kBody[] = "1";
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      6, kClientDataStreamId2, false, false,
+      GetRequestHeaders("GET", "https", "/pushed.jpg"), &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientMultipleDataFramesPacket(
+      7, kClientDataStreamId2, false, true, {kBody}, 0));
+
+  // We see the same response as for the earlier pushed and cancelled
+  // stream.
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      6, kClientDataStreamId2, false, false, GetResponseHeaders("200 OK"),
+      &server_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      7, kClientDataStreamId2, false, true, 0, "and hello!"));
+
+  mock_quic_data.AddWrite(ConstructClientAckPacket(8, 7, 6, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  // PUSH_PROMISE handling in the http layer gets exercised here.
+  SendRequestAndExpectQuicResponse("hello!");
+
+  request_.url = GURL("https://mail.example.org/pushed.jpg");
+  ChunkedUploadDataStream upload_data(0);
+  upload_data.AppendData("1", 1, true);
+  request_.upload_data_stream = &upload_data;
+  SendRequestAndExpectQuicResponse("and hello!");
 }
 
 }  // namespace test

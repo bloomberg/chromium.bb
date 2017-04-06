@@ -274,7 +274,6 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // A request with a body is ineligible for push, so reset the
     // promised stream and request a new stream.
     if (found_promise_) {
-      found_promise_ = false;
       std::string url(request_info_->url.spec());
       QuicClientPromisedInfo* promised =
           session_->push_promise_index()->GetPromised(url);
@@ -301,10 +300,13 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
   int rv;
 
-  if (found_promise_) {
+  if (!found_promise_) {
+    next_state_ = STATE_SET_REQUEST_PRIORITY;
+  } else if (!request_body_stream_) {
     next_state_ = STATE_HANDLE_PROMISE;
   } else {
-    next_state_ = STATE_SET_REQUEST_PRIORITY;
+    found_promise_ = false;
+    next_state_ = STATE_REQUEST_STREAM;
   }
   rv = DoLoop(OK);
 
