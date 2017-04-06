@@ -115,7 +115,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/features/features.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/identity/identity_service.h"
@@ -486,14 +485,9 @@ ProfileImpl::ProfileImpl(
 
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service(
       g_browser_process->safe_browsing_service());
-  prefs::mojom::TrackedPreferenceValidationDelegatePtr pref_validation_delegate;
   if (safe_browsing_service.get()) {
-    auto pref_validation_delegate_impl =
+    pref_validation_delegate_ =
         safe_browsing_service->CreatePreferenceValidationDelegate(this);
-    if (pref_validation_delegate_impl) {
-      mojo::MakeStrongBinding(std::move(pref_validation_delegate_impl),
-                              mojo::MakeRequest(&pref_validation_delegate));
-    }
   }
 
   content::BrowserContext::Initialize(this, path_);
@@ -504,7 +498,7 @@ ProfileImpl::ProfileImpl(
       connector = content::BrowserContext::GetConnectorFor(this);
     }
     prefs_ = chrome_prefs::CreateProfilePrefs(
-        path_, std::move(pref_validation_delegate),
+        path_, sequenced_task_runner, pref_validation_delegate_.get(),
         profile_policy_connector_->policy_service(), supervised_user_settings,
         CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
         connector);

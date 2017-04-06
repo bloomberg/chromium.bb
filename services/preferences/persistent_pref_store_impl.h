@@ -28,6 +28,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
   // called when it becomes true.
   PersistentPrefStoreImpl(
       scoped_refptr<PersistentPrefStore> backing_pref_store,
+      mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
       base::OnceClosure on_initialized);
 
   ~PersistentPrefStoreImpl() override;
@@ -55,6 +56,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
   void OnConnectionError(Connection* connection);
 
   scoped_refptr<PersistentPrefStore> backing_pref_store_;
+  mojom::TrackedPreferenceValidationDelegatePtr validation_delegate_;
 
   bool initializing_ = false;
 

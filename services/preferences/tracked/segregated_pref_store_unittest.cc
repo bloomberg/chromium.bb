@@ -73,7 +73,7 @@ class SegregatedPrefStoreTest : public testing::Test {
     selected_pref_names.insert(kSharedPref);
 
     segregated_store_ = new SegregatedPrefStore(default_store_, selected_store_,
-                                                selected_pref_names, nullptr);
+                                                selected_pref_names);
 
     segregated_store_->AddObserver(&observer_);
   }

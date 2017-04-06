@@ -50,6 +50,12 @@ class ProfilePolicyConnector;
 class SchemaRegistryService;
 }
 
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
+}
+
 namespace ssl_config {
 class SSLConfigServiceManager;
 }
@@ -215,6 +221,11 @@ class ProfileImpl : public Profile {
   std::unique_ptr<policy::ConfigurationPolicyProvider>
       configuration_policy_provider_;
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
+
+  // Keep |pref_validation_delegate_| above |prefs_| so that the former outlives
+  // the latter.
+  std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
+      pref_validation_delegate_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |io_data_| and others store pointers to |prefs_| and shall be destructed

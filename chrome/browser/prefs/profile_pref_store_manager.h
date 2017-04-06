@@ -15,16 +15,23 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/preferences/public/interfaces/preferences_configuration.mojom.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
+class HashStoreContents;
 class PersistentPrefStore;
+class PrefHashStore;
 class PrefRegistry;
 class PrefService;
 
 namespace base {
 class DictionaryValue;
-class SequencedWorkerPool;
+class SequencedTaskRunner;
 }  // namespace base
+
+namespace prefs {
+namespace mojom {
+class TrackedPreferenceValidationDelegate;
+}
+}
 
 namespace service_manager {
 class Connector;
@@ -40,12 +47,20 @@ class ProfilePrefStoreManager {
  public:
   // Instantiates a ProfilePrefStoreManager with the configuration required to
   // manage the user preferences of the profile at |profile_path|.
+  // |tracking_configuration| is used for preference tracking.
+  // |reporting_ids_count| is the count of all possible tracked preference IDs
+  // (possibly greater than |tracking_configuration.size()|).
   // |seed| and |legacy_device_id| are used to track preference value changes
   // and must be the same on each launch in order to verify loaded preference
   // values.
-  ProfilePrefStoreManager(const base::FilePath& profile_path,
-                          const std::string& seed,
-                          const std::string& legacy_device_id);
+  ProfilePrefStoreManager(
+      const base::FilePath& profile_path,
+      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
+          tracking_configuration,
+      size_t reporting_ids_count,
+      const std::string& seed,
+      const std::string& legacy_device_id,
+      PrefService* local_state);
 
   ~ProfilePrefStoreManager();
 
@@ -74,20 +89,14 @@ class ProfilePrefStoreManager {
 #endif
 
   // Creates a PersistentPrefStore providing access to the user preferences of
-  // the managed profile. If |reset_on_load_observer| is provided, it will be
-  // notified if a reset occurs as a result of loading the profile's prefs. An
-  // optional |validation_delegate| will be notified of the status of each
-  // tracked preference as they are checked.
-  // |tracking_configuration| is used for preference tracking.
-  // |reporting_ids_count| is the count of all possible tracked preference IDs
-  // (possibly greater than |tracking_configuration.size()|).
+  // the managed profile. If |on_reset| is provided, it will be invoked if a
+  // reset occurs as a result of loading the profile's prefs.
+  // An optional |validation_delegate| will be notified
+  // of the status of each tracked preference as they are checked.
   PersistentPrefStore* CreateProfilePrefStore(
-      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
-          tracking_configuration,
-      size_t reporting_ids_count,
-      base::SequencedWorkerPool* worker_pool,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      const base::Closure& on_reset_on_load,
+      prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
       service_manager::Connector* connector,
       scoped_refptr<PrefRegistry> pref_registry);
 
@@ -95,32 +104,38 @@ class ProfilePrefStoreManager {
   // values in |master_prefs|. Acts synchronously, including blocking IO.
   // Returns true on success.
   bool InitializePrefsFromMasterPrefs(
-      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
-          tracking_configuration,
-      size_t reporting_ids_count,
       std::unique_ptr<base::DictionaryValue> master_prefs);
 
- private:
-  // Connects to the pref service over mojo and configures it.
-  void ConfigurePrefService(
-      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
-          tracking_configuration,
-      size_t reporting_ids_count,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
-      service_manager::Connector* connector);
+  // Creates a single-file PrefStore as was used in M34 and earlier. Used only
+  // for testing migration.
+  PersistentPrefStore* CreateDeprecatedCombinedProfilePrefStore(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
-  prefs::mojom::TrackedPersistentPrefStoreConfigurationPtr
-  CreateTrackedPrefStoreConfiguration(
-      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
-          tracking_configuration,
-      size_t reporting_ids_count,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
+ private:
+  // Returns a PrefHashStore for the managed profile. Should only be called
+  // if |kPlatformSupportsPreferenceTracking|. |use_super_mac| determines
+  // whether the returned object will calculate, store, and validate super MACs
+  // (and, by extension, accept non-null newly protected preferences as
+  // TrustedInitialized).
+  std::unique_ptr<PrefHashStore> GetPrefHashStore(bool use_super_mac);
+
+  // Returns a PrefHashStore and HashStoreContents which can be be used for
+  // extra out-of-band verifications, or nullptrs if not available on this
+  // platform.
+  std::pair<std::unique_ptr<PrefHashStore>, std::unique_ptr<HashStoreContents>>
+  GetExternalVerificationPrefHashStorePair();
+
+  // Connects to the pref service over mojo and configures it.
+  void ConfigurePrefService(const base::Closure& on_reset_on_load,
+                            service_manager::Connector* connector);
 
   const base::FilePath profile_path_;
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
+      tracking_configuration_;
+  const size_t reporting_ids_count_;
   const std::string seed_;
   const std::string legacy_device_id_;
+  PrefService* local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePrefStoreManager);
 };

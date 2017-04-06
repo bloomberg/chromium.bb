@@ -52,8 +52,8 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
   // using |pref_hash_store| to check/store hashes. An optional |delegate| is
   // notified of the status of each preference as it is checked.
-  // If |reset_on_load_observer| is provided, it will be notified if a reset
-  // occurs in FilterOnLoad.
+  // If |on_reset_on_load| is provided, it will be invoked if a reset occurs in
+  // FilterOnLoad.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
   // than |tracked_preferences.size()|). If |report_super_mac_validity| is true,
   // the state of the super MAC will be reported via UMA during
@@ -64,7 +64,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
                  StoreContentsPair external_validation_hash_store_pair_,
                  const std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>&
                      tracked_preferences,
-                 prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+                 const base::Closure& on_reset_on_load,
                  prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
                  size_t reporting_ids_count,
                  bool report_super_mac_validity);
@@ -139,8 +139,8 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // Will be null if the platform does not support external validation.
   const base::Optional<StoreContentsPair> external_validation_hash_store_pair_;
 
-  // Notified if a reset occurs in a call to FilterOnLoad.
-  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer_;
+  // Invoked if a reset occurs in a call to FilterOnLoad.
+  base::Closure on_reset_on_load_;
 
   TrackedPreferencesMap tracked_paths_;
 
