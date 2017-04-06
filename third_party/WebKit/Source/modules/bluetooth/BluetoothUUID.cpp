@@ -22,7 +22,7 @@ enum class GATTAttribute { Service, Characteristic, Descriptor };
 
 NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, servicesMap, []() {
-    // https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
+    // https://www.bluetooth.com/specifications/gatt/services
     NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
     services->insert("alert_notification", 0x1811);
     services->insert("automation_io", 0x1815);
@@ -36,11 +36,13 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
     services->insert("cycling_speed_and_cadence", 0x1816);
     services->insert("device_information", 0x180A);
     services->insert("environmental_sensing", 0x181A);
+    services->insert("fitness_machine", 0x1826);
     services->insert("generic_access", 0x1800);
     services->insert("generic_attribute", 0x1801);
     services->insert("glucose", 0x1808);
     services->insert("health_thermometer", 0x1809);
     services->insert("heart_rate", 0x180D);
+    services->insert("http_proxy", 0x1823);
     services->insert("human_interface_device", 0x1812);
     services->insert("immediate_alert", 0x1802);
     services->insert("indoor_positioning", 0x1821);
@@ -48,11 +50,13 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
     services->insert("link_loss", 0x1803);
     services->insert("location_and_navigation", 0x1819);
     services->insert("next_dst_change", 0x1807);
+    services->insert("object_transfer", 0x1825);
     services->insert("phone_alert_status", 0x180E);
     services->insert("pulse_oximeter", 0x1822);
     services->insert("reference_time_update", 0x1806);
     services->insert("running_speed_and_cadence", 0x1814);
     services->insert("scan_parameters", 0x1813);
+    services->insert("transport_discovery", 0x1824);
     services->insert("tx_power", 0x1804);
     services->insert("user_data", 0x181C);
     services->insert("weight_scale", 0x181D);
@@ -65,7 +69,7 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
 NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       NameToAssignedNumberMap, characteristicsMap, []() {
-        // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx
+        // https://www.bluetooth.com/specifications/gatt/characteristics
         NameToAssignedNumberMap* characteristics =
             new NameToAssignedNumberMap();
         characteristics->insert("aerobic_heart_rate_lower_limit", 0x2A7E);
@@ -106,6 +110,7 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("cgm_session_start_time", 0x2AAA);
         characteristics->insert("cgm_specific_ops_control_point", 0x2AAC);
         characteristics->insert("cgm_status", 0x2AA9);
+        characteristics->insert("cross_trainer_data", 0x2ACE);
         characteristics->insert("csc_feature", 0x2A5C);
         characteristics->insert("csc_measurement", 0x2A5B);
         characteristics->insert("current_time", 0x2A2B);
@@ -131,6 +136,9 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("fat_burn_heart_rate_upper_limit", 0x2A89);
         characteristics->insert("firmware_revision_string", 0x2A26);
         characteristics->insert("first_name", 0x2A8A);
+        characteristics->insert("fitness_machine_control_point", 0x2AD9);
+        characteristics->insert("fitness_machine_feature", 0x2ACC);
+        characteristics->insert("fitness_machine_status", 0x2ADA);
         characteristics->insert("five_zone_heart_rate_limits", 0x2A8B);
         characteristics->insert("floor_number", 0x2AB2);
         characteristics->insert("gender", 0x2A8C);
@@ -147,11 +155,17 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("hid_control_point", 0x2A4C);
         characteristics->insert("hid_information", 0x2A4A);
         characteristics->insert("hip_circumference", 0x2A8F);
+        characteristics->insert("http_control_point", 0x2ABA);
+        characteristics->insert("http_entity_body", 0x2AB9);
+        characteristics->insert("http_headers", 0x2AB7);
+        characteristics->insert("http_status_code", 0x2AB8);
+        characteristics->insert("https_security", 0x2ABB);
         characteristics->insert("humidity", 0x2A6F);
         characteristics->insert(
             "ieee_11073-20601_regulatory_certification_data_list", 0x2A2A);
+        characteristics->insert("indoor_bike_data", 0x2AD2);
         characteristics->insert("indoor_positioning_configuration", 0x2AAD);
-        characteristics->insert("intermediate_blood_pressure", 0x2A36);
+        characteristics->insert("intermediate_cuff_pressure", 0x2A36);
         characteristics->insert("intermediate_temperature", 0x2A1E);
         characteristics->insert("irradiance", 0x2A77);
         characteristics->insert("language", 0x2AA2);
@@ -174,6 +188,17 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("model_number_string", 0x2A24);
         characteristics->insert("navigation", 0x2A68);
         characteristics->insert("new_alert", 0x2A46);
+        characteristics->insert("object_action_control_point", 0x2AC5);
+        characteristics->insert("object_changed", 0x2AC8);
+        characteristics->insert("object_first_created", 0x2AC1);
+        characteristics->insert("object_id", 0x2AC3);
+        characteristics->insert("object_last_modified", 0x2AC2);
+        characteristics->insert("object_list_control_point", 0x2AC6);
+        characteristics->insert("object_list_filter", 0x2AC7);
+        characteristics->insert("object_name", 0x2ABE);
+        characteristics->insert("object_properties", 0x2AC4);
+        characteristics->insert("object_size", 0x2AC0);
+        characteristics->insert("ots_feature", 0x2ABD);
         characteristics->insert(
             "gap.peripheral_preferred_connection_parameters", 0x2A04);
         characteristics->insert("gap.peripheral_privacy_flag", 0x2A02);
@@ -191,9 +216,11 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("reference_time_information", 0x2A14);
         characteristics->insert("report", 0x2A4D);
         characteristics->insert("report_map", 0x2A4B);
+        characteristics->insert("resolvable_private_address_only", 0x2AC9);
         characteristics->insert("resting_heart_rate", 0x2A92);
         characteristics->insert("ringer_control_point", 0x2A40);
         characteristics->insert("ringer_setting", 0x2A41);
+        characteristics->insert("rower_data", 0x2AD1);
         characteristics->insert("rsc_feature", 0x2A54);
         characteristics->insert("rsc_measurement", 0x2A53);
         characteristics->insert("sc_control_point", 0x2A55);
@@ -205,9 +232,17 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("software_revision_string", 0x2A28);
         characteristics->insert(
             "sport_type_for_aerobic_and_anaerobic_thresholds", 0x2A93);
+        characteristics->insert("stair_climber_data", 0x2AD0);
+        characteristics->insert("step_climber_data", 0x2ACF);
+        characteristics->insert("supported_heart_rate_range", 0x2AD7);
+        characteristics->insert("supported_inclination_range", 0x2AD5);
         characteristics->insert("supported_new_alert_category", 0x2A47);
+        characteristics->insert("supported_power_range", 0x2AD8);
+        characteristics->insert("supported_resistance_level_range", 0x2AD6);
+        characteristics->insert("supported_speed_range", 0x2AD4);
         characteristics->insert("supported_unread_alert_category", 0x2A48);
         characteristics->insert("system_id", 0x2A23);
+        characteristics->insert("tds_control_point", 0x2ABC);
         characteristics->insert("temperature", 0x2A6E);
         characteristics->insert("temperature_measurement", 0x2A1C);
         characteristics->insert("temperature_type", 0x2A1D);
@@ -218,12 +253,15 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
         characteristics->insert("time_update_state", 0x2A17);
         characteristics->insert("time_with_dst", 0x2A11);
         characteristics->insert("time_zone", 0x2A0E);
+        characteristics->insert("training_status", 0x2AD3);
+        characteristics->insert("treadmill_data", 0x2ACD);
         characteristics->insert("true_wind_direction", 0x2A71);
         characteristics->insert("true_wind_speed", 0x2A70);
         characteristics->insert("two_zone_heart_rate_limit", 0x2A95);
         characteristics->insert("tx_power_level", 0x2A07);
         characteristics->insert("uncertainty", 0x2AB4);
         characteristics->insert("unread_alert_status", 0x2A45);
+        characteristics->insert("uri", 0x2AB6);
         characteristics->insert("user_control_point", 0x2A9F);
         characteristics->insert("user_index", 0x2A9A);
         characteristics->insert("uv_index", 0x2A76);
@@ -242,7 +280,7 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
 NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       NameToAssignedNumberMap, descriptorsMap, []() {
-        // https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
+        // https://www.bluetooth.com/specifications/gatt/descriptors
         NameToAssignedNumberMap* descriptors = new NameToAssignedNumberMap();
         descriptors->insert("gatt.characteristic_extended_properties", 0x2900);
         descriptors->insert("gatt.characteristic_user_description", 0x2901);
@@ -253,10 +291,12 @@ NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap() {
         descriptors->insert("valid_range", 0x2906);
         descriptors->insert("external_report_reference", 0x2907);
         descriptors->insert("report_reference", 0x2908);
+        descriptors->insert("number_of_digitals", 0x2909);
         descriptors->insert("value_trigger_setting", 0x290A);
         descriptors->insert("es_configuration", 0x290B);
         descriptors->insert("es_measurement", 0x290C);
         descriptors->insert("es_trigger_setting", 0x290D);
+        descriptors->insert("time_trigger_setting", 0x290E);
         return descriptors;
       }());
 
@@ -318,20 +358,17 @@ String getUUIDForGATTAttribute(GATTAttribute attribute,
   switch (attribute) {
     case GATTAttribute::Service:
       errorMessage.append(
-          "https://developer.bluetooth.org/gatt/services/Pages/"
-          "ServicesHome.aspx"
+          "https://www.bluetooth.com/specifications/gatt/services"
           " e.g. 'alert_notification'.");
       break;
     case GATTAttribute::Characteristic:
       errorMessage.append(
-          "https://developer.bluetooth.org/gatt/characteristics/Pages/"
-          "CharacteristicsHome.aspx"
+          "https://www.bluetooth.com/specifications/gatt/characteristics"
           " e.g. 'aerobic_heart_rate_lower_limit'.");
       break;
     case GATTAttribute::Descriptor:
       errorMessage.append(
-          "https://developer.bluetooth.org/gatt/descriptors/Pages/"
-          "DescriptorsHomePage.aspx"
+          "https://www.bluetooth.com/specifications/gatt/descriptors"
           " e.g. 'gatt.characteristic_presentation_format'.");
       break;
   }

@@ -20,8 +20,7 @@ promise_test(() => {
                   'UUID (lowercase hex characters e.g. ' +
                   '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
                   'or recognized standard name from ' +
-                  'https://developer.bluetooth.org/gatt/descriptors/' +
-                  'Pages/DescriptorsHomePage.aspx' +
+                  'https://www.bluetooth.com/specifications/gatt/descriptors' +
                   ' e.g. \'gatt.characteristic_presentation_format\'.',
               'TypeError'));
 
