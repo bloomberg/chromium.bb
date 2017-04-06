@@ -579,8 +579,8 @@ id<GREYMatcher> GoButtonMatcher() {
 }
 
 // Tap the text field indicated by |ID| to open the keyboard, and then
-// press the keyboard's "Go" button.
-- (void)openKeyboardAndTapGoButtonWithTextFieldID:(const std::string&)ID {
+// press the keyboard's "Go" button to submit the form.
+- (void)submitFormUsingKeyboardGoButtonWithInputID:(const std::string&)ID {
   // Disable EarlGrey's synchronization since it is blocked by opening the
   // keyboard from a web view.
   [[GREYConfiguration sharedInstance]
@@ -627,6 +627,9 @@ id<GREYMatcher> GoButtonMatcher() {
   [[GREYConfiguration sharedInstance]
           setValue:@YES
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
+
+  // Ensure that the new page loaded before continuing.
+  [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
 // Tests that submitting a POST-based form by tapping the 'Go' button on the
@@ -656,7 +659,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:WebViewContainingText("hello!")]
       assertWithMatcher:grey_notNil()];
 
-  [self openKeyboardAndTapGoButtonWithTextFieldID:"textfield"];
+  [self submitFormUsingKeyboardGoButtonWithInputID:"textfield"];
 
   // Verify that the browser navigates to the expected URL.
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
