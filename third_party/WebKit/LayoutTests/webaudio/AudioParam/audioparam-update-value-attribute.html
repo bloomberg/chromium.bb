@@ -33,7 +33,7 @@
             message: "linearRamp(" + v1 + ", " + t1 + ")",
             errorThreshold: 1.1650e-6
           };
-        }).then(done);
+        }).then(() => task.done());
       });
 
       audit.define("exponential", (task, should) => {
@@ -47,7 +47,7 @@
             message: "exponentialRamp(" + v1 + ", " + t1 + ")",
             errorThreshold: 7.4601e-7
           };
-        }).then(done);
+        }).then(() => task.done());
       });
 
       audit.define("setTarget", (task, should) => {
@@ -63,7 +63,7 @@
             message: "setTargetAtTime(" + vFinal + ", " + t0 + ", " + timeConstant + ")",
             errorThreshold: 2.2599e-6
           };
-        }).then(done);
+        }).then(() => task.done());
       });
 
       audit.define("setValueCurve", (task, should) => {
@@ -79,7 +79,7 @@
             message: "setValueCurveAtTime([" + curve + "], " + t0 + ", " + duration + ")",
             errorThreshold: 7.9577e-8
           };
-        }).then(done);
+        }).then(() => task.done());
       });
 
       audit.run();

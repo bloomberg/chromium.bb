@@ -15,7 +15,7 @@
 
   'use strict';
 
-  // Selected properties from testharness.js
+  // Selected methods from testharness.js.
   let testharnessProperties = [
     'test', 'async_test', 'promise_test', 'promise_rejects',
     'generate_tests', 'setup', 'done', 'assert_true', 'assert_false'
@@ -54,6 +54,13 @@ window.Audit = (function () {
   function _throwException (message) {
     throw new Error(message);
   }
+
+  // TODO(hongchan): remove this hack after confirming all the tests are
+  // finished correctly. (crbug.com/708817)
+  const _testharnessDone = window.done;
+  window.done = () => {
+    _throwException('Do NOT call done() method from the test code.');
+  };
 
   // Generate a descriptive string from a target value in various types.
   function _generateDescription (target, options) {
@@ -1143,7 +1150,7 @@ window.Audit = (function () {
 
       // From testharness.js, report back to the test infrastructure that
       // the task runner completed all the tasks.
-      done();
+      _testharnessDone();
     }
 
     // |taskLabel| can be either a string or a dictionary. See Task constructor
