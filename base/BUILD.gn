@@ -1618,8 +1618,6 @@ component("base") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
-
-  allow_circular_includes_from = public_deps
 }
 
 buildflag_header("debugging_flags") {
