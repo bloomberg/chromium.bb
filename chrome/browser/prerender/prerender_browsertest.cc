@@ -3791,6 +3791,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 }
 #endif  // !defined(DISABLE_NACL)
 
-#endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
-
 }  // namespace prerender
+
+#endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
