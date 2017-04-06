@@ -8,4 +8,7 @@ traits_headers = [ "//content/public/common/referrer_struct_traits.h" ]
 sources = [
   "//content/public/common/referrer_struct_traits.cc",
 ]
+deps = [
+  "//net",
+]
 type_mappings = [ "blink.mojom.Referrer=content::Referrer" ]
