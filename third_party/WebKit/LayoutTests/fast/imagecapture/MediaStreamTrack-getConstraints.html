@@ -48,6 +48,13 @@ var makeAsyncTest = function(c) {
           t.done();
         });
 
+    // Clear constraints by sending an empty constraint set.
+    videoTrack.applyConstraints({})
+        .then(() => {
+          const constraintsOut = videoTrack.getConstraints();
+          assert_object_equals(constraintsOut, {}, "constraints");
+          t.done();
+        });
   });
 };
 

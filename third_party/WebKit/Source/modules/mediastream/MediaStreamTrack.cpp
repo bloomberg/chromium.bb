@@ -306,22 +306,22 @@ ScriptPromise MediaStreamTrack::applyConstraints(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // |constraints| is an optional argument, which is strange.
-  // TODO(mcasas): remove this provision if |constraints| is not optional:
-  // https://github.com/w3c/mediacapture-main/issues/438
-  if (!constraints.hasAdvanced()) {
-    resolver->resolve();
-    return promise;
-  }
-
-  if (!m_imageCapture) {
+  // TODO(mcasas): Until https://crbug.com/338503 is landed, we only support
+  // ImageCapture-related constraints.
+  if (!m_imageCapture ||
+      m_imageCapture->hasNonImageCaptureConstraints(constraints)) {
     resolver->reject(DOMException::create(
-        NotSupportedError, "Track type not currently supported"));
+        NotSupportedError,
+        "Only Image-Capture constraints supported (https://crbug.com/338503)"));
     return promise;
   }
 
-  // TODO(mcasas): support more advanced constraints, https://crbug.com/700607.
-  m_imageCapture->setMediaTrackConstraints(resolver, constraints.advanced()[0]);
+  // |constraints| empty means "remove/clear all current constraints".
+  if (!constraints.hasAdvanced())
+    m_imageCapture->clearMediaTrackConstraints(resolver);
+  else
+    m_imageCapture->setMediaTrackConstraints(resolver, constraints.advanced());
+
   return promise;
 }
 

@@ -16,6 +16,7 @@
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
+#include "modules/mediastream/MediaTrackConstraints.h"
 #include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
@@ -246,16 +247,19 @@ MediaTrackCapabilities& ImageCapture::getMediaTrackCapabilities() {
   return m_capabilities;
 }
 
-// TODO(mcasas): make the implementation fully Spec compliant, see inside the
-// method, https://crbug.com/700607.
+// TODO(mcasas): make the implementation fully Spec compliant, see the TODOs
+// inside the method, https://crbug.com/708723.
 void ImageCapture::setMediaTrackConstraints(
     ScriptPromiseResolver* resolver,
-    const MediaTrackConstraintSet& constraints) {
+    const HeapVector<MediaTrackConstraintSet>& constraintsVector) {
   if (!m_service) {
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     return;
   }
   m_serviceRequests.insert(resolver);
+
+  // TODO(mcasas): add support more than one single advanced constraint.
+  const auto constraints = constraintsVector[0];
 
   auto settings = media::mojom::blink::PhotoSettings::New();
 
@@ -369,6 +373,15 @@ const MediaTrackConstraintSet& ImageCapture::getMediaTrackConstraints() const {
   return m_currentConstraints;
 }
 
+void ImageCapture::clearMediaTrackConstraints(ScriptPromiseResolver* resolver) {
+  m_currentConstraints = MediaTrackConstraintSet();
+  resolver->resolve();
+
+  // TODO(mcasas): Clear also any PhotoSettings that the device might have got
+  // configured, for that we need to know a "default" state of the device; take
+  // a snapshot upon first opening. https://crbug.com/700607.
+}
+
 void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
   // Merge any present |m_settings| members into |settings|.
 
@@ -402,6 +415,29 @@ void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
     settings.setZoom(m_settings.zoom());
   if (m_settings.hasTorch())
     settings.setTorch(m_settings.torch());
+}
+
+bool ImageCapture::hasNonImageCaptureConstraints(
+    const MediaTrackConstraints& constraints) const {
+  if (!constraints.hasAdvanced())
+    return false;
+
+  const auto& advancedConstraints = constraints.advanced();
+  for (const auto& constraint : advancedConstraints) {
+    if (constraint.hasWidth() || constraint.hasHeight() ||
+        constraint.hasAspectRatio() || constraint.hasFrameRate() ||
+        constraint.hasFacingMode() || constraint.hasVolume() ||
+        constraint.hasSampleRate() || constraint.hasSampleSize() ||
+        constraint.hasEchoCancellation() || constraint.hasLatency() ||
+        constraint.hasChannelCount() || constraint.hasDeviceId() ||
+        constraint.hasGroupId() || constraint.hasVideoKind() ||
+        constraint.hasDepthNear() || constraint.hasDepthFar() ||
+        constraint.hasFocalLengthX() || constraint.hasFocalLengthY() ||
+        constraint.hasMandatory() || constraint.hasOptional()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)

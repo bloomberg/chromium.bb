@@ -22,6 +22,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class MediaTrackConstraints;
 class PhotoSettings;
 class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
@@ -63,9 +64,13 @@ class MODULES_EXPORT ImageCapture final
 
   MediaTrackCapabilities& getMediaTrackCapabilities();
   void setMediaTrackConstraints(ScriptPromiseResolver*,
-                                const MediaTrackConstraintSet&);
+                                const HeapVector<MediaTrackConstraintSet>&);
   const MediaTrackConstraintSet& getMediaTrackConstraints() const;
+  void clearMediaTrackConstraints(ScriptPromiseResolver*);
   void getMediaTrackSettings(MediaTrackSettings&) const;
+
+  // TODO(mcasas): Remove this service method, https://crbug.com/338503.
+  bool hasNonImageCaptureConstraints(const MediaTrackConstraints&) const;
 
   DECLARE_VIRTUAL_TRACE();
 
