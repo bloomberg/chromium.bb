@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -104,7 +105,7 @@ class PrefMemberTestClass {
 }  // anonymous namespace
 
 class PrefMemberTest : public testing::Test {
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(PrefMemberTest, BasicGetAndSet) {

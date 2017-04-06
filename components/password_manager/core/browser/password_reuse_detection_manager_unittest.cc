@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,7 +49,7 @@ class PasswordReuseDetectionManagerTest : public ::testing::Test {
  protected:
   // It's needed for an initialisation of thread runners that are used in
   // MockPasswordStore.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockPasswordManagerClient client_;
   scoped_refptr<MockPasswordStore> store_;
 

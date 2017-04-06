@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -333,7 +334,7 @@ class AutofillMetricsTest : public testing::Test {
   void EnableWalletSync();
   void EnableUkmLogging();
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<FakeSigninManagerBase> signin_manager_;

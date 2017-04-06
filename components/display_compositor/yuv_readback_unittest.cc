@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -476,7 +477,7 @@ class YUVReadbackTest : public testing::Test {
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<display_compositor::GLHelper> helper_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(YUVReadbackTest, YUVReadbackOptTest) {

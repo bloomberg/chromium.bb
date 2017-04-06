@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -231,7 +232,7 @@ class WebHistoryServiceTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;

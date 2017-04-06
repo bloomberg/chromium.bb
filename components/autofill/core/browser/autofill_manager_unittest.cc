@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1107,7 +1108,7 @@ class AutofillManagerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockAutofillClient autofill_client_;
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;

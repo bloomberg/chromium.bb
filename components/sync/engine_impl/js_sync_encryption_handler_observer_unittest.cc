@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
@@ -33,7 +34,7 @@ class JsSyncEncryptionHandlerObserverTest : public testing::Test {
  private:
   // This must be destroyed after the member variables below in order
   // for WeakHandles to be destroyed properly.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  protected:
   StrictMock<MockJsEventHandler> mock_js_event_handler_;

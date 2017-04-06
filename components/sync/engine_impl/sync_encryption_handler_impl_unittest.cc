@@ -12,6 +12,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/tracked_objects.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
@@ -357,7 +358,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   std::unique_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   StrictMock<SyncEncryptionHandlerObserverMock> observer_;
   TestIdFactory ids_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Verify that the encrypted types are being written to and read from the

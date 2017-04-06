@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -276,7 +277,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
 
   ScopedTempDir temp_dir_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FakeAutofillBackend backend_;
   AutofillTable table_;
   WebDatabase db_;

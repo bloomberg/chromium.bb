@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -165,7 +166,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void CreatePersonalizedFieldTrial();
   void CreateMostVisitedFieldTrial();
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Needed for OmniboxFieldTrial::ActivateStaticTrials().
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

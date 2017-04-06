@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -350,7 +351,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> service_;
 

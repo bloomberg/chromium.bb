@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
@@ -177,7 +178,7 @@ class IconCacherTest : public ::testing::Test {
 
   void WaitForTasksToFinish() { task_runner_->RunUntilIdle(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   PopularSites::Site site_;
   std::unique_ptr<MockImageFetcher> image_fetcher_;
   std::unique_ptr<MockImageDecoder> image_decoder_;

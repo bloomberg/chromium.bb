@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -213,7 +214,7 @@ class GCMNetworkChannelTest
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestGCMNetworkChannelDelegate* delegate_;
   std::unique_ptr<GCMNetworkChannel> gcm_network_channel_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -60,7 +61,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     }
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyConfigurator> config_;
 };

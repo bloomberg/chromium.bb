@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
@@ -139,7 +140,7 @@ class ImageManagerTest : public testing::Test {
   int num_callback_null_called_;
   int num_callback_valid_called_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Under test.
   std::unique_ptr<ImageManager> image_manager_;

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
@@ -132,7 +133,7 @@ class GoogleURLTrackerTest : public testing::Test {
   void clear_listener_notified() { listener_.clear_notified(); }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSimple prefs_;
 
   // Creating this allows us to call

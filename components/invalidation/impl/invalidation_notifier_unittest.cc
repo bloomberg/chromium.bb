@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
@@ -74,7 +75,7 @@ class InvalidationNotifierTestDelegate {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<InvalidationNotifier> invalidator_;
 };
 
