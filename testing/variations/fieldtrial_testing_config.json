@@ -2847,6 +2847,15 @@
                     "enable_features": [
                         "TranslateUI2016Q2"
                     ]
+                },
+                {
+                    "name": "DoNotDefaultAlways",
+                    "params": {
+                        "always_translate_offer_threshold": "0"
+                    },
+                    "enable_features": [
+                        "TranslateUI2016Q2"
+                    ]
                 }
             ]
         }
