@@ -22,6 +22,7 @@
 
 namespace cryptauth {
 class BluetoothThrottler;
+class CryptAuthService;
 }  // namespace cryptauth
 
 namespace chromeos {
@@ -65,14 +66,8 @@ class BleConnectionManager : public BleScanner::Observer {
                                    const std::string& payload) = 0;
   };
 
-  class Delegate {
-   public:
-    virtual std::unique_ptr<cryptauth::SecureChannel::Delegate>
-    CreateSecureChannelDelegate() = 0;
-  };
-
   BleConnectionManager(
-      std::unique_ptr<Delegate> delegate,
+      cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const LocalDeviceDataProvider* local_device_data_provider,
       const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
@@ -181,7 +176,7 @@ class BleConnectionManager : public BleScanner::Observer {
   };
 
   BleConnectionManager(
-      std::unique_ptr<Delegate> delegate,
+      cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
       std::unique_ptr<BleScanner> ble_scanner,
       std::unique_ptr<BleAdvertiser> ble_advertiser,
@@ -207,7 +202,7 @@ class BleConnectionManager : public BleScanner::Observer {
       const cryptauth::SecureChannel::Status& old_status,
       const cryptauth::SecureChannel::Status& new_status);
 
-  std::unique_ptr<Delegate> delegate_;
+  cryptauth::CryptAuthService* cryptauth_service_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<BleScanner> ble_scanner_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;

@@ -6,6 +6,7 @@
 
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
+#include "components/cryptauth/cryptauth_service.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -169,13 +170,13 @@ std::unique_ptr<base::Timer> BleConnectionManager::TimerFactory::CreateTimer() {
 }
 
 BleConnectionManager::BleConnectionManager(
-    std::unique_ptr<Delegate> delegate,
+    cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const LocalDeviceDataProvider* local_device_data_provider,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     cryptauth::BluetoothThrottler* bluetooth_throttler)
     : BleConnectionManager(
-          std::move(delegate),
+          cryptauth_service,
           adapter,
           // TODO(khorimoto): Inject |adapter| into |BleScanner|.
           base::MakeUnique<BleScanner>(local_device_data_provider),
@@ -187,14 +188,14 @@ BleConnectionManager::BleConnectionManager(
           bluetooth_throttler) {}
 
 BleConnectionManager::BleConnectionManager(
-    std::unique_ptr<Delegate> delegate,
+    cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<BleScanner> ble_scanner,
     std::unique_ptr<BleAdvertiser> ble_advertiser,
     std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
     std::unique_ptr<TimerFactory> timer_factory,
     cryptauth::BluetoothThrottler* bluetooth_throttler)
-    : delegate_(std::move(delegate)),
+    : cryptauth_service_(cryptauth_service),
       adapter_(adapter),
       ble_scanner_(std::move(ble_scanner)),
       ble_advertiser_(std::move(ble_advertiser)),
@@ -343,8 +344,8 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
                       device::BluetoothUUID(std::string(kGattServerUuid)),
                       bluetooth_throttler_);
   std::unique_ptr<cryptauth::SecureChannel> secure_channel =
-      cryptauth::SecureChannel::Factory::NewInstance(
-          std::move(connection), delegate_->CreateSecureChannelDelegate());
+      cryptauth::SecureChannel::Factory::NewInstance(std::move(connection),
+                                                     cryptauth_service_);
   connection_metadata->SetSecureChannel(std::move(secure_channel));
 
   // Stop trying to connect to that device, since a connection already exists.

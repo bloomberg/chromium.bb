@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/fake_authenticator.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -22,21 +23,6 @@ namespace cryptauth {
 namespace {
 
 const std::string test_user_id = "testUserId";
-
-class TestDelegate : public SecureChannel::Delegate {
- public:
-  TestDelegate(std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
-      : secure_message_delegate_(std::move(secure_message_delegate)) {}
-  ~TestDelegate() override {}
-
-  std::unique_ptr<SecureMessageDelegate> CreateSecureMessageDelegate()
-      override {
-    return std::move(secure_message_delegate_);
-  }
-
- private:
-  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
-};
 
 struct SecureChannelStatusChange {
   SecureChannelStatusChange(
@@ -122,8 +108,8 @@ RemoteDevice CreateTestRemoteDevice() {
 class TestSecureChannel : public SecureChannel {
  public:
   TestSecureChannel(std::unique_ptr<Connection> connection,
-                    std::unique_ptr<Delegate> delegate)
-      : SecureChannel(std::move(connection), std::move(delegate)) {}
+                    CryptAuthService* cryptauth_service)
+      : SecureChannel(std::move(connection), cryptauth_service) {}
 };
 
 }  // namespace
@@ -141,17 +127,14 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
     fake_secure_context_ = nullptr;
 
-    fake_secure_message_delegate_ = new FakeSecureMessageDelegate();
-
-    test_delegate_ =
-        new TestDelegate(base::WrapUnique(fake_secure_message_delegate_));
+    fake_cryptauth_service_ = base::MakeUnique<FakeCryptAuthService>();
 
     fake_connection_ =
         new FakeConnection(test_device_, /* should_auto_connect */ false);
 
     EXPECT_FALSE(fake_connection_->observers().size());
     secure_channel_ = base::MakeUnique<TestSecureChannel>(
-        base::WrapUnique(fake_connection_), base::WrapUnique(test_delegate_));
+        base::WrapUnique(fake_connection_), fake_cryptauth_service_.get());
     EXPECT_EQ(static_cast<size_t>(1), fake_connection_->observers().size());
     EXPECT_EQ(secure_channel_.get(), fake_connection_->observers()[0]);
 
@@ -300,11 +283,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
   // Owned by secure_channel_.
   FakeConnection* fake_connection_;
 
-  // Owned by secure_chanel_.
-  TestDelegate* test_delegate_;
-
-  // Owned by test_delegate_.
-  FakeSecureMessageDelegate* fake_secure_message_delegate_;
+  std::unique_ptr<FakeCryptAuthService> fake_cryptauth_service_;
 
   // Owned by secure_channel_ once authentication has completed successfully.
   FakeSecureContext* fake_secure_context_;

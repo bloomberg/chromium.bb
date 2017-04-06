@@ -13,8 +13,8 @@ FakeSecureChannel::SentMessage::SentMessage(const std::string& feature,
     : feature(feature), payload(payload) {}
 
 FakeSecureChannel::FakeSecureChannel(std::unique_ptr<Connection> connection,
-                                     std::unique_ptr<Delegate> delegate)
-    : SecureChannel(std::move(connection), std::move(delegate)) {}
+                                     CryptAuthService* cryptauth_service)
+    : SecureChannel(std::move(connection), cryptauth_service) {}
 
 FakeSecureChannel::~FakeSecureChannel() {}
 

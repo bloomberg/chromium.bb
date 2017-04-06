@@ -19,6 +19,8 @@
 
 namespace cryptauth {
 
+class CryptAuthService;
+
 // An authenticated bi-directional channel for exchanging messages with remote
 // devices. |SecureChannel| manages a |Connection| by initializing it and
 // authenticating it via a security handshake once the connection has occurred.
@@ -59,26 +61,18 @@ class SecureChannel : public ConnectionObserver {
         const std::string& payload) = 0;
   };
 
-  class Delegate {
-   public:
-    virtual ~Delegate();
-
-    virtual std::unique_ptr<SecureMessageDelegate>
-    CreateSecureMessageDelegate() = 0;
-  };
-
   class Factory {
    public:
     static std::unique_ptr<SecureChannel> NewInstance(
         std::unique_ptr<Connection> connection,
-        std::unique_ptr<Delegate> delegate);
+        CryptAuthService* cryptauth_service);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<SecureChannel> BuildInstance(
         std::unique_ptr<Connection> connection,
-        std::unique_ptr<Delegate> delegate);
+        CryptAuthService* cryptauth_service);
 
    private:
     static Factory* factory_instance_;
@@ -112,7 +106,7 @@ class SecureChannel : public ConnectionObserver {
 
  protected:
   SecureChannel(std::unique_ptr<Connection> connection,
-                std::unique_ptr<Delegate> delegate);
+                CryptAuthService* cryptauth_service);
 
   Status status_;
 
@@ -141,7 +135,7 @@ class SecureChannel : public ConnectionObserver {
       std::unique_ptr<SecureContext> secure_context);
 
   std::unique_ptr<Connection> connection_;
-  std::unique_ptr<Delegate> delegate_;
+  CryptAuthService* cryptauth_service_;  // Outlives this instance.
   std::unique_ptr<Authenticator> authenticator_;
   std::unique_ptr<SecureContext> secure_context_;
   std::deque<PendingMessage> queued_messages_;

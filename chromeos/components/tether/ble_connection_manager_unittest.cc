@@ -12,6 +12,7 @@
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_secure_channel.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -36,28 +37,6 @@ const char kUserId[] = "userId";
 const char kBluetoothAddress1[] = "11:22:33:44:55:66";
 const char kBluetoothAddress2[] = "22:33:44:55:66:77";
 const char kBluetoothAddress3[] = "33:44:55:66:77:88";
-
-class FakeSecureChannelDelegate : public cryptauth::SecureChannel::Delegate {
- public:
-  FakeSecureChannelDelegate() {}
-  ~FakeSecureChannelDelegate() override {}
-
-  std::unique_ptr<cryptauth::SecureMessageDelegate>
-  CreateSecureMessageDelegate() override {
-    return base::MakeUnique<cryptauth::FakeSecureMessageDelegate>();
-  }
-};
-
-class TestDelegate : public BleConnectionManager::Delegate {
- public:
-  TestDelegate() {}
-  ~TestDelegate() {}
-
-  std::unique_ptr<cryptauth::SecureChannel::Delegate>
-  CreateSecureChannelDelegate() override {
-    return base::WrapUnique(new FakeSecureChannelDelegate());
-  }
-};
 
 struct SecureChannelStatusChange {
   SecureChannelStatusChange(const cryptauth::RemoteDevice& remote_device,
@@ -209,11 +188,10 @@ class BleConnectionManagerTest : public testing::Test {
  protected:
   class FakeSecureChannel : public cryptauth::FakeSecureChannel {
    public:
-    FakeSecureChannel(
-        std::unique_ptr<cryptauth::Connection> connection,
-        std::unique_ptr<cryptauth::SecureChannel::Delegate> delegate)
+    FakeSecureChannel(std::unique_ptr<cryptauth::Connection> connection,
+                      cryptauth::CryptAuthService* cryptauth_service)
         : cryptauth::FakeSecureChannel(std::move(connection),
-                                       std::move(delegate)) {}
+                                       cryptauth_service) {}
     ~FakeSecureChannel() override {}
 
     void AddObserver(Observer* observer) override {
@@ -238,12 +216,12 @@ class BleConnectionManagerTest : public testing::Test {
 
     std::unique_ptr<cryptauth::SecureChannel> BuildInstance(
         std::unique_ptr<cryptauth::Connection> connection,
-        std::unique_ptr<cryptauth::SecureChannel::Delegate> delegate) override {
+        cryptauth::CryptAuthService* cryptauth_service) override {
       FakeConnectionWithAddress* fake_connection =
           static_cast<FakeConnectionWithAddress*>(connection.get());
       EXPECT_EQ(expected_device_address_, fake_connection->GetDeviceAddress());
       return base::WrapUnique(
-          new FakeSecureChannel(std::move(connection), std::move(delegate)));
+          new FakeSecureChannel(std::move(connection), cryptauth_service));
     }
 
    private:
@@ -268,7 +246,8 @@ class BleConnectionManagerTest : public testing::Test {
     verified_status_changes_.clear();
     verified_received_messages_.clear();
 
-    delegate_ = new TestDelegate();
+    fake_cryptauth_service_ =
+        base::MakeUnique<cryptauth::FakeCryptAuthService>();
     mock_adapter_ =
         make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
 
@@ -300,7 +279,7 @@ class BleConnectionManagerTest : public testing::Test {
         fake_secure_channel_factory_.get());
 
     manager_ = base::WrapUnique(new BleConnectionManager(
-        base::WrapUnique(delegate_), mock_adapter_,
+        fake_cryptauth_service_.get(), mock_adapter_,
         base::WrapUnique(mock_ble_scanner_),
         base::WrapUnique(mock_ble_advertiser_), base::WrapUnique(device_queue_),
         base::WrapUnique(mock_timer_factory_),
@@ -483,7 +462,7 @@ class BleConnectionManagerTest : public testing::Test {
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
-  BleConnectionManager::Delegate* delegate_;
+  std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   MockBleScanner* mock_ble_scanner_;
   MockBleAdvertiser* mock_ble_advertiser_;
