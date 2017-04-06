@@ -87,10 +87,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  bool Unmount(bool* success) override {
+  void Unmount(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeUnmount);
-    return CallBoolMethodAndBlock(&method_call, success);
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.

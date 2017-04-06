@@ -729,6 +729,15 @@ void CryptohomeAuthenticator::OnOwnershipChecked(bool is_owner) {
   Resolve();
 }
 
+void CryptohomeAuthenticator::OnUnmount(DBusMethodCallStatus call_status,
+                                        bool success) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS || !success) {
+    // Maybe we should reboot immediately here?
+    LOGIN_LOG(ERROR) << "Couldn't unmount users home!";
+  }
+  OnAuthFailure(AuthFailure(AuthFailure::OWNER_REQUIRED));
+}
+
 void CryptohomeAuthenticator::Resolve() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   bool create_if_nonexistent = false;
@@ -849,17 +858,8 @@ void CryptohomeAuthenticator::Resolve() {
       break;
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
-      bool success = false;
-      DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(&success);
-      if (!success) {
-        // Maybe we should reboot immediately here?
-        LOGIN_LOG(ERROR) << "Couldn't unmount users home!";
-      }
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                     this,
-                     AuthFailure(AuthFailure::OWNER_REQUIRED)));
+      DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(
+          base::Bind(&CryptohomeAuthenticator::OnUnmount, this));
       break;
     }
     case FAILED_OLD_ENCRYPTION:

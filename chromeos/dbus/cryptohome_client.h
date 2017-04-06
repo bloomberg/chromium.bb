@@ -137,8 +137,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void IsMounted(const BoolDBusMethodCallback& callback) = 0;
 
   // Calls Unmount method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  virtual bool Unmount(bool* success) = 0;
+  virtual void Unmount(const BoolDBusMethodCallback& callback) = 0;
 
   // Calls AsyncCheckKey method.  |callback| is called after the method call
   // succeeds.

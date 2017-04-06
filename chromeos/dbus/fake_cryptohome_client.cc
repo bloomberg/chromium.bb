@@ -90,9 +90,10 @@ void FakeCryptohomeClient::IsMounted(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
-bool FakeCryptohomeClient::Unmount(bool* success) {
-  *success = unmount_result_;
-  return true;
+void FakeCryptohomeClient::Unmount(const BoolDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, unmount_result_));
 }
 
 void FakeCryptohomeClient::AsyncCheckKey(
