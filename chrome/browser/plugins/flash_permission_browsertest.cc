@@ -102,7 +102,9 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, CommonFailsIfDismissed) {
   CommonFailsIfDismissed();
 }
 
-IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, CommonFailsIfBlocked) {
+// https://crbug.com/706780
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
+                       DISABLED_CommonFailsIfBlocked) {
   CommonFailsIfBlocked();
 }
 
