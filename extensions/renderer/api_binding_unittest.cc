@@ -417,6 +417,29 @@ TEST_F(APIBindingUnittest, EnumValues) {
             GetStringPropertyFromObject(binding_object, context, "last"));
 }
 
+// Test that empty enum entries are (unfortunately) allowed.
+TEST_F(APIBindingUnittest, EnumWithEmptyEntry) {
+  const char kTypes[] =
+      "[{"
+      "  'id': 'enumWithEmpty',"
+      "  'type': 'string',"
+      "  'enum': [{'name': ''}, {'name': 'other'}]"
+      "}]";
+
+  SetTypes(kTypes);
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
+
+  EXPECT_EQ(
+      "{\"\":\"\",\"OTHER\":\"other\"}",
+      GetStringPropertyFromObject(binding_object, context, "enumWithEmpty"));
+}
+
 TEST_F(APIBindingUnittest, TypeRefsTest) {
   const char kTypes[] =
       "[{"

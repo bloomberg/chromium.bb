@@ -32,8 +32,14 @@ namespace {
 // Returns the name of the enum value for use in JavaScript; JS enum entries use
 // SCREAMING_STYLE.
 std::string GetJSEnumEntryName(const std::string& original) {
+  // The webstorePrivate API has an empty enum value for a result.
+  // TODO(devlin): Work with the webstore team to see if we can move them off
+  // this - they also already have a "success" result that they can use.
+  // See crbug.com/709120.
+  if (original.empty())
+    return original;
+
   std::string result;
-  DCHECK(!original.empty());
   // If the original starts with a digit, prefix it with an underscore.
   if (base::IsAsciiDigit(original[0]))
     result.push_back('_');
