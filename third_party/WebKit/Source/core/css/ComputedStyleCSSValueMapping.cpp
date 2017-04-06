@@ -2031,6 +2031,19 @@ ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style) {
   return nullptr;
 }
 
+static bool widthOrHeightPropertyAppliesToObject(const LayoutObject& object) {
+  // According to
+  // http://www.w3.org/TR/CSS2/visudet.html#the-width-property and
+  // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the "width" or
+  // "height" property does not apply to non-atomic inline elements.
+  if (!object.isAtomicInlineLevel() && object.isInline())
+    return false;
+
+  // Non-root SVG should be treated as non-atomic inline no matter how we
+  // implement it internally (e.g. LayoutSVGBlock is based on LayoutBlockFlow).
+  return !object.isSVGChild();
+}
+
 const CSSValue* ComputedStyleCSSValueMapping::get(
     CSSPropertyID propertyID,
     const ComputedStyle& style,
@@ -2526,10 +2539,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
 
     case CSSPropertyHeight:
       if (layoutObject) {
-        // According to
-        // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the
-        // "height" property does not apply for non-atomic inline elements.
-        if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
+        if (!widthOrHeightPropertyAppliesToObject(*layoutObject))
           return CSSIdentifierValue::create(CSSValueAuto);
         return zoomAdjustedPixelValue(sizingBox(layoutObject).height(), style);
       }
@@ -2887,10 +2897,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                        CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyWidth:
       if (layoutObject) {
-        // According to
-        // http://www.w3.org/TR/CSS2/visudet.html#the-width-property,
-        // the "width" property does not apply for non-atomic inline elements.
-        if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
+        if (!widthOrHeightPropertyAppliesToObject(*layoutObject))
           return CSSIdentifierValue::create(CSSValueAuto);
         return zoomAdjustedPixelValue(sizingBox(layoutObject).width(), style);
       }
