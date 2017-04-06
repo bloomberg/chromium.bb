@@ -1766,13 +1766,11 @@ crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 # These tests have test harness errors and PASS lines that have a
 # non-deterministic order.
 crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
-crbug.com/705125 http/tests/security/contentSecurityPolicy/embeddedEnforcement/subsumption_algorithm-wildcards-in-hosts-ports.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
 crbug.com/705125 http/tests/streams/readable-streams/cancel.html [ Failure ]
 crbug.com/705125 http/tests/streams/readable-streams/templated.html [ Failure ]
 crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
-crbug.com/705125 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/embeddedEnforcement/subsumption_algorithm-wildcards-in-hosts-ports.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/cancel.html [ Failure ]
@@ -1805,6 +1803,8 @@ crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsMa
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src [ Pass ]
+crbug.com/694525 external/wpt/content-security-policy/embedded-enforcement [ Pass ]
+crbug.com/694525 external/wpt/content-security-policy/embedded-enforcement/embedding_csp-header-invalid-format.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/font-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/img-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/inside-worker [ Pass ]
