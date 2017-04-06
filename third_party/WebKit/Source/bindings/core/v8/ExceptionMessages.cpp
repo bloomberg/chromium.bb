@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 
 #include "platform/Decimal.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

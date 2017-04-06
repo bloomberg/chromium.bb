@@ -15,7 +15,7 @@ CALLBACK_FUNCTION_H_INCLUDES = frozenset([
     'bindings/core/v8/ScriptWrappable.h',
     'bindings/core/v8/TraceWrapperV8Reference.h',
     'platform/heap/Handle.h',
-    'wtf/text/WTFString.h',
+    'platform/wtf/text/WTFString.h',
 ])
 CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ExceptionState.h',
@@ -23,7 +23,7 @@ CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
     'core/dom/ExecutionContext.h',
-    'wtf/Assertions.h',
+    'platform/wtf/Assertions.h',
 ])
 
 

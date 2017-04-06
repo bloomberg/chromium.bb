@@ -15,10 +15,10 @@
 #include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
+#include "platform/wtf/StringHasher.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "v8/include/v8.h"
-#include "wtf/StringHasher.h"
 
 namespace blink {
 

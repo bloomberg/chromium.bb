@@ -25,9 +25,9 @@
 
 #include "bindings/core/v8/V8ValueCache.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "wtf/text/StringHash.h"
 #include <utility>
+#include "bindings/core/v8/V8Binding.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

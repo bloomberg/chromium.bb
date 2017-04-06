@@ -10,9 +10,9 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
+#include "platform/wtf/RefCounted.h"
 #include "v8/include/v8-debug.h"
 #include "v8/include/v8.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

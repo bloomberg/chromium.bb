@@ -20,8 +20,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/GetPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/GetPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

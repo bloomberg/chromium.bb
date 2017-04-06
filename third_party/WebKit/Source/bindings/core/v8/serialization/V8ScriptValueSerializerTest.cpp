@@ -30,6 +30,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
@@ -38,8 +40,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
 
 namespace blink {
 namespace {

@@ -32,9 +32,9 @@
 #define SharedPersistent_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 #include "v8/include/v8.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

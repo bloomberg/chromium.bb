@@ -31,10 +31,10 @@
 #include "bindings/core/v8/V8GCForContextDispose.h"
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
 #include "v8/include/v8.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/StdLibExtras.h"
 
 namespace blink {
 

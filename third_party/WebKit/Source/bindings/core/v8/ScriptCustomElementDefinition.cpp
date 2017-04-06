@@ -18,8 +18,8 @@
 #include "core/events/ErrorEvent.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "platform/wtf/Allocator.h"
 #include "v8.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

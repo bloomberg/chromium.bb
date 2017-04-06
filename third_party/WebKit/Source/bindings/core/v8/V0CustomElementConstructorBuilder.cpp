@@ -49,7 +49,7 @@
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

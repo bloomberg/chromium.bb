@@ -37,12 +37,12 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

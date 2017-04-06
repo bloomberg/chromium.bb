@@ -59,11 +59,11 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

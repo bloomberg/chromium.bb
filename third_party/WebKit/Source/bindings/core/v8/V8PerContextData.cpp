@@ -30,16 +30,16 @@
 
 #include "bindings/core/v8/V8PerContextData.h"
 
+#include <stdlib.h>
+#include <memory>
 #include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/Modulator.h"
 #include "platform/InstanceCounters.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StringExtras.h"
-#include <memory>
-#include <stdlib.h>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StringExtras.h"
 
 namespace blink {
 

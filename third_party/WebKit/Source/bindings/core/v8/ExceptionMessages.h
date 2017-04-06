@@ -32,10 +32,10 @@
 #define ExceptionMessages_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

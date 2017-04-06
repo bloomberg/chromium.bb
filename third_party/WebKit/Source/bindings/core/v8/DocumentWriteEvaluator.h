@@ -5,14 +5,14 @@
 #ifndef DocumentWriteEvaluator_h
 #define DocumentWriteEvaluator_h
 
+#include <memory>
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/Navigator.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

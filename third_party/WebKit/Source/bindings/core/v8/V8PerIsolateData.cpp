@@ -36,10 +36,10 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "v8/include/v8-debug.h"
-#include "wtf/LeakAnnotations.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "bindings/core/v8/Microtask.h"
 
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

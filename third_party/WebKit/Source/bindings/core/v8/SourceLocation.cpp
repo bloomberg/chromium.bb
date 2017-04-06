@@ -16,7 +16,7 @@
 #include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

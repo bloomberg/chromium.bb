@@ -13,8 +13,8 @@
 #include "web/api/test_interface_3.h"
 
 // TODO(dglazkov): Properly sort the includes.
-#include "wtf/text/WTFString.h"
 #include "bindings/tests/idls/core/TestInterface3.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace web {
 

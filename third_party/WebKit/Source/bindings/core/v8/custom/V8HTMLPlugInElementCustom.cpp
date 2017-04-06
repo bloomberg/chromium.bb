@@ -29,14 +29,14 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <memory>
 #include "bindings/core/v8/SharedPersistent.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

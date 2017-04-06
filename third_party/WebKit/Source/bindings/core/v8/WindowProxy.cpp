@@ -37,8 +37,8 @@
 #include "bindings/core/v8/V8GCForContextDispose.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "platform/wtf/Assertions.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

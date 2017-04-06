@@ -9,7 +9,7 @@
 #include "bindings/core/v8/V8IntersectionObserver.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

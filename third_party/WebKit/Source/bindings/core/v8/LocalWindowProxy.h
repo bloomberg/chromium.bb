@@ -35,10 +35,10 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

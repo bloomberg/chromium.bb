@@ -34,10 +34,10 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/TextPosition.h"
+#include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

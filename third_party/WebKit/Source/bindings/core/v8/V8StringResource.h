@@ -28,10 +28,10 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Threading.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

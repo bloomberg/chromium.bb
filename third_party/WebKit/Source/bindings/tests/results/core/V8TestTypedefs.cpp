@@ -30,8 +30,8 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/LabelsNodeList.h"
-#include "wtf/GetPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/GetPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

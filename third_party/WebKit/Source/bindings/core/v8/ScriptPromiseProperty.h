@@ -9,8 +9,8 @@
 #include "bindings/core/v8/ScriptPromisePropertyBase.h"
 #include "bindings/core/v8/ToV8.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

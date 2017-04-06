@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/MessageChannel.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

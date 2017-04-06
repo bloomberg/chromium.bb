@@ -27,9 +27,9 @@
 #define ArrayValue_h
 
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

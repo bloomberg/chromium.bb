@@ -31,12 +31,12 @@
 #ifndef CallbackPromiseAdapter_h
 #define CallbackPromiseAdapter_h
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "public/platform/WebCallbacks.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/TypeTraits.h"
 #include <memory>
 #include <utility>
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/TypeTraits.h"
+#include "public/platform/WebCallbacks.h"
 
 namespace blink {
 

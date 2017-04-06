@@ -31,8 +31,8 @@
 #ifndef V8BindingMacros_h
 #define V8BindingMacros_h
 
+#include "platform/wtf/Assertions.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

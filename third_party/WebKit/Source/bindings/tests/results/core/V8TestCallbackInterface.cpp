@@ -17,9 +17,9 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "core/dom/ExecutionContext.h"
-#include "wtf/Assertions.h"
-#include "wtf/GetPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/GetPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

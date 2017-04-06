@@ -11,8 +11,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/TypeTraits.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/TypeTraits.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

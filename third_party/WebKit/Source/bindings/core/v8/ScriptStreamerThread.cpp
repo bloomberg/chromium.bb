@@ -4,14 +4,14 @@
 
 #include "bindings/core/v8/ScriptStreamerThread.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

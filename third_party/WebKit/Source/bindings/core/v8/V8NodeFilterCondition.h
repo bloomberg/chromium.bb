@@ -34,8 +34,8 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/dom/NodeFilterCondition.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "v8/include/v8.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -16,7 +16,7 @@
 #include "bindings/tests/idls/core/TestObject.h"
 #include "core/dom/Element.h"
 #include "core/events/EventTarget.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

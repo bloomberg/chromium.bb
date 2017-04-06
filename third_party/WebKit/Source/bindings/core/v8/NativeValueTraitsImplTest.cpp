@@ -9,8 +9,8 @@
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

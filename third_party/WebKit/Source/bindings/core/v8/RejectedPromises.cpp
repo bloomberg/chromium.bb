@@ -15,11 +15,11 @@
 #include "core/events/PromiseRejectionEvent.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

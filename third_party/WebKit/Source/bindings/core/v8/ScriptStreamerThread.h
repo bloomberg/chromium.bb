@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "core/CoreExport.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/WebThread.h"
 #include "v8/include/v8.h"
-#include "wtf/Functional.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

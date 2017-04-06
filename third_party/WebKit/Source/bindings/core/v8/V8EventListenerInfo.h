@@ -5,9 +5,9 @@
 #ifndef V8EventListenerInfo_h
 #define V8EventListenerInfo_h
 
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "v8/include/v8.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

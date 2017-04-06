@@ -17,9 +17,9 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CompositorMutableProperties.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/DateMath.h"
 
 namespace blink {
 

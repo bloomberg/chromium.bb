@@ -4,11 +4,11 @@
 
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 
+#include <memory>
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

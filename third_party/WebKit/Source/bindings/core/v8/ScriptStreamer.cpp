@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptStreamerThread.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
@@ -17,11 +18,10 @@
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/CachedMetadata.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/Deque.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextEncodingRegistry.h"
-#include <memory>
 
 namespace blink {
 

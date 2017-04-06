@@ -5,13 +5,13 @@
 #ifndef RejectedPromises_h
 #define RejectedPromises_h
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
-#include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 namespace v8 {
 class PromiseRejectMessage;

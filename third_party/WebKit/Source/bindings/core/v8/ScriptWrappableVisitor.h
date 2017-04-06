@@ -10,9 +10,9 @@
 #include "platform/heap/HeapPage.h"
 #include "platform/heap/VisitorImpl.h"
 #include "platform/heap/WrapperVisitor.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
-#include "wtf/Deque.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

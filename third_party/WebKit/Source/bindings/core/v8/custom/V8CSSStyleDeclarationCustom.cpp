@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8CSSStyleDeclaration.h"
 
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CSSPropertyNames.h"
@@ -40,14 +41,13 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/events/EventTarget.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringConcatenate.h"
-#include <algorithm>
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringConcatenate.h"
 
 using namespace WTF;
 

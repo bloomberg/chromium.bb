@@ -5,7 +5,7 @@
 #include "bindings/modules/v8/WebGLAny.h"
 
 #include "bindings/core/v8/ToV8.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -18,8 +18,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

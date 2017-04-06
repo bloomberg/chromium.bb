@@ -4,13 +4,13 @@
 
 #include "bindings/core/v8/ToV8.h"
 
+#include <limits>
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "platform/heap/Heap.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
-#include <limits>
 
 #define TEST_TOV8(expected, value) \
   testToV8(&scope, expected, value, __FILE__, __LINE__)

@@ -22,8 +22,8 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
-#include "wtf/GetPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/GetPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

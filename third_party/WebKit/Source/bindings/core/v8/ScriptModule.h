@@ -9,10 +9,10 @@
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

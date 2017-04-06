@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/xml/XPathNSResolver.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

@@ -24,8 +24,8 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

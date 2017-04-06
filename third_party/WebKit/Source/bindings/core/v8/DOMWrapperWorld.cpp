@@ -40,9 +40,9 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/ExecutionContext.h"
-#include "wtf/HashTraits.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

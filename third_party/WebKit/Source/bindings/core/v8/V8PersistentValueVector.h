@@ -31,10 +31,10 @@
 #ifndef V8PersistentValueVector_h
 #define V8PersistentValueVector_h
 
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

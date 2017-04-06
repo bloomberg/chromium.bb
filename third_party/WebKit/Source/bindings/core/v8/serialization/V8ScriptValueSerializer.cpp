@@ -17,11 +17,11 @@
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/WebBlobInfo.h"
-#include "wtf/AutoReset.h"
-#include "wtf/DateMath.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 

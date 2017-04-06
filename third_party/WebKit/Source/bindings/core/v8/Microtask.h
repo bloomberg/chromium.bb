@@ -33,9 +33,9 @@
 
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Functional.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

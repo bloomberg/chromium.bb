@@ -6,7 +6,7 @@
 #define SerializedScriptValueForModulesFactory_h
 
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

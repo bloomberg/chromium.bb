@@ -26,15 +26,15 @@
 #ifndef V8IdleTaskRunner_h
 #define V8IdleTaskRunner_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

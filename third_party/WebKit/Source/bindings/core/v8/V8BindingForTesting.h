@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

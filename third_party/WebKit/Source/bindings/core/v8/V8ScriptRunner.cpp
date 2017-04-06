@@ -43,8 +43,8 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/CachedMetadata.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "wtf/CurrentTime.h"
 
 #if OS(WIN)
 #include <malloc.h>

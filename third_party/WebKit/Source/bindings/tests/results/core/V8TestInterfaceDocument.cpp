@@ -21,8 +21,8 @@
 #include "core/dom/DocumentFullscreen.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/xml/DocumentXPathEvaluator.h"
-#include "wtf/GetPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/GetPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

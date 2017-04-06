@@ -12,10 +12,10 @@
 #include "bindings/core/v8/ScriptPromiseProperties.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
-#include "wtf/Compiler.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

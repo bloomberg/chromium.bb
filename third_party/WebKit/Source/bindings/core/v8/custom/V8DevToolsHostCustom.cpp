@@ -39,8 +39,8 @@
 #include "core/inspector/DevToolsHost.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "platform/ContextMenu.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

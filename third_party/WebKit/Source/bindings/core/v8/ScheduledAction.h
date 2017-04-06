@@ -36,8 +36,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

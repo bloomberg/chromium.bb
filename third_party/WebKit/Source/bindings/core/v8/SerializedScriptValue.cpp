@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -49,13 +50,12 @@
 #include "platform/SharedBuffer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
-#include "wtf/ByteOrder.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringHash.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/ByteOrder.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

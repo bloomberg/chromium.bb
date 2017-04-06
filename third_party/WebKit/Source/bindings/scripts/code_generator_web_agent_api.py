@@ -29,7 +29,7 @@ from name_style_converter import NameStyleConverter
 
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
-STRING_INCLUDE_PATH = 'wtf/text/WTFString.h'
+STRING_INCLUDE_PATH = 'platform/wtf/text/WTFString.h'
 WEB_AGENT_API_IDL_ATTRIBUTE = 'WebAgentAPI'
 
 

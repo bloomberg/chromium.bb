@@ -11,9 +11,9 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

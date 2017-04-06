@@ -6,7 +6,7 @@
 #define Nullable_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

@@ -39,8 +39,8 @@
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/Assertions.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

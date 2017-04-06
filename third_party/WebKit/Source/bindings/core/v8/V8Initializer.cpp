@@ -58,17 +58,17 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "v8/include/v8-debug.h"
 #include "v8/include/v8-profiler.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

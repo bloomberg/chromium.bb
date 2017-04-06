@@ -8,14 +8,14 @@
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringView.h"
 #include "v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringView.h"
 
 namespace blink {
 

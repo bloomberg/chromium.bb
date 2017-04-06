@@ -449,11 +449,11 @@ def impl_includes_for_type(idl_type, interfaces_info):
     if native_array_element_type:
         includes_for_type.update(impl_includes_for_type(
                 native_array_element_type, interfaces_info))
-        includes_for_type.add('wtf/Vector.h')
+        includes_for_type.add('platform/wtf/Vector.h')
 
     base_idl_type = idl_type.base_type
     if idl_type.is_string_type:
-        includes_for_type.add('wtf/text/WTFString.h')
+        includes_for_type.add('platform/wtf/text/WTFString.h')
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])

@@ -30,8 +30,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/dom/MutationCallback.h"
+#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

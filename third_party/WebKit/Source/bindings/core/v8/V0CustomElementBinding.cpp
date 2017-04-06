@@ -30,8 +30,8 @@
 
 #include "bindings/core/v8/V0CustomElementBinding.h"
 
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

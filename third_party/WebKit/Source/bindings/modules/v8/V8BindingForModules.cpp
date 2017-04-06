@@ -50,8 +50,8 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

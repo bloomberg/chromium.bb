@@ -33,8 +33,8 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

@@ -46,9 +46,9 @@ CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ScriptController.h',
     'bindings/core/v8/V8Binding.h',
     'core/dom/ExecutionContext.h',
-    'wtf/Assertions.h',
-    'wtf/GetPtr.h',
-    'wtf/RefPtr.h',
+    'platform/wtf/Assertions.h',
+    'platform/wtf/GetPtr.h',
+    'platform/wtf/RefPtr.h',
 ])
 
 

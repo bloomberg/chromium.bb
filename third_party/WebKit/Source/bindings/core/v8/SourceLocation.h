@@ -5,12 +5,12 @@
 #ifndef SourceLocation_h
 #define SourceLocation_h
 
+#include <v8-inspector-protocol.h>
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/CrossThreadCopier.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <v8-inspector-protocol.h>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

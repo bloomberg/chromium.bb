@@ -34,8 +34,8 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/RemoteFrame.h"
+#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
