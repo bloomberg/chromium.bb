@@ -146,16 +146,19 @@ class HttpsMonitor(Monitor):
       return json.dumps({'resource': pb_to_popo.convert(metric_pb)})
 
   def send(self, metric_pb):
+    logging.info('ts_mon: serializing metrics')
     if interface.state.use_new_proto:
       body = self.encode_to_json(metric_pb)
     else:
       body = self.encode_to_json(self._wrap_proto(metric_pb))
 
     try:
+      logging.info('ts_mon: sending %d bytes', len(body))
       resp, content = self._http.request(self._endpoint,
           method='POST',
           body=body,
           headers={'Content-Type': 'application/json'})
+      logging.info('ts_mon: request finished')
       if resp.status != 200:
         logging.warning('HttpsMonitor.send received status %d: %s', resp.status,
                         content)
