@@ -101,6 +101,10 @@ void BleConnectionManager::ConnectionMetadata::OnConnectionAttemptTimeout() {
   manager_->OnConnectionAttemptTimeout(remote_device_);
 }
 
+bool BleConnectionManager::ConnectionMetadata::HasSecureChannel() {
+  return secure_channel_ != nullptr;
+}
+
 void BleConnectionManager::ConnectionMetadata::SetSecureChannel(
     std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
   DCHECK(!secure_channel_);
@@ -314,7 +318,17 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
     // ignore it.
     PA_LOG(WARNING) << "Received an advertisement from a device which is not "
                     << "registered. Bluetooth address: " << device_address
-                    << ", Remote Device ID: " << remote_device.GetDeviceId();
+                    << ", Remote Device ID: "
+                    << remote_device.GetTruncatedDeviceIdForLogs();
+    return;
+  }
+
+  if (connection_metadata->HasSecureChannel()) {
+    PA_LOG(WARNING) << "Received another advertisement from a registered "
+                    << "device which is already being actively communicated "
+                    << "with. Bluetooth address: " << device_address
+                    << ", Remote Device ID: "
+                    << remote_device.GetTruncatedDeviceIdForLogs();
     return;
   }
 

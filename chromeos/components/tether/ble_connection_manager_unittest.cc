@@ -685,6 +685,43 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
   VerifyDeviceNotRegistered(test_devices_[0]);
 }
 
+// Test for fix to crbug.com/706640. This test will crash without the fix.
+TEST_F(BleConnectionManagerTest,
+       TestSuccessfulConnection_MultipleAdvertisementsReceived) {
+  EXPECT_CALL(*mock_ble_scanner_,
+              RegisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_advertiser_,
+              StartAdvertisingToDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_scanner_,
+              UnregisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
+
+  manager_->RegisterRemoteDevice(test_devices_[0],
+                                 MessageType::TETHER_AVAILABILITY_REQUEST);
+  VerifyAdvertisingTimeoutSet(test_devices_[0]);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
+       cryptauth::SecureChannel::Status::CONNECTING}});
+
+  fake_secure_channel_factory_->SetExpectedDeviceAddress(
+      std::string(kBluetoothAddress1));
+
+  // Simulate multiple advertisements being received:
+  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
+                                         test_devices_[0]);
+  FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
+
+  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
+                                         test_devices_[0]);
+  // Verify that a new channel has not been created:
+  EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
+
+  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
+                                         test_devices_[0]);
+  // Verify that a new channel has not been created:
+  EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
+}
+
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_MultipleConnectionReasons) {
   EXPECT_CALL(*mock_ble_scanner_,

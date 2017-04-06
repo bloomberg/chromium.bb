@@ -147,6 +147,7 @@ class BleConnectionManager : public BleScanner::Observer {
     cryptauth::SecureChannel::Status GetStatus() const;
 
     void StartConnectionAttemptTimer(bool use_short_error_timeout);
+    bool HasSecureChannel();
     void SetSecureChannel(
         std::unique_ptr<cryptauth::SecureChannel> secure_channel);
     void SendMessage(const std::string& payload);
