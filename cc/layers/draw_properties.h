@@ -36,10 +36,9 @@ struct CC_EXPORT DrawProperties {
   // opacity, or when opacity is compounded by the hierarchy.
   float opacity;
 
-  // xxx_is_animating flags are used to indicate whether the DrawProperties
-  // are actually meaningful on the main thread. When the properties are
-  // animating, the main thread may not have the same values that are used
-  // to draw.
+  // Whether the layer has a potentially animating transform in its chain of
+  // transforms to the screen. This is essentially a cache of the transform
+  // node's potentially-animated status.
   bool screen_space_transform_is_animating;
 
   // True if the layer needs to be clipped by clip_rect.
