@@ -13,7 +13,6 @@ declare_args() {
   # the overrides are never used.
   v8_extra_library_files = []
   v8_experimental_extra_library_files = []
-  v8_enable_inspector = true
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
 }
@@ -21,7 +20,6 @@ declare_args() {
 # Prevent warnings for unused build args above.
 assert(v8_extra_library_files != 0)
 assert(v8_experimental_extra_library_files != 0)
-assert(v8_enable_inspector)
 assert(!v8_enable_gdbjit)
 assert(!v8_imminent_deprecation_warnings)
 
