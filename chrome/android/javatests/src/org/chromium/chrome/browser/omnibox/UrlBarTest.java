@@ -314,6 +314,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Omnibox"})
+    @RetryOnFailure
     public void testAutocompleteAllowedWhenReplacingText()
             throws InterruptedException, TimeoutException {
         startMainActivityOnBlankPage();
