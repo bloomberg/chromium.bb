@@ -25,11 +25,11 @@
 
 #include "platform/network/FormDataEncoder.h"
 
-#include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/HexNumber.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncoding.h"
 #include <limits>
+#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

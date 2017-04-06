@@ -5,7 +5,7 @@
 #ifndef NetworkLog_h
 #define NetworkLog_h
 
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=NetworkLog=N| where N is a

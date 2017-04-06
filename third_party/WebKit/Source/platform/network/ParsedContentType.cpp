@@ -31,8 +31,8 @@
 
 #include "platform/network/ParsedContentType.h"
 
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

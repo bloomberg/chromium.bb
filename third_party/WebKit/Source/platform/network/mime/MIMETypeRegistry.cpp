@@ -10,11 +10,11 @@
 #include "media/base/mime_util.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/mime_registry.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

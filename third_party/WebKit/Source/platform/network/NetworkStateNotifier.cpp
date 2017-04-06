@@ -26,11 +26,11 @@
 #include "platform/network/NetworkStateNotifier.h"
 
 #include "platform/CrossThreadFunctional.h"
-#include "wtf/Assertions.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

@@ -4,8 +4,8 @@
 
 #include "platform/network/ContentSecurityPolicyParsers.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 

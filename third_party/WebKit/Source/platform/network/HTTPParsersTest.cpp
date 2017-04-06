@@ -7,10 +7,10 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/dtoa/utils.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/MathExtras.h"
-#include "wtf/dtoa/utils.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

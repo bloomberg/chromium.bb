@@ -5,8 +5,8 @@
 #include "platform/network/NetworkUtils.h"
 
 #include "net/base/ip_address.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

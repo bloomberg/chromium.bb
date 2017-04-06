@@ -32,8 +32,8 @@
 #define WebSocketHandshakeResponse_h
 
 #include "platform/network/HTTPHeaderMap.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
 #define MIMETypeFromURL_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -23,8 +23,8 @@
 
 #include "platform/FileMetadata.h"
 #include "platform/network/FormDataEncoder.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

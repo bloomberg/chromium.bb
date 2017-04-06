@@ -23,8 +23,8 @@
 #define FormDataEncoder_h
 
 #include "platform/network/EncodedFormData.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace WTF {
 class TextEncoding;

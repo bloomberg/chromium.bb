@@ -30,12 +30,12 @@
 #include "platform/CrossThreadCopier.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebConnectionType.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
