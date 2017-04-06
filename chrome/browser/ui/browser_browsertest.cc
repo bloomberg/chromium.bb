@@ -619,9 +619,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL beforeunload_url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), beforeunload_url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
 
   // Start a navigation to trigger the beforeunload dialog.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("window.location.href = 'about:blank'"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -705,23 +708,25 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
 
   // Navigate to another page, but click cancel in the dialog.  Make sure that
   // the throbber stops spinning.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
 
-  FailedCommitWatcher watcher(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  FailedCommitWatcher watcher(contents);
   alert->CloseModalDialog();
   if (content::IsBrowserSideNavigationEnabled())
     watcher.Wait();
-  EXPECT_FALSE(
-      browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
+  EXPECT_FALSE(contents->IsLoading());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
-      ExecuteJavaScriptForTests(ASCIIToUTF16("onbeforeunload=null;"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 class RedirectObserver : public content::WebContentsObserver {
@@ -827,6 +832,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   // Navigate to a page with a beforeunload handler.
   GURL url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
 
   // Navigate to a URL that redirects to another process and approve the
   // beforeunload dialog that pops up.
@@ -855,6 +864,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   GURL url(ui_test_utils::GetTestUrl(base::FilePath(
       base::FilePath::kCurrentDirectory), base::FilePath(kBeforeUnloadFile)));
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
 
   // Navigate to a page that triggers a cross-site transition.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -869,18 +882,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  FailedCommitWatcher watcher(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  FailedCommitWatcher watcher(contents);
   alert->CloseModalDialog();
   if (content::IsBrowserSideNavigationEnabled())
     watcher.Wait();
-  EXPECT_FALSE(
-      browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
+  EXPECT_FALSE(contents->IsLoading());
 
   // Verify there are no pending history items after the dialog is cancelled.
   // (see crbug.com/93858)
-  NavigationEntry* entry = browser()->tab_strip_model()->
-      GetActiveWebContents()->GetController().GetPendingEntry();
+  NavigationEntry* entry = contents->GetController().GetPendingEntry();
   EXPECT_EQ(NULL, entry);
 
   // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
@@ -889,8 +899,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   EXPECT_EQ(url, browser()->toolbar_model()->GetURL());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
-      ExecuteJavaScriptForTests(ASCIIToUTF16("onbeforeunload=null;"));
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 // Test for crbug.com/11647.  A page closed with window.close() should not have
@@ -923,19 +933,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
-// BrowserTest.BeforeUnloadVsBeforeReload times out on Windows.
-// http://crbug.com/130411
-#if defined(OS_WIN)
-#define MAYBE_BeforeUnloadVsBeforeReload DISABLED_BeforeUnloadVsBeforeReload
-#else
-#define MAYBE_BeforeUnloadVsBeforeReload BeforeUnloadVsBeforeReload
-#endif
-
 // Test that when a page has an onbeforeunload handler, reloading a page shows a
 // different dialog than navigating to a different page.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
 
   // Reload the page, and check that we get a "before reload" dialog.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -943,8 +949,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
   EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
 
   // Cancel the reload.
-  FailedCommitWatcher watcher(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  FailedCommitWatcher watcher(contents);
   alert->native_dialog()->CancelAppModalDialog();
   if (content::IsBrowserSideNavigationEnabled())
     watcher.Wait();

@@ -1914,6 +1914,10 @@ void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
   beforeunload_timeout_.reset();
 }
 
+bool RenderFrameHostImpl::IsBeforeUnloadHangMonitorDisabledForTesting() {
+  return !beforeunload_timeout_;
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }

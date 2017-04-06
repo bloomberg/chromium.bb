@@ -187,6 +187,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BlockRequestsForFrame() override;
   void ResumeBlockedRequestsForFrame() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
+  bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
 
   // mojom::FrameHost
   void GetInterfaceProvider(

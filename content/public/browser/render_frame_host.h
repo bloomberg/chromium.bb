@@ -245,6 +245,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // in tests that need to observe beforeunload dialogs, which could fail if the
   // timeout skips the dialog.
   virtual void DisableBeforeUnloadHangMonitorForTesting() = 0;
+  virtual bool IsBeforeUnloadHangMonitorDisabledForTesting() = 0;
 
  private:
   // This interface should only be implemented inside content.
