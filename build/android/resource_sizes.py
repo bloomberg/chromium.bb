@@ -160,7 +160,7 @@ def _CreateSectionNameSizeMap(so_path, tools_prefix):
 
 def _ParseLibBuildId(so_path, tools_prefix):
   """Returns the Build ID of the given native library."""
-  stdout = _RunReadelf(so_path, ['-n'], tools_prefix)
+  stdout = _RunReadelf(so_path, ['n'], tools_prefix)
   match = re.search(r'Build ID: (\w+)', stdout)
   return match.group(1) if match else None
 
