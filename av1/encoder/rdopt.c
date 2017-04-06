@@ -1494,7 +1494,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       } else {
 #if CONFIG_AOM_HIGHBITDEPTH
         DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
-        uint8_t *recon = (uint8_t *)recon16;
+        uint8_t *recon = CONVERT_TO_BYTEPTR(recon16);
 #else
         DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
