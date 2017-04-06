@@ -205,6 +205,9 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // Returns true if we're all done.
   bool AllDone();
 
+  // Retrieve a UI thread-bound weak pointer to this BrowsingDataRemoverImpl.
+  base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();
+
   // The browser context we're to remove from.
   content::BrowserContext* browser_context_;
 

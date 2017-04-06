@@ -23,15 +23,21 @@ class SpecialStoragePolicy;
 
 class BrowsingDataRemoverDelegate {
  public:
+  // Determines whether |origin| matches |origin_type_mask| given
+  // the |special_storage_policy|.
+  typedef base::Callback<bool(int origin_type_mask,
+                              const GURL& origin,
+                              storage::SpecialStoragePolicy* policy)>
+      EmbedderOriginTypeMatcher;
+
   virtual ~BrowsingDataRemoverDelegate() {}
 
-  // Determines whether |origin| matches |origin_type_mask|
-  // given the |special_storage_policy|. |origin_type_mask| should only contain
-  // embedder-specific datatypes.
-  virtual bool DoesOriginMatchEmbedderMask(
-      int origin_type_mask,
-      const GURL& origin,
-      storage::SpecialStoragePolicy* special_storage_policy) const = 0;
+  // Returns a MaskMatcherFunction to match embedder's origin types.
+  // This MaskMatcherFunction will be called with an |origin_type_mask|
+  // parameter containing ONLY embedder-defined origin types, and must be able
+  // to handle ALL embedder-defined typed. It must be static and support
+  // being called on the UI and IO thread.
+  virtual EmbedderOriginTypeMatcher GetOriginTypeMatcher() const = 0;
 
   // Removes embedder-specific data.
   virtual void RemoveEmbedderData(

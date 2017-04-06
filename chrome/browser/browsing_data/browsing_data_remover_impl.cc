@@ -60,23 +60,50 @@ base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
   return base::Bind(&IgnoreArgumentHelper<T>, callback);
 }
 
-bool DoesOriginMatchMaskAndUrls(
-    const base::WeakPtr<BrowsingDataRemoverImpl>& remover_weak_ptr,
+// Returns whether |origin| matches |origin_type_mask| given the special
+// storage |policy|; and if |predicate| is not null, then also whether
+// it matches |predicate|. If |origin_type_mask| contains embedder-specific
+// datatypes, |embedder_matcher| must not be null; the decision for those
+// datatypes will be delegated to it.
+bool DoesOriginMatchMaskAndURLs(
     int origin_type_mask,
     const base::Callback<bool(const GURL&)>& predicate,
+    const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
+        embedder_matcher,
     const GURL& origin,
-    storage::SpecialStoragePolicy* special_storage_policy) {
-  // If BrowsingDataRemoverImpl is null, it is not possible to determine which
-  // origins should have their data deleted, and so we do not delete
-  // anything. This is not a problem, because this can only happen shortly
-  // before shutdown and thus the deletion would likely not be able to
-  // finish anyway.
-  if (!remover_weak_ptr)
+    storage::SpecialStoragePolicy* policy) {
+  if (!predicate.is_null() && !predicate.Run(origin))
     return false;
 
-  return predicate.Run(origin) &&
-         remover_weak_ptr->DoesOriginMatchMask(origin_type_mask, origin,
-                                               special_storage_policy);
+  const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
+  bool is_web_scheme =
+      (std::find(schemes.begin(), schemes.end(), origin.GetOrigin().scheme()) !=
+       schemes.end());
+
+  // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
+  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
+      is_web_scheme &&
+      (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
+    return true;
+  }
+  origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+
+  // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
+  if (policy && policy->IsStorageProtected(origin.GetOrigin()) &&
+      is_web_scheme &&
+      (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB)) {
+    return true;
+  }
+  origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
+
+  DCHECK(embedder_matcher || !origin_type_mask)
+      << "The mask contains embedder-defined origin types, but there is no "
+      << "embedder delegate matcher to process them.";
+
+  if (!embedder_matcher.is_null())
+    return embedder_matcher.Run(origin_type_mask, origin, policy);
+
+  return false;
 }
 
 void ClearHttpAuthCacheOnIOThread(
@@ -213,35 +240,13 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
     int origin_type_mask,
     const GURL& origin,
     storage::SpecialStoragePolicy* policy) const {
-  const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  bool is_web_scheme =
-      (std::find(schemes.begin(), schemes.end(), origin.GetOrigin().scheme()) !=
-       schemes.end());
+  BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
+  if (embedder_delegate_)
+    embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
 
-  // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
-  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
-      is_web_scheme && (origin_type_mask & ORIGIN_TYPE_UNPROTECTED_WEB)) {
-    return true;
-  }
-  origin_type_mask &= ~ORIGIN_TYPE_UNPROTECTED_WEB;
-
-  // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
-  if (policy && policy->IsStorageProtected(origin.GetOrigin()) &&
-      is_web_scheme && (origin_type_mask & ORIGIN_TYPE_PROTECTED_WEB)) {
-    return true;
-  }
-  origin_type_mask &= ~ORIGIN_TYPE_PROTECTED_WEB;
-
-  DCHECK(embedder_delegate_ || !origin_type_mask)
-      << "The mask contains embedder-defined origin types, but there is no "
-      << "embedder delegate to process them.";
-
-  if (embedder_delegate_) {
-    return embedder_delegate_->DoesOriginMatchEmbedderMask(origin_type_mask,
-                                                           origin, policy);
-  }
-
-  return false;
+  return DoesOriginMatchMaskAndURLs(origin_type_mask,
+                                    base::Callback<bool(const GURL&)>(),
+                                    embedder_matcher, origin, policy);
 }
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
@@ -501,10 +506,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       cookie_matcher = filter_builder.BuildCookieFilter();
     }
 
+    BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
+    if (embedder_delegate_)
+      embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
+
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
-        base::Bind(&DoesOriginMatchMaskAndUrls, weak_ptr_factory_.GetWeakPtr(),
-                   origin_type_mask_, filter),
+        base::Bind(&DoesOriginMatchMaskAndURLs, origin_type_mask_, filter,
+                   embedder_matcher),
         cookie_matcher, delete_begin_, delete_end_,
         clear_storage_partition_data_.GetCompletionCallback());
   }
@@ -647,8 +656,7 @@ void BrowsingDataRemoverImpl::Notify() {
   // are scheduled.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemoverImpl::RunNextTask,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }
 
 void BrowsingDataRemoverImpl::NotifyIfDone() {
@@ -661,10 +669,21 @@ void BrowsingDataRemoverImpl::NotifyIfDone() {
 
   if (completion_inhibitor_) {
     completion_inhibitor_->OnBrowsingDataRemoverWouldComplete(
-        this, base::Bind(&BrowsingDataRemoverImpl::Notify,
-                         weak_ptr_factory_.GetWeakPtr()));
+        this, base::Bind(&BrowsingDataRemoverImpl::Notify, GetWeakPtr()));
     return;
   }
 
   Notify();
+}
+
+base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr =
+      weak_ptr_factory_.GetWeakPtr();
+
+  // Immediately bind the weak pointer to the UI thread. This makes it easier
+  // to discover potential misuse on the IO thread.
+  weak_ptr.get();
+
+  return weak_ptr;
 }

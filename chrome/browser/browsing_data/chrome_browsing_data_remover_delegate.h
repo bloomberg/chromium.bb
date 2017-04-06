@@ -173,10 +173,8 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   ~ChromeBrowsingDataRemoverDelegate() override;
 
   // BrowsingDataRemoverDelegate:
-  bool DoesOriginMatchEmbedderMask(
-      int origin_type_mask,
-      const GURL& origin,
-      storage::SpecialStoragePolicy* special_storage_policy) const override;
+  BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher GetOriginTypeMatcher()
+      const override;
   void RemoveEmbedderData(
       const base::Time& delete_begin,
       const base::Time& delete_end,

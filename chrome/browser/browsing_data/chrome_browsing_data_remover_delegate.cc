@@ -236,6 +236,33 @@ void ClearHttpAuthCacheOnIOThread(
   http_session->CloseAllConnections();
 }
 
+// Returned by ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher().
+bool DoesOriginMatchEmbedderMask(int origin_type_mask,
+                                 const GURL& origin,
+                                 storage::SpecialStoragePolicy* policy) {
+  DCHECK_EQ(
+      0,
+      origin_type_mask &
+          (ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EMBEDDER_BEGIN - 1))
+      << "|origin_type_mask| can only contain origin types defined in "
+      << "the embedder.";
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Packaged apps and extensions match iff EXTENSION.
+  if ((origin.GetOrigin().scheme() == extensions::kExtensionScheme) &&
+      (origin_type_mask &
+       ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION)) {
+    return true;
+  }
+  origin_type_mask &= ~ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION;
+#endif
+
+  DCHECK(!origin_type_mask)
+      << "DoesOriginMatchEmbedderMask must handle all origin types.";
+
+  return false;
+}
+
 }  // namespace
 
 ChromeBrowsingDataRemoverDelegate::SubTask::SubTask(
@@ -312,27 +339,9 @@ ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {
   template_url_sub_.reset();
 }
 
-bool ChromeBrowsingDataRemoverDelegate::DoesOriginMatchEmbedderMask(
-    int origin_type_mask,
-    const GURL& origin,
-    storage::SpecialStoragePolicy* policy) const {
-  DCHECK_EQ(0, origin_type_mask & (ORIGIN_TYPE_EMBEDDER_BEGIN - 1))
-      << "|origin_type_mask| can only contain origin types defined in "
-      << "the embedder.";
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Packaged apps and extensions match iff EXTENSION.
-  if ((origin.GetOrigin().scheme() == extensions::kExtensionScheme) &&
-      (origin_type_mask & ORIGIN_TYPE_EXTENSION)) {
-    return true;
-  }
-  origin_type_mask &= ~ORIGIN_TYPE_EXTENSION;
-#endif
-
-  DCHECK(!origin_type_mask)
-      << "DoesOriginMatchEmbedderMask must handle all origin types.";
-
-  return false;
+BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
+ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() const {
+  return base::Bind(DoesOriginMatchEmbedderMask);
 }
 
 void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
