@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
@@ -16,6 +17,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -184,14 +187,6 @@ class ScreenRotationAnimationMetricsReporter
 
 }  // namespace
 
-struct ScreenRotationAnimator::ScreenRotationRequest {
-  ScreenRotationRequest(display::Display::Rotation to_rotation,
-                        display::Display::RotationSource from_source)
-      : new_rotation(to_rotation), source(from_source) {}
-  display::Display::Rotation new_rotation;
-  display::Display::RotationSource source;
-};
-
 ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
     : display_id_(display_id),
       is_rotating_(false),
@@ -212,9 +207,86 @@ ScreenRotationAnimator::~ScreenRotationAnimator() {
   metrics_reporter_.reset();
 }
 
+void ScreenRotationAnimator::StartRotationAnimation(
+    std::unique_ptr<ScreenRotationRequest> rotation_request) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableSmoothScreenRotation)) {
+    RequestCopyRootLayerAndAnimateRotation(std::move(rotation_request));
+  } else {
+    CreateOldLayerTree();
+    AnimateRotation(std::move(rotation_request));
+  }
+}
+
+void ScreenRotationAnimator::RequestCopyRootLayerAndAnimateRotation(
+    std::unique_ptr<ScreenRotationRequest> rotation_request) {
+  std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
+      cc::CopyOutputRequest::CreateRequest(
+          CreateAfterCopyCallback(std::move(rotation_request)));
+  ui::Layer* layer = GetRootWindow(display_id_)->layer();
+  copy_output_request->set_area(gfx::Rect(layer->size()));
+  layer->RequestCopyOfOutput(std::move(copy_output_request));
+}
+
+ScreenRotationAnimator::CopyCallback
+ScreenRotationAnimator::CreateAfterCopyCallback(
+    std::unique_ptr<ScreenRotationRequest> rotation_request) {
+  return base::Bind(&ScreenRotationAnimator::OnRootLayerCopiedBeforeRotation,
+                    weak_factory_.GetWeakPtr(),
+                    base::Passed(&rotation_request));
+}
+
+void ScreenRotationAnimator::OnRootLayerCopiedBeforeRotation(
+    std::unique_ptr<ScreenRotationRequest> rotation_request,
+    std::unique_ptr<cc::CopyOutputResult> result) {
+  // If display was removed, should abort rotation.
+  if (!IsDisplayIdValid(display_id_)) {
+    ProcessAnimationQueue();
+    return;
+  }
+
+  // Fall back to recreate layers solution when the copy request has been
+  // canceled or failed. It would fail if, for examples: a) The layer is removed
+  // from the compositor and destroyed before committing the request to the
+  // compositor. b) The compositor is shutdown.
+  if (result->IsEmpty())
+    CreateOldLayerTree();
+  else
+    CopyOldLayerTree(std::move(result));
+  AnimateRotation(std::move(rotation_request));
+}
+
+void ScreenRotationAnimator::CreateOldLayerTree() {
+  old_layer_tree_owner_ = ::wm::RecreateLayers(GetRootWindow(display_id_));
+}
+
+void ScreenRotationAnimator::CopyOldLayerTree(
+    std::unique_ptr<cc::CopyOutputResult> result) {
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  result->TakeTexture(&texture_mailbox, &release_callback);
+  DCHECK(texture_mailbox.IsTexture());
+
+  aura::Window* root_window = GetRootWindow(display_id_);
+  gfx::Rect rect(root_window->layer()->size());
+  std::unique_ptr<ui::Layer> copy_layer = base::MakeUnique<ui::Layer>();
+  copy_layer->SetBounds(rect);
+  copy_layer->SetTextureMailbox(texture_mailbox, std::move(release_callback),
+                                rect.size());
+  old_layer_tree_owner_ =
+      base::MakeUnique<ui::LayerTreeOwner>(std::move(copy_layer));
+}
+
 void ScreenRotationAnimator::AnimateRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request) {
   aura::Window* root_window = GetRootWindow(display_id_);
+  std::unique_ptr<LayerCleanupObserver> old_layer_cleanup_observer(
+      new LayerCleanupObserver(weak_factory_.GetWeakPtr()));
+  ui::Layer* old_root_layer = old_layer_tree_owner_->root();
+  old_root_layer->set_name("ScreenRotationAnimator:old_layer_tree");
+  // Add the cloned layer tree in to the root, so it will be rendered.
+  root_window->layer()->Add(old_root_layer);
+  root_window->layer()->StackAtTop(old_root_layer);
 
   const gfx::Rect original_screen_bounds = root_window->GetTargetBounds();
 
@@ -229,18 +301,6 @@ void ScreenRotationAnimator::AnimateRotation(
 
   const gfx::Tween::Type tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
 
-  std::unique_ptr<ui::LayerTreeOwner> old_layer_tree =
-      ::wm::RecreateLayers(root_window);
-  old_layer_tree->root()->set_name("ScreenRotationAnimator:old_layer_tree");
-
-  // Add the cloned layer tree in to the root, so it will be rendered.
-  root_window->layer()->Add(old_layer_tree->root());
-  root_window->layer()->StackAtTop(old_layer_tree->root());
-
-  old_layer_tree_owner_ = std::move(old_layer_tree);
-  std::unique_ptr<LayerCleanupObserver> old_layer_cleanup_observer(
-      new LayerCleanupObserver(weak_factory_.GetWeakPtr()));
-
   Shell::Get()->display_manager()->SetDisplayRotation(
       display_id_, rotation_request->new_rotation, rotation_request->source);
 
@@ -248,7 +308,6 @@ void ScreenRotationAnimator::AnimateRotation(
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
                                       rotated_screen_bounds.height() / 2);
 
-  ui::Layer* old_root_layer = old_layer_tree_owner_->root();
   // We must animate each non-cloned child layer individually because the cloned
   // layer was added as a child to |root_window|'s layer so that it will be
   // rendered.
@@ -327,7 +386,7 @@ void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
     StopAnimating();
   } else {
     is_rotating_ = true;
-    AnimateRotation(std::move(rotation_request));
+    StartRotationAnimation(std::move(rotation_request));
   }
 }
 

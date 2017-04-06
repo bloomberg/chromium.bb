@@ -1,6 +1,7 @@
 include_rules = [
   "+device/bluetooth",
   "+cc/debug",
+  "+cc/output",
   "+components/prefs",
   "+components/quirks",
   "+components/session_manager",

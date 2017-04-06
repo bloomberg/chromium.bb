@@ -61,6 +61,10 @@ const char kAshEnableTouchView[] = "enable-touchview";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
+// Enables a smoother animation for screen rotation.
+const char kAshEnableSmoothScreenRotation[] =
+    "ash-enable-smooth-screen-rotation";
+
 // Specifies the estimated time (in milliseconds) from VSYNC event until when
 // visible light can be noticed by the user.
 const char kAshEstimatedPresentationDelay[] =

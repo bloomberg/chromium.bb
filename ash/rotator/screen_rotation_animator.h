@@ -8,10 +8,15 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/display/display.h"
+
+namespace cc {
+class CopyOutputResult;
+}  // namespace cc
 
 namespace ui {
 class AnimationMetricsReporter;
@@ -30,7 +35,7 @@ class ScreenRotationAnimatorObserver;
 class ASH_EXPORT ScreenRotationAnimator {
  public:
   explicit ScreenRotationAnimator(int64_t display_id);
-  ~ScreenRotationAnimator();
+  virtual ~ScreenRotationAnimator();
 
   // Rotates the display::Display specified by |display_id_| to the
   // |new_rotation| orientation, for the given |source|. The rotation will also
@@ -55,11 +60,46 @@ class ASH_EXPORT ScreenRotationAnimator {
   // notifies |screen_rotation_animator_observer_|.
   void ProcessAnimationQueue();
 
+ protected:
+  using CopyCallback =
+      base::Callback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
+  struct ScreenRotationRequest {
+    ScreenRotationRequest(display::Display::Rotation to_rotation,
+                          display::Display::RotationSource from_source)
+        : new_rotation(to_rotation), source(from_source) {}
+    display::Display::Rotation new_rotation;
+    display::Display::RotationSource source;
+  };
+
+  // This function can be overridden in unit test to test removing external
+  // display.
+  virtual CopyCallback CreateAfterCopyCallback(
+      std::unique_ptr<ScreenRotationRequest> rotation_request);
+
  private:
   friend class ash::test::ScreenRotationAnimatorTestApi;
-  struct ScreenRotationRequest;
 
-  // Set the screen orientation to |new_rotation| and animate the change. The
+  void StartRotationAnimation(
+      std::unique_ptr<ScreenRotationRequest> rotation_request);
+
+  // This is an asynchronous call to request copy output of root layer.
+  void RequestCopyRootLayerAndAnimateRotation(
+      std::unique_ptr<ScreenRotationRequest> rotation_request);
+
+  // The callback in |RequestCopyRootLayerAndAnimateRotation()|.
+  void OnRootLayerCopiedBeforeRotation(
+      std::unique_ptr<ScreenRotationRequest> rotation_request,
+      std::unique_ptr<cc::CopyOutputResult> result);
+
+  // Recreates all |root_window| layers.
+  void CreateOldLayerTree();
+
+  // Requests a copy of |root_window| root layer output.
+  void CopyOldLayerTree(std::unique_ptr<cc::CopyOutputResult> result);
+
+  // Note: Only call this function when the |old_layer_tree_owner_| is set up
+  // properly.
+  // Sets the screen orientation to |new_rotation| and animate the change. The
   // animation will rotate the initial orientation's layer towards the new
   // orientation through |rotation_degrees| while fading out, and the new
   // orientation's layer will be rotated in to the |new_orientation| through

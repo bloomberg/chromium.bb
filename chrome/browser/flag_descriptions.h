@@ -800,6 +800,12 @@ extern const char kAshEnableMirroredScreenName[];
 // Description for the flag to enable the mirrored screen mode.
 extern const char kAshEnableMirroredScreenDescription[];
 
+// Title for the flag to enable smooth rotation animations.
+extern const char kAshEnableSmoothScreenRotationName[];
+
+// Description for the flag to enable smooth rotation animations.
+extern const char kAshEnableSmoothScreenRotationDescription[];
+
 // Description for the flag that sets material design ink drop animation speed
 // of fast.
 extern const char kMaterialDesignInkDropAnimationFast[];

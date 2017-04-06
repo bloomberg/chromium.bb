@@ -2588,6 +2588,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCustomContextMenu)},
 #endif  // OS_ANDROID
 
+#if defined(USE_ASH)
+    {"ash-enable-smooth-screen-rotation",
+     flag_descriptions::kAshEnableSmoothScreenRotationName,
+     flag_descriptions::kAshEnableSmoothScreenRotationDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableSmoothScreenRotation)},
+#endif  // defined(USE_ASH)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
