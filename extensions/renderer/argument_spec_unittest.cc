@@ -268,6 +268,8 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   {
     const char kFunctionSpec[] = "{ 'type': 'function' }";
     ArgumentSpec spec(*ValueFromString(kFunctionSpec));
+    // Functions are serialized as empty dictionaries.
+    ExpectSuccess(spec, "(function() {})", "{}");
     ExpectSuccessWithNoConversion(spec, "(function() {})");
     ExpectSuccessWithNoConversion(spec, "(function(a, b) { a(); b(); })");
     ExpectSuccessWithNoConversion(spec, "(function(a, b) { a(); b(); })");

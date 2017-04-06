@@ -716,19 +716,19 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setHandleRequest('oneString', function() {\n"
-      "    this.requestArguments = Array.from(arguments);\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setHandleRequest('oneString', function() {\n"
+        "    this.requestArguments = Array.from(arguments);\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetFunctions(kFunctions);
   SetHooks(std::move(hooks));
@@ -777,13 +777,10 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
       "    return this.requestArguments\n"
       "  });\n"
       "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+  v8::Local<v8::Function> function = FunctionFromString(context, kRegisterHook);
+  v8::Local<v8::Value> args[] = {js_hooks};
+  RunFunctionOnGlobal(function, context, arraysize(args), args);
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -829,19 +826,19 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setUpdateArgumentsPreValidate('oneString', function() {\n"
-      "    throw new Error('Custom Hook Error');\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setUpdateArgumentsPreValidate('oneString', function() {\n"
+        "    throw new Error('Custom Hook Error');\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -871,19 +868,19 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setHandleRequest('oneString', str => {\n"
-      "    return str + ' pong';\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setHandleRequest('oneString', str => {\n"
+        "    return str + ' pong';\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -932,19 +929,19 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setHandleRequest('oneString', str => {\n"
-      "    throw new Error('Custom Hook Error');\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setHandleRequest('oneString', str => {\n"
+        "    throw new Error('Custom Hook Error');\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -1038,20 +1035,20 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
-      "    this.requestArguments = Array.from(arguments);\n"
-      "    return ['pong'];\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name =
-      gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(
-      v8::Global<v8::String>(isolate(), source_string),
-      v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
+        "    this.requestArguments = Array.from(arguments);\n"
+        "    return ['pong'];\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);
@@ -1087,17 +1084,19 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidateViolatingSchema) {
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
-  const char kRegisterHook[] =
-      "(function(hooks) {\n"
-      "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
-      "    return [{}];\n"
-      "  });\n"
-      "})";
-  v8::Local<v8::String> source_string =
-      gin::StringToV8(isolate(), kRegisterHook);
-  v8::Local<v8::String> source_name = gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(v8::Global<v8::String>(isolate(), source_string),
-                          v8::Global<v8::String>(isolate(), source_name));
+  {
+    const char kRegisterHook[] =
+        "(function(hooks) {\n"
+        "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
+        "    return [{}];\n"
+        "  });\n"
+        "})";
+    v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+    v8::Local<v8::Function> function =
+        FunctionFromString(context, kRegisterHook);
+    v8::Local<v8::Value> args[] = {js_hooks};
+    RunFunctionOnGlobal(function, context, arraysize(args), args);
+  }
 
   SetHooks(std::move(hooks));
   SetFunctions(kFunctions);

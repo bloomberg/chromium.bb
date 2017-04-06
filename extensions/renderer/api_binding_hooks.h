@@ -20,6 +20,7 @@ class Arguments;
 }
 
 namespace extensions {
+class APIBindingHooksDelegate;
 class APISignature;
 
 // A class to register custom hooks for given API calls that need different
@@ -69,16 +70,9 @@ class APIBindingHooks {
   ~APIBindingHooks();
 
   // Register a custom binding to handle requests.
+  // TODO(devlin): Remove this in favor of a method on APIBindingHooksDelegate.
   void RegisterHandleRequest(const std::string& method_name,
                              const HandleRequestHook& hook);
-
-  // Registers a JS script to be compiled and run in order to initialize any JS
-  // hooks within a v8 context.
-  void RegisterJsSource(v8::Global<v8::String> source,
-                        v8::Global<v8::String> resource_name);
-
-  // Initializes JS hooks within a context.
-  void InitializeInContext(v8::Local<v8::Context> context);
 
   // Looks for any custom hooks associated with the given request, and, if any
   // are found, runs them. Returns the result of running the hooks, if any.
@@ -95,6 +89,14 @@ class APIBindingHooks {
   v8::Local<v8::Function> GetCustomJSCallback(const std::string& method_name,
                                               v8::Local<v8::Context> context);
 
+  // Creates a new JS event for the given |event_name|, if a custom event is
+  // provided. Returns true if an event was created.
+  bool CreateCustomEvent(v8::Local<v8::Context> context,
+                         const std::string& event_name,
+                         v8::Local<v8::Value>* event_out);
+
+  void SetDelegate(std::unique_ptr<APIBindingHooksDelegate> delegate);
+
  private:
   // Updates the |arguments| by running |function| and settings arguments to the
   // returned result.
@@ -108,13 +110,6 @@ class APIBindingHooks {
   // All registered request handlers.
   std::map<std::string, HandleRequestHook> request_hooks_;
 
-  // The script to run to initialize JS hooks, if any.
-  v8::Global<v8::String> js_hooks_source_;
-
-  // The name of the JS resource for the hooks. Used to create a ScriptOrigin
-  // to make exception stack traces more readable.
-  v8::Global<v8::String> js_resource_name_;
-
   // The name of the associated API.
   std::string api_name_;
 
@@ -122,6 +117,8 @@ class APIBindingHooks {
   // it's in direct response to JS calling in. There should be no reason that
   // script is disabled.
   binding::RunJSFunctionSync run_js_;
+
+  std::unique_ptr<APIBindingHooksDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingHooks);
 };

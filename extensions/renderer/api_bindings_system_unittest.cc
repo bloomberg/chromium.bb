@@ -14,6 +14,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_binding_hooks_delegate.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_bindings_system_unittest.h"
@@ -65,6 +66,8 @@ const char kAlphaAPISpec[] =
     "  }],"
     "  'events': [{"
     "    'name': 'alphaEvent'"
+    "  }, {"
+    "    'name': 'alphaOtherEvent'"
     "  }]"
     "}";
 
@@ -90,6 +93,50 @@ const char kGammaAPISpec[] =
 bool AllowAllAPIs(const std::string& name) {
   return true;
 }
+
+class TestHooks : public APIBindingHooksDelegate {
+ public:
+  TestHooks() {}
+  ~TestHooks() override {}
+
+  using CustomEventFactory = base::Callback<v8::Local<v8::Value>(
+      v8::Local<v8::Context>,
+      const binding::RunJSFunctionSync& run_js,
+      const std::string& event_name)>;
+
+  bool CreateCustomEvent(v8::Local<v8::Context> context,
+                         const binding::RunJSFunctionSync& run_js_sync,
+                         const std::string& event_name,
+                         v8::Local<v8::Value>* event_out) override {
+    if (!custom_event_.is_null()) {
+      *event_out = custom_event_.Run(context, run_js_sync, event_name);
+      return true;
+    }
+    return false;
+  }
+
+  void RegisterHooks(APIBindingHooks* hooks) {
+    for (const auto& request_handler : request_handlers_) {
+      hooks->RegisterHandleRequest(request_handler.first,
+                                   request_handler.second);
+    }
+  }
+
+  void AddHandler(base::StringPiece name,
+                  const APIBindingHooks::HandleRequestHook& hook) {
+    request_handlers_[name.as_string()] = hook;
+  }
+
+  void SetCustomEvent(const CustomEventFactory& custom_event) {
+    custom_event_ = custom_event;
+  }
+
+ private:
+  std::map<std::string, APIBindingHooks::HandleRequestHook> request_handlers_;
+  CustomEventFactory custom_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestHooks);
+};
 
 }  // namespace
 
@@ -322,11 +369,13 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
     return result;
   };
 
-  APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);
-  ASSERT_TRUE(hooks);
-  hooks->RegisterHandleRequest(
-      "alpha.functionWithCallback",
-      base::Bind(hook, &did_call));
+  auto test_hooks = base::MakeUnique<TestHooks>();
+  test_hooks->AddHandler("alpha.functionWithCallback",
+                         base::Bind(hook, &did_call));
+  APIBindingHooks* binding_hooks =
+      bindings_system()->GetHooksForAPI(kAlphaAPIName);
+  test_hooks->RegisterHooks(binding_hooks);
+  binding_hooks->SetDelegate(std::move(test_hooks));
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
       kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
@@ -365,16 +414,15 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
       "  });\n"
       "})";
 
-  APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);
-  ASSERT_TRUE(hooks);
-  v8::Local<v8::String> source_string = gin::StringToV8(isolate(), kHook);
-  v8::Local<v8::String> source_name = gin::StringToV8(isolate(), "custom_hook");
-  hooks->RegisterJsSource(v8::Global<v8::String>(isolate(), source_string),
-                          v8::Global<v8::String>(isolate(), source_name));
-
+  APIBindingHooks* hooks = nullptr;
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), &hooks);
   ASSERT_FALSE(alpha_api.IsEmpty());
+  ASSERT_TRUE(hooks);
+  v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
+  v8::Local<v8::Function> function = FunctionFromString(context, kHook);
+  v8::Local<v8::Value> args[] = {js_hooks};
+  RunFunctionOnGlobal(function, context, arraysize(args), args);
 
   {
     const char kTestCall[] =
@@ -421,6 +469,49 @@ TEST_F(APIBindingsSystemTest, CrossAPIReferences) {
     ValidateLastRequest("gamma.functionWithExternalRef", "[{'prop1':'foo'}]");
     reset_last_request();
   }
+}
+
+TEST_F(APIBindingsSystemTest, TestCustomEvent) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  auto create_custom_event = [](v8::Local<v8::Context> context,
+                                const binding::RunJSFunctionSync& run_js,
+                                const std::string& event_name) {
+    v8::Isolate* isolate = context->GetIsolate();
+    v8::Local<v8::Object> ret = v8::Object::New(isolate);
+    ret->Set(context, gin::StringToSymbol(isolate, "name"),
+             gin::StringToSymbol(isolate, event_name))
+        .ToChecked();
+    return ret.As<v8::Value>();
+  };
+
+  auto test_hooks = base::MakeUnique<TestHooks>();
+  test_hooks->SetCustomEvent(base::Bind(create_custom_event));
+  APIBindingHooks* binding_hooks =
+      bindings_system()->GetHooksForAPI(kAlphaAPIName);
+  binding_hooks->SetDelegate(std::move(test_hooks));
+
+  v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+
+  v8::Local<v8::Value> event =
+      GetPropertyFromObject(api, context, "alphaEvent");
+  ASSERT_TRUE(event->IsObject());
+  EXPECT_EQ(
+      "\"alpha.alphaEvent\"",
+      GetStringPropertyFromObject(event.As<v8::Object>(), context, "name"));
+  v8::Local<v8::Value> event2 =
+      GetPropertyFromObject(api, context, "alphaEvent");
+  EXPECT_EQ(event, event2);
+
+  v8::Local<v8::Value> other_event =
+      GetPropertyFromObject(api, context, "alphaOtherEvent");
+  ASSERT_TRUE(other_event->IsObject());
+  EXPECT_EQ("\"alpha.alphaOtherEvent\"",
+            GetStringPropertyFromObject(other_event.As<v8::Object>(), context,
+                                        "name"));
+  EXPECT_NE(event, other_event);
 }
 
 }  // namespace extensions

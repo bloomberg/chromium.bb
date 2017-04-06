@@ -20,6 +20,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/storage_area.h"
+#include "extensions/renderer/web_request_hooks.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
@@ -340,6 +341,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
                                  base::Bind(&StorageArea::CreateStorageArea));
   api_system_.RegisterCustomType("types.ChromeSetting",
                                  base::Bind(&ChromeSetting::Create));
+  api_system_.GetHooksForAPI("webRequest")
+      ->SetDelegate(base::MakeUnique<WebRequestHooks>());
 }
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}

@@ -18,6 +18,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace extensions {
@@ -117,6 +118,31 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, FileSystemApiGetDisplayPath) {
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest("native_bindings/instance_of")) << message_;
+}
+
+// Tests the webRequest API, which requires IO thread requests and custom
+// events.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebRequest) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  // Load an extension and wait for it to be ready.
+  ResultCatcher catcher;
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("native_bindings/web_request"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/native_bindings/simple.html"));
+
+  GURL expected_url = embedded_test_server()->GetURL(
+      "example.com", "/native_bindings/simple2.html");
+  EXPECT_EQ(expected_url, browser()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetLastCommittedURL());
 }
 
 }  // namespace extensions

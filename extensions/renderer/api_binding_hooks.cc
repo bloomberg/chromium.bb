@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "extensions/renderer/api_binding_hooks_delegate.h"
 #include "extensions/renderer/api_signature.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -212,12 +213,6 @@ void APIBindingHooks::RegisterHandleRequest(const std::string& method_name,
   request_hooks_[method_name] = hook;
 }
 
-void APIBindingHooks::RegisterJsSource(v8::Global<v8::String> source,
-                                       v8::Global<v8::String> resource_name) {
-  js_hooks_source_ = std::move(source);
-  js_resource_name_ = std::move(resource_name);
-}
-
 APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     const std::string& method_name,
     v8::Local<v8::Context> context,
@@ -321,26 +316,6 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
   return result;
 }
 
-void APIBindingHooks::InitializeInContext(v8::Local<v8::Context> context) {
-  if (js_hooks_source_.IsEmpty())
-    return;
-
-  v8::Local<v8::String> source = js_hooks_source_.Get(context->GetIsolate());
-  v8::Local<v8::String> resource_name =
-      js_resource_name_.Get(context->GetIsolate());
-  v8::Local<v8::Script> script;
-  v8::ScriptOrigin origin(resource_name);
-  if (!v8::Script::Compile(context, source, &origin).ToLocal(&script))
-    return;
-  v8::Local<v8::Value> func_as_value = script->Run();
-  v8::Local<v8::Function> function;
-  if (!gin::ConvertFromV8(context->GetIsolate(), func_as_value, &function))
-    return;
-  v8::Local<v8::Value> api_hooks = GetJSHookInterface(context);
-  v8::Local<v8::Value> args[] = {api_hooks};
-  run_js_.Run(function, context, arraysize(args), args);
-}
-
 v8::Local<v8::Object> APIBindingHooks::GetJSHookInterface(
     v8::Local<v8::Context> context) {
   return GetJSHookInterfaceObject(api_name_, context, true);
@@ -359,6 +334,18 @@ v8::Local<v8::Function> APIBindingHooks::GetCustomJSCallback(
   CHECK(hook_interface);
 
   return hook_interface->GetCustomCallback(name, context->GetIsolate());
+}
+
+bool APIBindingHooks::CreateCustomEvent(v8::Local<v8::Context> context,
+                                        const std::string& event_name,
+                                        v8::Local<v8::Value>* event_out) {
+  return delegate_ &&
+         delegate_->CreateCustomEvent(context, run_js_, event_name, event_out);
+}
+
+void APIBindingHooks::SetDelegate(
+    std::unique_ptr<APIBindingHooksDelegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 bool APIBindingHooks::UpdateArguments(

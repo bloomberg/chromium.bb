@@ -144,9 +144,20 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
                                  std::unique_ptr<base::Value>* out_value,
                                  std::string* error) const {
   if (type_ == ArgumentType::FUNCTION) {
-    // We can't serialize functions. We shouldn't be asked to.
-    DCHECK(!out_value);
-    return value->IsFunction();
+    if (!value->IsFunction())
+      return false;
+    // Certain APIs, like webRequest and contextMenus, have functions as
+    // parameters that aren't the callback. We need these included in the
+    // signature for validation purposes, but don't *really* need to serialize
+    // them. Unfortunately, if we don't, validation in the browser fails. For
+    // now, the expectation is that functions are serialized as dictionaries,
+    // to match the content::V8ValueConverter behavior.
+    // TODO(devlin): Change this somehow. We could, for instance, add a
+    // 'validation_only' property to the schema to indicate that a parameter
+    // or property shouldn't be serialized or included in the compiled types.
+    if (out_value)
+      *out_value = base::MakeUnique<base::DictionaryValue>();
+    return true;
   }
 
   if (type_ == ArgumentType::REF) {

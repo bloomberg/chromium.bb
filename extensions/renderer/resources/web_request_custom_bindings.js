@@ -4,9 +4,10 @@
 
 // Custom binding for the webRequest API.
 
-var binding = require('binding').Binding.create('webRequest');
-var sendRequest = require('sendRequest').sendRequest;
-var WebRequestEvent = require('webRequestEvent').WebRequestEvent;
+var binding = apiBridge || require('binding').Binding.create('webRequest');
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 
 binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
@@ -18,6 +19,8 @@ binding.registerCustomHook(function(api) {
   });
 });
 
-binding.registerCustomEvent(WebRequestEvent);
-
-exports.$set('binding', binding.generate());
+if (!apiBridge) {
+  var webRequestEvent = require('webRequestEvent').WebRequestEvent;
+  binding.registerCustomEvent(webRequestEvent);
+  exports.$set('binding', binding.generate());
+}

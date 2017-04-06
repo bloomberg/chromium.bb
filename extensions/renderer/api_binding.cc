@@ -306,8 +306,6 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     }
   }
 
-  binding_hooks_->InitializeInContext(context);
-
   return object;
 }
 
@@ -430,7 +428,10 @@ void APIBinding::GetEventObject(
   auto* event_data =
       static_cast<EventData*>(info.Data().As<v8::External>()->Value());
   v8::Local<v8::Value> retval;
-  if (event_data->supports_rules) {
+  if (event_data->binding->binding_hooks_->CreateCustomEvent(
+          context, event_data->full_name, &retval)) {
+    // A custom event was created; our work is done.
+  } else if (event_data->supports_rules) {
     gin::Handle<DeclarativeEvent> event = gin::CreateHandle(
         isolate, new DeclarativeEvent(
                      event_data->full_name, event_data->binding->type_refs_,
