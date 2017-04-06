@@ -204,7 +204,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayNoButtons) {
       CreateBanner("Title", "Context", "https://gmail.com", nullptr, nullptr);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
   NSArray* notifications = [notification_center() deliveredNotifications];
@@ -224,7 +225,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayOneButton) {
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
 
@@ -243,7 +245,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestCloseNotification) {
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
@@ -258,7 +261,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestCloseNonExistingNotification) {
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
@@ -310,7 +314,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesNotifications) {
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
   {
     std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-        new NotificationPlatformBridgeMac(notification_center(), nil));
+        new NotificationPlatformBridgeMac(notification_center(),
+                                          alert_dispatcher()));
     EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
     bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                     "profile_id", false, *notification);
@@ -321,9 +326,6 @@ TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesNotifications) {
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
 }
 
-// TODO(miguelg) There is some duplication between these tests and the ones
-// Above. Once the flag is removed most tests can be merged.
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayAlert) {
   std::unique_ptr<Notification> alert =
       CreateAlert("Title", "Context", "https://gmail.com", "Button 1", nullptr);
@@ -390,5 +392,3 @@ TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesBannersAndAlerts) {
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
   EXPECT_EQ(0u, [[alert_dispatcher() alerts] count]);
 }
-
-#endif

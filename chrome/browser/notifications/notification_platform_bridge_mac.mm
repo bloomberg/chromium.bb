@@ -144,23 +144,16 @@ NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
 
   // TODO(miguelg) do not remove banners if possible.
   [notification_center_ removeAllDeliveredNotifications];
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
   [alert_dispatcher_ closeAllNotifications];
-#endif  // BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
 }
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
   base::scoped_nsobject<AlertDispatcherImpl> alert_dispatcher(
       [[AlertDispatcherImpl alloc] init]);
   return new NotificationPlatformBridgeMac(
       [NSUserNotificationCenter defaultUserNotificationCenter],
       alert_dispatcher.get());
-#else
-  return new NotificationPlatformBridgeMac(
-      [NSUserNotificationCenter defaultUserNotificationCenter], nil);
-#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 void NotificationPlatformBridgeMac::Display(
@@ -232,7 +225,6 @@ void NotificationPlatformBridgeMac::Display(
   [builder setIncognito:incognito];
   [builder setNotificationType:[NSNumber numberWithInteger:notification_type]];
 
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
   // Send persistent notifications to the XPC service so they
   // can be displayed as alerts. Chrome itself can only display
   // banners.
@@ -243,10 +235,6 @@ void NotificationPlatformBridgeMac::Display(
     NSUserNotification* toast = [builder buildUserNotification];
     [notification_center_ deliverNotification:toast];
   }
-#else
-  NSUserNotification* toast = [builder buildUserNotification];
-  [notification_center_ deliverNotification:toast];
-#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
@@ -270,49 +258,24 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
       break;
     }
   }
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+
   // If no banner existed with that ID try to see if there is an alert
   // in the xpc server.
   if (!notification_removed) {
     [alert_dispatcher_ closeNotificationWithId:candidate_id
                                  withProfileId:current_profile_id];
   }
-#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 void NotificationPlatformBridgeMac::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     const GetDisplayedNotificationsCallback& callback) const {
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
   [alert_dispatcher_
       getDisplayedAlertsForProfileId:base::SysUTF8ToNSString(profile_id)
                            incognito:incognito
                   notificationCenter:notification_center_
                             callback:callback];
-
-#else
-
-  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
-  NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
-  for (NSUserNotification* toast in
-       [notification_center_ deliveredNotifications]) {
-    NSString* toast_profile_id = [toast.userInfo
-        objectForKey:notification_constants::kNotificationProfileId];
-    BOOL incognito_notification = [[toast.userInfo
-        objectForKey:notification_constants::kNotificationIncognito] boolValue];
-    if ([toast_profile_id isEqualToString:current_profile_id] &&
-        incognito == incognito_notification) {
-      displayed_notifications->insert(base::SysNSStringToUTF8([toast.userInfo
-          objectForKey:notification_constants::kNotificationId]));
-    }
-  }
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(&displayed_notifications),
-                 true /* supports_synchronization */));
-
-#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 // static

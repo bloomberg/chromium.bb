@@ -67,10 +67,6 @@ declare_args() {
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos
 
-  # Enable native notifications via XPC services (mac only).
-  # TODO(miguelg): remove this.
-  enable_xpc_notifications = true
-
   # Indicates if the build is using PGO.
   pgo_build = chrome_pgo_phase > 0
 
