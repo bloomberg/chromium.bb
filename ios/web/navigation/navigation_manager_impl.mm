@@ -236,10 +236,6 @@ void NavigationManagerImpl::AddPendingItem(
   }
 }
 
-NavigationItemList NavigationManagerImpl::GetItems() const {
-  return CreateNavigationItemList([session_controller_ items]);
-}
-
 BrowserState* NavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }

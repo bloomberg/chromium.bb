@@ -110,11 +110,6 @@ class NavigationManagerImpl : public NavigationManager {
                       NavigationInitiationType initiation_type,
                       UserAgentOverrideOption user_agent_override_option);
 
-  // Temporary method. Returns a vector of NavigationItems corresponding to
-  // the SessionEntries of the uderlying CRWSessionController.
-  // TODO(crbug.com/546365): Remove this method.
-  NavigationItemList GetItems() const;
-
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
   WebState* GetWebState() const override;
