@@ -539,6 +539,10 @@ if (is_win) {
       "//chrome/common:version_header",
     ]
 
+    if (is_chrome_branded) {
+      deps += [ ":chrome_helpers" ]
+    }
+
     # Remove the default strip configuration (which strips all symbols) so that
     # a saves file can be specified.
     if (enable_stripping) {
@@ -631,6 +635,18 @@ if (is_win) {
       ":chrome_app_strings",
       "//components/policy:chrome_manifest_bundle",
     ]
+  }
+
+  if (is_chrome_branded) {
+    bundle_data("chrome_helpers") {
+      sources = [
+        "installer/mac/internal/keychain_reauthorizers/$chrome_mac_bundle_id",
+      ]
+
+      outputs = [
+        "{{bundle_root_dir}}/Helpers/{{source_file_part}}",
+      ]
+    }
   }
 
   bundle_data("chrome_versioned_bundle_data") {

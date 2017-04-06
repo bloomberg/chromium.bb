@@ -7,16 +7,26 @@
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
 
+#include <crt_externs.h>
+#include <errno.h>
+#include <spawn.h>
 #include <string.h>
 
 #include <vector>
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/scoped_generic.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/os_crypt/keychain_password_mac.h"
 #include "crypto/apple_keychain.h"
 
@@ -126,9 +136,30 @@ bool KeychainReauthorize() {
   return true;
 }
 
+// This performs the re-reauthorization from the stub executable.
+void KeychainReauthorizeFromStub(NSString* pref_key) {
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+
+  NSString* success_pref_key = [pref_key stringByAppendingString:@"Success"];
+  BOOL success_value = [user_defaults boolForKey:success_pref_key];
+  if (success_value)
+    return;
+
+  bool success = KeychainReauthorize();
+  if (!success)
+    return;
+
+  [user_defaults setBool:YES forKey:success_pref_key];
+  [user_defaults synchronize];
+}
+
 }  // namespace
 
 void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // Only launch the stub executable when running in the browser.
+  DCHECK(base::mac::AmIBundled());
+
   NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
   int pref_value = [user_defaults integerForKey:pref_key];
 
@@ -142,39 +173,63 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
 
   if (pref_value > 0) {
     // Logs the number of previous tries that didn't complete.
-    if (base::mac::AmIBundled()) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeeded",
-                                  pref_value);
-    } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeededAtUpdate",
-                                  pref_value);
-    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeeded", pref_value);
   }
 
   ++pref_value;
   [user_defaults setInteger:pref_value forKey:pref_key];
   [user_defaults synchronize];
 
-  bool success = KeychainReauthorize();
-  if (!success)
+  NSBundle* main_bundle = base::mac::OuterBundle();
+  std::string identifier =
+      base::SysNSStringToUTF8([main_bundle bundleIdentifier]);
+  std::string bundle_path = base::SysNSStringToUTF8([main_bundle bundlePath]);
+
+  base::FilePath reauth_binary = base::FilePath(bundle_path)
+                                     .Append("Contents")
+                                     .Append("Helpers")
+                                     .Append(identifier);
+
+  std::string framework_path =
+      base::SysNSStringToUTF8([base::mac::FrameworkBundle() executablePath]);
+
+  std::vector<std::string> argv = {reauth_binary.value(), framework_path};
+  std::vector<char*> argv_cstr;
+  argv_cstr.reserve(argv.size() + 1);
+  for (size_t i = 0; i < argv.size(); ++i) {
+    argv_cstr.push_back(const_cast<char*>(argv[i].c_str()));
+  }
+  argv_cstr.push_back(nullptr);
+
+  pid_t pid;
+  char** new_environ = *_NSGetEnviron();
+  errno = posix_spawn(&pid, reauth_binary.value().c_str(), nullptr, nullptr,
+                      &argv_cstr[0], new_environ);
+  if (errno != 0) {
+    PLOG(ERROR) << "posix_spawn";
     return;
+  } else {
+    // If execution does not block on the helper stub, there is a
+    // race condition between it and Chrome creating a new keychain entry.
+    int status;
+    if (HANDLE_EINTR(waitpid(pid, &status, 0)) != pid || status != 0) {
+      return;
+    }
+  }
 
-  [user_defaults setBool:YES forKey:success_pref_key];
-  [user_defaults synchronize];
-
+  // Find out if the re-authorization succeeded by querying cfprefs.
+  bool stub_result = [user_defaults boolForKey:success_pref_key];
   // Logs the try number (1, 2) that succeeded.
-  if (base::mac::AmIBundled()) {
+  if (stub_result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("OSX.KeychainReauthorizeIfNeededSuccess",
                                 pref_value);
-  } else {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "OSX.KeychainReauthorizeIfNeededAtUpdateSuccess", pref_value);
   }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void KeychainReauthorizeIfNeededAtUpdate(NSString* pref_key, int max_tries) {
   @autoreleasepool {
-    KeychainReauthorizeIfNeeded(pref_key, max_tries);
+    KeychainReauthorizeFromStub(pref_key);
   }
 }
 

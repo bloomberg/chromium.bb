@@ -32,8 +32,9 @@ extern "C" {
 void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries);
 
 // A wrapper to call KeychainReauthorizeIfNeeded under a local autorelease pool.
-// This is used to call the function from the keychain_reauthorization binary in
-// the keystone_install.sh script.
+// This is used by the keychain_reauthorization stub executable, which is run at
+// update time or at browser launch. The name cannot be changed to indicate that
+// it is not only run at update because the stub is already built and signed.
 __attribute__((visibility("default"))) void KeychainReauthorizeIfNeededAtUpdate(
     NSString* pref_key,
     int max_tries);
