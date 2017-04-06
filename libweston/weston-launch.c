@@ -73,7 +73,7 @@
 
 #define MAX_ARGV_SIZE 256
 
-#ifdef HAVE_LIBDRM
+#ifdef BUILD_DRM_COMPOSITOR
 
 #include <xf86drm.h>
 

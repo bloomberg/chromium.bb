@@ -177,8 +177,7 @@ if test x$enable_xwayland = xyes; then
   fi
 fi
 
-PKG_CHECK_MODULES(LIBDRM, [libdrm],
-                  [AC_DEFINE(HAVE_LIBDRM, 1, [Define if libdrm is available]) have_libdrm=yes], have_libdrm=no)
+PKG_CHECK_MODULES(LIBDRM, [libdrm], have_libdrm=yes, have_libdrm=no)
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)

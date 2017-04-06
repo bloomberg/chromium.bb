@@ -47,7 +47,7 @@
 #define KDSKBMUTE	0x4B51
 #endif
 
-#ifdef HAVE_LIBDRM
+#ifdef BUILD_DRM_COMPOSITOR
 
 #include <xf86drm.h>
 
