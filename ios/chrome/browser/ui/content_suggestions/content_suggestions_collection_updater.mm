@@ -44,11 +44,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader,
   ItemTypeEmpty,
   ItemTypeReadingList,
+  ItemTypeMostVisited,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierArticles = kSectionIdentifierEnumZero,
   SectionIdentifierReadingList,
+  SectionIdentifierMostVisited,
   SectionIdentifierDefault,
 };
 
@@ -61,6 +63,8 @@ ItemType ItemTypeForContentSuggestionType(ContentSuggestionType type) {
       return ItemTypeEmpty;
     case ContentSuggestionTypeReadingList:
       return ItemTypeReadingList;
+    case ContentSuggestionTypeMostVisited:
+      return ItemTypeMostVisited;
   }
 }
 
@@ -71,6 +75,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypeEmpty;
   if (type == ItemTypeReadingList)
     return ContentSuggestionTypeReadingList;
+  if (type == ItemTypeMostVisited)
+    return ContentSuggestionTypeMostVisited;
   // Add new type here
 
   // Default type.
@@ -86,6 +92,9 @@ SectionIdentifier SectionIdentifierForInfo(
 
     case ContentSuggestionsSectionReadingList:
       return SectionIdentifierReadingList;
+
+    case ContentSuggestionsSectionMostVisited:
+      return SectionIdentifierMostVisited;
 
     case ContentSuggestionsSectionUnknown:
       return SectionIdentifierDefault;
@@ -199,6 +208,14 @@ SectionIdentifier SectionIdentifierForInfo(
   [self.collectionViewController dismissSection:section];
 }
 
+- (void)reloadSection:(ContentSuggestionsSectionInformation*)sectionInfo {
+  // TODO(crbug.com/707754): implement this method.
+}
+
+- (void)faviconAvailableForURL:(const GURL&)URL {
+  // TODO(crbug.com/707754): implement this method.
+}
+
 #pragma mark - Public methods
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {
@@ -269,6 +286,10 @@ SectionIdentifier SectionIdentifierForInfo(
         NSIndexPath* addedIndexPath = [self addItem:readingListItem
                             toSectionWithIdentifier:sectionIdentifier];
         [indexPaths addObject:addedIndexPath];
+        break;
+      }
+      case ContentSuggestionTypeMostVisited: {
+        // TODO(crbug.com/707754): Add the most visited item.
         break;
       }
     }

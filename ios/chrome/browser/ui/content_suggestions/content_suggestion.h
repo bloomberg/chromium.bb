@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
   ContentSuggestionTypeEmpty,
   ContentSuggestionTypeArticle,
   ContentSuggestionTypeReadingList,
+  ContentSuggestionTypeMostVisited,
 };
 
 // Data for a suggestions item, compatible with Objective-C. Mostly acts as a

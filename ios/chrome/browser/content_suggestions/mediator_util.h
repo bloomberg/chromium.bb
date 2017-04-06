@@ -10,6 +10,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
+#include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 
@@ -58,5 +59,18 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
 ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     ContentSuggestionsCategoryWrapper* category,
     const std::string& id_in_category);
+
+// Creates and returns an empty suggestion.
+ContentSuggestion* EmptySuggestion();
+
+// Creates and returns a SectionInfo for the Most Visited section.
+ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
+
+// Records the page impression of the ntp tiles.
+void RecordPageImpression(const std::vector<ntp_tiles::NTPTile>& mostVisited);
+
+// Converts a ntp_snippets::ContentSuggestion to an Objective-C
+// ContentSuggestion.
+ContentSuggestion* ConvertNTPTile(const ntp_tiles::NTPTile& tile);
 
 #endif  // IOS_CHROME_BROWSER_CONTENT_SUGGESTIONS_MEDIATOR_UTIL_H_

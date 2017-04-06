@@ -31,6 +31,13 @@
 // something to the data sink.
 - (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo;
 
+// The content of the section corresponding to |sectionInfo| must be reloaded
+// now, removing the current content.
+- (void)reloadSection:(ContentSuggestionsSectionInformation*)sectionInfo;
+
+// Notifies the Data Sink that a new favicon is available for the |URL|.
+- (void)faviconAvailableForURL:(const GURL&)URL;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SINK_H_

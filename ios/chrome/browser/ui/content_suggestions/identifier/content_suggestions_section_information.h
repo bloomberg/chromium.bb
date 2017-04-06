@@ -20,7 +20,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
 // When adding a new kind of suggestions, add a new corresponding section. The
 // ordering is not persisted between launch, reordering is possible.
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
-  ContentSuggestionsSectionArticles = 0,
+  ContentSuggestionsSectionMostVisited = 0,
+  ContentSuggestionsSectionArticles,
   ContentSuggestionsSectionReadingList,
 
   // Do not use this. It will trigger a DCHECK.

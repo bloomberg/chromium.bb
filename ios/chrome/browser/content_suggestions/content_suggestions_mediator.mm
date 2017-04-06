@@ -12,9 +12,12 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/reading_list/reading_list_distillation_state_util.h"
+#include "components/ntp_tiles/most_visited_sites.h"
+#include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
+#include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
@@ -34,17 +37,32 @@ namespace {
 
 // Size of the favicon returned by the provider.
 const CGFloat kDefaultFaviconSize = 16;
+// Maximum number of most visited tiles fetched.
+const NSInteger kMaxNumMostVisitedTiles = 8;
 
 }  // namespace
 
 @interface ContentSuggestionsMediator ()<ContentSuggestionsImageFetcher,
-                                         ContentSuggestionsServiceObserver> {
+                                         ContentSuggestionsServiceObserver,
+                                         MostVisitedSitesObserving> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
+  std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
+  std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
 }
 
+// Most visited data from the MostVisitedSites service (copied upon receiving
+// the callback).
+@property(nonatomic, assign) std::vector<ntp_tiles::NTPTile> mostVisitedData;
+// Section Info for the Most Visited section.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
+// Whether the page impression has been recorded.
+@property(nonatomic, assign) BOOL recordedPageImpression;
+// The ContentSuggestionsService, serving suggestions.
 @property(nonatomic, assign)
     ntp_snippets::ContentSuggestionsService* contentService;
+// Map the section information created to the relevant category.
 @property(nonatomic, strong, nonnull)
     NSMutableDictionary<ContentSuggestionsCategoryWrapper*,
                         ContentSuggestionsSectionInformation*>*
@@ -72,6 +90,9 @@ const CGFloat kDefaultFaviconSize = 16;
 
 @implementation ContentSuggestionsMediator
 
+@synthesize mostVisitedData = _mostVisitedData;
+@synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
+@synthesize recordedPageImpression = _recordedPageImpression;
 @synthesize contentService = _contentService;
 @synthesize dataSink = _dataSink;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
@@ -82,7 +103,9 @@ const CGFloat kDefaultFaviconSize = 16;
 
 - (instancetype)
 initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
-      largeIconService:(favicon::LargeIconService*)largeIconService {
+      largeIconService:(favicon::LargeIconService*)largeIconService
+       mostVisitedSite:
+           (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites {
   self = [super init];
   if (self) {
     _suggestionBridge =
@@ -93,6 +116,13 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         initWithFaviconSize:kDefaultFaviconSize
              minFaviconSize:1
            largeIconService:largeIconService];
+
+    _mostVisitedSectionInfo = MostVisitedSectionInformation();
+    _mostVisitedSites = std::move(mostVisitedSites);
+    _mostVisitedBridge =
+        base::MakeUnique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
+    _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
+                                                  kMaxNumMostVisitedTiles);
   }
   return self;
 }
@@ -110,28 +140,32 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 #pragma mark - ContentSuggestionsDataSource
 
 - (NSArray<ContentSuggestion*>*)allSuggestions {
-  std::vector<ntp_snippets::Category> categories =
-      self.contentService->GetCategories();
   NSMutableArray<ContentSuggestion*>* dataHolders = [NSMutableArray array];
-  for (auto& category : categories) {
-    const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
-        self.contentService->GetSuggestionsForCategory(category);
-    [self addSuggestions:suggestions fromCategory:category toArray:dataHolders];
-  }
+
+  [self addMostVisitedToArray:dataHolders];
+
+  [self addContentSuggestionsToArray:dataHolders];
+
   return dataHolders;
 }
 
 - (NSArray<ContentSuggestion*>*)suggestionsForSection:
     (ContentSuggestionsSectionInformation*)sectionInfo {
-  ntp_snippets::Category category =
-      [[self categoryWrapperForSectionInfo:sectionInfo] category];
-
   NSMutableArray* convertedSuggestions = [NSMutableArray array];
-  const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
-      self.contentService->GetSuggestionsForCategory(category);
-  [self addSuggestions:suggestions
-          fromCategory:category
-               toArray:convertedSuggestions];
+
+  if (sectionInfo == self.mostVisitedSectionInfo) {
+    [self addMostVisitedToArray:convertedSuggestions];
+  } else {
+    ntp_snippets::Category category =
+        [[self categoryWrapperForSectionInfo:sectionInfo] category];
+
+    const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
+        self.contentService->GetSuggestionsForCategory(category);
+    [self addSuggestions:suggestions
+            fromCategory:category
+                 toArray:convertedSuggestions];
+  }
+
   return convertedSuggestions;
 }
 
@@ -144,6 +178,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                     fromSectionInfo:
                         (ContentSuggestionsSectionInformation*)sectionInfo
                            callback:(MoreSuggestionsFetched)callback {
+  if (![self isRelatedToContentSuggestionsService:sectionInfo])
+    return;
+
   std::set<std::string> known_suggestion_ids;
   for (ContentSuggestionIdentifier* identifier in knownSuggestions) {
     if (identifier.sectionInfo != sectionInfo)
@@ -270,6 +307,23 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       }));
 }
 
+#pragma mark - MostVisitedSitesObserving
+
+- (void)onMostVisitedURLsAvailable:
+    (const ntp_tiles::NTPTilesVector&)mostVisited {
+  self.mostVisitedData = mostVisited;
+  [self.dataSink reloadSection:self.mostVisitedSectionInfo];
+
+  if (mostVisited.size() && !self.recordedPageImpression) {
+    self.recordedPageImpression = YES;
+    RecordPageImpression(mostVisited);
+  }
+}
+
+- (void)onIconMadeAvailable:(const GURL&)siteURL {
+  [self.dataSink faviconAvailableForURL:siteURL];
+}
+
 #pragma mark - Private
 
 - (void)addSuggestions:
@@ -309,10 +363,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   }
 
   if (suggestions.size() == 0) {
-    ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
-    suggestion.type = ContentSuggestionTypeEmpty;
-    suggestion.suggestionIdentifier =
-        [[ContentSuggestionIdentifier alloc] init];
+    ContentSuggestion* suggestion = EmptySuggestion();
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];
 
@@ -352,6 +403,43 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                  toArray:contentSuggestions];
     callback(contentSuggestions);
   }
+}
+
+// Adds all the suggestions from the |contentService| to |suggestions|.
+- (void)addContentSuggestionsToArray:
+    (NSMutableArray<ContentSuggestion*>*)arrayToFill {
+  std::vector<ntp_snippets::Category> categories =
+      self.contentService->GetCategories();
+
+  for (auto& category : categories) {
+    const std::vector<ntp_snippets::ContentSuggestion>& suggestions =
+        self.contentService->GetSuggestionsForCategory(category);
+    [self addSuggestions:suggestions fromCategory:category toArray:arrayToFill];
+  }
+}
+
+// Adds all the suggestions for the |mostVisitedData| to |suggestions|.
+- (void)addMostVisitedToArray:(NSMutableArray<ContentSuggestion*>*)arrayToFill {
+  if (self.mostVisitedData.empty()) {
+    ContentSuggestion* suggestion = EmptySuggestion();
+    suggestion.suggestionIdentifier.sectionInfo = self.mostVisitedSectionInfo;
+    [arrayToFill addObject:suggestion];
+
+    return;
+  }
+
+  for (const ntp_tiles::NTPTile& tile : self.mostVisitedData) {
+    ContentSuggestion* suggestion = ConvertNTPTile(tile);
+    suggestion.suggestionIdentifier.sectionInfo = self.mostVisitedSectionInfo;
+    [arrayToFill addObject:suggestion];
+  }
+}
+
+// Returns whether the |sectionInfo| is associated with a category from the
+// content suggestions service.
+- (BOOL)isRelatedToContentSuggestionsService:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  return sectionInfo != self.mostVisitedSectionInfo;
 }
 
 @end

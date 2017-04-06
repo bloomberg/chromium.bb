@@ -135,6 +135,9 @@
     case ContentSuggestionTypeArticle:
       [self openArticle:item];
       break;
+    case ContentSuggestionTypeMostVisited:
+      // TODO(crbug.com/707754): Open the most visited site.
+      break;
     case ContentSuggestionTypeEmpty:
       break;
   }

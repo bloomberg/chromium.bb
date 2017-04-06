@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include <memory>
+
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 
@@ -16,6 +18,10 @@ class LargeIconService;
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
+}
+
+namespace ntp_tiles {
+class MostVisitedSites;
 }
 
 @protocol ContentSuggestionsCommands;
@@ -31,6 +37,8 @@ class ContentSuggestionsService;
 initWithContentService:
     (nonnull ntp_snippets::ContentSuggestionsService*)contentService
       largeIconService:(nonnull favicon::LargeIconService*)largeIconService
+       mostVisitedSite:
+           (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
     NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;

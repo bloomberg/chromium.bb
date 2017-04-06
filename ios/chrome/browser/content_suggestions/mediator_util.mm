@@ -6,6 +6,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_tiles/metrics.h"
+#include "components/rappor/rappor_service_impl.h"
+#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -95,4 +98,47 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     ContentSuggestionsCategoryWrapper* category,
     const std::string& id_in_category) {
   return ntp_snippets::ContentSuggestion::ID(category.category, id_in_category);
+}
+
+ContentSuggestion* EmptySuggestion() {
+  ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+  suggestion.type = ContentSuggestionTypeEmpty;
+  suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
+
+  return suggestion;
+}
+
+ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
+  ContentSuggestionsSectionInformation* sectionInfo =
+      [[ContentSuggestionsSectionInformation alloc]
+          initWithSectionID:ContentSuggestionsSectionMostVisited];
+  sectionInfo.title = nil;
+  sectionInfo.footerTitle = nil;
+  sectionInfo.showIfEmpty = NO;
+  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
+
+  return sectionInfo;
+}
+
+void RecordPageImpression(const ntp_tiles::NTPTilesVector& mostVisited) {
+  std::vector<ntp_tiles::metrics::TileImpression> tiles;
+  for (const ntp_tiles::NTPTile& ntpTile : mostVisited) {
+    tiles.emplace_back(ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE,
+                       ntpTile.url);
+  }
+  ntp_tiles::metrics::RecordPageImpression(
+      tiles, GetApplicationContext()->GetRapporServiceImpl());
+}
+
+ContentSuggestion* ConvertNTPTile(const ntp_tiles::NTPTile& tile) {
+  ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+
+  suggestion.title = base::SysUTF16ToNSString(tile.title);
+  suggestion.url = tile.url;
+  suggestion.type = ContentSuggestionTypeMostVisited;
+
+  suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
+  suggestion.suggestionIdentifier.IDInSection = tile.url.spec();
+
+  return suggestion;
 }
