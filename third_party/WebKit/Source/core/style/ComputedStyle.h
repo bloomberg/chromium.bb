@@ -200,47 +200,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   DataRef<SVGComputedStyle> m_svgStyle;
 
-  // !START SYNC!: Keep this in sync with the copy constructor in
-  // ComputedStyle.cpp.
-
-  // don't inherit
-  struct NonInheritedData {
-    NonInheritedData() : m_hasViewportUnits(false), m_hasRemUnits(false) {}
-
-    // Compare computed styles, differences in inherited bits or other flags
-    // should not cause an inequality.
-    bool operator==(const NonInheritedData& other) const {
-      // Generated properties are compared in ComputedStyleBase
-      return true;
-      // Differences in the following fields do not cause inequality:
-      // hasViewportUnits
-      // styleType
-      // pseudoBits
-      // explicitInheritance
-      // unique
-      // emptyState
-      // affectedByFocus
-      // affectedByHover
-      // affectedByActive
-      // affectedByDrag
-      // isLink
-      // isInherited flags
-    }
-
-    bool operator!=(const NonInheritedData& other) const {
-      return !(*this == other);
-    }
-
-    // These are set if we used viewport or rem units when resolving a length.
-    unsigned m_hasViewportUnits : 1;
-    unsigned m_hasRemUnits : 1;
-
-    // If you add more style bits here, you will also need to update
-    // ComputedStyle::copyNonInheritedFromCached() 68 bits
-  } m_nonInheritedData;
-
-  // !END SYNC!
-
  private:
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
   ALWAYS_INLINE ComputedStyle();
@@ -2343,17 +2302,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void addCallbackSelector(const String& selector);
 
   // Non-property flags.
-  bool hasViewportUnits() const {
-    return m_nonInheritedData.m_hasViewportUnits;
-  }
-  // TODO(shend): This function should take no arguments.
-  void setHasViewportUnits(bool hasViewportUnits) {
-    m_nonInheritedData.m_hasViewportUnits = hasViewportUnits;
-  }
-
-  bool hasRemUnits() const { return m_nonInheritedData.m_hasRemUnits; }
-  void setHasRemUnits() { m_nonInheritedData.m_hasRemUnits = true; }
-
   bool emptyState() const { return m_emptyState; }
   void setEmptyState(bool b) {
     setUnique();

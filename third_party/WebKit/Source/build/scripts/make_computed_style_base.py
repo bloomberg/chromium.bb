@@ -50,6 +50,12 @@ NONPROPERTIES = [
     # Explicitly inherits a non-inherited property
     {'name': 'HasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False, 'default_value': False},
+    # These are set if we used viewport or rem units when resolving a length.
+    # TODO(shend): HasViewportUnits should be a monotonic_flag.
+    {'name': 'HasViewportUnits', 'field_template': 'primitive', 'default_value': 'false',
+     'type_name': 'bool', 'inherited': False, 'independent': False},
+    {'name': 'HasRemUnits', 'field_template': 'monotonic_flag', 'default_value': 'false',
+     'inherited': False, 'independent': False},
     # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
     # TODO(shend): Remove these fields and delete the 'storage_only' template.
     {'name': 'EmptyState', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',

@@ -78,10 +78,6 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   void* dataRefs[7];
   void* ownPtrs[1];
   void* dataRefSvgStyle;
-
-  struct NonInheritedData {
-    unsigned m_bitfields[1];
-  } m_nonInheritedData;
 };
 
 // If this assert fails, it means that size of ComputedStyle has changed. Please
@@ -148,8 +144,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       m_rareNonInheritedData(o.m_rareNonInheritedData),
       m_rareInheritedData(o.m_rareInheritedData),
       m_styleInheritedData(o.m_styleInheritedData),
-      m_svgStyle(o.m_svgStyle),
-      m_nonInheritedData(o.m_nonInheritedData) {}
+      m_svgStyle(o.m_svgStyle) {}
 
 static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle,
                                           const ComputedStyle& newStyle) {
@@ -342,23 +337,22 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_surround = other.m_surround;
   m_rareNonInheritedData = other.m_rareNonInheritedData;
 
-  // The flags are copied one-by-one because m_nonInheritedData.m_contains a
+  // The flags are copied one-by-one because they contain
   // bunch of stuff other than real style data.
   // See comments for each skipped flag below.
-  setOriginalDisplay(
-      other.originalDisplay());  // Not generated in ComputedStyleBase.
-  setVerticalAlign(
-      other.verticalAlign());  // Not generated in ComputedStyleBase
-  m_nonInheritedData.m_hasViewportUnits =
-      other.m_nonInheritedData.m_hasViewportUnits;
-  m_nonInheritedData.m_hasRemUnits = other.m_nonInheritedData.m_hasRemUnits;
+
+  // These are not generated in ComputedStyleBase
+  setOriginalDisplay(other.originalDisplay());
+  setVerticalAlign(other.verticalAlign());
+  setHasViewportUnits(other.hasViewportUnits());
+  m_hasRemUnits = other.hasRemUnits();
 
   // Correctly set during selector matching:
-  // m_nonInheritedData.m_styleType
-  // m_nonInheritedData.m_pseudoBits
+  // m_styleType
+  // m_pseudoBits
 
   // Set correctly while computing style for children:
-  // m_nonInheritedData.m_explicitInheritance
+  // m_explicitInheritance
 
   // unique() styles are not cacheable.
   DCHECK(!other.unique());
@@ -379,12 +373,12 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // properties here, but the affectedBy flags will be set differently based on
   // the matching order of the :-webkit-any components.
   //
-  // m_nonInheritedData.m_emptyState
-  // m_nonInheritedData.m_affectedByFocus
-  // m_nonInheritedData.m_affectedByHover
-  // m_nonInheritedData.m_affectedByActive
-  // m_nonInheritedData.m_affectedByDrag
-  // m_nonInheritedData.m_isLink
+  // m_emptyState
+  // m_affectedByFocus
+  // m_affectedByHover
+  // m_affectedByActive
+  // m_affectedByDrag
+  // m_isLink
 
   if (m_svgStyle != other.m_svgStyle)
     m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
