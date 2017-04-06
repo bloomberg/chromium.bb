@@ -19,6 +19,7 @@
 @synthesize publisher = _publisher;
 @synthesize publishDate = _publishDate;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
+@synthesize readingListExtra = _readingListExtra;
 @synthesize type = _type;
 
 @end

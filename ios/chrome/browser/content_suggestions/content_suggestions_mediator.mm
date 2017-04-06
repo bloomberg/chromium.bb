@@ -11,6 +11,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/reading_list/reading_list_distillation_state_util.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
@@ -21,6 +22,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -291,6 +294,16 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];
+
+    if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
+      ReadingListUIDistillationStatus status =
+          reading_list::UIStatusFromModelStatus(
+              ReadingListStateFromSuggestionState(
+                  contentSuggestion.reading_list_suggestion_extra()
+                      ->distilled_state));
+      suggestion.readingListExtra = [ContentSuggestionReadingListExtra
+          extraWithDistillationStatus:status];
+    }
 
     [contentArray addObject:suggestion];
   }

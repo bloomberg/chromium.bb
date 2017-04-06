@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+namespace reading_list {
+
 ReadingListUIDistillationStatus UIStatusFromModelStatus(
     ReadingListEntry::DistillationState distillation_state) {
   switch (distillation_state) {
@@ -21,3 +23,5 @@ ReadingListUIDistillationStatus UIStatusFromModelStatus(
       return ReadingListUIDistillationStatusFailure;
   }
 }
+
+}  // namespace reading_list

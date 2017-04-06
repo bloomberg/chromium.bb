@@ -619,7 +619,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
            initWithType:ItemTypeItem
                     url:url
-      distillationState:UIStatusFromModelStatus(entry.DistilledState())];
+      distillationState:reading_list::UIStatusFromModelStatus(
+                            entry.DistilledState())];
 
   [self setItem:item
       faviconURL:entry.DistilledURL().is_valid() ? entry.DistilledURL() : url];

@@ -33,6 +33,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon",
+    "//ios/chrome/browser/ui/reading_list",
     "//ios/web",
     "//ui/base",
     "//ui/strings",

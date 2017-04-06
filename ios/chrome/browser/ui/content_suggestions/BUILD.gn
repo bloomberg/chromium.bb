@@ -6,6 +6,8 @@ source_set("content_suggestions") {
   sources = [
     "content_suggestion.h",
     "content_suggestion.mm",
+    "content_suggestion_extra_builder.h",
+    "content_suggestion_extra_builder.mm",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
     "content_suggestions_commands.h",
@@ -23,6 +25,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
+    "//ios/chrome/browser/ui/reading_list",
     "//ui/base",
     "//url",
   ]
