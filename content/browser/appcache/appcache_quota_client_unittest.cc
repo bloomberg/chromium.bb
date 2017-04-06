@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
@@ -144,7 +145,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     delete_status_ = status;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   int64_t usage_;
   std::set<GURL> origins_;
   storage::QuotaStatusCode delete_status_;

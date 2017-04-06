@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
@@ -128,7 +129,7 @@ class WebIDBCursorImplTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   WebIDBKey null_key_;
   std::unique_ptr<WebIDBCursorImpl> cursor_;
   std::unique_ptr<MockCursorImpl> mock_cursor_;

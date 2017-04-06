@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/public/test/test_file_system_context.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -69,7 +70,7 @@ class TransientFileUtilTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<storage::TransientFileUtil> transient_file_util_;

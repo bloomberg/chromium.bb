@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
@@ -82,7 +83,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
  private:
   base::ScopedTempDir base_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunnerTest);

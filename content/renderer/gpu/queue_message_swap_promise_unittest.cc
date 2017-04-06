@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "cc/output/swap_promise.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -127,7 +128,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
   void VisualStateSwapPromiseDidNotSwap(
       cc::SwapPromise::DidNotSwapReason reason);
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   scoped_refptr<TestSyncMessageFilter> sync_message_filter_;
   std::vector<IPC::Message> messages_;

@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
@@ -190,7 +191,7 @@ class RecursiveOperationDelegateTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;

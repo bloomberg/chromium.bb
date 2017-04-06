@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -127,7 +128,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
   std::unique_ptr<storage::SandboxFileSystemBackend> backend_;
 };

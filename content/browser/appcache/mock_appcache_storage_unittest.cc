@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -82,7 +83,7 @@ class MockAppCacheStorageTest : public testing::Test {
   };
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(MockAppCacheStorageTest, LoadCache_Miss) {

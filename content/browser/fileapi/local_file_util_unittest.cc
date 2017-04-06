@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
@@ -121,7 +122,7 @@ class LocalFileUtilTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedTempDir data_dir_;
 

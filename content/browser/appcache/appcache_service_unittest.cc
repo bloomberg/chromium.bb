@@ -13,6 +13,7 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -188,7 +189,7 @@ class AppCacheServiceImplTest : public testing::Test {
   net::CompletionCallback deletion_callback_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {

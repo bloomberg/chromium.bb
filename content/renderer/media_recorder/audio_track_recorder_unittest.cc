@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "media/audio/simple_sources.h"
@@ -191,7 +192,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     DoOnEncodedAudio(params, *encoded_data, timestamp);
   }
 
-  const base::MessageLoop message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // ATR and WebMediaStreamTrack for fooling it.
   std::unique_ptr<AudioTrackRecorder> audio_track_recorder_;

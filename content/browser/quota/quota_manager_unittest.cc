@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/mock_special_storage_policy.h"
@@ -445,7 +446,7 @@ class QuotaManagerTest : public testing::Test {
     return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
 
   scoped_refptr<QuotaManager> quota_manager_;

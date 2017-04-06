@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/public/test/mock_storage_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
@@ -209,7 +210,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
     return num_get_usage_and_quota_for_eviction_;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
   std::unique_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   int num_get_usage_and_quota_for_eviction_;
