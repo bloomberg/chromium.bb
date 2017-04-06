@@ -127,4 +127,30 @@ suite('CrActionMenu', function() {
   test('close on Escape', function() {
     return testFocusAfterClosing('Escape');
   });
+
+  test('mouse movement focus options', function() {
+    function makeMouseoverEvent(node) {
+      var e = new MouseEvent('mouseover', {bubbles: true});
+      node.dispatchEvent(e);
+    }
+
+    menu.showAt(document.querySelector('#dots'));
+
+    // Moving mouse on option 1 should focus it.
+    assertNotEquals(items[0], menu.root.activeElement);
+    makeMouseoverEvent(items[0]);
+    assertEquals(items[0], menu.root.activeElement);
+
+    // Moving mouse on the menu (not on option) should focus the menu.
+    makeMouseoverEvent(menu);
+    assertNotEquals(items[0], menu.root.activeElement);
+    assertEquals(menu, document.activeElement);
+
+    // Mouse movements should override keyboard focus.
+    down();
+    down();
+    assertEquals(items[1], menu.root.activeElement);
+    makeMouseoverEvent(items[0]);
+    assertEquals(items[0], menu.root.activeElement);
+  });
 });

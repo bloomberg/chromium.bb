@@ -6,6 +6,7 @@
     {
       'target_name': 'cr_action_menu',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

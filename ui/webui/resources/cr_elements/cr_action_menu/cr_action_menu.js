@@ -26,12 +26,16 @@ Polymer({
    */
   boundClose_: null,
 
+  /** @private {boolean} */
+  hasMousemoveListener_: false,
+
   hostAttributes: {
     tabindex: 0,
   },
 
   listeners: {
     'keydown': 'onKeyDown_',
+    'mouseover': 'onMouseover_',
     'tap': 'onTap_',
   },
 
@@ -77,10 +81,38 @@ Polymer({
       return;
 
     var nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : -1);
-    if (nextOption)
+    if (nextOption) {
+      if (!this.hasMousemoveListener_) {
+        this.hasMousemoveListener_ = true;
+        listenOnce(this, 'mousemove', function(e) {
+          this.onMouseover_(e);
+          this.hasMousemoveListener_ = false;
+        }.bind(this));
+      }
       nextOption.focus();
+    }
 
     e.preventDefault();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onMouseover_: function(e) {
+    // TODO(scottchen): Using "focus" to determine selected item might mess
+    // with screen readers in some edge cases.
+    var i = 0;
+    do {
+      var target = e.path[i++];
+      if (target.classList && target.classList.contains('dropdown-item')) {
+        target.focus();
+        return;
+      }
+    } while (this != target);
+
+    // The user moved the mouse off the options. Reset focus to the dialog.
+    this.focus();
   },
 
   /**
