@@ -689,6 +689,80 @@ def is_cpp_string(line):
     return ((line.count('"') - line.count(r'\"') - line.count("'\"'")) & 1) == 1
 
 
+def cleanse_raw_strings(raw_lines):
+    """Removes C++11 raw strings from lines.
+
+      Before:
+        static const char kData[] = R"(
+            multi-line string
+            )";
+
+      After:
+        static const char kData[] = ""
+            (replaced by blank line)
+            "";
+
+    Args:
+      raw_lines: list of raw lines.
+
+    Returns:
+      list of lines with C++11 raw strings replaced by empty strings.
+    """
+
+    delimiter = None
+    lines_without_raw_strings = []
+    for line in raw_lines:
+        if delimiter:
+            # Inside a raw string, look for the end
+            end = line.find(delimiter)
+            if end >= 0:
+                # Found the end of the string, match leading space for this
+                # line and resume copying the original lines, and also insert
+                # a "" on the last line.
+                leading_space = match(r'^(\s*)\S', line)
+                line = leading_space.group(1) + '""' + line[end + len(delimiter):]
+                delimiter = None
+            else:
+                # Haven't found the end yet, append a blank line.
+                line = '""'
+
+        # Look for beginning of a raw string, and replace them with
+        # empty strings.  This is done in a loop to handle multiple raw
+        # strings on the same line.
+        while delimiter is None:
+            # Look for beginning of a raw string.
+            # See 2.14.15 [lex.string] for syntax.
+            #
+            # Once we have matched a raw string, we check the prefix of the
+            # line to make sure that the line is not part of a single line
+            # comment.  It's done this way because we remove raw strings
+            # before removing comments as opposed to removing comments
+            # before removing raw strings.  This is because there are some
+            # cpplint checks that requires the comments to be preserved, but
+            # we don't want to check comments that are inside raw strings.
+            matched = match(r'^(.*?)\b(?:R|u8R|uR|UR|LR)"([^\s\\()]*)\((.*)$', line)
+            if matched and not match(r'^([^\'"]|\'(\\.|[^\'])*\'|"(\\.|[^"])*")*//', matched.group(1)):
+                delimiter = ')' + matched.group(2) + '"'
+
+                end = matched.group(3).find(delimiter)
+                if end >= 0:
+                    # Raw string ended on same line
+                    line = (matched.group(1) + '""' +
+                            matched.group(3)[end + len(delimiter):])
+                    delimiter = None
+                else:
+                    # Start of a multi-line raw string
+                    line = matched.group(1) + '""'
+            else:
+                break
+
+        lines_without_raw_strings.append(line)
+
+    # TODO(unknown): if delimiter is not None here, we might want to
+    # emit a warning for unterminated string.
+    return lines_without_raw_strings
+
+
 def find_next_multi_line_comment_start(lines, line_index):
     """Find the beginning marker for a multiline comment."""
     while line_index < len(lines):
@@ -750,12 +824,14 @@ def cleanse_comments(line):
 
 
 class CleansedLines(object):
-    """Holds 3 copies of all lines with different preprocessing applied to them.
+    """Holds 4 copies of all lines with different preprocessing applied to them.
 
-    1) elided member contains lines without strings and comments,
-    2) lines member contains lines without comments, and
-    3) raw member contains all the lines without processing.
-    All these three members are of <type 'list'>, and of the same length.
+    1) elided member contains lines without strings and comments.
+    2) lines member contains lines without comments.
+    3) raw_lines member contains all the lines without processing.
+    4) lines_without_raw_strings member is same as raw_lines, but with C++11 raw
+       strings removed.
+    All these members are of <type 'list'>, and of the same length.
     """
 
     def __init__(self, lines):
@@ -763,9 +839,10 @@ class CleansedLines(object):
         self.lines = []
         self.raw_lines = lines
         self._num_lines = len(lines)
-        for line_number in range(len(lines)):
-            self.lines.append(cleanse_comments(lines[line_number]))
-            elided = self.collapse_strings(lines[line_number])
+        self.lines_without_raw_strings = cleanse_raw_strings(lines)
+        for line_number in range(len(self.lines_without_raw_strings)):
+            self.lines.append(cleanse_comments(self.lines_without_raw_strings[line_number]))
+            elided = self.collapse_strings(self.lines_without_raw_strings[line_number])
             self.elided.append(cleanse_comments(elided))
 
     def num_lines(self):
@@ -916,7 +993,7 @@ def get_header_guard_cpp_variable(filename):
     return standard_name
 
 
-def check_for_header_guard(filename, lines, error):
+def check_for_header_guard(filename, clean_lines, error):
     """Checks that the file contains a header guard.
 
     Logs an error if no #ifndef header guard is present.  For other
@@ -927,6 +1004,7 @@ def check_for_header_guard(filename, lines, error):
       lines: An array of strings, each representing a line of the file.
       error: The function to call with any errors found.
     """
+    raw_lines = clean_lines.lines_without_raw_strings
 
     legacy_cpp_var = get_legacy_header_guard_cpp_variable(filename)
     cpp_var = get_header_guard_cpp_variable(filename)
@@ -934,7 +1012,7 @@ def check_for_header_guard(filename, lines, error):
     ifndef = None
     ifndef_line_number = 0
     define = None
-    for line_number, line in enumerate(lines):
+    for line_number, line in enumerate(raw_lines):
         line_split = line.split()
         if len(line_split) >= 2:
             # find the first occurrence of #ifndef and #define, save arg
@@ -1704,7 +1782,11 @@ def check_spacing(file_extension, clean_lines, line_number, error):
       error: The function to call with any errors found.
     """
 
-    line = clean_lines.elided[line_number]  # get rid of comments and strings
+    # Don't use "elided" lines here, otherwise we can't check commented lines.
+    # Don't want to use "raw" either, because we don't want to check inside C++11
+    # raw strings,
+    raw = clean_lines.lines_without_raw_strings
+    line = raw[line_number]
 
     # You shouldn't have a space before a semicolon at the end of the line.
     # There's a special case for "for" since the style guide allows space before
@@ -2351,7 +2433,10 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
       error: The function to call with any errors found.
     """
 
-    raw_lines = clean_lines.raw_lines
+    # Don't use "elided" lines here, otherwise we can't check commented lines.
+    # Don't want to use "raw" either, because we don't want to check inside C++11
+    # raw strings,
+    raw_lines = clean_lines.lines_without_raw_strings
     line = raw_lines[line_number]
 
     # Some more style checks
@@ -3278,12 +3363,12 @@ def _process_lines(filename, file_extension, lines, error, min_confidence):
     class_state = _ClassState()
 
     check_for_copyright(lines, error)
-
-    if file_extension == 'h':
-        check_for_header_guard(filename, lines, error)
-
     remove_multi_line_comments(lines, error)
     clean_lines = CleansedLines(lines)
+
+    if file_extension == 'h':
+        check_for_header_guard(filename, clean_lines, error)
+
     file_state = _FileState(clean_lines, file_extension)
     enum_state = _EnumState()
     for line in xrange(clean_lines.num_lines()):

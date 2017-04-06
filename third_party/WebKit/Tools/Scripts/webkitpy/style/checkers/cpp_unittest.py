@@ -1092,6 +1092,51 @@ class CppStyleTest(CppStyleTestBase):
         self.assertEqual('f(a, b);',
                          cpp_style.cleanse_comments('f(a, /* name */b);'))
 
+    def test_raw_strings(self):
+        self.assert_multi_line_lint(
+            '''
+            void Func() {
+                static const char kString[] = R"(
+                  #endif  <- invalid preprocessor should be ignored
+                  */      <- invalid comment should be ignored too
+                )";
+            }''',
+            '')
+        self.assert_multi_line_lint(
+            '''
+            void Func() {
+                const char s[] = R"TrueDelimiter(
+                    )"
+                    )FalseDelimiter"
+                    )TrueDelimiter";
+            }''',
+            '')
+        self.assert_multi_line_lint(
+            '''
+            void Func() {
+                char char kString[] = R"(  ";" )";
+            }''',
+            '')
+        self.assert_multi_line_lint(
+            '''
+            static const char kRawString[] = R"(
+                \tstatic const int kLineWithTab = 1;
+                static const int kLineWithTrailingWhiteSpace = 1;\x20
+
+                 void WeirdNumberOfSpacesAtLineStart() {
+                    string x;
+                    x += StrCat("Use StrAppend instead");
+                }
+
+                void BlankLineAtEndOfBlock() {
+                    // TODO incorrectly formatted
+                    //Badly formatted comment
+
+                }
+
+            )";''',
+            '')
+
     def test_multi_line_comments(self):
         # missing explicit is bad
         self.assert_multi_line_lint(
