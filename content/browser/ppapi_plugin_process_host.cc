@@ -33,6 +33,7 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
+#include "media/base/media_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -399,6 +400,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
+      // Need to tell CdmHostFile(s) to ignore missing CDM host files.
+      switches::kIgnoreMissingCdmHostFile,
       switches::kNoSandbox,
       switches::kPpapiStartupDialog,
     };
