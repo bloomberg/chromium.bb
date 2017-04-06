@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -262,7 +261,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
                 mUiConfig, offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null);
         newTabPageAdapter.refreshSuggestions();
-        mRecyclerView.setAdapter(newTabPageAdapter);
+        mRecyclerView.init(mUiConfig, mContextMenuManager, newTabPageAdapter);
         mRecyclerView.getLinearLayoutManager().scrollToPosition(scrollPosition);
 
         setupScrollHandling();
@@ -855,21 +854,6 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         mRecyclerView.updatePeekingCardAndHeader();
-    }
-
-    @Override
-    protected void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // When the viewport configuration changes, we want to update the display style so that the
-        // observers are aware of the new available space. Another moment to do this update could
-        // be through a OnLayoutChangeListener, but then we get notified of the change after the
-        // layout pass, which means that the new style will only be visible after layout happens
-        // again. We prefer updating here to avoid having to require that additional layout pass.
-        mUiConfig.updateDisplayStyle();
-
-        // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        mContextMenuManager.closeContextMenu();
     }
 
     /**

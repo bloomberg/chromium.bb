@@ -73,7 +73,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
                 mContextMenuManager, mTileGroupDelegate);
-        mRecyclerView.setAdapter(adapter);
+        mRecyclerView.init(uiConfig, mContextMenuManager, adapter);
 
         activity.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
             @Override

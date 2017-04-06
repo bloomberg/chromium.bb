@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.support.v4.view.ViewCompat;
@@ -29,10 +30,12 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +76,12 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
 
     /** Whether the RecyclerView and its children should react to touch events. */
     private boolean mTouchEnabled = true;
+
+    /** The ui config for this view. */
+    private UiConfig mUiConfig;
+
+    /** The context menu manager for this view. */
+    private ContextMenuManager mContextMenuManager;
 
     public SuggestionsRecyclerView(Context context) {
         this(context, null);
@@ -149,6 +158,21 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
     }
 
     @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // When the viewport configuration changes, we want to update the display style so that the
+        // observers are aware of the new available space. Another moment to do this update could
+        // be through a OnLayoutChangeListener, but then we get notified of the change after the
+        // layout pass, which means that the new style will only be visible after layout happens
+        // again. We prefer updating here to avoid having to require that additional layout pass.
+        mUiConfig.updateDisplayStyle();
+
+        // Close the Context Menu as it may have moved (https://crbug.com/642688).
+        mContextMenuManager.closeContextMenu();
+    }
+
+    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int numberViews = getChildCount();
         for (int i = 0; i < numberViews; ++i) {
@@ -158,6 +182,13 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
             viewHolder.updateLayoutParams();
         }
         super.onLayout(changed, l, t, r, b);
+    }
+
+    public void init(
+            UiConfig uiConfig, ContextMenuManager contextMenuManager, NewTabPageAdapter adapter) {
+        mUiConfig = uiConfig;
+        mContextMenuManager = contextMenuManager;
+        setAdapter(adapter);
     }
 
     public NewTabPageAdapter getNewTabPageAdapter() {
