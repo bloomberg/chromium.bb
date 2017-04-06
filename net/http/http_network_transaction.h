@@ -296,6 +296,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   void CopyConnectionAttemptsFromStreamRequest();
 
+  // Returns true if response "Content-Encoding" headers respect
+  // "Accept-Encoding".
+  bool ContentEncodingsValid() const;
+
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
 

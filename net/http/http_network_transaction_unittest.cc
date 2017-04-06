@@ -16659,4 +16659,60 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
 }
 #endif  // !defined(OS_IOS)
 
+void CheckContentEncodingMatching(SpdySessionDependencies* session_deps,
+                                  const std::string& accept_encoding,
+                                  const std::string& content_encoding,
+                                  bool should_match) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.foo.com/");
+  request.extra_headers.SetHeader(HttpRequestHeaders::kAcceptEncoding,
+                                  accept_encoding);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(session_deps));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.foo.com\r\n"
+                "Connection: keep-alive\r\n"
+                "Accept-Encoding: "),
+      MockWrite(accept_encoding.data()), MockWrite("\r\n\r\n"),
+  };
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),   MockRead("Content-Encoding: "),
+      MockRead(content_encoding.data()), MockRead("\r\n\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps->socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  if (should_match) {
+    EXPECT_THAT(rv, IsOk());
+  } else {
+    EXPECT_THAT(rv, IsError(ERR_CONTENT_DECODING_FAILED));
+  }
+}
+
+TEST_F(HttpNetworkTransactionTest, MatchContentEncoding1) {
+  CheckContentEncodingMatching(&session_deps_, "gzip,sdch", "br", false);
+}
+
+TEST_F(HttpNetworkTransactionTest, MatchContentEncoding2) {
+  CheckContentEncodingMatching(&session_deps_, "identity;q=1, *;q=0", "", true);
+}
+
+TEST_F(HttpNetworkTransactionTest, MatchContentEncoding3) {
+  CheckContentEncodingMatching(&session_deps_, "identity;q=1, *;q=0", "gzip",
+                               false);
+}
+
 }  // namespace net

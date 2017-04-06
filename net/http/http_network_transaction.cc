@@ -32,6 +32,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/url_util.h"
+#include "net/filter/filter_source_stream.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -545,6 +546,12 @@ void HttpNetworkTransaction::OnNeedsProxyAuth(
   establishing_tunnel_ = true;
   response_.headers = proxy_response.headers;
   response_.auth_challenge = proxy_response.auth_challenge;
+
+  if (response_.headers.get() && !ContentEncodingsValid()) {
+    DoCallback(ERR_CONTENT_DECODING_FAILED);
+    return;
+  }
+
   headers_valid_ = true;
   server_ssl_config_ = used_ssl_config;
   proxy_info_ = used_proxy_info;
@@ -1237,6 +1244,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
   DCHECK(response_.headers.get());
 
+  if (response_.headers.get() && !ContentEncodingsValid())
+    return ERR_CONTENT_DECODING_FAILED;
+
   // On a 408 response from the server ("Request Timeout") on a stale socket,
   // retry the request.
   // Headers can be NULL because of http://crbug.com/384554.
@@ -1716,6 +1726,47 @@ void HttpNetworkTransaction::CopyConnectionAttemptsFromStreamRequest() {
   // those streams by appending them to the vector:
   for (const auto& attempt : stream_request_->connection_attempts())
     connection_attempts_.push_back(attempt);
+}
+
+bool HttpNetworkTransaction::ContentEncodingsValid() const {
+  HttpResponseHeaders* headers = GetResponseHeaders();
+  DCHECK(headers);
+
+  std::string accept_encoding;
+  request_headers_.GetHeader(HttpRequestHeaders::kAcceptEncoding,
+                             &accept_encoding);
+  std::set<std::string> allowed_encodings;
+  if (!HttpUtil::ParseAcceptEncoding(accept_encoding, &allowed_encodings)) {
+    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+    return false;
+  }
+
+  std::string content_encoding;
+  headers->GetNormalizedHeader("Content-Encoding", &content_encoding);
+  std::set<std::string> used_encodings;
+  if (!HttpUtil::ParseContentEncoding(content_encoding, &used_encodings)) {
+    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+    return false;
+  }
+
+  // When "Accept-Encoding" is not specified, it is parsed as "*".
+  // If "*" encoding is advertised, then any encoding should be "accepted".
+  // This does not mean, that it will be successfully decoded.
+  if (allowed_encodings.find("*") != allowed_encodings.end())
+    return true;
+
+  for (auto const& encoding : used_encodings) {
+    SourceStream::SourceType source_type =
+        FilterSourceStream::ParseEncodingType(encoding);
+    // We don't reject encodings we are not aware. They just will not decode.
+    if (source_type == SourceStream::TYPE_UNKNOWN)
+      continue;
+    if (allowed_encodings.find(encoding) == allowed_encodings.end()) {
+      FilterSourceStream::ReportContentDecodingFailed(source_type);
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace net
