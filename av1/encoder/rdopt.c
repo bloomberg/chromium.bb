@@ -1564,29 +1564,39 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                                            *(args->t_left + blk_row));
   RD_STATS this_rd_stats;
 
-#if !CONFIG_PVQ
-  ENTROPY_CONTEXT *a = args->t_above + blk_col;
-  ENTROPY_CONTEXT *l = args->t_left + blk_row;
-#endif  // CONFIG_PVQ
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
 
   av1_init_rd_stats(&this_rd_stats);
 
   if (args->exit_early) return;
 
   if (!is_inter_block(mbmi)) {
-    struct encode_b_args b_args = {
-      (AV1_COMMON *)cm, x, NULL, &mbmi->skip, args->t_above, args->t_left, 1
-    };
-    av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                           &b_args);
+    av1_predict_intra_block_facade(xd, plane, block_raster_idx, blk_col,
+                                   blk_row, tx_size);
+    av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
+  }
+
+  // full forward transform and quantization
+  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  coeff_ctx, AV1_XFORM_QUANT_FP);
+  if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
+    av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+
+  if (!is_inter_block(mbmi)) {
+    struct macroblock_plane *const p = &x->plane[plane];
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+    PLANE_TYPE plane_type = get_plane_type(plane);
+    const TX_TYPE tx_type =
+        get_tx_type(plane_type, xd, block_raster_idx, tx_size);
+    const int dst_stride = pd->dst.stride;
+    uint8_t *dst =
+        &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+    av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
+                                p->eobs[block]);
     dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
                tx_size, &this_rd_stats.dist, &this_rd_stats.sse, 1);
   } else {
-    // full forward transform and quantization
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    coeff_ctx, AV1_XFORM_QUANT_FP);
-    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
-      av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
     dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
                tx_size, &this_rd_stats.dist, &this_rd_stats.sse, 0);
   }
@@ -1597,13 +1607,15 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #if !CONFIG_PVQ
+  ENTROPY_CONTEXT *a = args->t_above + blk_col;
+  ENTROPY_CONTEXT *l = args->t_left + blk_row;
   this_rd_stats.rate = rate_block(plane, block, a, l, tx_size, args);
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
-#else
+#else   // !CONFIG_PVQ
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
 

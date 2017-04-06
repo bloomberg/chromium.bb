@@ -56,6 +56,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                    TX_SIZE tx_size, int ctx);
 
+void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
+                      int blk_col, int blk_row, TX_SIZE tx_size);
+
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
 void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
