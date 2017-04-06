@@ -19,11 +19,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_store.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -541,7 +544,8 @@ void MockHashStoreContents::SetSuperMac(const std::string& super_mac) {
   ADD_FAILURE() << "Unexpected call.";
 }
 
-class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel> {
+class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
+                           public prefs::mojom::ResetOnLoadObserver {
  public:
   PrefHashFilterTest()
       : mock_pref_hash_store_(NULL),
@@ -585,13 +589,14 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel> {
             std::move(temp_mock_external_validation_pref_hash_store),
             std::move(temp_mock_external_validation_hash_store_contents)),
         std::move(configuration),
-        base::Bind(&PrefHashFilterTest::RecordReset, base::Unretained(this)),
+        reset_on_load_observer_bindings_.CreateInterfacePtrAndBind(this),
         &mock_validation_delegate_, arraysize(kTestTrackedPrefs), true));
   }
 
   // Verifies whether a reset was reported by the PrefHashFiler. Also verifies
   // that kPreferenceResetTime was set (or not) accordingly.
   void VerifyRecordedReset(bool reset_expected) {
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(reset_expected, reset_recorded_);
     EXPECT_EQ(reset_expected, pref_store_contents_->Get(
                                   user_prefs::kPreferenceResetTime, NULL));
@@ -626,14 +631,17 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel> {
     EXPECT_EQ(expected_schedule_write, schedule_write);
   }
 
-  void RecordReset() {
+  void OnResetOnLoad() override {
     // As-is |reset_recorded_| is only designed to remember a single reset, make
     // sure none was previously recorded.
     EXPECT_FALSE(reset_recorded_);
     reset_recorded_ = true;
   }
 
+  base::MessageLoop message_loop_;
   MockValidationDelegate mock_validation_delegate_;
+  mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
+      reset_on_load_observer_bindings_;
   bool reset_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilterTest);

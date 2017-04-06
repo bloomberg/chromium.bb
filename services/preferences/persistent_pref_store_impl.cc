@@ -74,10 +74,8 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
 
 PersistentPrefStoreImpl::PersistentPrefStoreImpl(
     scoped_refptr<PersistentPrefStore> backing_pref_store,
-    mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
     base::OnceClosure on_initialized)
-    : backing_pref_store_(backing_pref_store),
-      validation_delegate_(std::move(validation_delegate)) {
+    : backing_pref_store_(backing_pref_store) {
   backing_pref_store_->AddObserver(this);
   if (!backing_pref_store_->IsInitializationComplete()) {
     on_initialized_ = std::move(on_initialized);

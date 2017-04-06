@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace base {
 class DictionaryValue;
@@ -18,12 +19,6 @@ class Time;
 
 namespace policy {
 class PolicyService;
-}
-
-namespace prefs {
-namespace mojom {
-class TrackedPreferenceValidationDelegate;
-}
 }
 
 namespace service_manager {
@@ -44,7 +39,6 @@ class PrefService;
 class PrefStore;
 class Profile;
 class SupervisedUserSettingsService;
-class TrackedPreferenceValidationDelegate;
 
 namespace chrome_prefs {
 
@@ -82,8 +76,7 @@ std::unique_ptr<PrefService> CreateLocalState(
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
-    base::SequencedTaskRunner* pref_io_task_runner,
-    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
+    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
