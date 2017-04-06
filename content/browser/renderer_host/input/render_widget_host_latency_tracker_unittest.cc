@@ -964,4 +964,124 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
                   touchend_timestamps_ms[2] - touchend_timestamps_ms[1], 1)));
 }
 
+// Event.Latency.(Queueing|Blocking)Time.* histograms shouldn't be reported for
+// multi-finger touch.
+TEST_F(RenderWidgetHostLatencyTrackerTest,
+       MultiFingerTouchIgnoredForQueueingAndBlockingTimeMetrics) {
+  SyntheticWebTouchEvent event;
+  InputEventAckState ack_state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+
+  {
+    // First touch start.
+    ui::LatencyInfo latency;
+    event.PressPoint(1, 1);
+    tracker()->OnInputEvent(event, &latency);
+    tracker()->OnInputEventAck(event, &latency, ack_state);
+  }
+
+  {
+    // Additional touch start will be ignored for queueing and blocking time
+    // metrics.
+    int touchstart_timestamps_ms[] = {11, 25, 35};
+    ui::LatencyInfo latency;
+    event.PressPoint(1, 1);
+    tracker()->OnInputEvent(event, &latency);
+
+    ui::LatencyInfo fake_latency;
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+        tracker()->latency_component_id(), 0,
+        base::TimeTicks() +
+            base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[0]),
+        1);
+
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+        base::TimeTicks() +
+            base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[1]),
+        1);
+
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+        base::TimeTicks() +
+            base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[2]),
+        1);
+
+    // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+    // overwriting components.
+    tracker()->ComputeInputLatencyHistograms(event.type(),
+                                             tracker()->latency_component_id(),
+                                             fake_latency, ack_state);
+
+    tracker()->OnInputEventAck(event, &latency, ack_state);
+  }
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.TouchStartDefaultAllowed"),
+              ElementsAre());
+}
+
+// Some touch input histograms aren't reported for multi-finger touch. Other
+// input modalities shouldn't be impacted by there being an active multi-finger
+// touch gesture.
+TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
+  SyntheticWebTouchEvent touch_event;
+  InputEventAckState ack_state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+
+  {
+    // First touch start.
+    ui::LatencyInfo latency;
+    touch_event.PressPoint(1, 1);
+    tracker()->OnInputEvent(touch_event, &latency);
+    tracker()->OnInputEventAck(touch_event, &latency, ack_state);
+  }
+
+  {
+    // Second touch start.
+    ui::LatencyInfo latency;
+    touch_event.PressPoint(1, 1);
+    tracker()->OnInputEvent(touch_event, &latency);
+    tracker()->OnInputEventAck(touch_event, &latency, ack_state);
+  }
+
+  {
+    // Wheel event.
+    ui::LatencyInfo latency;
+    // These numbers are sensitive to where the histogram buckets are.
+    int timestamps_ms[] = {11, 25, 35};
+    auto wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
+        blink::WebMouseWheelEvent::PhaseChanged);
+    tracker()->OnInputEvent(touch_event, &latency);
+
+    ui::LatencyInfo fake_latency;
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+        tracker()->latency_component_id(), 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[0]),
+        1);
+
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[1]),
+        1);
+
+    fake_latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[2]),
+        1);
+
+    // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+    // overwriting components.
+    tracker()->ComputeInputLatencyHistograms(wheel_event.type(),
+                                             tracker()->latency_component_id(),
+                                             fake_latency, ack_state);
+
+    tracker()->OnInputEventAck(wheel_event, &latency, ack_state);
+  }
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.MouseWheelDefaultAllowed"),
+              ElementsAre(Bucket(14, 1)));
+}
+
 }  // namespace content

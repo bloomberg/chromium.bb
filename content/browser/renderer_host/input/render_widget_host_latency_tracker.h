@@ -78,9 +78,9 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   int64_t latency_component_id_;
   float device_scale_factor_;
   bool has_seen_first_gesture_scroll_update_;
-  // Whether the current stream of touch events has ever included more than one
-  // touch point.
-  bool multi_finger_gesture_;
+  // Whether the current stream of touch events includes more than one active
+  // touch point. This is set in OnInputEvent, and cleared in OnInputEventAck.
+  bool active_multi_finger_gesture_;
   // Whether the touch start for the current stream of touch events had its
   // default action prevented. Only valid for single finger gestures.
   bool touch_start_default_prevented_;

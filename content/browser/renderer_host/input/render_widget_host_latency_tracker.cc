@@ -339,7 +339,7 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
       latency_component_id_(0),
       device_scale_factor_(1),
       has_seen_first_gesture_scroll_update_(false),
-      multi_finger_gesture_(false),
+      active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
       render_widget_host_delegate_(nullptr) {}
 
@@ -375,6 +375,9 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   }
   DCHECK_EQ(rwh_component.event_count, 1u);
 
+  bool multi_finger_touch_gesture =
+      WebInputEvent::isTouchEventType(type) && active_multi_finger_gesture_;
+
   LatencyInfo::LatencyComponent ui_component;
   if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0,
                           &ui_component)) {
@@ -407,7 +410,7 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,
                           &main_component)) {
     DCHECK_EQ(main_component.event_count, 1u);
-    if (!multi_finger_gesture_) {
+    if (!multi_finger_touch_gesture) {
       UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
           "Event.Latency.QueueingTime." + event_name + default_action_status,
           rwh_component, main_component);
@@ -418,7 +421,7 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0,
                           &acked_component)) {
     DCHECK_EQ(acked_component.event_count, 1u);
-    if (!multi_finger_gesture_ &&
+    if (!multi_finger_touch_gesture &&
         main_component.event_time != base::TimeTicks()) {
       UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
           "Event.Latency.BlockingTime." + event_name + default_action_status,
@@ -438,6 +441,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     const blink::WebInputEvent& event,
     LatencyInfo* latency) {
   DCHECK(latency);
+
+  if (event.type() == WebInputEvent::TouchStart) {
+    const WebTouchEvent& touch_event =
+        *static_cast<const WebTouchEvent*>(&event);
+    DCHECK(touch_event.touchesLength >= 1);
+    active_multi_finger_gesture_ = touch_event.touchesLength != 1;
+  }
+
   if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                            latency_component_id_, NULL)) {
     return;
@@ -508,10 +519,11 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
     if (event.type() == WebInputEvent::TouchStart) {
-      DCHECK(touch_event.touchesLength >= 1);
-      multi_finger_gesture_ = touch_event.touchesLength != 1;
       touch_start_default_prevented_ =
           ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    } else if (event.type() == WebInputEvent::TouchEnd ||
+               event.type() == WebInputEvent::TouchCancel) {
+      active_multi_finger_gesture_ = touch_event.touchesLength > 2;
     }
   }
 
