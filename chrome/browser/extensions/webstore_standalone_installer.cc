@@ -208,7 +208,6 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
   if (installed_extension) {
     std::string install_message;
     webstore_install::Result install_result = webstore_install::SUCCESS;
-    bool done = true;
 
     if (ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
       // Don't install a blacklisted extension.
@@ -220,10 +219,8 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
       extension_service->EnableExtension(id_);
     }  // else extension is installed and enabled; no work to be done.
 
-    if (done) {
-      CompleteInstall(install_result, install_message);
-      return;
-    }
+    CompleteInstall(install_result, install_message);
+    return;
   }
 
   scoped_refptr<WebstoreInstaller> installer =
