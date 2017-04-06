@@ -191,6 +191,11 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
+                // For some reason this is ocassionally null. See crbug.com/708562.
+                if (mDialogDelegate == null) {
+                    scheduleDisplay();
+                }
+
                 mDialog = null;
                 if (mDecision == ACCEPTED) {
                     // Request Android permissions if necessary. This will call back into either
