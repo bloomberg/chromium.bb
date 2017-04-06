@@ -397,7 +397,9 @@ void TextFinder::scopeStringMatches(int identifier,
     }
 
     ownerFrame().frame()->document()->markers().addTextMatchMarker(
-        EphemeralRange(resultRange), foundActiveMatch);
+        EphemeralRange(resultRange),
+        foundActiveMatch ? DocumentMarker::MatchStatus::kActive
+                         : DocumentMarker::MatchStatus::kInactive);
 
     m_findMatchesCache.push_back(
         FindMatch(resultRange, m_lastMatchCount + matchCount));

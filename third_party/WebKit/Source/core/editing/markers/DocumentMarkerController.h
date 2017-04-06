@@ -66,7 +66,7 @@ class CORE_EXPORT DocumentMarkerController final
                  const Position& end,
                  DocumentMarker::MarkerType,
                  const String& description = emptyString);
-  void addTextMatchMarker(const EphemeralRange&, bool activeMatch);
+  void addTextMatchMarker(const EphemeralRange&, DocumentMarker::MatchStatus);
   void addCompositionMarker(const Position& start,
                             const Position& end,
                             Color underlineColor,

@@ -107,18 +107,20 @@ void DocumentMarkerController::addMarker(const Position& start,
   }
 }
 
-void DocumentMarkerController::addTextMatchMarker(const EphemeralRange& range,
-                                                  bool activeMatch) {
+void DocumentMarkerController::addTextMatchMarker(
+    const EphemeralRange& range,
+    DocumentMarker::MatchStatus matchStatus) {
   DCHECK(!m_document->needsLayoutTreeUpdate());
 
   // Use a TextIterator to visit the potentially multiple nodes the range
   // covers.
   for (TextIterator markedText(range.startPosition(), range.endPosition());
-       !markedText.atEnd(); markedText.advance())
+       !markedText.atEnd(); markedText.advance()) {
     addMarker(
         markedText.currentContainer(),
         DocumentMarker(markedText.startOffsetInCurrentContainer(),
-                       markedText.endOffsetInCurrentContainer(), activeMatch));
+                       markedText.endOffsetInCurrentContainer(), matchStatus));
+  }
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.
 }

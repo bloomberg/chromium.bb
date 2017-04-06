@@ -134,11 +134,13 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     SpellCheckClientMarkers() : MarkerTypes(Spelling | Grammar) {}
   };
 
+  enum class MatchStatus { kInactive, kActive };
+
   DocumentMarker(MarkerType,
                  unsigned startOffset,
                  unsigned endOffset,
                  const String& description);
-  DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
+  DocumentMarker(unsigned startOffset, unsigned endOffset, MatchStatus);
   DocumentMarker(unsigned startOffset,
                  unsigned endOffset,
                  Color underlineColor,

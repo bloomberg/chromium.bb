@@ -251,7 +251,8 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
   EXPECT_FALSE(markerController().setMarkersActive(range, true));
 
   // Add a marker and try it once more.
-  markerController().addTextMatchMarker(range, false);
+  markerController().addTextMatchMarker(range,
+                                        DocumentMarker::MatchStatus::kInactive);
   EXPECT_EQ(1u, markerController().markers().size());
   EXPECT_TRUE(markerController().setMarkersActive(range, true));
 }

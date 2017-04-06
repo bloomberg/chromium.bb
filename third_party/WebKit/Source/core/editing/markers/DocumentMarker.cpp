@@ -64,24 +64,32 @@ inline DocumentMarkerDescription* toDocumentMarkerDescription(
 
 class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
  public:
-  static DocumentMarkerTextMatch* create(bool);
+  static DocumentMarkerTextMatch* create(DocumentMarker::MatchStatus);
 
-  bool IsActiveMatch() const { return m_match; }
+  bool IsActiveMatch() const {
+    return m_matchStatus == DocumentMarker::MatchStatus::kActive;
+  }
 
   bool isTextMatch() const override { return true; }
 
  private:
-  explicit DocumentMarkerTextMatch(bool match) : m_match(match) {}
+  explicit DocumentMarkerTextMatch(DocumentMarker::MatchStatus matchStatus)
+      : m_matchStatus(matchStatus) {}
 
-  bool m_match;
+  DocumentMarker::MatchStatus m_matchStatus;
 };
 
-DocumentMarkerTextMatch* DocumentMarkerTextMatch::create(bool match) {
-  DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, trueInstance,
-                      (new DocumentMarkerTextMatch(true)));
-  DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, falseInstance,
-                      (new DocumentMarkerTextMatch(false)));
-  return match ? &trueInstance : &falseInstance;
+DocumentMarkerTextMatch* DocumentMarkerTextMatch::create(
+    DocumentMarker::MatchStatus matchStatus) {
+  DEFINE_STATIC_LOCAL(
+      DocumentMarkerTextMatch, activeInstance,
+      (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kActive)));
+  DEFINE_STATIC_LOCAL(
+      DocumentMarkerTextMatch, inactiveInstance,
+      (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kInactive)));
+  return matchStatus == DocumentMarker::MatchStatus::kActive
+             ? &activeInstance
+             : &inactiveInstance;
 }
 
 inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(
@@ -143,11 +151,11 @@ DocumentMarker::DocumentMarker(MarkerType type,
 
 DocumentMarker::DocumentMarker(unsigned startOffset,
                                unsigned endOffset,
-                               bool activeMatch)
+                               DocumentMarker::MatchStatus matchStatus)
     : m_type(DocumentMarker::TextMatch),
       m_startOffset(startOffset),
       m_endOffset(endOffset),
-      m_details(DocumentMarkerTextMatch::create(activeMatch)) {}
+      m_details(DocumentMarkerTextMatch::create(matchStatus)) {}
 
 DocumentMarker::DocumentMarker(unsigned startOffset,
                                unsigned endOffset,
@@ -173,7 +181,9 @@ void DocumentMarker::shiftOffsets(int delta) {
 }
 
 void DocumentMarker::setIsActiveMatch(bool active) {
-  m_details = DocumentMarkerTextMatch::create(active);
+  m_details = DocumentMarkerTextMatch::create(
+      active ? DocumentMarker::MatchStatus::kActive
+             : DocumentMarker::MatchStatus::kInactive);
 }
 
 const String& DocumentMarker::description() const {

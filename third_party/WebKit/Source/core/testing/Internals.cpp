@@ -1010,8 +1010,9 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive) {
     return;
 
   range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
-  range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range),
-                                                      isActive);
+  range->ownerDocument().markers().addTextMatchMarker(
+      EphemeralRange(range), isActive ? DocumentMarker::MatchStatus::kActive
+                                      : DocumentMarker::MatchStatus::kInactive);
 
   // This simulates what the production code does after
   // DocumentMarkerController::addTextMatchMarker().
