@@ -81,11 +81,19 @@ TEST(TextEncodingDetectorTest, LanguageHintHelpsEUCJP) {
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Without language hint, it's detected as GBK";
 
+  KURL url(ParsedURLString, "http://example.com/");
   result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(), nullptr,
-                              KURL(), "ja", &encoding);
+                              url, "ja", &encoding);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
+      << "Language hint doesn't help for normal URL. Should be detected as GBK";
+
+  KURL fileUrl(ParsedURLString, "file:///text.txt");
+  result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(), nullptr,
+                              fileUrl, "ja", &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("EUC-JP"), encoding)
-      << "With language hint 'ja', it's detected as EUC-JP";
+      << "Language hint works for file resource. Should be detected as EUC-JP";
 }
 
 TEST(TextEncodingDetectorTest, UTF8DetectionShouldFail) {

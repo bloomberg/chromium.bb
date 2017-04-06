@@ -43,8 +43,12 @@ bool detectTextEncoding(const char* data,
                         const char* hintUserLanguage,
                         WTF::TextEncoding* detectedEncoding) {
   *detectedEncoding = WTF::TextEncoding();
-  Language language;
-  LanguageFromCode(hintUserLanguage, &language);
+  // In general, do not use language hint. This helps get more
+  // deterministic encoding detection results across devices. Note that local
+  // file resources can still benefit from the hint.
+  Language language = UNKNOWN_LANGUAGE;
+  if (hintUrl.protocol() == "file")
+    LanguageFromCode(hintUserLanguage, &language);
   int consumedBytes;
   bool isReliable;
   Encoding encoding = CompactEncDet::DetectEncoding(
