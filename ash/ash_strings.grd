@@ -440,9 +440,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
         Low-power charger connected
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-current USB charger has been connected.">
-        Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on. Consider using the official charger.
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT" desc="The message body of a notification indicating that a low-current USB charger has been connected, short version.">
         Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
       </message>
@@ -492,10 +489,6 @@ Press Ctrl+Alt+Z to disable.
         USB-C device
       </message>
 
-      <message name="IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION" desc="The notification string used in accessibility to tell user to contact Google for replacing the possible bad charger.">
-        You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.
-      </message>
-
       <!-- Status Tray Network strings -->
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
         Network
@@ -515,9 +508,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECT" desc="Message on button that disconnects from the current VPN.">
         Disconnect
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_VPN_MONITORED" desc="The label used when a VPN connection may be monitored.">
-        Connection may be monitored
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_WIFI_ADDRESS" desc="The label for the mac address of the wifi device.">
         Wi-Fi: <ph name="ADDRESS">$1<ex>23:45:67:89:AB:CD</ex></ph>
       </message>
@@ -536,38 +526,11 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
         Proxy settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY" desc="The label used for tell users that this technology is disabled by the administrator">
-        This network setting is disabled by the administrator.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
-        Enable Wi-Fi
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISABLE_WIFI" desc="The label used for the item to disable wifi.">
-        Disable Wi-Fi
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
         Join other...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI" desc="The accessible text for the badge in the detailed network list indicating that the respective network's configuration may be controlled by an extension.">
         The extension "<ph name="EXTENSION_NAME">$1<ex>Nexus S</ex></ph>" can help connect to this network.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
-        Turn Wi-Fi on
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable mobile networks.">
-        Enable mobile data
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISABLE_MOBILE" desc="The label used for the item to disable mobile networks.">
-        Disable mobile data
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SETUP_MOBILE" desc="The label used for the item to setup mobile network when no SIM card in installed.">
-        Set up mobile data
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_OTHER_MOBILE" desc="The label used for the item to display other mobile networks.">
-        Mobile ...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT" desc="In the network popup bubble, the text of the top-up URL link.">
-        View mobile account
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
         Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>
@@ -600,12 +563,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_DESKTOP_CASTING_ACTIVE_MESSAGE" desc="The message for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
         Screen sharing will stop when you switch to another user. Do you want to continue?
-      </message>
-      <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_SWITCH_USER" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the casting will be stopped and the user will get switched.">
-        Yes
-      </message>
-      <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_ABORT_USER_SWITCH" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the user switch will be cancelled.">
-        No
       </message>
 
       <!-- Status tray screen capture strings. -->
@@ -767,14 +724,6 @@ Press Ctrl+Alt+Z to disable.
     CAPS LOCK is on.
     Press Search or Shift to cancel.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when an IME is enabled">
-        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>.
-    Press Shift + Alt to switch.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when a third party IME is enabled">
-        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>*(<ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>3rd party<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>).
-    Press Shift + Alt to switch.
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
       </message>
@@ -881,9 +830,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED" desc="Tooltip in network list when no network is prohibited by policy.">
         This network is disabled by your administrator.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED_OTHER" desc="Tooltip in network list for joining other network when connecting unmanaged network is prohibited">
-        Connecting to other networks is disabled by your administrator.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
