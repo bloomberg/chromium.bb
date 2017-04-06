@@ -1845,9 +1845,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return CSSPropertyFontUtils::consumeFontFeatureSettings(m_range);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
-    case CSSPropertyCounterIncrement:
-      return CSSPropertyCounterUtils::consumeCounter(
-          m_range, CSSPropertyCounterUtils::kIncrementDefaultValue);
     case CSSPropertyCounterReset:
       return CSSPropertyCounterUtils::consumeCounter(
           m_range, CSSPropertyCounterUtils::kResetDefaultValue);
