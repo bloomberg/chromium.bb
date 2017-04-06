@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="../direction_delegate.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../i18n_setup.html">
@@ -24,7 +25,6 @@
       :host {
         @apply(--layout-fit);
         -webkit-user-select: none;
-        background-color: var(--settings-background-color);
         color: var(--paper-grey-900);
         display: flex;
         flex-direction: column;
@@ -50,7 +50,7 @@
         @apply(--layout-center);
         --cr-toolbar-field-width: var(--settings-card-max-width);
         --iron-icon-fill-color: white;
-        background-color: var(--settings-title-bar-background-color);
+        background-color: var(--google-blue-700);
         color: white;
         min-height: 56px;
         z-index: 2;

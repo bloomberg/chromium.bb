@@ -165,11 +165,14 @@ Polymer({
 
   /** @override */
   attached: function() {
+    document.documentElement.classList.remove('loading');
+
     setTimeout(function() {
       chrome.send(
           'metricsHandler:recordTime',
           ['Settings.TimeUntilInteractive', window.performance.now()]);
     });
+
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
     settings.setGlobalScrollTarget(this.$.container);
