@@ -1182,11 +1182,6 @@ public class DownloadNotificationService extends Service {
 
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
-            public boolean shouldStartGpuProcess() {
-                return false;
-            }
-
-            @Override
             public void finishNativeInitialization() {
                 // Make sure the OfflineContentAggregator bridge is initialized.
                 OfflineContentAggregatorNotificationBridgeUiFactory.instance();

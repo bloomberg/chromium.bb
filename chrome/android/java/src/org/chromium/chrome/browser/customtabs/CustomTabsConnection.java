@@ -206,7 +206,7 @@ public class CustomTabsConnection {
     private static void initializeBrowser(final Application app) {
         ThreadUtils.assertOnUiThread();
         try {
-            ChromeBrowserInitializer.getInstance(app).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance(app).handleSynchronousStartupWithGpuWarmUp();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process.");
             // Cannot do anything without the native library, and cannot show a

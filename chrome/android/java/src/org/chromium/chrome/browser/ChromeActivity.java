@@ -471,6 +471,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         rootView.addView(mInsetObserverView, 0);
     }
 
+    @Override
+    public boolean shouldStartGpuProcess() {
+        return true;
+    }
+
     /**
      * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
      * {@link Toolbar}. Extending classes can override this call to avoid creating the toolbar.

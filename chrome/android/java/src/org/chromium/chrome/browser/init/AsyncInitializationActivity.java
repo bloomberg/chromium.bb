@@ -46,7 +46,6 @@ import java.lang.reflect.Field;
  */
 public abstract class AsyncInitializationActivity extends AppCompatActivity implements
         ChromeActivityNativeDelegate, BrowserParts {
-
     protected final Handler mHandler;
 
     // Time at which onCreate is called. This is realtime, counted in ms since device boot.
@@ -377,9 +376,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    public boolean shouldStartGpuProcess() {
-        return true;
-    }
+    public abstract boolean shouldStartGpuProcess();
 
     @Override
     public final void onFirstDrawComplete() {

@@ -300,6 +300,11 @@ public class SearchActivity extends AsyncInitializationActivity
         super.onDestroy();
     }
 
+    @Override
+    public boolean shouldStartGpuProcess() {
+        return true;
+    }
+
     private void focusTextBox(boolean clearQuery) {
         if (mIsNativeReady) mSearchBox.onUrlFocusChange(true);
         mUrlBar.setCursorVisible(true);
