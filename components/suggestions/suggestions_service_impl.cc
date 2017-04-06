@@ -35,6 +35,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -381,8 +382,39 @@ std::unique_ptr<net::URLFetcher>
 SuggestionsServiceImpl::CreateSuggestionsRequest(
     const GURL& url,
     const std::string& access_token) {
-  std::unique_ptr<net::URLFetcher> request =
-      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("suggestions_service", R"(
+        semantics {
+          sender: "Suggestions Service"
+          description:
+            "For signed-in users with History Sync enabled, the Suggestions "
+            "Service fetches website suggestions, based on the user's browsing "
+            "history, for display on the New Tab page."
+          trigger: "Opening a New Tab page."
+          data: "The user's OAuth2 credentials."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can disable this feature by signing out of Chromium, or "
+            "disabling Sync or History Sync in Chromium settings under "
+            "Advanced sync settings. The feature is enabled by default.""
+          chrome_policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              SyncDisabled: true
+            }
+          }
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> request = net::URLFetcher::Create(
+      0, url, net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
   int load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES |
