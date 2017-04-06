@@ -57,8 +57,8 @@ static const NamedCodec kCodecStrings[] = {
     {"vp8.0", EME_CODEC_WEBM_VP8},      // VP8.
     {"vp9", EME_CODEC_WEBM_VP9},        // VP9.
     {"vp9.0", EME_CODEC_WEBM_VP9},      // VP9.
+    {"vp09", EME_CODEC_COMMON_VP9},     // New multi-part VP9 for WebM and MP4.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    {"vp09", EME_CODEC_MP4_VP9},   // VP9 in MP4.
     {"mp4a", EME_CODEC_MP4_AAC},   // AAC.
     {"avc1", EME_CODEC_MP4_AVC1},  // AVC1.
     {"avc3", EME_CODEC_MP4_AVC1},  // AVC3.
@@ -599,15 +599,21 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   // necessary because |codecs| may be empty.)
   SupportedCodecs mime_type_codec_mask =
       GetCodecMaskForMimeType(container_mime_type);
-  if ((key_system_codec_mask & mime_type_codec_mask) == 0)
+  if ((key_system_codec_mask & mime_type_codec_mask) == 0) {
+    DVLOG(2) << " Container " << container_mime_type << " not supported by "
+             << key_system;
     return EmeConfigRule::NOT_SUPPORTED;
+  }
 
   // Check that the codecs are supported by the key system and container.
   EmeConfigRule support = EmeConfigRule::SUPPORTED;
   for (size_t i = 0; i < codecs.size(); i++) {
     SupportedCodecs codec = GetCodecForString(codecs[i]);
-    if ((codec & key_system_codec_mask & mime_type_codec_mask) == 0)
+    if ((codec & key_system_codec_mask & mime_type_codec_mask) == 0) {
+      DVLOG(2) << " Container/codec pair (" << container_mime_type << " / "
+               << codecs[i] << ") not supported by " << key_system;
       return EmeConfigRule::NOT_SUPPORTED;
+    }
 #if defined(OS_ANDROID)
     // Check whether the codec supports a hardware-secure mode. The goal is to
     // prevent mixing of non-hardware-secure codecs with hardware-secure codecs,

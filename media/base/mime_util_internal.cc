@@ -202,12 +202,16 @@ SupportsType MimeUtil::AreSupportedCodecs(
     if (!ParseCodecString(mime_type_lower_case, codecs[i], &codec,
                           &ambiguous_codec_string, &video_profile, &video_level,
                           &color_space)) {
+      DVLOG(2) << __func__ << " Failed to parse codec string:" << codecs[i];
       return IsNotSupported;
     }
 
     // Bail if codec not in supported list for given container.
-    if (supported_codecs.find(codec) == supported_codecs.end())
+    if (supported_codecs.find(codec) == supported_codecs.end()) {
+      DVLOG(2) << __func__ << " Codec " << codecs[i]
+               << " not supported in container " << mime_type_lower_case;
       return IsNotSupported;
+    }
 
     // Make conservative guesses to resolve ambiguity before checking platform
     // support. H264 and VP9 are the only allowed ambiguous video codec. DO NOT
@@ -228,8 +232,11 @@ SupportsType MimeUtil::AreSupportedCodecs(
     SupportsType result =
         IsCodecSupported(mime_type_lower_case, codec, video_profile,
                          video_level, color_space, is_encrypted);
-    if (result == IsNotSupported)
+    if (result == IsNotSupported) {
+      DVLOG(2) << __func__ << " Codec " << codecs[i]
+               << " not supported by platform";
       return IsNotSupported;
+    }
 
     // If any codec is "MayBeSupported", return Maybe for the combined result.
     // Downgrade to MayBeSupported if we had to guess the meaning of one of the

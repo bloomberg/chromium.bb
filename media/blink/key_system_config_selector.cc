@@ -323,8 +323,11 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // contentTypes must provide a codec string unless the container implies a
   // particular codec. For EME, none of the currently supported containers
   // imply a codec, so |codecs| must be provided.
-  if (codecs.empty())
+  if (codecs.empty()) {
+    DVLOG(3) << __func__ << " KeySystemConfig for " << container_mime_type
+             << " does not specify necessary codecs.";
     return false;
+  }
 
   // Check that |container_mime_type| and |codecs| are supported by Chrome. This
   // is done primarily to validate extended codecs, but it also ensures that the
