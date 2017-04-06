@@ -23,17 +23,6 @@ public class AppIndexingReporter {
      * Reports provided entity to on-device index.
      * Base class does not implement any reporting, and call is a no-op. Child classes should
      * implement this functionality.
-     *
-     * Deprecated, to be removed in follow-up cl, after downstream change.
-     */
-    public void reportEntityJsonLd(String url, String json) {
-        // Overriden by private class. Base class does nothing.
-    }
-
-    /**
-     * Reports provided entity to on-device index.
-     * Base class does not implement any reporting, and call is a no-op. Child classes should
-     * implement this functionality.
      */
     public void reportWebPage(WebPage webpage) {
         // Overriden by private class. Base class does nothing.
