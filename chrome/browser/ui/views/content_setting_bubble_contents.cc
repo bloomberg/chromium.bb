@@ -255,8 +255,7 @@ void ContentSettingBubbleContents::Init() {
   }
 
   if (!bubble_content.learn_more_link.empty()) {
-    learn_more_link_ =
-        new views::Link(base::UTF8ToUTF16(bubble_content.learn_more_link));
+    learn_more_link_ = new views::Link(bubble_content.learn_more_link);
     learn_more_link_->set_listener(this);
     learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(learn_more_link_);
@@ -282,7 +281,7 @@ void ContentSettingBubbleContents::Init() {
         layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kItemListColumnSetId);
       if (list_item.has_link) {
-        views::Link* link = new views::Link(base::UTF8ToUTF16(list_item.title));
+        views::Link* link = new views::Link(list_item.title);
         link->set_listener(this);
         link->SetElideBehavior(gfx::ELIDE_MIDDLE);
         list_item_links_[link] = row;
@@ -292,7 +291,7 @@ void ContentSettingBubbleContents::Init() {
         views::ImageView* icon = new views::ImageView();
         icon->SetImage(list_item.image.AsImageSkia());
         layout->AddView(icon);
-        layout->AddView(new views::Label(base::UTF8ToUTF16(list_item.title)));
+        layout->AddView(new views::Label(list_item.title));
       }
       row++;
       bubble_content_empty = false;
@@ -318,8 +317,7 @@ void ContentSettingBubbleContents::Init() {
     for (ContentSettingBubbleModel::RadioItems::const_iterator i(
          radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
-      views::RadioButton* radio =
-          new views::RadioButton(base::UTF8ToUTF16(*i), 0);
+      views::RadioButton* radio = new views::RadioButton(*i, 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
       if (layout_delegate->IsHarmonyMode()) {
@@ -363,8 +361,7 @@ void ContentSettingBubbleContents::Init() {
         layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kMediaMenuColumnSetId);
 
-      views::Label* label =
-          new views::Label(base::UTF8ToUTF16(i->second.label));
+      views::Label* label = new views::Label(i->second.label);
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       layout->AddView(label);
 
@@ -390,7 +387,7 @@ void ContentSettingBubbleContents::Init() {
            bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
     layout->StartRow(0, kSingleColumnSetId);
-    views::Label* section_title = new views::Label(base::UTF8ToUTF16(i->title));
+    views::Label* section_title = new views::Label(i->title);
     section_title->SetMultiLine(true);
     section_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
@@ -405,8 +402,7 @@ void ContentSettingBubbleContents::Init() {
   }
 
   if (!bubble_content.custom_link.empty()) {
-    custom_link_ =
-        new views::Link(base::UTF8ToUTF16(bubble_content.custom_link));
+    custom_link_ = new views::Link(bubble_content.custom_link);
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
     custom_link_->set_listener(this);
     if (!bubble_content_empty)
@@ -417,8 +413,7 @@ void ContentSettingBubbleContents::Init() {
   }
 
   if (bubble_content.show_manage_text_as_checkbox) {
-    manage_checkbox_ =
-        new views::Checkbox(base::UTF8ToUTF16(bubble_content.manage_text));
+    manage_checkbox_ = new views::Checkbox(bubble_content.manage_text);
     manage_checkbox_->set_listener(this);
     layout->AddPaddingRow(0, related_control_vertical_spacing);
     layout->StartRow(0, indented_kSingleColumnSetId);
@@ -443,7 +438,7 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   if (bubble_content.show_manage_text_as_checkbox)
     return nullptr;
 
-  manage_link_ = new views::Link(base::UTF8ToUTF16(bubble_content.manage_text));
+  manage_link_ = new views::Link(bubble_content.manage_text);
   manage_link_->set_listener(this);
   return manage_link_;
 }

@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -66,25 +67,25 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   struct ListItem {
     ListItem(const gfx::Image& image,
-             const std::string& title,
+             const base::string16& title,
              bool has_link,
              int32_t item_id)
         : image(image), title(title), has_link(has_link), item_id(item_id) {}
 
     gfx::Image image;
-    std::string title;
+    base::string16 title;
     bool has_link;
     int32_t item_id;
   };
   typedef std::vector<ListItem> ListItems;
 
-  typedef std::vector<std::string> RadioItems;
+  typedef std::vector<base::string16> RadioItems;
   struct RadioGroup {
     RadioGroup();
     ~RadioGroup();
 
     GURL url;
-    std::string title;
+    base::string16 title;
     RadioItems radio_items;
     int default_item;
   };
@@ -94,7 +95,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     DomainList(const DomainList& other);
     ~DomainList();
 
-    std::string title;
+    base::string16 title;
     std::set<std::string> hosts;
   };
 
@@ -103,7 +104,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     MediaMenu(const MediaMenu& other);
     ~MediaMenu();
 
-    std::string label;
+    base::string16 label;
     content::MediaStreamDevice default_device;
     content::MediaStreamDevice selected_device;
     bool disabled;
@@ -120,12 +121,12 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     RadioGroup radio_group;
     bool radio_group_enabled = false;
     std::vector<DomainList> domain_lists;
-    std::string custom_link;
+    base::string16 custom_link;
     bool custom_link_enabled = false;
-    std::string manage_text;
+    base::string16 manage_text;
     bool show_manage_text_as_checkbox = false;
     MediaMenuMap media_menus;
-    std::string learn_more_link;
+    base::string16 learn_more_link;
     base::string16 done_button_text;
 
    private:
@@ -216,13 +217,13 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void add_domain_list(const DomainList& domain_list) {
     bubble_content_.domain_lists.push_back(domain_list);
   }
-  void set_custom_link(const std::string& link) {
+  void set_custom_link(const base::string16& link) {
     bubble_content_.custom_link = link;
   }
   void set_custom_link_enabled(bool enabled) {
     bubble_content_.custom_link_enabled = enabled;
   }
-  void set_manage_text(const std::string& text) {
+  void set_manage_text(const base::string16& text) {
     bubble_content_.manage_text = text;
   }
   void set_show_manage_text_as_checkbox(bool show_manage_text_as_checkbox) {
@@ -234,7 +235,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_selected_device(const content::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
   }
-  void set_learn_more_link(const std::string& link) {
+  void set_learn_more_link(const base::string16& link) {
     bubble_content_.learn_more_link = link;
   }
   void set_done_button_text(const base::string16& done_button_text) {

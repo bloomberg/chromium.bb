@@ -383,8 +383,8 @@ const ContentTypeToNibPath kNibPaths[] = {
   const ContentSettingBubbleModel::RadioItems& radio_items =
       radio_group.radio_items;
   for (size_t ii = 0; ii < radio_group.radio_items.size(); ++ii) {
-    NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag: ii + 1];
-    [radioCell setTitle:base::SysUTF8ToNSString(radio_items[ii])];
+    NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:ii + 1];
+    [radioCell setTitle:base::SysUTF16ToNSString(radio_items[ii])];
   }
 
   // Layout radio group labels post-localization.
@@ -473,17 +473,17 @@ const ContentTypeToNibPath kNibPaths[] = {
     NSRect frame = NSMakeRect(
         NSMinX(radioFrame), topLinkY - kLinkLineHeight * row, 200, kLinkHeight);
     if (listItem.has_link) {
-      NSButton* button =
-          [self hyperlinkButtonWithFrame:frame
-                                   title:base::SysUTF8ToNSString(listItem.title)
-                                    icon:image
-                          referenceFrame:radioFrame];
+      NSButton* button = [self
+          hyperlinkButtonWithFrame:frame
+                             title:base::SysUTF16ToNSString(listItem.title)
+                              icon:image
+                    referenceFrame:radioFrame];
       [button setAutoresizingMask:NSViewMinYMargin];
       [[self bubble] addSubview:button];
       popupLinks_[button] = row++;
     } else {
       NSTextField* label =
-          LabelWithFrame(base::SysUTF8ToNSString(listItem.title), frame);
+          LabelWithFrame(base::SysUTF16ToNSString(listItem.title), frame);
       SetControlSize(label, NSSmallControlSize);
       [label setAutoresizingMask:NSViewMinYMargin];
       [[self bubble] addSubview:label];
@@ -510,7 +510,7 @@ const ContentTypeToNibPath kNibPaths[] = {
                                       kGeoClearButtonHeight);
       NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
       control.reset(button);
-      [button setTitle:base::SysUTF8ToNSString(content.custom_link)];
+      [button setTitle:base::SysUTF16ToNSString(content.custom_link)];
       [button setTarget:self];
       [button setAction:@selector(clearGeolocationForCurrentHost:)];
       [button setBezelStyle:NSRoundRectBezelStyle];
@@ -519,7 +519,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     } else {
       // Add the notification that settings will be cleared on next reload.
       control.reset([LabelWithFrame(
-          base::SysUTF8ToNSString(content.custom_link), frame) retain]);
+          base::SysUTF16ToNSString(content.custom_link), frame) retain]);
       SetControlSize(control.get(), NSSmallControlSize);
     }
 
@@ -555,7 +555,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 
     // Add the domain list's title.
     NSTextField* title =
-        LabelWithFrame(base::SysUTF8ToNSString(i->title), frame);
+        LabelWithFrame(base::SysUTF16ToNSString(i->title), frame);
     SetControlSize(title, NSSmallControlSize);
     [contentsContainer_ addSubview:title];
 
@@ -592,7 +592,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     // |labelFrame| will be resized later on in this function.
     NSRect labelFrame = NSMakeRect(NSMinX(radioFrame), 0, 0, 0);
     NSTextField* label = LabelWithFrame(
-        base::SysUTF8ToNSString(map_entry.second.label), labelFrame);
+        base::SysUTF16ToNSString(map_entry.second.label), labelFrame);
     SetControlSize(label, NSSmallControlSize);
     NSCell* cell = [label cell];
     [cell setAlignment:NSRightTextAlignment];
@@ -685,7 +685,7 @@ const ContentTypeToNibPath kNibPaths[] = {
                                       kMIDISysExClearButtonHeight);
       NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
       control.reset(button);
-      [button setTitle:base::SysUTF8ToNSString(content.custom_link)];
+      [button setTitle:base::SysUTF16ToNSString(content.custom_link)];
       [button setTarget:self];
       [button setAction:@selector(clearMIDISysExForCurrentHost:)];
       [button setBezelStyle:NSRoundRectBezelStyle];
@@ -694,7 +694,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     } else {
       // Add the notification that settings will be cleared on next reload.
       control.reset([LabelWithFrame(
-          base::SysUTF8ToNSString(content.custom_link), frame) retain]);
+          base::SysUTF16ToNSString(content.custom_link), frame) retain]);
       SetControlSize(control.get(), NSSmallControlSize);
     }
 
@@ -730,7 +730,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 
     // Add the domain list's title.
     NSTextField* title =
-        LabelWithFrame(base::SysUTF8ToNSString(i->title), frame);
+        LabelWithFrame(base::SysUTF16ToNSString(i->title), frame);
     SetControlSize(title, NSSmallControlSize);
     [contentsContainer_ addSubview:title];
 
@@ -769,7 +769,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (void)initManageDoneButtons {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
-  [manageButton_ setTitle:base::SysUTF8ToNSString(content.manage_text)];
+  [manageButton_ setTitle:base::SysUTF16ToNSString(content.manage_text)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:[manageButton_ superview]];
 
   CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);

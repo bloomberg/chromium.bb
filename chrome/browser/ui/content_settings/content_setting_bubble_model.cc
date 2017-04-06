@@ -180,7 +180,7 @@ void ContentSettingSimpleBubbleModel::SetManageText() {
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
   };
-  set_manage_text(l10n_util::GetStringUTF8(
+  set_manage_text(l10n_util::GetStringUTF16(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
 }
 
@@ -207,7 +207,7 @@ void ContentSettingSimpleBubbleModel::SetCustomLink() {
   int custom_link_id =
       GetIdForContentType(kCustomIDs, arraysize(kCustomIDs), content_type());
   if (custom_link_id)
-    set_custom_link(l10n_util::GetStringUTF8(custom_link_id));
+    set_custom_link(l10n_util::GetStringUTF16(custom_link_id));
 }
 
 void ContentSettingSimpleBubbleModel::OnCustomLinkClicked() {
@@ -297,14 +297,14 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
   };
 
-  std::string radio_allow_label;
+  base::string16 radio_allow_label;
   if (allowed) {
     int resource_id = GetIdForContentType(kAllowedAllowIDs,
                                           arraysize(kAllowedAllowIDs),
                                           content_type());
-    radio_allow_label = l10n_util::GetStringUTF8(resource_id);
+    radio_allow_label = l10n_util::GetStringUTF16(resource_id);
   } else {
-    radio_allow_label = l10n_util::GetStringFUTF8(
+    radio_allow_label = l10n_util::GetStringFUTF16(
         GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
                             content_type()),
         display_host);
@@ -323,16 +323,14 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
   };
 
-  std::string radio_block_label;
+  base::string16 radio_block_label;
   if (allowed) {
-    int resource_id = GetIdForContentType(kAllowedBlockIDs,
-                                          arraysize(kAllowedBlockIDs),
-                                          content_type());
-    radio_block_label = l10n_util::GetStringFUTF8(resource_id, display_host);
+    int resource_id = GetIdForContentType(
+        kAllowedBlockIDs, arraysize(kAllowedBlockIDs), content_type());
+    radio_block_label = l10n_util::GetStringFUTF16(resource_id, display_host);
   } else {
-    radio_block_label = l10n_util::GetStringUTF8(
-        GetIdForContentType(kBlockedBlockIDs, arraysize(kBlockedBlockIDs),
-                            content_type()));
+    radio_block_label = l10n_util::GetStringUTF16(GetIdForContentType(
+        kBlockedBlockIDs, arraysize(kBlockedBlockIDs), content_type()));
   }
 
   radio_group.radio_items.push_back(radio_allow_label);
@@ -468,7 +466,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
 
   // If the setting is not managed by the user, hide the "Manage..." link.
   if (info.source != SETTING_SOURCE_USER)
-    set_manage_text(std::string());
+    set_manage_text(base::string16());
 
   // The user cannot manually run Flash on the BLOCK setting when either holds:
   //  - The setting is from Policy. User cannot override admin intent.
@@ -479,7 +477,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
                       PluginUtils::ShouldPreferHtmlOverPlugins(map));
 
   if (!run_blocked) {
-    set_custom_link(l10n_util::GetStringUTF8(IDS_BLOCKED_PLUGINS_LOAD_ALL));
+    set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
     // Disable the "Run all plugins this time" link if the user already clicked
     // on the link and ran all plugins.
     set_custom_link_enabled(
@@ -499,12 +497,12 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
       ListItem plugin_item(
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_BLOCKED_PLUGINS),
-          base::UTF16ToUTF8(blocked_plugin), false, 0);
+          blocked_plugin, false, 0);
       add_list_item(plugin_item);
     }
   }
 
-  set_learn_more_link(l10n_util::GetStringUTF8(IDS_LEARN_MORE));
+  set_learn_more_link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
   content_settings::RecordPluginsAction(
       content_settings::PLUGINS_ACTION_DISPLAYED_BUBBLE);
@@ -575,10 +573,13 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
   auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
   std::map<int32_t, GURL> blocked_popups = helper->GetBlockedPopupRequests();
   for (const std::pair<int32_t, GURL>& blocked_popup : blocked_popups) {
-    std::string title(blocked_popup.second.spec());
+    base::string16 title;
     // The pop-up may not have a valid URL.
-    if (title.empty())
-      title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
+    if (blocked_popup.second.spec().empty())
+      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+    else
+      title = base::UTF8ToUTF16(blocked_popup.second.spec());
+
     ListItem popup_item(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                             IDR_DEFAULT_FAVICON),
                         title, true, blocked_popup.first);
@@ -706,11 +707,9 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   RadioGroup radio_group;
   radio_group.url = url;
 
-  base::string16 display_host_utf16 =
-      url_formatter::FormatUrlForSecurityDisplay(url);
-  std::string display_host(base::UTF16ToUTF8(display_host_utf16));
+  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
   if (display_host.empty())
-    display_host = url.spec();
+    display_host = base::UTF8ToUTF16(url.spec());
 
   DCHECK(CameraAccessed() || MicrophoneAccessed());
   int radio_allow_label_id = 0;
@@ -754,10 +753,10 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
       (CameraAccessed() && content_settings->IsContentBlocked(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) ? 1 : 0;
 
-  std::string radio_allow_label = l10n_util::GetStringFUTF8(
-      radio_allow_label_id, base::UTF8ToUTF16(display_host));
-  std::string radio_block_label =
-      l10n_util::GetStringUTF8(radio_block_label_id);
+  base::string16 radio_allow_label =
+      l10n_util::GetStringFUTF16(radio_allow_label_id, display_host);
+  base::string16 radio_block_label =
+      l10n_util::GetStringUTF16(radio_block_label_id);
 
   radio_group.default_item = selected_item_;
   radio_group.radio_items.push_back(radio_allow_label);
@@ -828,7 +827,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
 
   if (MicrophoneAccessed()) {
     MediaMenu mic_menu;
-    mic_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_MIC_LABEL);
+    mic_menu.label = l10n_util::GetStringUTF16(IDS_MEDIA_SELECTED_MIC_LABEL);
     if (!microphones.empty()) {
       std::string preferred_mic;
       if (requested_microphone.empty()) {
@@ -853,7 +852,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
         dispatcher->GetVideoCaptureDevices();
     MediaMenu camera_menu;
     camera_menu.label =
-        l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_CAMERA_LABEL);
+        l10n_util::GetStringUTF16(IDS_MEDIA_SELECTED_CAMERA_LABEL);
     if (!cameras.empty()) {
       std::string preferred_camera;
       if (requested_camera.empty()) {
@@ -889,15 +888,15 @@ void ContentSettingMediaStreamBubbleModel::SetManageText() {
     return;
   }
 
-  set_manage_text(l10n_util::GetStringUTF8(link_id));
+  set_manage_text(l10n_util::GetStringUTF16(link_id));
 }
 
 void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   if (content_settings->IsMicrophoneCameraStateChanged()) {
-    set_custom_link(l10n_util::GetStringUTF8(
-        IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
+    set_custom_link(
+        l10n_util::GetStringUTF16(IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
   }
 }
 
@@ -955,7 +954,7 @@ void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
     const std::set<std::string>& hosts, int title_id) {
   if (!hosts.empty()) {
     DomainList domain_list;
-    domain_list.title = l10n_util::GetStringUTF8(title_id);
+    domain_list.title = l10n_util::GetStringUTF16(title_id);
     domain_list.hosts = hosts;
     add_domain_list(domain_list);
   }
@@ -978,12 +977,12 @@ void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
                      IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
 
   if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
-    set_custom_link(l10n_util::GetStringUTF8(
-        IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
+    set_custom_link(
+        l10n_util::GetStringUTF16(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
     set_custom_link_enabled(true);
   } else if (tab_state_flags &
              ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
-    set_custom_link(l10n_util::GetStringUTF8(
+    set_custom_link(l10n_util::GetStringUTF16(
         IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
   }
 }
@@ -1120,14 +1119,14 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
         base::UTF8ToUTF16(previous_handler_.url().host())));
   }
 
-  std::string radio_allow_label =
-      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT);
-  std::string radio_deny_label =
-      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_DENY);
-  std::string radio_ignore_label =
-      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_IGNORE);
+  base::string16 radio_allow_label =
+      l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT);
+  base::string16 radio_deny_label =
+      l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_DENY);
+  base::string16 radio_ignore_label =
+      l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_IGNORE);
 
-  GURL url = web_contents->GetURL();
+  const GURL& url = web_contents->GetURL();
   RadioGroup radio_group;
   radio_group.url = url;
 
@@ -1246,7 +1245,7 @@ void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
 
 void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
   set_manage_text(
-      l10n_util::GetStringUTF8(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
   set_show_manage_text_as_checkbox(true);
 }
 
@@ -1311,7 +1310,7 @@ void ContentSettingMidiSysExBubbleModel::MaybeAddDomainList(
     const std::set<std::string>& hosts, int title_id) {
   if (!hosts.empty()) {
     DomainList domain_list;
-    domain_list.title = l10n_util::GetStringUTF8(title_id);
+    domain_list.title = l10n_util::GetStringUTF16(title_id);
     domain_list.hosts = hosts;
     add_domain_list(domain_list);
   }
@@ -1334,12 +1333,12 @@ void ContentSettingMidiSysExBubbleModel::SetDomainsAndCustomLink() {
                      IDS_MIDI_SYSEX_BUBBLE_DENIED);
 
   if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
-    set_custom_link(l10n_util::GetStringUTF8(
-        IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK));
+    set_custom_link(
+        l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK));
     set_custom_link_enabled(true);
   } else if (tab_state_flags &
              ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
-    set_custom_link(l10n_util::GetStringUTF8(
+    set_custom_link(l10n_util::GetStringUTF16(
         IDS_MIDI_SYSEX_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
   }
 }
@@ -1413,16 +1412,16 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
   switch (download_request_limiter->GetDownloadStatus(web_contents())) {
     case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
       radio_group.radio_items.push_back(
-          l10n_util::GetStringUTF8(IDS_ALLOWED_DOWNLOAD_NO_ACTION));
+          l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_NO_ACTION));
       radio_group.radio_items.push_back(
-          l10n_util::GetStringFUTF8(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host));
+          l10n_util::GetStringFUTF16(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host));
       radio_group.default_item = kAllowButtonIndex;
       break;
     case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
-      radio_group.radio_items.push_back(l10n_util::GetStringFUTF8(
+      radio_group.radio_items.push_back(l10n_util::GetStringFUTF16(
           IDS_BLOCKED_DOWNLOAD_UNBLOCK, display_host));
       radio_group.radio_items.push_back(
-          l10n_util::GetStringUTF8(IDS_BLOCKED_DOWNLOAD_NO_ACTION));
+          l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_NO_ACTION));
       radio_group.default_item = 1;
       break;
     default:
@@ -1471,7 +1470,7 @@ void ContentSettingDownloadsBubbleModel::SetTitle() {
 }
 
 void ContentSettingDownloadsBubbleModel::SetManageText() {
-  set_manage_text(l10n_util::GetStringUTF8(IDS_BLOCKED_DOWNLOADS_LINK));
+  set_manage_text(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOADS_LINK));
 }
 
 void ContentSettingDownloadsBubbleModel::OnManageLinkClicked() {
