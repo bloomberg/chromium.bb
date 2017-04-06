@@ -49,8 +49,16 @@ class ErrorEvent final : public Event {
   static ErrorEvent* create(const String& message,
                             std::unique_ptr<SourceLocation> location,
                             DOMWrapperWorld* world) {
-    return new ErrorEvent(message, std::move(location), world);
+    return new ErrorEvent(message, std::move(location), ScriptValue(), world);
   }
+
+  static ErrorEvent* create(const String& message,
+                            std::unique_ptr<SourceLocation> location,
+                            ScriptValue error,
+                            DOMWrapperWorld* world) {
+    return new ErrorEvent(message, std::move(location), error, world);
+  }
+
   static ErrorEvent* create(const AtomicString& type,
                             const ErrorEventInit& initializer) {
     return new ErrorEvent(type, initializer);
@@ -58,7 +66,7 @@ class ErrorEvent final : public Event {
   static ErrorEvent* createSanitizedError(DOMWrapperWorld* world) {
     return new ErrorEvent("Script error.",
                           SourceLocation::create(String(), 0, 0, nullptr),
-                          world);
+                          ScriptValue(), world);
   }
   ~ErrorEvent() override;
 
@@ -89,6 +97,7 @@ class ErrorEvent final : public Event {
   ErrorEvent();
   ErrorEvent(const String& message,
              std::unique_ptr<SourceLocation>,
+             ScriptValue error,
              DOMWrapperWorld*);
   ErrorEvent(const AtomicString&, const ErrorEventInit&);
 

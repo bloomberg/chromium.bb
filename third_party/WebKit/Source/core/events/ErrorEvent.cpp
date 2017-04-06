@@ -59,10 +59,12 @@ ErrorEvent::ErrorEvent(const AtomicString& type,
 
 ErrorEvent::ErrorEvent(const String& message,
                        std::unique_ptr<SourceLocation> location,
+                       ScriptValue error,
                        DOMWrapperWorld* world)
     : Event(EventTypeNames::error, false, true),
       m_sanitizedMessage(message),
       m_location(std::move(location)),
+      m_error(error),
       m_world(world) {}
 
 void ErrorEvent::setUnsanitizedMessage(const String& message) {

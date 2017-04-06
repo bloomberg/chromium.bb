@@ -308,11 +308,13 @@ bool WorkerOrWorkletScriptController::evaluate(
         return false;
       }
       if (m_globalScope->shouldSanitizeScriptError(state.m_location->url(),
-                                                   NotSharableCrossOrigin))
+                                                   NotSharableCrossOrigin)) {
         *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
-      else
-        *errorEvent = ErrorEvent::create(
-            state.errorMessage, state.m_location->clone(), m_world.get());
+      } else {
+        *errorEvent =
+            ErrorEvent::create(state.errorMessage, state.m_location->clone(),
+                               state.exception, m_world.get());
+      }
       V8ErrorHandler::storeExceptionOnErrorEventWrapper(
           m_scriptState.get(), *errorEvent, state.exception.v8Value(),
           m_scriptState->context()->Global());
@@ -320,11 +322,13 @@ bool WorkerOrWorkletScriptController::evaluate(
       DCHECK(!m_globalScope->shouldSanitizeScriptError(state.m_location->url(),
                                                        NotSharableCrossOrigin));
       ErrorEvent* event = nullptr;
-      if (state.m_errorEventFromImportedScript)
+      if (state.m_errorEventFromImportedScript) {
         event = state.m_errorEventFromImportedScript.release();
-      else
-        event = ErrorEvent::create(state.errorMessage,
-                                   state.m_location->clone(), m_world.get());
+      } else {
+        event =
+            ErrorEvent::create(state.errorMessage, state.m_location->clone(),
+                               state.exception, m_world.get());
+      }
       m_globalScope->dispatchErrorEvent(event, NotSharableCrossOrigin);
     }
     return false;
