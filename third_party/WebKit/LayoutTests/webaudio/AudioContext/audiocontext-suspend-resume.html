@@ -117,6 +117,26 @@
       });
     });
 
+    audit.define({
+      label: 'resume-running-context',
+      description: 'Test resuming a running context'
+    }, (task, should) => {
+      let context;
+      should(() => context = new AudioContext(),
+          'Create online context')
+        .notThrow();
+
+      should(context.state, 'context.state')
+        .beEqualTo('running');
+      should(context.resume(), 'context.resume')
+        .beResolved()
+        .then(() => {
+          should(context.state, 'context.state after resume')
+            .beEqualTo('running');
+        })
+        .then(() => task.done());
+    });
+
     audit.run();
   </script>
 </body>

@@ -155,6 +155,12 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  // If we're already running, just resolve; nothing else needs to be
+  // done.
+  if (contextState() == Running) {
+    resolver->resolve();
+    return promise;
+  }
   // Restart the destination node to pull on the audio graph.
   if (destination()) {
     maybeUnlockUserGesture();
