@@ -29,16 +29,16 @@
 #ifndef GraphicsContextState_h
 #define GraphicsContextState_h
 
+#include <memory>
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

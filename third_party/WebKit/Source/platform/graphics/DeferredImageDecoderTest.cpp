@@ -35,6 +35,9 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/test/MockImageDecoder.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
@@ -42,9 +45,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

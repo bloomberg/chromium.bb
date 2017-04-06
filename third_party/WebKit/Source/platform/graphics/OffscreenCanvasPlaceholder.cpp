@@ -8,7 +8,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace {
 

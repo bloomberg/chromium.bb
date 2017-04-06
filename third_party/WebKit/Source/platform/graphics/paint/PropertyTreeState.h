@@ -8,9 +8,9 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

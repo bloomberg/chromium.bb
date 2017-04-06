@@ -4,12 +4,12 @@
 
 #include "platform/graphics/ContiguousContainer.h"
 
-#include "wtf/Allocator.h"
-#include "wtf/ContainerAnnotations.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/allocator/Partitions.h"
 #include <algorithm>
 #include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/ContainerAnnotations.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

@@ -45,6 +45,8 @@
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"
@@ -53,8 +55,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

@@ -5,9 +5,9 @@
 #ifndef SquashingDisallowedReasons_h
 #define SquashingDisallowedReasons_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include <stdint.h>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

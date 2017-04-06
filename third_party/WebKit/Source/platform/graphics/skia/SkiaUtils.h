@@ -38,11 +38,11 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/MathExtras.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "wtf/MathExtras.h"
 
 namespace blink {
 

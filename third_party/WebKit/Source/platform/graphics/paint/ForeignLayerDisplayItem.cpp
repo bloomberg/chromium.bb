@@ -4,12 +4,12 @@
 
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
+#include <utility>
 #include "cc/layers/layer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebLayer.h"
-#include "wtf/Assertions.h"
-#include <utility>
 
 namespace blink {
 

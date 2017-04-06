@@ -32,6 +32,7 @@
 
 #include "platform/graphics/ImageBuffer.h"
 
+#include <memory>
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -51,20 +52,19 @@
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/image-encoders/WEBPImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
 
 namespace blink {
 

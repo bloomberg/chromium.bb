@@ -37,13 +37,13 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/text/WTFString.h"
 
 class SkImage;
 class SkMatrix;

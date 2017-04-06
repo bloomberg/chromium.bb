@@ -26,14 +26,14 @@
 #ifndef ImageSource_h
 #define ImageSource_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 class SkImage;
 

@@ -8,13 +8,13 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
 
 #ifndef NDEBUG
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 class SkPictureGpuAnalyzer;

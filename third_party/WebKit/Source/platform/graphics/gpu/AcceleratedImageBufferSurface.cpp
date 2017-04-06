@@ -32,10 +32,10 @@
 
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

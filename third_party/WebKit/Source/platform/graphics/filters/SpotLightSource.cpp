@@ -32,7 +32,7 @@
 #include "platform/graphics/filters/SpotLightSource.h"
 
 #include "platform/text/TextStream.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

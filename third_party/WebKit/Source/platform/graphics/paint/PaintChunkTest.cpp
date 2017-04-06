@@ -6,8 +6,8 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/FakeDisplayItemClient.h"
+#include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 

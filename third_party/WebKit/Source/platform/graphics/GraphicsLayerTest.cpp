@@ -25,6 +25,7 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -41,6 +42,7 @@
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
@@ -48,8 +50,6 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

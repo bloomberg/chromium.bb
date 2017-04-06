@@ -29,9 +29,9 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ColorSpace.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

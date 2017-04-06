@@ -5,18 +5,18 @@
 #ifndef ContiguousContainer_h
 #define ContiguousContainer_h
 
-#include "base/compiler_specific.h"
-#include "platform/PlatformExport.h"
-#include "wtf/Alignment.h"
-#include "wtf/Allocator.h"
-#include "wtf/Compiler.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/TypeTraits.h"
-#include "wtf/Vector.h"
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
+#include "base/compiler_specific.h"
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Alignment.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/TypeTraits.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

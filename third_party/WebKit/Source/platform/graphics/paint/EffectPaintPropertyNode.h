@@ -12,10 +12,10 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <iosfwd>
 

@@ -4,14 +4,14 @@
 
 #include "platform/graphics/CompositorMutableStateProvider.h"
 
+#include <memory>
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutableState.h"
 #include "platform/graphics/CompositorMutation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

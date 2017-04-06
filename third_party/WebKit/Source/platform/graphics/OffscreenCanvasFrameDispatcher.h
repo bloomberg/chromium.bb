@@ -7,8 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
-#include "wtf/RefPtr.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

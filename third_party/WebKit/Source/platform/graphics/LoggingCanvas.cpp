@@ -35,15 +35,15 @@
 #include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "wtf/HexNumber.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

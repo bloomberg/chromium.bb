@@ -25,14 +25,14 @@
 
 #include "platform/graphics/Image.h"
 
+#include <memory>
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

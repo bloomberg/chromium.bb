@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace cc {
 class DisplayItemList;

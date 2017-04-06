@@ -4,6 +4,7 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include <memory>
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -12,14 +13,13 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 using testing::Test;
 

@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #ifndef NDEBUG
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 namespace blink {

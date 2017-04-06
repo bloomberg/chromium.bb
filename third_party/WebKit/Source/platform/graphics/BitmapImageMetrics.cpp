@@ -6,8 +6,8 @@
 
 #include "platform/Histogram.h"
 #include "platform/graphics/ColorSpace.h"
-#include "wtf/Threading.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

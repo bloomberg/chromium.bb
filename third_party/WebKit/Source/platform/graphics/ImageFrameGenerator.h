@@ -26,21 +26,21 @@
 #ifndef ImageFrameGenerator_h
 #define ImageFrameGenerator_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 struct SkYUVSizeInfo;
 

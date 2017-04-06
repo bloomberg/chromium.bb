@@ -5,8 +5,8 @@
 #ifndef WebGraphicsContext3DProviderWrapper_h
 #define WebGraphicsContext3DProviderWrapper_h
 
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

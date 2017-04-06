@@ -26,6 +26,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 
+#include <memory>
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
@@ -38,6 +39,8 @@
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/MathExtras.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -49,9 +52,6 @@
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
-#include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
-#include <memory>
 
 namespace blink {
 

@@ -38,6 +38,8 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebScheduler.h"
@@ -49,8 +51,6 @@
 #include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 #include <memory>
 

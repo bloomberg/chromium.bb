@@ -8,8 +8,8 @@
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
-#include "wtf/Alignment.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Alignment.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

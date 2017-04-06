@@ -10,8 +10,8 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Color.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "wtf/text/WTFString.h"
 
 class SkImageFilter;
 

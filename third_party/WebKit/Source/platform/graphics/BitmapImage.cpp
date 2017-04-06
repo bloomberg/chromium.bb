@@ -38,9 +38,9 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

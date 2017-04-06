@@ -27,6 +27,7 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
+#include <memory>
 #include "cc/layers/layer_client.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
@@ -45,13 +46,12 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

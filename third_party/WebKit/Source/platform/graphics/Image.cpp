@@ -40,10 +40,10 @@
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/StdLibExtras.h"
 
 #include <math.h>
 #include <tuple>

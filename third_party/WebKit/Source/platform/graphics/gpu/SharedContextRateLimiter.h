@@ -5,11 +5,11 @@
 #ifndef SharedContextRateLimiter_h
 #define SharedContextRateLimiter_h
 
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "wtf/Allocator.h"
-#include "wtf/Deque.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -4,6 +4,7 @@
 
 #include "platform/graphics/CompositorMutatorClient.h"
 
+#include <memory>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/trace_event/trace_event.h"
@@ -12,8 +13,7 @@
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

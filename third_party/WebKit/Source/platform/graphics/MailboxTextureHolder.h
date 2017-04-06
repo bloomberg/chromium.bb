@@ -8,8 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/TextureHolder.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "platform/wtf/WeakPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

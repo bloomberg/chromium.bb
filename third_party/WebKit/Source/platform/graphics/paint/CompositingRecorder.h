@@ -9,8 +9,8 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

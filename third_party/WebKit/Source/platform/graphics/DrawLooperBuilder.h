@@ -31,12 +31,12 @@
 #ifndef DrawLooperBuilder_h
 #define DrawLooperBuilder_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 class SkDrawLooper;
 

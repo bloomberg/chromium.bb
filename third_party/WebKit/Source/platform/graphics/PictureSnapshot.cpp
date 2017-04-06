@@ -41,16 +41,16 @@
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageDeserializer.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HexNumber.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

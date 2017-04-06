@@ -25,6 +25,10 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <utility>
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -47,6 +51,13 @@
 #include "platform/json/JSONValues.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFloatPoint.h"
@@ -54,17 +65,6 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <cmath>
-#include <memory>
-#include <utility>
 
 #ifndef NDEBUG
 #include <stdio.h>

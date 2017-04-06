@@ -5,10 +5,10 @@
 #ifndef CompositorMutation_h
 #define CompositorMutation_h
 
-#include "platform/graphics/CompositorMutableProperties.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
-#include "wtf/HashMap.h"
 #include <memory>
+#include "platform/graphics/CompositorMutableProperties.h"
+#include "platform/wtf/HashMap.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
 

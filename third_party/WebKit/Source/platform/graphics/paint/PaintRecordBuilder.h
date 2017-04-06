@@ -13,8 +13,8 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Noncopyable.h"
 
 class SkMetaData;
 

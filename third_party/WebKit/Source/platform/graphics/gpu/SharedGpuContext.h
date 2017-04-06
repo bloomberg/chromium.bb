@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "platform/PlatformExport.h"
-#include "wtf/ThreadSpecific.h"
+#include "platform/wtf/ThreadSpecific.h"
 
 #include <memory>
 

@@ -26,7 +26,7 @@
 #ifndef DashArray_h
 #define DashArray_h
 
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 typedef float DashArrayElement;
 

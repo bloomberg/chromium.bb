@@ -27,10 +27,10 @@
 #define Color_h
 
 #include "platform/animation/AnimationUtilities.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/text/StringView.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

@@ -32,10 +32,10 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

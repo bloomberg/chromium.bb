@@ -10,7 +10,7 @@
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
 #ifndef NDEBUG
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 namespace blink {

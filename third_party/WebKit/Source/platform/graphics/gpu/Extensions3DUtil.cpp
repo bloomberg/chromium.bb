@@ -4,11 +4,11 @@
 
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringHash.h"
 #include <memory>
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

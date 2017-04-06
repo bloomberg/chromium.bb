@@ -35,9 +35,9 @@
 #include "platform/graphics/paint/PaintShader.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 
 class SkMatrix;
 

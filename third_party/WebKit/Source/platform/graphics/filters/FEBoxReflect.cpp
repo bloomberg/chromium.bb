@@ -6,7 +6,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

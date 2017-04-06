@@ -9,9 +9,9 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

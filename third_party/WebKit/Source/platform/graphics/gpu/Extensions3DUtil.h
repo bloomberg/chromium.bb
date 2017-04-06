@@ -5,14 +5,14 @@
 #ifndef Extensions3DUtil_h
 #define Extensions3DUtil_h
 
-#include "platform/PlatformExport.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace gpu {
 namespace gles2 {

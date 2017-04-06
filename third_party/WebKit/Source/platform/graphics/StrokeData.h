@@ -35,11 +35,11 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

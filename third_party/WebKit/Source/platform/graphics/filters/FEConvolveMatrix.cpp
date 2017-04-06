@@ -24,12 +24,12 @@
 
 #include "platform/graphics/filters/FEConvolveMatrix.h"
 
+#include <memory>
 #include "SkMatrixConvolutionImageFilter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -4,14 +4,14 @@
 
 #include "platform/graphics/CompositorMutatorClient.h"
 
+#include <memory>
 #include "base/callback.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 using ::testing::_;
 

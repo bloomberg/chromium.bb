@@ -12,6 +12,8 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/OffscreenCanvasPlaceholder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
+#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "platform/wtf/typed_arrays/Uint8Array.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -22,8 +24,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
-#include "wtf/typed_arrays/ArrayBuffer.h"
-#include "wtf/typed_arrays/Uint8Array.h"
 
 namespace blink {
 

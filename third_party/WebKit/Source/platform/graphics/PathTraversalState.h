@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

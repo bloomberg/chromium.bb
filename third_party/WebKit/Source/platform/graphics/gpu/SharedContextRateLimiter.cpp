@@ -4,13 +4,13 @@
 
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
 
+#include <memory>
 #include "gpu/GLES2/gl2extchromium.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

@@ -41,6 +41,7 @@
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -52,7 +53,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/PtrUtil.h"
 
 namespace {
 enum {

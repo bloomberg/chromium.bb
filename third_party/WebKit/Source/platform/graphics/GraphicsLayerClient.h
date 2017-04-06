@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

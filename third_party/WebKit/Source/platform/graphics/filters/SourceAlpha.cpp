@@ -23,9 +23,9 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

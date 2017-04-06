@@ -25,9 +25,9 @@
 
 #ifndef MockImageDecoder_h
 
-#include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

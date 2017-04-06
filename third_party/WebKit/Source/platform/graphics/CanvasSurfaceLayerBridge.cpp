@@ -13,6 +13,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -20,7 +21,6 @@
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "ui/gfx/geometry/size.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

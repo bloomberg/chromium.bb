@@ -32,12 +32,12 @@
 
 #include "platform/graphics/ColorSpace.h"
 
+#include <algorithm>
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
-#include "wtf/MathExtras.h"
-#include <algorithm>
 
 namespace blink {
 

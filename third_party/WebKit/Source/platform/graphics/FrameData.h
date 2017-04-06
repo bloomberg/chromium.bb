@@ -29,10 +29,10 @@
 #define FrameData_h
 
 #include "platform/graphics/ImageOrientation.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
-#include "wtf/VectorTraits.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/VectorTraits.h"
 
 namespace blink {
 

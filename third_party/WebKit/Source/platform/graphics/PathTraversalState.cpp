@@ -19,8 +19,8 @@
 
 #include "platform/graphics/PathTraversalState.h"
 
-#include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

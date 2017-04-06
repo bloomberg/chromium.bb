@@ -26,9 +26,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

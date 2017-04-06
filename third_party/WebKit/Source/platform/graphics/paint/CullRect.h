@@ -7,10 +7,10 @@
 
 #include "platform/geometry/IntRect.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <limits>
 

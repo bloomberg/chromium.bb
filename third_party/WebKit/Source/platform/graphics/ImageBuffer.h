@@ -28,6 +28,7 @@
 #ifndef ImageBuffer_h
 #define ImageBuffer_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
@@ -38,13 +39,12 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/typed_arrays/Uint8ClampedArray.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/typed_arrays/Uint8ClampedArray.h"
-#include <memory>
 
 namespace gpu {
 namespace gles2 {

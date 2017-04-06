@@ -28,6 +28,7 @@
 #ifndef BitmapImage_h
 #define BitmapImage_h
 
+#include <memory>
 #include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -37,9 +38,8 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageAnimation.h"
+#include "platform/wtf/Forward.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

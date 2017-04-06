@@ -4,15 +4,15 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include <memory>
 #include "platform/Histogram.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/PaintRecorder.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

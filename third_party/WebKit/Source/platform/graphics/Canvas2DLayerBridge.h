@@ -32,16 +32,16 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space.h"
-#include "wtf/Allocator.h"
-#include "wtf/Deque.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 
 #include <memory>
 

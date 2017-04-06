@@ -4,7 +4,7 @@
 
 #include "platform/graphics/SquashingDisallowedReasons.h"
 
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

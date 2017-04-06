@@ -30,17 +30,17 @@
 
 #include "platform/graphics/DrawLooperBuilder.h"
 
+#include <memory>
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

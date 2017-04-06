@@ -4,14 +4,14 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

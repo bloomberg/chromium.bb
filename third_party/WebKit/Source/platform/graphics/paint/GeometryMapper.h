@@ -8,7 +8,7 @@
 #include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

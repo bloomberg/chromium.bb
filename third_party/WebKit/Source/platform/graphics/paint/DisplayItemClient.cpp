@@ -5,8 +5,8 @@
 #include "platform/graphics/paint/DisplayItemClient.h"
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 #endif
 
 namespace blink {

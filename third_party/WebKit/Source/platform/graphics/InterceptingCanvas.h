@@ -32,10 +32,10 @@
 #define InterceptingCanvas_h
 
 #include "platform/graphics/paint/PaintRecord.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

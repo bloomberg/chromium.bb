@@ -8,8 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/PaintInvalidationReason.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 #define CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS DCHECK_IS_ON()
 

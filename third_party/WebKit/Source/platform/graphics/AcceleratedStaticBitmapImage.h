@@ -8,7 +8,7 @@
 #include "base/threading/thread_checker.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/TextureHolder.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 #include <memory>
 

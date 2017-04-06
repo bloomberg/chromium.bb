@@ -5,13 +5,13 @@
 #ifndef PaintChunk_h
 #define PaintChunk_h
 
+#include <iosfwd>
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
-#include "wtf/Allocator.h"
-#include "wtf/Optional.h"
-#include "wtf/Vector.h"
-#include <iosfwd>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

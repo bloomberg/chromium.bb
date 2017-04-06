@@ -27,11 +27,11 @@
 
 #include "platform/Decimal.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/Assertions.h"
-#include "wtf/HexNumber.h"
-#include "wtf/MathExtras.h"
-#include "wtf/dtoa.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/dtoa.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

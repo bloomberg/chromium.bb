@@ -5,15 +5,15 @@
 #ifndef PaintArtifactCompositor_h
 #define PaintArtifactCompositor_h
 
+#include <memory>
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 
 namespace cc {
 class Layer;

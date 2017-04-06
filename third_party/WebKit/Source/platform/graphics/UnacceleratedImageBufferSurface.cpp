@@ -31,8 +31,8 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

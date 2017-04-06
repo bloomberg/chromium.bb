@@ -10,9 +10,9 @@
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/json/JSONValues.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

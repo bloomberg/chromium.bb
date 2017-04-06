@@ -30,6 +30,7 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include <memory>
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
@@ -39,12 +40,11 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 using testing::Test;
 using testing::_;

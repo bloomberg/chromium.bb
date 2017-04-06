@@ -24,7 +24,7 @@
 #define FEComponentTransfer_h
 
 #include "platform/graphics/filters/FilterEffect.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

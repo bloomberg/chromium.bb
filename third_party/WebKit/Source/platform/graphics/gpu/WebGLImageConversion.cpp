@@ -4,16 +4,16 @@
 
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 
+#include <memory>
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
 #include "platform/graphics/cpu/mips/WebGLImageConversionMSA.h"
 #include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

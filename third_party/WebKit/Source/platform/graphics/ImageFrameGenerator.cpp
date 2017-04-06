@@ -25,13 +25,13 @@
 
 #include "platform/graphics/ImageFrameGenerator.h"
 
+#include <memory>
 #include "SkData.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkYUVSizeInfo.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

@@ -31,6 +31,7 @@
 #ifndef DrawingBuffer_h
 #define DrawingBuffer_h
 
+#include <memory>
 #include "cc/layers/texture_layer_client.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -38,14 +39,13 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
-#include "wtf/Deque.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace cc {
 class SharedBitmap;

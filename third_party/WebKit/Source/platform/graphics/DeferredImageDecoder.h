@@ -26,15 +26,15 @@
 #ifndef DeferredImageDecoder_h
 #define DeferredImageDecoder_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 class SkImage;
 

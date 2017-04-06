@@ -9,12 +9,12 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/heap/Heap.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/RefPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/khronos/GLES3/gl3.h"
-#include "wtf/Allocator.h"
-#include "wtf/Optional.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 class Image;

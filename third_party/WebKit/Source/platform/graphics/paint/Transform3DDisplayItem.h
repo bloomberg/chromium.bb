@@ -8,7 +8,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

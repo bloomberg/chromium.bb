@@ -5,6 +5,8 @@
 #ifndef PaintController_h
 #define PaintController_h
 
+#include <memory>
+#include <utility>
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
@@ -17,15 +19,13 @@
 #include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/wtf/Alignment.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Alignment.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 

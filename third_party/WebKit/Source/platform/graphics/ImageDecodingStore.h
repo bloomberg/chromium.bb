@@ -26,17 +26,17 @@
 #ifndef ImageDecodingStore_h
 #define ImageDecodingStore_h
 
+#include <memory>
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/skia/SkSizeHash.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/DoublyLinkedList.h"
-#include "wtf/HashSet.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/DoublyLinkedList.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

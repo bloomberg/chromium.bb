@@ -7,9 +7,9 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
-#include "wtf/AutoReset.h"
-#include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"

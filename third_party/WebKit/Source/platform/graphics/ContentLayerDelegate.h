@@ -28,9 +28,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebContentLayerClient.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 
 namespace gfx {
 class Rect;

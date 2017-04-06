@@ -5,10 +5,10 @@
 #ifndef CompositingReasons_h
 #define CompositingReasons_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
 #include <stdint.h>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -27,10 +27,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/graphics/StrokeData.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "third_party/skia/include/effects/SkDashPathEffect.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/wtf/PtrUtil.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 namespace blink {
 

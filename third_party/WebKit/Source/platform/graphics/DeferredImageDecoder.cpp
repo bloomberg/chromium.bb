@@ -25,6 +25,7 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/DecodingImageGenerator.h"
@@ -32,9 +33,8 @@
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

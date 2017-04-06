@@ -31,8 +31,8 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #endif
 
-#include "wtf/Forward.h"
 #include <stdint.h>
+#include "platform/wtf/Forward.h"
 
 // WebGL-specific enums
 const unsigned GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;

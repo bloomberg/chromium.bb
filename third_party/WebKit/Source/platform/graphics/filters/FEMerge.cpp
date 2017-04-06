@@ -22,11 +22,11 @@
 
 #include "platform/graphics/filters/FEMerge.h"
 
+#include <memory>
 #include "SkMergeImageFilter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

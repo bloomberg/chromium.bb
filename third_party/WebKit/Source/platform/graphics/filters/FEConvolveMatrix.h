@@ -28,7 +28,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -22,10 +22,10 @@
 
 #include "platform/graphics/filters/FESpecularLighting.h"
 
+#include <algorithm>
 #include "platform/graphics/filters/LightSource.h"
 #include "platform/text/TextStream.h"
-#include "wtf/MathExtras.h"
-#include <algorithm>
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -5,10 +5,10 @@
 #ifndef PaintChunkProperties_h
 #define PaintChunkProperties_h
 
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include <iosfwd>
+#include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

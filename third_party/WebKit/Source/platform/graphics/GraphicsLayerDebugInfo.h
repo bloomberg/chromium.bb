@@ -35,9 +35,9 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/SquashingDisallowedReasons.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 #include <memory>
 

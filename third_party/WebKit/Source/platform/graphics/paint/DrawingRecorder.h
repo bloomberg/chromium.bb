@@ -11,12 +11,12 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "wtf/Allocator.h"
-#include "wtf/AutoReset.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/Noncopyable.h"
 
 #ifndef NDEBUG
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 namespace blink {

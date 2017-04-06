@@ -34,11 +34,11 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintShader.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 class SkMatrix;
 class SkShader;

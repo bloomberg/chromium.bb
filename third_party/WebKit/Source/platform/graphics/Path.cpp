@@ -35,8 +35,8 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/MathExtras.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
-#include "wtf/MathExtras.h"
 
 namespace blink {
 

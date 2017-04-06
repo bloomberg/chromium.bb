@@ -5,13 +5,13 @@
 #ifndef RecordingImageBufferSurface_h
 #define RecordingImageBufferSurface_h
 
+#include <memory>
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

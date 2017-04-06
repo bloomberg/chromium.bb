@@ -10,10 +10,10 @@
 #include "platform/graphics/SkiaTextureHolder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/PtrUtil.h"
 
 #include <memory>
 #include <utility>

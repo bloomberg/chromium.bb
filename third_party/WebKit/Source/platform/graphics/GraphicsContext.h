@@ -28,6 +28,7 @@
 #ifndef GraphicsContext_h
 #define GraphicsContext_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/DashArray.h"
@@ -37,14 +38,13 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 class SkPath;
 class SkRRect;

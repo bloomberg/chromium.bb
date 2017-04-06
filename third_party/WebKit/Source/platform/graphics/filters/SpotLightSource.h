@@ -24,7 +24,7 @@
 #define SpotLightSource_h
 
 #include "platform/graphics/filters/LightSource.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 
