@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
 
 namespace blink {
 
@@ -73,11 +72,6 @@ ExecutionContext* ScriptState::getExecutionContext() const {
 
 void ScriptState::setExecutionContext(ExecutionContext*) {
   ASSERT_NOT_REACHED();
-}
-
-LocalDOMWindow* ScriptState::domWindow() const {
-  v8::HandleScope scope(m_isolate);
-  return toLocalDOMWindow(context());
 }
 
 }  // namespace blink

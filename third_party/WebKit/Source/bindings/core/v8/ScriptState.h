@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class LocalDOMWindow;
 class DOMWrapperWorld;
 class ExecutionContext;
 class ScriptValue;
@@ -137,7 +136,6 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
 
   v8::Isolate* isolate() const { return m_isolate; }
   DOMWrapperWorld& world() const { return *m_world; }
-  LocalDOMWindow* domWindow() const;
   virtual ExecutionContext* getExecutionContext() const;
   virtual void setExecutionContext(ExecutionContext*);
 

@@ -90,7 +90,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* scriptState,
     return 0.0;
   }
 
-  LocalDOMWindow* window = scriptState->domWindow();
+  LocalDOMWindow* window = LocalDOMWindow::from(scriptState);
   if (!window) {
     isNull = true;
     return 0.0;

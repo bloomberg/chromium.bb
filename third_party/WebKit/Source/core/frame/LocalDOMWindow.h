@@ -100,6 +100,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     return new LocalDOMWindow(frame);
   }
 
+  static LocalDOMWindow* from(const ScriptState*);
+
   ~LocalDOMWindow() override;
 
   LocalFrame* frame() const { return toLocalFrame(DOMWindow::frame()); }

@@ -56,7 +56,7 @@ void V8HTMLConstructor::htmlConstructor(
     return;
   }
 
-  LocalDOMWindow* window = scriptState->domWindow();
+  LocalDOMWindow* window = LocalDOMWindow::from(scriptState);
   CustomElementRegistry* registry = window->customElements();
 
   // 3. Let definition be the entry in registry with constructor equal to

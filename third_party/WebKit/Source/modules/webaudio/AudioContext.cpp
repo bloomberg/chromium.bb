@@ -184,7 +184,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
 void AudioContext::getOutputTimestamp(ScriptState* scriptState,
                                       AudioTimestamp& result) {
   DCHECK(isMainThread());
-  LocalDOMWindow* window = scriptState->domWindow();
+  LocalDOMWindow* window = LocalDOMWindow::from(scriptState);
   if (!window)
     return;
 

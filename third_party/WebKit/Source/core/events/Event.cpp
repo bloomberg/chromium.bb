@@ -341,9 +341,9 @@ EventTarget* Event::currentTarget() const {
 
 double Event::timeStamp(ScriptState* scriptState) const {
   double timeStamp = 0;
-  if (scriptState && scriptState->domWindow()) {
+  if (scriptState && LocalDOMWindow::from(scriptState)) {
     Performance* performance =
-        DOMWindowPerformance::performance(*scriptState->domWindow());
+        DOMWindowPerformance::performance(*LocalDOMWindow::from(scriptState));
     double timestampSeconds = (m_platformTimeStamp - TimeTicks()).InSecondsF();
     timeStamp =
         performance->monotonicTimeToDOMHighResTimeStamp(timestampSeconds);

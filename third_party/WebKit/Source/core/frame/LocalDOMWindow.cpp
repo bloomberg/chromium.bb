@@ -328,6 +328,11 @@ Document* LocalDOMWindow::createDocument(const String& mimeType,
   return document;
 }
 
+LocalDOMWindow* LocalDOMWindow::from(const ScriptState* scriptState) {
+  v8::HandleScope scope(scriptState->isolate());
+  return blink::toLocalDOMWindow(scriptState->context());
+}
+
 Document* LocalDOMWindow::installNewDocument(const String& mimeType,
                                              const DocumentInit& init,
                                              bool forceXHTML) {

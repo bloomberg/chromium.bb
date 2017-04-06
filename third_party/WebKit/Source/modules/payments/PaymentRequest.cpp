@@ -685,8 +685,8 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState) {
         DOMException::create(InvalidStateError, "Already called show() once"));
   }
 
-  if (!scriptState->contextIsValid() || !scriptState->domWindow() ||
-      !scriptState->domWindow()->frame()) {
+  if (!scriptState->contextIsValid() || !LocalDOMWindow::from(scriptState) ||
+      !LocalDOMWindow::from(scriptState)->frame()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
                                           "Cannot show the payment request"));
