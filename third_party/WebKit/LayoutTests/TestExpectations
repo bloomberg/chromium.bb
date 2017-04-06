@@ -2658,6 +2658,9 @@ crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Fa
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
+crbug.com/708499 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout ]
+crbug.com/708499 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout ]
+
 crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
 
 crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html [ Failure ]
