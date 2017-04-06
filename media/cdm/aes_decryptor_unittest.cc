@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_config.h"
@@ -465,7 +466,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   // Helper class to load/unload External Clear Key Library, if necessary.
   std::unique_ptr<ExternalClearKeyTestHelper> helper_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Constants for testing.
   const std::vector<uint8_t> original_data_;

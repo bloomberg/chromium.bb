@@ -5,6 +5,7 @@
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/gpu/ipc/common/media_messages.h"
@@ -80,7 +81,7 @@ class GpuJpegDecodeAcceleratorTest : public ::testing::Test {
  private:
   // This is required to allow base::ThreadTaskRunnerHandle::Get() from the
   // test execution thread.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Tests that the communication for decoding a frame between the caller of

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/content_decryption_module.h"
@@ -243,7 +244,7 @@ class CdmAdapterTest : public testing::Test {
   // |session_id_| is the latest result of calling CreateSession().
   std::string session_id_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterTest);
 };

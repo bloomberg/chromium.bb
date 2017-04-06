@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/android/media_codec_video_decoder.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/test_helpers.h"
-#include "media/gpu/android/media_codec_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define SKIP_IF_MEDIA_CODEC_IS_BLACKLISTED()                                 \
@@ -42,7 +43,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
 
  private:
   MediaCodecVideoDecoder mcvd_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(MediaCodecVideoDecoderTest, DestructWithoutInit) {

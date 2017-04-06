@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,7 @@ class MediaUrlDemuxerTest : public testing::Test {
   std::unique_ptr<Demuxer> demuxer_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaUrlDemuxerTest);
