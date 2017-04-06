@@ -734,8 +734,10 @@ TEST_F(TableViewTest, SelectOnTap) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
 
-  // Tap on the first row, should select it.
+  // Tap on the first row, should select it and focus the table.
+  EXPECT_FALSE(table_->HasFocus());
   TapOnRow(0);
+  EXPECT_TRUE(table_->HasFocus());
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 

@@ -409,8 +409,10 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void TableView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP)
+  if (event->type() != ui::ET_GESTURE_TAP_DOWN)
     return;
+
+  RequestFocus();
 
   const int row = event->y() / row_height_;
   if (row < 0 || row >= RowCount())
