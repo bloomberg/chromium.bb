@@ -36,7 +36,7 @@ function test()
             {
                 InspectorTest.addResult("compiled.js UISourceCode arrived");
                 originalUISourceCode = uiSourceCode;
-                for (var s of Object.values(debuggerModel.scripts)) {
+                for (var s of debuggerModel.scripts()) {
                     if (s.sourceURL.endsWith("compiled.js")) {
                         InspectorTest.addResult("compiled.js script found");
                         script = s;
@@ -107,7 +107,7 @@ function test()
             function compiledUISourceCodeAdded(uiSourceCode)
             {
                 InspectorTest.addResult("compiled.js UISourceCode arrived");
-                for (var s of Object.values(debuggerModel.scripts)) {
+                for (var s of debuggerModel.scripts()) {
                     if (s.sourceMapURL && s.sourceMapURL.startsWith("data:application")) {
                         InspectorTest.addResult("compiled.js script found");
                         script = s;

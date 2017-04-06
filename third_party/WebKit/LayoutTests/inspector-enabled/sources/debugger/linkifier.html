@@ -43,9 +43,7 @@ function test()
 
     function debuggerTest()
     {
-        var scripts = InspectorTest.debuggerModel.scripts;
-        for (var scriptId in scripts) {
-            var scriptCandidate = scripts[scriptId];
+        for (var scriptCandidate of InspectorTest.debuggerModel.scripts()) {
             if (scriptCandidate.sourceURL === InspectorTest.mainTarget.inspectedURL() && scriptCandidate.lineOffset === 4) {
                 script = scriptCandidate;
                 break;

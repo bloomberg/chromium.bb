@@ -574,13 +574,8 @@ InspectorTest.setQuiet = function(quiet)
 
 InspectorTest.queryScripts = function(filter)
 {
-    var scripts = [];
-    for (var scriptId in InspectorTest.debuggerModel._scripts) {
-        var script = InspectorTest.debuggerModel._scripts[scriptId];
-        if (!filter || filter(script))
-            scripts.push(script);
-    }
-    return scripts;
+    var scripts = InspectorTest.debuggerModel.scripts();
+    return filter ? scripts.filter(filter) : scripts;
 };
 
 InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source, target, preRegisterCallback)
