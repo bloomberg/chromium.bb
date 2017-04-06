@@ -150,11 +150,11 @@ public class SigninHelperTest {
     }
 
     private void setSignedInAccountName(String account) {
-        ChromeSigninController.get(mContext).setSignedInAccountName(account);
+        ChromeSigninController.get().setSignedInAccountName(account);
     }
 
     private String getSignedInAccountName() {
-        return ChromeSigninController.get(mContext).getSignedInAccountName();
+        return ChromeSigninController.get().getSignedInAccountName();
     }
 
     private String getNewSignedInAccountName() {

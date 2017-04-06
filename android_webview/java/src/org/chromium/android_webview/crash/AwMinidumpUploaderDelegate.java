@@ -11,6 +11,7 @@ import android.webkit.ValueCallback;
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
@@ -23,21 +24,20 @@ import java.io.File;
  * Android Webview-specific implementations for minidump uploading logic.
  */
 public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
-    private final Context mContext;
     private final ConnectivityManager mConnectivityManager;
 
     private boolean mPermittedByUser = false;
 
     @VisibleForTesting
-    public AwMinidumpUploaderDelegate(Context context) {
-        mContext = context;
+    public AwMinidumpUploaderDelegate() {
         mConnectivityManager =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
     }
 
     @Override
     public File getCrashParentDir() {
-        return CrashReceiverService.createWebViewCrashDir(mContext);
+        return CrashReceiverService.getOrCreateWebViewCrashDir();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public void prepareToUploadMinidumps(final Runnable startUploads) {
-        PlatformServiceBridge.getOrCreateInstance(mContext).queryMetricsSetting(
+        PlatformServiceBridge.getOrCreateInstance().queryMetricsSetting(
                 new ValueCallback<Boolean>() {
                     public void onReceiveValue(Boolean enabled) {
                         ThreadUtils.assertOnUiThread();

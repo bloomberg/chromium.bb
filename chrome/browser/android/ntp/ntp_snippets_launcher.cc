@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 
-#include "base/android/context_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SnippetsLauncher_jni.h"
 
@@ -44,8 +43,7 @@ NTPSnippetsLauncher::NTPSnippetsLauncher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_launcher_.Reset(Java_SnippetsLauncher_create(
-      env, base::android::GetApplicationContext()));
+  java_launcher_.Reset(Java_SnippetsLauncher_create(env));
 }
 
 NTPSnippetsLauncher::~NTPSnippetsLauncher() {

@@ -124,10 +124,9 @@ public class SyncTest extends SyncTestBase {
                 // or signin. We will only be calling the testing versions of it.
                 AccountIdProvider provider = AccountIdProvider.getInstance();
                 String[] accountNames = {oldAccount.name, newAccount.name};
-                String[] accountIds = {provider.getAccountId(mContext, accountNames[0]),
-                                       provider.getAccountId(mContext, accountNames[1])};
-                AccountTrackerService.get(mContext).syncForceRefreshForTest(
-                        accountIds, accountNames);
+                String[] accountIds = {provider.getAccountId(accountNames[0]),
+                        provider.getAccountId(accountNames[1])};
+                AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
 
                 // Starts the rename process. Normally, this is triggered by the broadcast
                 // listener as well.

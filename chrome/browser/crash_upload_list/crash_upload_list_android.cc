@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file.h"
@@ -35,12 +34,9 @@ void CrashUploadListAndroid::LoadUploadList(
 void CrashUploadListAndroid::RequestSingleCrashUpload(
     const std::string& local_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  const base::android::JavaRef<jobject>& context =
-      base::android::GetApplicationContext();
   base::android::ScopedJavaLocalRef<jstring> j_local_id =
       base::android::ConvertUTF8ToJavaString(env, local_id);
-  Java_MinidumpUploadService_tryUploadCrashDumpWithLocalId(env, context,
-                                                           j_local_id);
+  Java_MinidumpUploadService_tryUploadCrashDumpWithLocalId(env, j_local_id);
 }
 
 void CrashUploadListAndroid::LoadUnsuccessfulUploadList(

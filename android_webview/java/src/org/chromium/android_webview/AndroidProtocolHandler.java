@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview;
 
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.util.Log;
 import android.util.TypedValue;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -33,12 +33,12 @@ public class AndroidProtocolHandler {
 
     /**
      * Open an InputStream for an Android resource.
-     * @param context The context manager.
+     *
      * @param url The url to load.
      * @return An InputStream to the Android resource.
      */
     @CalledByNative
-    public static InputStream open(Context context, String url) {
+    public static InputStream open(String url) {
         Uri uri = verifyUrl(url);
         if (uri == null) {
             return null;
@@ -47,12 +47,12 @@ public class AndroidProtocolHandler {
             String path = uri.getPath();
             if (uri.getScheme().equals(FILE_SCHEME)) {
                 if (path.startsWith(nativeGetAndroidAssetPath())) {
-                    return openAsset(context, uri);
+                    return openAsset(uri);
                 } else if (path.startsWith(nativeGetAndroidResourcePath())) {
-                    return openResource(context, uri);
+                    return openResource(uri);
                 }
             } else if (uri.getScheme().equals(CONTENT_SCHEME)) {
-                return openContent(context, uri);
+                return openContent(uri);
             }
         } catch (Exception ex) {
             Log.e(TAG, "Error opening inputstream: " + url);
@@ -69,26 +69,26 @@ public class AndroidProtocolHandler {
         return input.substring(0, lastDotIndex);
     }
 
-    private static Class<?> getClazz(Context context, String packageName, String assetType)
-            throws ClassNotFoundException {
-        return context.getClassLoader().loadClass(packageName + ".R$" + assetType);
+    private static Class<?> getClazz(String assetType) throws ClassNotFoundException {
+        return ContextUtils.getApplicationContext().getClassLoader().loadClass(
+                ContextUtils.getApplicationContext().getPackageName() + ".R$" + assetType);
     }
 
-    private static int getFieldId(Context context, String assetType, String assetName)
-        throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+    private static int getFieldId(String assetType, String assetName)
+            throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Class<?> clazz = null;
         try {
-            clazz = getClazz(context, context.getPackageName(), assetType);
+            clazz = getClazz(assetType);
         } catch (ClassNotFoundException e) {
             // Strip out components from the end so gradle generated application suffix such as
             // com.example.my.pkg.pro works. This is by no means bulletproof.
-            String packageName = context.getPackageName();
+            String packageName = ContextUtils.getApplicationContext().getPackageName();
             while (clazz == null) {
                 packageName = removeOneSuffix(packageName);
                 // Throw original exception which contains the entire package id.
                 if (packageName == null) throw e;
                 try {
-                    clazz = getClazz(context, packageName, assetType);
+                    clazz = getClazz(assetType);
                 } catch (ClassNotFoundException ignored) {
                     // Strip and try again.
                 }
@@ -100,13 +100,13 @@ public class AndroidProtocolHandler {
         return id;
     }
 
-    private static int getValueType(Context context, int fieldId) {
+    private static int getValueType(int fieldId) {
         TypedValue value = new TypedValue();
-        context.getResources().getValue(fieldId, value, true);
+        ContextUtils.getApplicationContext().getResources().getValue(fieldId, value, true);
         return value.type;
     }
 
-    private static InputStream openResource(Context context, Uri uri) {
+    private static InputStream openResource(Uri uri) {
         assert uri.getScheme().equals(FILE_SCHEME);
         assert uri.getPath() != null;
         assert uri.getPath().startsWith(nativeGetAndroidResourcePath());
@@ -127,17 +127,10 @@ public class AndroidProtocolHandler {
         // Drop the file extension.
         assetName = assetName.split("\\.")[0];
         try {
-            // Use the application context for resolving the resource package name so that we do
-            // not use the browser's own resources. Note that if 'context' here belongs to the
-            // test suite, it does not have a separate application context. In that case we use
-            // the original context object directly.
-            if (context.getApplicationContext() != null) {
-                context = context.getApplicationContext();
-            }
-            int fieldId = getFieldId(context, assetType, assetName);
-            int valueType = getValueType(context, fieldId);
+            int fieldId = getFieldId(assetType, assetName);
+            int valueType = getValueType(fieldId);
             if (valueType == TypedValue.TYPE_STRING) {
-                return context.getResources().openRawResource(fieldId);
+                return ContextUtils.getApplicationContext().getResources().openRawResource(fieldId);
             } else {
                 Log.e(TAG, "Asset not of type string: " + uri);
                 return null;
@@ -154,13 +147,13 @@ public class AndroidProtocolHandler {
         }
     }
 
-    private static InputStream openAsset(Context context, Uri uri) {
+    private static InputStream openAsset(Uri uri) {
         assert uri.getScheme().equals(FILE_SCHEME);
         assert uri.getPath() != null;
         assert uri.getPath().startsWith(nativeGetAndroidAssetPath());
         String path = uri.getPath().replaceFirst(nativeGetAndroidAssetPath(), "");
         try {
-            AssetManager assets = context.getAssets();
+            AssetManager assets = ContextUtils.getApplicationContext().getAssets();
             return assets.open(path, AssetManager.ACCESS_STREAMING);
         } catch (IOException e) {
             Log.e(TAG, "Unable to open asset URL: " + uri);
@@ -168,10 +161,10 @@ public class AndroidProtocolHandler {
         }
     }
 
-    private static InputStream openContent(Context context, Uri uri) {
+    private static InputStream openContent(Uri uri) {
         assert uri.getScheme().equals(CONTENT_SCHEME);
         try {
-            return context.getContentResolver().openInputStream(uri);
+            return ContextUtils.getApplicationContext().getContentResolver().openInputStream(uri);
         } catch (Exception e) {
             Log.e(TAG, "Unable to open content URL: " + uri);
             return null;
@@ -180,13 +173,13 @@ public class AndroidProtocolHandler {
 
     /**
      * Determine the mime type for an Android resource.
-     * @param context The context manager.
-     * @param stream The opened input stream which to examine.
-     * @param url The url from which the stream was opened.
+     *
+     * @param stream  The opened input stream which to examine.
+     * @param url     The url from which the stream was opened.
      * @return The mime type or null if the type is unknown.
      */
     @CalledByNative
-    public static String getMimeType(Context context, InputStream stream, String url) {
+    public static String getMimeType(InputStream stream, String url) {
         Uri uri = verifyUrl(url);
         if (uri == null) {
             return null;
@@ -195,10 +188,10 @@ public class AndroidProtocolHandler {
             String path = uri.getPath();
             // The content URL type can be queried directly.
             if (uri.getScheme().equals(CONTENT_SCHEME)) {
-                return context.getContentResolver().getType(uri);
+                return ContextUtils.getApplicationContext().getContentResolver().getType(uri);
                 // Asset files may have a known extension.
             } else if (uri.getScheme().equals(FILE_SCHEME)
-                       && path.startsWith(nativeGetAndroidAssetPath())) {
+                    && path.startsWith(nativeGetAndroidAssetPath())) {
                 String mimeType = URLConnection.guessContentTypeFromName(path);
                 if (mimeType != null) {
                     return mimeType;
@@ -218,6 +211,7 @@ public class AndroidProtocolHandler {
 
     /**
      * Make sure the given string URL is correctly formed and parse it into a Uri.
+     *
      * @return a Uri instance, or null if the URL was invalid.
      */
     private static Uri verifyUrl(String url) {
@@ -237,16 +231,7 @@ public class AndroidProtocolHandler {
         return uri;
     }
 
-    /**
-     * Set the context to be used for resolving resource queries.
-     * @param context Context to be used, or null for the default application
-     *                context.
-     */
-    public static void setResourceContextForTesting(Context context) {
-        nativeSetResourceContextForTesting(context);
-    }
-
-    private static native void nativeSetResourceContextForTesting(Context context);
     private static native String nativeGetAndroidAssetPath();
+
     private static native String nativeGetAndroidResourcePath();
 }

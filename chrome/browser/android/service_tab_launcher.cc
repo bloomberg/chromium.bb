@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/service_tab_launcher.h"
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -15,7 +14,6 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetApplicationContext;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -67,7 +65,7 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
       base::MakeUnique<TabLaunchedCallback>(callback));
   DCHECK_GE(request_id, 1);
 
-  Java_ServiceTabLauncher_launchTab(env, GetApplicationContext(), request_id,
+  Java_ServiceTabLauncher_launchTab(env, request_id,
                                     browser_context->IsOffTheRecord(), url,
                                     static_cast<int>(disposition), referrer_url,
                                     params.referrer.policy, headers, post_data);

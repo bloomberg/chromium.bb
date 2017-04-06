@@ -82,7 +82,7 @@ public class SyncPreference extends Preference {
      * Return a short summary of the current sync status.
      */
     static String getSyncStatusSummary(Context context) {
-        if (!ChromeSigninController.get(context).isSignedIn()) return "";
+        if (!ChromeSigninController.get().isSignedIn()) return "";
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
@@ -119,7 +119,7 @@ public class SyncPreference extends Preference {
                 return res.getString(R.string.sync_need_passphrase);
             }
 
-            Account account = ChromeSigninController.get(context).getSignedInUser();
+            Account account = ChromeSigninController.get().getSignedInUser();
             return String.format(
                     context.getString(R.string.account_management_sync_summary), account.name);
         }

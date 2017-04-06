@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.webkit.ValueCallback;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
@@ -27,7 +28,7 @@ public class PlatformServiceBridge {
 
     protected PlatformServiceBridge() {}
 
-    public static PlatformServiceBridge getOrCreateInstance(Context context) {
+    public static PlatformServiceBridge getOrCreateInstance() {
         // Just to avoid race conditions on sInstance - nothing special about the UI thread.
         ThreadUtils.assertOnUiThread();
 
@@ -37,7 +38,7 @@ public class PlatformServiceBridge {
         try {
             Class<?> cls = Class.forName(PLATFORM_SERVICE_BRIDGE);
             sInstance = (PlatformServiceBridge) cls.getDeclaredConstructor(Context.class)
-                                .newInstance(context);
+                                .newInstance(ContextUtils.getApplicationContext());
             return sInstance;
         } catch (ClassNotFoundException e) {
             // This is not an error; it just means this device doesn't have specialized

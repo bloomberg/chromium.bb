@@ -57,7 +57,7 @@ public final class SigninTestUtil {
      */
     public static Account getCurrentAccount() {
         assert sContext != null;
-        return ChromeSigninController.get(sContext).getSignedInUser();
+        return ChromeSigninController.get().getSignedInUser();
     }
 
     /**
@@ -75,7 +75,7 @@ public final class SigninTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                AccountTrackerService.get(sContext).invalidateAccountSeedStatus(true);
+                AccountTrackerService.get().invalidateAccountSeedStatus(true);
             }
         });
         return account;
@@ -89,8 +89,8 @@ public final class SigninTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeSigninController.get(sContext).setSignedInAccountName(DEFAULT_ACCOUNT);
-                AccountTrackerService.get(sContext).invalidateAccountSeedStatus(true);
+                ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
+                AccountTrackerService.get().invalidateAccountSeedStatus(true);
             }
         });
         return account;
@@ -110,12 +110,12 @@ public final class SigninTestUtil {
             public void run() {
                 AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
                     @Override
-                    public String getAccountId(Context ctx, String accountName) {
+                    public String getAccountId(String accountName) {
                         return "gaia-id-" + accountName;
                     }
 
                     @Override
-                    public boolean canBeUsed(Context ctx) {
+                    public boolean canBeUsed() {
                         return true;
                     }
                 });
@@ -129,7 +129,7 @@ public final class SigninTestUtil {
      */
     public static void resetSigninState() {
         // Clear cached signed account name and accounts list.
-        ChromeSigninController.get(sContext).setSignedInAccountName(null);
+        ChromeSigninController.get().setSignedInAccountName(null);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putStringSet(OAuth2TokenService.STORED_ACCOUNTS_KEY, new HashSet<String>())

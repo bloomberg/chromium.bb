@@ -8,7 +8,6 @@
 #include <cstring>
 #include <utility>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -72,10 +71,9 @@ const int kBackLog = 10;
 bool AuthorizeSocketAccessWithDebugPermission(
     const net::UnixDomainServerSocket::Credentials& credentials) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_DevToolsServer_checkDebugPermission(
-      env, base::android::GetApplicationContext(),
-      credentials.process_id, credentials.user_id) ||
-      content::CanUserConnectToDevTools(credentials);
+  return Java_DevToolsServer_checkDebugPermission(env, credentials.process_id,
+                                                  credentials.user_id) ||
+         content::CanUserConnectToDevTools(credentials);
 }
 
 // Factory for UnixDomainServerSocket. It tries a fallback socket when

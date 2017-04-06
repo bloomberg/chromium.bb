@@ -30,8 +30,7 @@ class InvalidationServiceAndroid
     : public base::NonThreadSafe,
       public InvalidationService {
  public:
-  explicit InvalidationServiceAndroid(
-      const base::android::JavaRef<jobject>& context);
+  explicit InvalidationServiceAndroid();
   ~InvalidationServiceAndroid() override;
 
   // InvalidationService implementation.

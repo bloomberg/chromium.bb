@@ -469,7 +469,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // Card scanner is expensive to query.
         if (mCardScanner == null) {
-            mCardScanner = CreditCardScanner.create(mContext, mWebContents, this);
+            mCardScanner = CreditCardScanner.create(mWebContents, this);
             mCanScan = mCardScanner.canScan();
         }
 

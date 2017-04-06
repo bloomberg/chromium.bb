@@ -52,8 +52,6 @@ public class AccountManagerHelper {
 
     private final AccountManagerDelegate mAccountManager;
 
-    private Context mApplicationContext;
-
     /**
      * A simple callback for getAuthToken.
      */
@@ -75,11 +73,9 @@ public class AccountManagerHelper {
     }
 
     /**
-     * @param context the Android context
      * @param accountManager the account manager to use as a backend service
      */
-    private AccountManagerHelper(Context context, AccountManagerDelegate accountManager) {
-        mApplicationContext = context.getApplicationContext();
+    private AccountManagerHelper(AccountManagerDelegate accountManager) {
         mAccountManager = accountManager;
     }
 
@@ -88,14 +84,12 @@ public class AccountManagerHelper {
      * Ensures that the singleton AccountManagerHelper hasn't been created yet.
      * This can be overriden in tests using the overrideAccountManagerHelperForTests method.
      *
-     * @param context the applicationContext is retrieved from the context used as an argument.
      * @param delegate the custom AccountManagerDelegate to use.
      */
-    public static void initializeAccountManagerHelper(
-            Context context, AccountManagerDelegate delegate) {
+    public static void initializeAccountManagerHelper(AccountManagerDelegate delegate) {
         synchronized (sLock) {
             assert sAccountManagerHelper == null;
-            sAccountManagerHelper = new AccountManagerHelper(context, delegate);
+            sAccountManagerHelper = new AccountManagerHelper(delegate);
         }
     }
 
@@ -103,14 +97,13 @@ public class AccountManagerHelper {
      * A getter method for AccountManagerHelper singleton which also initializes it if not wasn't
      * already initialized.
      *
-     * @param context the applicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the AccountManagerHelper
      */
-    public static AccountManagerHelper get(Context context) {
+    public static AccountManagerHelper get() {
         synchronized (sLock) {
             if (sAccountManagerHelper == null) {
-                sAccountManagerHelper = new AccountManagerHelper(
-                        context, new SystemAccountManagerDelegate(context));
+                sAccountManagerHelper =
+                        new AccountManagerHelper(new SystemAccountManagerDelegate());
             }
         }
         return sAccountManagerHelper;
@@ -128,7 +121,7 @@ public class AccountManagerHelper {
     public static void overrideAccountManagerHelperForTests(
             Context context, AccountManagerDelegate delegate) {
         synchronized (sLock) {
-            sAccountManagerHelper = new AccountManagerHelper(context, delegate);
+            sAccountManagerHelper = new AccountManagerHelper(delegate);
         }
     }
 

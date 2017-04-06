@@ -210,7 +210,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 // This call initializes the ChromeSigninController to use our test context.
-                ChromeSigninController.get(mContext);
+                ChromeSigninController.get();
 
                 // Start observing the SigninManager.
                 mTestSignInObserver = new TestSignInObserver();
@@ -253,7 +253,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
                 mSigninManager.removeSignInStateObserver(mTestSignInObserver);
 
-                if (ChromeSigninController.get(mContext).isSignedIn()) {
+                if (ChromeSigninController.get().isSignedIn()) {
                     mSigninManager.signOut(null, null);
                 }
 
@@ -312,7 +312,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
     private void signInToSingleAccount() {
         // Verify that we aren't signed in yet.
-        assertFalse(ChromeSigninController.get(mContext).isSignedIn());
+        assertFalse(ChromeSigninController.get().isSignedIn());
 
         // Open the preferences UI.
         final Preferences prefActivity = startPreferences(null);
@@ -357,12 +357,12 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         mTestSignInObserver.waitForSignInEvents(1);
         assertEquals(1, mTestSignInObserver.mSignInCount);
         assertEquals(0, mTestSignInObserver.mSignOutCount);
-        assertTrue(ChromeSigninController.get(mContext).isSignedIn());
+        assertTrue(ChromeSigninController.get().isSignedIn());
     }
 
     private void signOut() {
         // Verify that we are currently signed in.
-        assertTrue(ChromeSigninController.get(mContext).isSignedIn());
+        assertTrue(ChromeSigninController.get().isSignedIn());
 
         // Open the account preferences.
         final Preferences prefActivity =
@@ -384,7 +384,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         mTestSignInObserver.waitForSignInEvents(2);
         assertEquals(1, mTestSignInObserver.mSignInCount);
         assertEquals(1, mTestSignInObserver.mSignOutCount);
-        assertFalse(ChromeSigninController.get(mContext).isSignedIn());
+        assertFalse(ChromeSigninController.get().isSignedIn());
 
         if (!prefActivity.isFinishing()) prefActivity.finish();
         getInstrumentation().waitForIdleSync();

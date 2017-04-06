@@ -61,10 +61,10 @@ public class ChromeSigninUtils {
             throw new IllegalArgumentException("ERROR: must specify account");
         }
 
-        if (ChromeSigninController.get(mContext).isSignedIn()) {
-            ChromeSigninController.get(mContext).setSignedInAccountName(null);
+        if (ChromeSigninController.get().isSignedIn()) {
+            ChromeSigninController.get().setSignedInAccountName(null);
         }
-        ChromeSigninController.get(mContext).setSignedInAccountName(username);
+        ChromeSigninController.get().setSignedInAccountName(username);
     }
 
     /**

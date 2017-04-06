@@ -19,15 +19,12 @@ using base::android::JavaParamRef;
 
 namespace invalidation {
 
-InvalidationServiceAndroid::InvalidationServiceAndroid(
-    const JavaRef<jobject>& context)
+InvalidationServiceAndroid::InvalidationServiceAndroid()
     : invalidator_state_(syncer::INVALIDATIONS_ENABLED), logger_() {
   DCHECK(CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
-      Java_InvalidationService_create(env,
-          context,
-          reinterpret_cast<intptr_t>(this));
+      Java_InvalidationService_create(env, reinterpret_cast<intptr_t>(this));
   java_ref_.Reset(env, local_java_ref.obj());
   logger_.OnStateChange(invalidator_state_);
 }
