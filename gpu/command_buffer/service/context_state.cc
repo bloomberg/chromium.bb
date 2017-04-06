@@ -77,16 +77,6 @@ bool TargetIsSupported(const FeatureInfo* feature_info, GLuint target) {
   }
 }
 
-bool BufferTargetIsSupported(GLuint target) {
-  switch (target) {
-    case GL_ARRAY_BUFFER:
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 GLuint GetBufferId(const Buffer* buffer) {
   if (buffer)
     return buffer->service_id();
@@ -314,11 +304,6 @@ void ContextState::RestoreUnpackState() const {
 void ContextState::DoLineWidth(GLfloat width) const {
   glLineWidth(
       std::min(std::max(width, line_width_min_), line_width_max_));
-}
-
-void ContextState::RestoreBufferBinding(unsigned int target) const {
-  if (BufferTargetIsSupported(target))
-    glBindBuffer(target, GetBufferId(bound_array_buffer.get()));
 }
 
 void ContextState::RestoreBufferBindings() const {

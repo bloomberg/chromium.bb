@@ -547,9 +547,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreActiveTextureUnitBinding(unsigned int target) const override {
     state_.RestoreActiveTextureUnitBinding(target);
   }
-  void RestoreBufferBinding(unsigned int target) const override {
-    state_.RestoreBufferBinding(target);
-  }
   void RestoreBufferBindings() const override {
     state_.RestoreBufferBindings();
   }
@@ -563,6 +560,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreVertexAttribArray(unsigned index) override {
     RestoreStateForAttrib(index, true);
   }
+  void RestoreBufferBinding(unsigned int target) override;
   void RestoreFramebufferBindings() const override;
   void RestoreRenderbufferBindings() override;
   void RestoreTextureState(unsigned service_id) const override;
@@ -5598,6 +5596,17 @@ void GLES2DecoderImpl::RestoreState(const ContextState* prev_state) {
   // the size of the current framebuffer object.
   RestoreFramebufferBindings();
   state_.RestoreState(prev_state);
+}
+
+void GLES2DecoderImpl::RestoreBufferBinding(unsigned int target) {
+  if (target == GL_PIXEL_PACK_BUFFER) {
+    state_.UpdatePackParameters();
+  } else if (target == GL_PIXEL_UNPACK_BUFFER) {
+    state_.UpdateUnpackParameters();
+  }
+  Buffer* bound_buffer =
+      buffer_manager()->GetBufferInfoForTarget(&state_, target);
+  glBindBuffer(target, bound_buffer ? bound_buffer->service_id() : 0);
 }
 
 void GLES2DecoderImpl::RestoreFramebufferBindings() const {

@@ -395,8 +395,7 @@ void GLES2DecoderPassthroughImpl::RestoreAllTextureUnitBindings(
 void GLES2DecoderPassthroughImpl::RestoreActiveTextureUnitBinding(
     unsigned int target) const {}
 
-void GLES2DecoderPassthroughImpl::RestoreBufferBinding(
-    unsigned int target) const {}
+void GLES2DecoderPassthroughImpl::RestoreBufferBinding(unsigned int target) {}
 
 void GLES2DecoderPassthroughImpl::RestoreBufferBindings() const {}
 
