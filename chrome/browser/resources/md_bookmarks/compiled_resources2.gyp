@@ -145,6 +145,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
+        '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):chrome_extensions',
         'edit_dialog',
         'store_client',

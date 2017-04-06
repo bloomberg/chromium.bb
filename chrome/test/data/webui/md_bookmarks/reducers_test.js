@@ -341,6 +341,13 @@ suite('node state', function() {
     assertDeepEquals(['2', '3'], state['1'].children);
     assertDeepEquals(['4'], state['5'].children);
   });
+
+  test('updates when children of a node are reordered', function() {
+    action = bookmarks.actions.reorderChildren('1', ['4', '2', '3']);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertDeepEquals(['4', '2', '3'], state['1'].children);
+  });
 });
 
 suite('search state', function() {

@@ -56,6 +56,18 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {string} id
+   * @param {!Array<string>} newChildIds
+   */
+  function reorderChildren(id, newChildIds) {
+    return {
+      name: 'reorder-children',
+      id: id,
+      children: newChildIds,
+    };
+  }
+
+  /**
+   * @param {string} id
    * @param {string} parentId
    * @param {number} index
    * @param {NodeList} nodes
@@ -194,6 +206,7 @@ cr.define('bookmarks.actions', function() {
     moveBookmark: moveBookmark,
     refreshNodes: refreshNodes,
     removeBookmark: removeBookmark,
+    reorderChildren: reorderChildren,
     selectFolder: selectFolder,
     selectItem: selectItem,
     setSearchResults: setSearchResults,

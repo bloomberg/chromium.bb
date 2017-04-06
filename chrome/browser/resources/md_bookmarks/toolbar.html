@@ -25,7 +25,8 @@
       }
     </style>
     <dialog is="cr-action-menu" id="dropdown">
-      <button class="dropdown-item" on-tap="onSortTap_">
+      <button class="dropdown-item" on-tap="onSortTap_"
+          disabled="[[hasSearchTerm_(searchTerm_)]]">
         $i18n{menuSort}
       </button>
       <hr>

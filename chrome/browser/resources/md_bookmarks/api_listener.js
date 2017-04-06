@@ -55,6 +55,14 @@ cr.define('bookmarks.ApiListener', function() {
   }
 
   /**
+   * @param {string} id
+   * @param {{childIds: !Array<string>}} reorderInfo
+   */
+  function onChildrenReordered(id, reorderInfo) {
+    dispatch(bookmarks.actions.reorderChildren(id, reorderInfo.childIds));
+  }
+
+  /**
    * Pauses the Created handler during an import. The imported nodes will all be
    * loaded at once when the import is finished.
    */
@@ -72,6 +80,7 @@ cr.define('bookmarks.ApiListener', function() {
 
   function init() {
     chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
+    chrome.bookmarks.onChildrenReordered.addListener(onChildrenReordered);
     chrome.bookmarks.onCreated.addListener(onBookmarkCreated);
     chrome.bookmarks.onMoved.addListener(onBookmarkMoved);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemoved);

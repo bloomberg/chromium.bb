@@ -204,23 +204,6 @@ cr.define('bookmarks', function() {
    * @param {Action} action
    * @return {NodeList}
    */
-  NodeState.removeBookmark = function(nodes, action) {
-    var newState =
-        NodeState.modifyNode_(nodes, action.parentId, function(node) {
-          var newChildren = node.children.slice();
-          newChildren.splice(action.index, 1);
-          return /** @type {BookmarkNode} */ (
-              Object.assign({}, node, {children: newChildren}));
-        });
-
-    return bookmarks.util.removeIdsFromMap(newState, action.descendants);
-  };
-
-  /**
-   * @param {NodeList} nodes
-   * @param {Action} action
-   * @return {NodeList}
-   */
   NodeState.moveBookmark = function(nodes, action) {
     var nodeModifications = {};
     var id = action.id;
@@ -253,16 +236,47 @@ cr.define('bookmarks', function() {
    * @param {Action} action
    * @return {NodeList}
    */
+  NodeState.removeBookmark = function(nodes, action) {
+    var newState =
+        NodeState.modifyNode_(nodes, action.parentId, function(node) {
+          var newChildren = node.children.slice();
+          newChildren.splice(action.index, 1);
+          return /** @type {BookmarkNode} */ (
+              Object.assign({}, node, {children: newChildren}));
+        });
+
+    return bookmarks.util.removeIdsFromMap(newState, action.descendants);
+  };
+
+  /**
+   * @param {NodeList} nodes
+   * @param {Action} action
+   * @return {NodeList}
+   */
+  NodeState.reorderChildren = function(nodes, action) {
+    return NodeState.modifyNode_(nodes, action.id, function(node) {
+      return /** @type {BookmarkNode} */ (
+          Object.assign({}, node, {children: action.children}));
+    });
+  };
+
+  /**
+   * @param {NodeList} nodes
+   * @param {Action} action
+   * @return {NodeList}
+   */
   NodeState.updateNodes = function(nodes, action) {
     switch (action.name) {
       case 'create-bookmark':
         return NodeState.createBookmark(nodes, action);
       case 'edit-bookmark':
         return NodeState.editBookmark(nodes, action);
-      case 'remove-bookmark':
-        return NodeState.removeBookmark(nodes, action);
       case 'move-bookmark':
         return NodeState.moveBookmark(nodes, action);
+      case 'remove-bookmark':
+        return NodeState.removeBookmark(nodes, action);
+      case 'reorder-children':
+        return NodeState.reorderChildren(nodes, action);
       case 'refresh-nodes':
         return action.nodes;
       default:

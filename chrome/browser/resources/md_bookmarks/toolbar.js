@@ -45,6 +45,8 @@ Polymer({
 
   /** @private */
   onSortTap_: function() {
+    chrome.bookmarkManagerPrivate.sortChildren(
+        assert(this.getState().selectedFolder));
     this.closeDropdownMenu_();
   },
 
