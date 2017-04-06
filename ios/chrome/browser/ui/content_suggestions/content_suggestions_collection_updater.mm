@@ -264,14 +264,7 @@ SectionIdentifier SectionIdentifierForInfo(
       }
       case ContentSuggestionTypeReadingList: {
         ContentSuggestionsReadingListItem* readingListItem =
-            [[ContentSuggestionsReadingListItem alloc]
-                     initWithType:ItemTypeReadingList
-                              url:suggestion.url
-                distillationState:suggestion.readingListExtra.status];
-        readingListItem.title = suggestion.title;
-        readingListItem.subtitle = suggestion.publisher;
-
-        readingListItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+            [self readingListItemForSuggestion:suggestion];
 
         NSIndexPath* addedIndexPath = [self addItem:readingListItem
                             toSectionWithIdentifier:sectionIdentifier];
@@ -439,7 +432,7 @@ SectionIdentifier SectionIdentifierForInfo(
   return item;
 }
 
-// Returns an article build with the |suggestion|.
+// Returns an article built with the |suggestion|.
 - (ContentSuggestionsArticleItem*)articleItemForSuggestion:
     (ContentSuggestion*)suggestion {
   ContentSuggestionsArticleItem* articleItem =
@@ -455,25 +448,64 @@ SectionIdentifier SectionIdentifierForInfo(
 
   articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
 
-  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   __weak ContentSuggestionsArticleItem* weakItem = articleItem;
+  [self fetchFaviconForItem:articleItem
+                    withURL:articleItem.articleURL
+                   callback:^void(FaviconAttributes* attributes) {
+                     weakItem.attributes = attributes;
+                   }];
+
+  return articleItem;
+}
+
+// Returns a reading list item built with the |suggestion|.
+- (ContentSuggestionsReadingListItem*)readingListItemForSuggestion:
+    (ContentSuggestion*)suggestion {
+  ContentSuggestionsReadingListItem* readingListItem =
+      [[ContentSuggestionsReadingListItem alloc]
+               initWithType:ItemTypeReadingList
+                        url:suggestion.url
+          distillationState:suggestion.readingListExtra.status];
+
+  readingListItem.title = suggestion.title;
+  readingListItem.subtitle = suggestion.publisher;
+
+  readingListItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+
+  __weak ContentSuggestionsReadingListItem* weakItem = readingListItem;
+  [self fetchFaviconForItem:readingListItem
+                    withURL:readingListItem.url
+                   callback:^void(FaviconAttributes* attributes) {
+                     weakItem.attributes = attributes;
+                   }];
+
+  return readingListItem;
+}
+
+// Fetches the favicon associated with the |URL|, call the |callback| with the
+// attributes then reconfigure the |item|.
+- (void)fetchFaviconForItem:(CSCollectionViewItem*)item
+                    withURL:(const GURL&)URL
+                   callback:(void (^)(FaviconAttributes*))callback {
+  if (!callback)
+    return;
+
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak CSCollectionViewItem* weakItem = item;
   void (^completionBlock)(FaviconAttributes* attributes) =
       ^(FaviconAttributes* attributes) {
-        ContentSuggestionsArticleItem* strongItem = weakItem;
+        CSCollectionViewItem* strongItem = weakItem;
         ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
         if (!strongSelf || !strongItem) {
           return;
         }
 
-        strongItem.attributes = attributes;
+        callback(attributes);
 
         [strongSelf reconfigure:strongItem];
       };
 
-  [self.dataSource fetchFaviconAttributesForURL:articleItem.articleURL
-                                     completion:completionBlock];
-
-  return articleItem;
+  [self.dataSource fetchFaviconAttributesForURL:URL completion:completionBlock];
 }
 
 // Adds |item| to |sectionIdentifier| section of the model of the
