@@ -447,9 +447,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     if (prefs->GetDisableReasons(extension_id_) &
             Extension::DISABLE_UNSUPPORTED_REQUIREMENT) {
       // Recheck the requirements.
-      requirements_checker_ = delegate->CreateRequirementsChecker();
-      requirements_checker_->Check(
-          extension,
+      requirements_checker_ = base::MakeUnique<RequirementsChecker>(extension);
+      requirements_checker_->Start(
           base::Bind(&ManagementSetEnabledFunction::OnRequirementsChecked,
                      this));  // This bind creates a reference.
       return RespondLater();
@@ -478,15 +477,15 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
 }
 
 void ManagementSetEnabledFunction::OnRequirementsChecked(
-    const std::vector<std::string>& requirements_errors) {
-  if (requirements_errors.empty()) {
+    PreloadCheck::Errors errors) {
+  if (errors.empty()) {
     ManagementAPI::GetFactoryInstance()->Get(browser_context())->GetDelegate()->
         EnableExtension(browser_context(), extension_id_);
     Respond(NoArguments());
   } else {
     // TODO(devlin): Should we really be noisy here all the time?
     Respond(Error(keys::kMissingRequirementsError,
-                  base::JoinString(requirements_errors, " ")));
+                  base::UTF16ToUTF8(requirements_checker_->GetErrorMessage())));
   }
 }
 

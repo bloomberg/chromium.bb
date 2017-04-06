@@ -163,6 +163,9 @@
       <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
         Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
+      <message name="IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED" desc="">
+        Could not load '<ph name="PLUGIN_PATH">$1<ex>/path/to/file</ex></ph>' for plugin.
+      </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
       </message>
@@ -308,6 +311,11 @@
       <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install because a utility process crashed.">
         Could not install package because a utility process crashed. Try restarting Chrome and trying again.
       </message>
+      <if expr="is_posix and not is_macosx">
+        <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
+          NPAPI plugins are not supported.
+        </message>
+      </if>
       <message name="IDS_EXTENSION_PACKAGE_ERROR_CODE" desc="Error message in cases where we fail to install the extension because the crx file is invalid. For example, because the crx header or signature is invalid.">
         Package is invalid: '<ph name="ERROR_CODE">$1<ex>error</ex></ph>'.
       </message>
@@ -325,6 +333,14 @@
       <if expr="not is_win">
         <message name="IDS_EXTENSION_UNPACK_FAILED" desc="">
           Can not unpack extension.  To safely unpack an extension, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.
+        </message>
+      </if>
+      <message name="IDS_EXTENSION_WEBGL_NOT_SUPPORTED" desc="Error message when an extension has a requirement for WebGL that the system does not support.">
+        WebGL is not supported.
+      </message>
+      <if expr="not use_aura">
+        <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
+          Shaped windows are not supported.
         </message>
       </if>
 

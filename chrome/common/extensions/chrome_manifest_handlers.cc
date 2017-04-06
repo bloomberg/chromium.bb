@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
@@ -26,7 +25,6 @@
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
-#include "extensions/common/manifest_handlers/requirements_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 
 #if defined(OS_CHROMEOS)
@@ -53,8 +51,6 @@ void RegisterChromeManifestHandlers() {
   (new MinimumChromeVersionChecker)->Register();
   (new OmniboxHandler)->Register();
   (new OptionsPageManifestHandler)->Register();
-  (new PluginsHandler)->Register();
-  (new RequirementsHandler)->Register();  // Depends on plugins.
   (new SettingsOverridesHandler)->Register();
   (new SpellcheckHandler)->Register();
   (new StorageSchemaManifestHandler)->Register();

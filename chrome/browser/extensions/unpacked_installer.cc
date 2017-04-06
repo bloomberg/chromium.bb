@@ -8,7 +8,9 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,6 +31,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -253,14 +255,12 @@ void UnpackedInstaller::StartInstallChecks() {
 void UnpackedInstaller::OnInstallChecksComplete(int failed_checks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!install_checker_->policy_error().empty()) {
-    ReportExtensionLoadError(install_checker_->policy_error());
-    return;
-  }
+  base::string16 error_message = install_checker_->policy_error();
+  if (error_message.empty())
+    error_message = install_checker_->requirements_error_message();
 
-  if (!install_checker_->requirement_errors().empty()) {
-    ReportExtensionLoadError(
-        base::JoinString(install_checker_->requirement_errors(), " "));
+  if (!error_message.empty()) {
+    ReportExtensionLoadError(base::UTF16ToUTF8(error_message));
     return;
   }
 

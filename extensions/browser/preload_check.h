@@ -27,6 +27,9 @@ class PreloadCheck {
     BLACKLISTED_ID,
     BLACKLISTED_UNKNOWN,
     DISALLOWED_BY_POLICY,
+    NPAPI_NOT_SUPPORTED,
+    WEBGL_NOT_SUPPORTED,
+    WINDOW_SHAPE_NOT_SUPPORTED,
   };
 
   using Errors = std::set<Error>;

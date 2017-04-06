@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
-#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -223,11 +222,6 @@ ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
   return std::unique_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
       new ManagementSetEnabledFunctionInstallPromptDelegate(
           web_contents, browser_context, extension, callback));
-}
-
-std::unique_ptr<extensions::RequirementsChecker>
-ChromeManagementAPIDelegate::CreateRequirementsChecker() const {
-  return base::MakeUnique<extensions::ChromeRequirementsChecker>();
 }
 
 std::unique_ptr<extensions::UninstallDialogDelegate>

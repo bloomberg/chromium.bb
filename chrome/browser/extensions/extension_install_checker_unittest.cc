@@ -34,41 +34,13 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
 
   ~ExtensionInstallCheckerForTest() override {}
 
-  void set_requirements_error(const std::string& error) {
-    requirements_error_ = error;
-  }
-
   bool is_async() const { return is_async_; }
   void set_is_async(bool is_async) { is_async_ = is_async; }
-
- protected:
-  void MockCheckRequirements() {
-    if (!is_running())
-      return;
-    std::vector<std::string> errors;
-    if (!requirements_error_.empty())
-      errors.push_back(requirements_error_);
-    OnRequirementsCheckDone(errors);
-  }
-
-  void CheckRequirements() override {
-    if (is_async_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&ExtensionInstallCheckerForTest::MockCheckRequirements,
-                     base::Unretained(this)));
-    } else {
-      MockCheckRequirements();
-    }
-  }
 
  private:
   // Whether to run the requirements and blacklist checks asynchronously, as
   // they often do in ExtensionInstallChecker.
   bool is_async_ = false;
-
-  // Dummy error for testing.
-  std::string requirements_error_;
 };
 
 class CheckObserver {
@@ -121,29 +93,41 @@ class ExtensionInstallCheckerTest : public testing::Test {
     checker->SetPolicyCheckForTesting(std::move(policy_check));
   }
 
+  void SetRequirementsError(ExtensionInstallCheckerForTest* checker,
+                            PreloadCheck::Error error,
+                            const std::string& message) {
+    auto requirements_check = base::MakeUnique<PreloadCheckStub>();
+    requirements_check->set_is_async(checker->is_async());
+    if (error != PreloadCheck::NONE) {
+      requirements_check->AddError(error);
+      requirements_check->set_error_message(base::UTF8ToUTF16(message));
+    }
+    checker->SetRequirementsCheckForTesting(std::move(requirements_check));
+  }
+
  protected:
   void SetAllPass(ExtensionInstallCheckerForTest* checker) {
     SetBlacklistError(checker, PreloadCheck::NONE);
     SetPolicyError(checker, PreloadCheck::NONE, "");
-    checker->set_requirements_error("");
+    SetRequirementsError(checker, PreloadCheck::NONE, "");
   }
 
   void SetAllErrors(ExtensionInstallCheckerForTest* checker) {
     SetBlacklistError(checker, kBlacklistError);
     SetPolicyError(checker, PreloadCheck::DISALLOWED_BY_POLICY,
                    kDummyPolicyError);
-    checker->set_requirements_error(kDummyRequirementsError);
+    SetRequirementsError(checker, PreloadCheck::NPAPI_NOT_SUPPORTED,
+                         kDummyRequirementsError);
   }
 
   void ExpectRequirementsPass(const ExtensionInstallCheckerForTest& checker) {
-    EXPECT_TRUE(checker.requirement_errors().empty());
+    EXPECT_EQ(base::string16(), checker.requirements_error_message());
   }
 
   void ExpectRequirementsError(const char* expected_error,
                                const ExtensionInstallCheckerForTest& checker) {
-    EXPECT_FALSE(checker.requirement_errors().empty());
-    EXPECT_EQ(std::string(expected_error),
-              checker.requirement_errors().front());
+    EXPECT_EQ(base::UTF8ToUTF16(expected_error),
+              checker.requirements_error_message());
   }
 
   void ExpectRequirementsError(const ExtensionInstallCheckerForTest& checker) {
@@ -165,7 +149,7 @@ class ExtensionInstallCheckerTest : public testing::Test {
   void ExpectPolicyError(const char* expected_error,
                          const ExtensionInstallCheckerForTest& checker) {
     EXPECT_FALSE(checker.policy_error().empty());
-    EXPECT_EQ(std::string(expected_error), checker.policy_error());
+    EXPECT_EQ(base::UTF8ToUTF16(expected_error), checker.policy_error());
   }
 
   void ExpectPolicyError(const ExtensionInstallCheckerForTest& checker) {

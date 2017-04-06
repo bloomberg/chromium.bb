@@ -31,8 +31,6 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       const base::Callback<void(bool)>& callback) const override;
-  std::unique_ptr<extensions::RequirementsChecker> CreateRequirementsChecker()
-      const override;
   std::unique_ptr<extensions::UninstallDialogDelegate>
   UninstallFunctionDelegate(
       extensions::ManagementUninstallFunctionBase* function,

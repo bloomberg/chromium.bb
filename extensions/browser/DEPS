@@ -19,6 +19,7 @@ include_rules = [
   "+device/serial",
   "+device/usb",
   "+google_apis/gaia",
+  "+gpu/config",
   "+grit/extensions_strings.h",
   "+net",
   # This directory contains build flags and does not pull all of PPAPI in.

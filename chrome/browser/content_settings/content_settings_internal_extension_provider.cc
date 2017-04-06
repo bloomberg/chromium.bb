@@ -10,7 +10,6 @@
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -23,6 +22,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/simple_feature.h"
+#include "extensions/common/manifest_handlers/plugins_handler.h"
 
 using extensions::UnloadedExtensionInfo;
 

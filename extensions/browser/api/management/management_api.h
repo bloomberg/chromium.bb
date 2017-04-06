@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/preload_check.h"
 
 struct WebApplicationInfo;
 
@@ -112,7 +113,7 @@ class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
  private:
   void OnInstallPromptDone(bool did_accept);
 
-  void OnRequirementsChecked(const std::vector<std::string>& requirements);
+  void OnRequirementsChecked(PreloadCheck::Errors errors);
 
   std::string extension_id_;
 

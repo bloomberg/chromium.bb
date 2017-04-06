@@ -25,7 +25,6 @@ class ManagementCreateAppShortcutFunction;
 class ManagementGenerateAppForLinkFunction;
 class ManagementGetPermissionWarningsByManifestFunction;
 class ManagementUninstallFunctionBase;
-class RequirementsChecker;
 
 // Manages the lifetime of the install prompt.
 class InstallPromptDelegate {
@@ -82,10 +81,6 @@ class ManagementAPIDelegate {
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::Callback<void(bool)>& callback) const = 0;
-
-  // Returns a new RequirementsChecker.
-  virtual std::unique_ptr<RequirementsChecker> CreateRequirementsChecker()
-      const = 0;
 
   // Enables the extension identified by |extension_id|.
   virtual void EnableExtension(content::BrowserContext* context,

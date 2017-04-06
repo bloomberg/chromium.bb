@@ -5,10 +5,14 @@
 #ifndef EXTENSIONS_BROWSER_REQUIREMENTS_CHECKER_H_
 #define EXTENSIONS_BROWSER_REQUIREMENTS_CHECKER_H_
 
-#include <vector>
-
-#include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "extensions/browser/preload_check.h"
+
+namespace content {
+class GpuFeatureChecker;
+}
 
 namespace extensions {
 class Extension;
@@ -17,20 +21,34 @@ class Extension;
 // asynchronous process that involves several threads, but the public interface
 // of this class (including constructor and destructor) must only be used on
 // the UI thread.
-class RequirementsChecker {
+class RequirementsChecker : public PreloadCheck {
  public:
-  virtual ~RequirementsChecker() {}
+  explicit RequirementsChecker(scoped_refptr<const Extension> extension);
+  ~RequirementsChecker() override;
 
-  using RequirementsCheckedCallback =
-      base::Callback<void(const std::vector<std::string>& /* requirements */)>;
+  // PreloadCheck:
+  void Start(ResultCallback callback) override;
+  // Joins multiple errors into a space-separated string.
+  base::string16 GetErrorMessage() const override;
 
-  // The vector passed to the callback are any localized errors describing
-  // requirement violations. If this vector is non-empty, requirements checking
-  // failed. This should only be called once. |callback| will always be invoked
-  // asynchronously on the UI thread. |callback| will only be called once, and
-  // will be reset after called.
-  virtual void Check(const scoped_refptr<const Extension>& extension,
-                     const RequirementsCheckedCallback& callback) = 0;
+ private:
+  // Callback for the GpuFeatureChecker.
+  void VerifyWebGLAvailability(bool available);
+
+  // Helper function to post a task on the UI thread to call RunCallback().
+  void PostRunCallback();
+
+  // Helper function to run the callback.
+  void RunCallback();
+
+  scoped_refptr<content::GpuFeatureChecker> webgl_checker_;
+
+  ResultCallback callback_;
+  Errors errors_;
+
+  base::WeakPtrFactory<RequirementsChecker> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequirementsChecker);
 };
 
 }  // namespace extensions

@@ -487,8 +487,6 @@ static_library("extensions") {
     "chrome_mojo_service_registration.h",
     "chrome_process_manager_delegate.cc",
     "chrome_process_manager_delegate.h",
-    "chrome_requirements_checker.cc",
-    "chrome_requirements_checker.h",
     "chrome_url_request_util.cc",
     "chrome_url_request_util.h",
     "clipboard_extension_helper_chromeos.cc",

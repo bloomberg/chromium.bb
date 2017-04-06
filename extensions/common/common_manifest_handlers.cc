@@ -23,6 +23,8 @@
 #include "extensions/common/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
+#include "extensions/common/manifest_handlers/plugins_handler.h"
+#include "extensions/common/manifest_handlers/requirements_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
@@ -58,6 +60,8 @@ void RegisterCommonManifestHandlers() {
 #endif
   (new OAuth2ManifestHandler)->Register();
   (new OfflineEnabledHandler)->Register();
+  (new PluginsHandler)->Register();
+  (new RequirementsHandler)->Register();  // Depends on plugins.
   (new SandboxedPageHandler)->Register();
   (new SharedModuleHandler)->Register();
   (new SocketsManifestHandler)->Register();

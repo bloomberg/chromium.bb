@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
+#include "extensions/common/manifest_handlers/plugins_handler.h"
 
 #include <stddef.h>
 
@@ -13,13 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/grit/generated_resources.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -36,11 +36,9 @@ struct PluginManifestData : Extension::ManifestData {
 }  // namespace
 
 PluginInfo::PluginInfo(const base::FilePath& plugin_path, bool plugin_is_public)
-    : path(plugin_path), is_public(plugin_is_public) {
-}
+    : path(plugin_path), is_public(plugin_is_public) {}
 
-PluginInfo::~PluginInfo() {
-}
+PluginInfo::~PluginInfo() {}
 
 // static
 const PluginInfo::PluginVector* PluginInfo::GetPlugins(
@@ -57,11 +55,9 @@ bool PluginInfo::HasPlugins(const Extension* extension) {
   return data && !data->plugins.empty() ? true : false;
 }
 
-PluginsHandler::PluginsHandler() {
-}
+PluginsHandler::PluginsHandler() {}
 
-PluginsHandler::~PluginsHandler() {
-}
+PluginsHandler::~PluginsHandler() {}
 
 const std::vector<std::string> PluginsHandler::Keys() const {
   return SingleKey(keys::kPlugins);
@@ -100,10 +96,10 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
       }
     }
 
-    // We don't allow extensions to load NPAPI plugins on Chrome OS, but still
-    // parse the entries to display consistent error messages. If the extension
-    // actually requires the plugins then LoadRequirements will prevent it
-    // loading.
+// We don't allow extensions to load NPAPI plugins on Chrome OS, but still
+// parse the entries to display consistent error messages. If the extension
+// actually requires the plugins then LoadRequirements will prevent it
+// loading.
 #if defined(OS_CHROMEOS)
     continue;
 #endif  // defined(OS_CHROMEOS).
@@ -132,10 +128,10 @@ bool PluginsHandler::Validate(const Extension* extension,
              plugins->begin();
          plugin != plugins->end(); ++plugin) {
       if (!base::PathExists(plugin->path)) {
-        *error = l10n_util::GetStringFUTF8(
-            IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
-            plugin->path.LossyDisplayName());
-      return false;
+        *error =
+            l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
+                                      plugin->path.LossyDisplayName());
+        return false;
       }
     }
   }

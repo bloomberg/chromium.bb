@@ -20,8 +20,6 @@ class Profile;
 
 namespace extensions {
 
-class RequirementsChecker;
-
 // Performs common checks for validating whether an extension may be installed.
 // This class should be Start()-ed at most once.
 class ExtensionInstallChecker {
@@ -60,10 +58,9 @@ class ExtensionInstallChecker {
   // Returns true if any checks are currently running.
   bool is_running() const { return running_checks_ != 0; }
 
-  // Returns the requirement violations. A non-empty list is considered to be
-  // a check failure.
-  const std::vector<std::string>& requirement_errors() const {
-    return requirement_errors_;
+  // Returns the error message for requirement violations, if any were found.
+  const base::string16& requirements_error_message() const {
+    return requirements_error_message_;
   }
 
   // Returns the blacklist error of the extension. Note that there is only an
@@ -71,7 +68,7 @@ class ExtensionInstallChecker {
   PreloadCheck::Error blacklist_error() const { return blacklist_error_; }
 
   // Returns whether management policy permits installation of the extension.
-  const std::string& policy_error() const { return policy_error_; }
+  const base::string16& policy_error() const { return policy_error_; }
 
   void SetBlacklistCheckForTesting(std::unique_ptr<PreloadCheck> policy_check) {
     blacklist_check_ = std::move(policy_check);
@@ -79,13 +76,17 @@ class ExtensionInstallChecker {
   void SetPolicyCheckForTesting(std::unique_ptr<PreloadCheck> policy_check) {
     policy_check_ = std::move(policy_check);
   }
+  void SetRequirementsCheckForTesting(
+      std::unique_ptr<PreloadCheck> requirements_check) {
+    requirements_check_ = std::move(requirements_check);
+  }
 
  protected:
   virtual void CheckManagementPolicy();
   void OnManagementPolicyCheckDone(PreloadCheck::Errors errors);
 
   virtual void CheckRequirements();
-  void OnRequirementsCheckDone(const std::vector<std::string>& errors);
+  void OnRequirementsCheckDone(PreloadCheck::Errors errors);
 
   virtual void CheckBlacklistState();
   void OnBlacklistStateCheckDone(PreloadCheck::Errors errors);
@@ -100,8 +101,8 @@ class ExtensionInstallChecker {
   scoped_refptr<const Extension> extension_;
 
   // Checks requirements specified in the manifest.
-  std::unique_ptr<RequirementsChecker> requirements_checker_;
-  std::vector<std::string> requirement_errors_;
+  std::unique_ptr<PreloadCheck> requirements_check_;
+  base::string16 requirements_error_message_;
 
   // Checks if the extension is blacklisted.
   std::unique_ptr<PreloadCheck> blacklist_check_;
@@ -109,7 +110,7 @@ class ExtensionInstallChecker {
 
   // Checks whether management policies allow the extension to be installed.
   std::unique_ptr<PreloadCheck> policy_check_;
-  std::string policy_error_;
+  base::string16 policy_error_;
 
   // Bitmask of enabled checks.
   int enabled_checks_;

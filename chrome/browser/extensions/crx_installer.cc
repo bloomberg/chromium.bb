@@ -526,12 +526,11 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     return;
 
   // Check for requirement errors.
-  if (!install_checker_->requirement_errors().empty()) {
+  if (!install_checker_->requirements_error_message().empty()) {
     if (error_on_unsupported_requirements_) {
       ReportFailureFromUIThread(
           CrxInstallError(CrxInstallError::ERROR_DECLINED,
-                          base::UTF8ToUTF16(base::JoinString(
-                              install_checker_->requirement_errors(), " "))));
+                          install_checker_->requirements_error_message()));
       return;
     }
     install_flags_ |= kInstallFlagHasRequirementErrors;
@@ -569,9 +568,8 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     // Note: |client_| can be NULL in unit_tests!
     if (extension()->from_webstore() && client_)
       client_->install_ui()->SetSkipPostInstallUI(true);
-    ReportFailureFromUIThread(
-        CrxInstallError(CrxInstallError::ERROR_DECLINED,
-                        base::UTF8ToUTF16(install_checker_->policy_error())));
+    ReportFailureFromUIThread(CrxInstallError(
+        CrxInstallError::ERROR_DECLINED, install_checker_->policy_error()));
     return;
   }
 

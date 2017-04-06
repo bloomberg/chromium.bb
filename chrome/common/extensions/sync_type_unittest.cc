@@ -4,13 +4,13 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

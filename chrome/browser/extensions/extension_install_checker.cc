@@ -10,11 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/blacklist_check.h"
-#include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/policy_check.h"
+#include "extensions/browser/requirements_checker.h"
 
 namespace extensions {
 
@@ -72,7 +72,7 @@ void ExtensionInstallChecker::Start(const Callback& callback) {
 void ExtensionInstallChecker::CheckManagementPolicy() {
   // In tests, this check may already be stubbed.
   if (!policy_check_)
-    policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension_.get());
+    policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension_);
   policy_check_->Start(
       base::BindOnce(&ExtensionInstallChecker::OnManagementPolicyCheckDone,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -82,7 +82,7 @@ void ExtensionInstallChecker::OnManagementPolicyCheckDone(
     PreloadCheck::Errors errors) {
   if (!errors.empty()) {
     DCHECK_EQ(1u, errors.count(PreloadCheck::DISALLOWED_BY_POLICY));
-    policy_error_ = base::UTF16ToUTF8(policy_check_->GetErrorMessage());
+    policy_error_ = policy_check_->GetErrorMessage();
   }
 
   running_checks_ &= ~CHECK_MANAGEMENT_POLICY;
@@ -90,17 +90,19 @@ void ExtensionInstallChecker::OnManagementPolicyCheckDone(
 }
 
 void ExtensionInstallChecker::CheckRequirements() {
-  requirements_checker_ = base::MakeUnique<ChromeRequirementsChecker>();
-  requirements_checker_->Check(
-      extension_, base::Bind(&ExtensionInstallChecker::OnRequirementsCheckDone,
-                             weak_ptr_factory_.GetWeakPtr()));
+  // In tests, this check may already be stubbed.
+  if (!requirements_check_)
+    requirements_check_ = base::MakeUnique<RequirementsChecker>(extension_);
+  requirements_check_->Start(
+      base::BindOnce(&ExtensionInstallChecker::OnRequirementsCheckDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExtensionInstallChecker::OnRequirementsCheckDone(
-    const std::vector<std::string>& errors) {
+    PreloadCheck::Errors errors) {
   DCHECK(is_running());
 
-  requirement_errors_ = errors;
+  requirements_error_message_ = requirements_check_->GetErrorMessage();
 
   running_checks_ &= ~CHECK_REQUIREMENTS;
   MaybeInvokeCallback();
@@ -109,8 +111,8 @@ void ExtensionInstallChecker::OnRequirementsCheckDone(
 void ExtensionInstallChecker::CheckBlacklistState() {
   // In tests, this check may already be stubbed.
   if (!blacklist_check_) {
-    blacklist_check_ = base::MakeUnique<BlacklistCheck>(
-        Blacklist::Get(profile_), extension_.get());
+    blacklist_check_ =
+        base::MakeUnique<BlacklistCheck>(Blacklist::Get(profile_), extension_);
   }
   blacklist_check_->Start(
       base::BindOnce(&ExtensionInstallChecker::OnBlacklistStateCheckDone,
@@ -140,7 +142,7 @@ void ExtensionInstallChecker::MaybeInvokeCallback() {
   int failed_mask = 0;
   if (blacklist_error_ == PreloadCheck::BLACKLISTED_ID)
     failed_mask |= CHECK_BLACKLIST;
-  if (!requirement_errors_.empty())
+  if (!requirements_error_message_.empty())
     failed_mask |= CHECK_REQUIREMENTS;
   if (!policy_error_.empty())
     failed_mask |= CHECK_MANAGEMENT_POLICY;
@@ -153,7 +155,7 @@ void ExtensionInstallChecker::MaybeInvokeCallback() {
     // If we are failing fast, discard any pending results.
     blacklist_check_.reset();
     policy_check_.reset();
-    requirements_checker_.reset();
+    requirements_check_.reset();
     weak_ptr_factory_.InvalidateWeakPtrs();
     base::ResetAndReturn(&callback_).Run(failed_mask);
   }

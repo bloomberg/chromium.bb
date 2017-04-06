@@ -4041,17 +4041,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_APP_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an app with a lower version than a version that it already installed.">
         Attempted to downgrade app.
       </message>
-      <message name="IDS_EXTENSION_WEBGL_NOT_SUPPORTED" desc="Error message when an extension has a requirement for WebGL that the system does not support.">
-        WebGL is not supported.
-      </message>
-      <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
-        NPAPI plugins are not supported.
-      </message>
-      <if expr="not use_aura">
-        <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
-          Shaped windows are not supported.
-        </message>
-      </if>
       <if expr="chromeos">
         <message name="IDS_EXTENSION_CANT_INSTALL_IN_DEVICE_LOCAL_ACCOUNT" desc="Error message when a user tries to install or the administrator tries to force-install through policy an extension that is not allowed in a device-local account.">
           <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is not allowed in this type of session.
@@ -4107,9 +4096,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_BAD_FILE_ENCODING" desc="">
         Could not load file '<ph name="RELATIVE_PATH">$1<ex>file.js</ex></ph>' for content script. It isn't UTF-8 encoded.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED" desc="">
-        Could not load '<ph name="PLUGIN_PATH">$1<ex>/path/to/file</ex></ph>' for plugin.
       </message>
       <message name="IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED" desc="">
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for page action.
