@@ -14,6 +14,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -272,6 +273,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(LargeIconServiceFactory::GetInstance());
 #if defined(OS_ANDROID)
   DependsOn(OfflinePageModelFactory::GetInstance());
 #endif  // OS_ANDROID
@@ -309,12 +311,14 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       SigninManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::LargeIconService* large_icon_service =
+      LargeIconServiceFactory::GetForBrowserContext(profile);
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::MakeUnique<base::DefaultClock>());
   auto* service = new ContentSuggestionsService(
-      State::ENABLED, signin_manager, history_service, pref_service,
-      std::move(category_ranker), std::move(user_classifier),
+      State::ENABLED, signin_manager, history_service, large_icon_service,
+      pref_service, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler));
 
 #if defined(OS_ANDROID)

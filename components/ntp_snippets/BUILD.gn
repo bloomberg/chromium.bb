@@ -103,6 +103,8 @@ static_library("ntp_snippets") {
   deps = [
     "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
+    "//components/favicon/core",
+    "//components/favicon_base",
     "//components/history/core/browser",
     "//components/image_fetcher/core",
     "//components/metrics",

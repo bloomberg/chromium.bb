@@ -16,6 +16,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/fallback_icon_style.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -27,6 +30,7 @@ ContentSuggestionsService::ContentSuggestionsService(
     State state,
     SigninManagerBase* signin_manager,
     history::HistoryService* history_service,
+    favicon::LargeIconService* large_icon_service,
     PrefService* pref_service,
     std::unique_ptr<CategoryRanker> category_ranker,
     std::unique_ptr<UserClassifier> user_classifier,
@@ -35,6 +39,7 @@ ContentSuggestionsService::ContentSuggestionsService(
       signin_observer_(this),
       history_service_observer_(this),
       remote_suggestions_provider_(nullptr),
+      large_icon_service_(large_icon_service),
       pref_service_(pref_service),
       remote_suggestions_scheduler_(std::move(remote_suggestions_scheduler)),
       user_classifier_(std::move(user_classifier)),
@@ -132,7 +137,85 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
     const ImageFetchedCallback& callback) {
-  // TODO(jkrcal): Implement.
+  // TODO(jkrcal): Allow the provider to provide (or possibly override) the URL
+  // for looking up the favicon.
+  std::vector<ContentSuggestion>* suggestions =
+      &suggestions_by_category_[suggestion_id.category()];
+  auto position =
+      std::find_if(suggestions->begin(), suggestions->end(),
+                   [&suggestion_id](const ContentSuggestion& suggestion) {
+                     return suggestion_id == suggestion.id();
+                   });
+  if (position == suggestions->end() || !large_icon_service_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, gfx::Image()));
+    return;
+  }
+
+  const GURL& publisher_url = position->url().GetWithEmptyPath();
+
+  // TODO(jkrcal): Create a general wrapper function in LargeIconService that
+  // does handle the get-from-cache-and-fallback-to-google-server functionality
+  // in one shot (for all clients that do not need to react in between).
+  large_icon_service_->GetLargeIconImageOrFallbackStyle(
+      publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
+      base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
+                 base::Unretained(this), publisher_url, minimum_size_in_pixel,
+                 desired_size_in_pixel, callback,
+                 /*continue_to_google_server=*/true),
+      &favicons_task_tracker_);
+}
+
+void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
+    const GURL& publisher_url,
+    int minimum_size_in_pixel,
+    int desired_size_in_pixel,
+    const ImageFetchedCallback& callback,
+    bool continue_to_google_server,
+    const favicon_base::LargeIconImageResult& result) {
+  if (!result.image.IsEmpty()) {
+    callback.Run(result.image);
+    return;
+  }
+
+  if (!continue_to_google_server ||
+      (result.fallback_icon_style &&
+       !result.fallback_icon_style->is_default_background_color)) {
+    // We cannot download from the server if there is some small icon in the
+    // cache (resulting in non-default bakground color) or if we already did so.
+    callback.Run(gfx::Image());
+    return;
+  }
+
+  // Try to fetch the favicon from a Google favicon server.
+  large_icon_service_
+      ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+          publisher_url, minimum_size_in_pixel,
+          base::Bind(
+              &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
+              base::Unretained(this), publisher_url, minimum_size_in_pixel,
+              desired_size_in_pixel, callback));
+}
+
+void ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished(
+    const GURL& publisher_url,
+    int minimum_size_in_pixel,
+    int desired_size_in_pixel,
+    const ImageFetchedCallback& callback,
+    bool success) {
+  if (!success) {
+    callback.Run(gfx::Image());
+    return;
+  }
+
+  // Get the freshly downloaded icon from the cache.
+  large_icon_service_->GetLargeIconImageOrFallbackStyle(
+      publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
+      base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
+                 base::Unretained(this), publisher_url, minimum_size_in_pixel,
+                 desired_size_in_pixel, callback,
+                 /*continue_to_google_server=*/false),
+      &favicons_task_tracker_);
 }
 
 void ContentSuggestionsService::ClearHistory(

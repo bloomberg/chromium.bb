@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -30,6 +31,14 @@
 
 class PrefService;
 class PrefRegistrySimple;
+
+namespace favicon {
+class LargeIconService;
+}  // namespace favicon
+
+namespace favicon_base {
+struct LargeIconImageResult;
+}  // namespace favicon_base
 
 namespace ntp_snippets {
 
@@ -90,6 +99,8 @@ class ContentSuggestionsService : public KeyedService,
       State state,
       SigninManagerBase* signin_manager,         // Can be nullptr in unittests.
       history::HistoryService* history_service,  // Can be nullptr in unittests.
+      // Can be nullptr in unittests.
+      favicon::LargeIconService* large_icon_service,
       PrefService* pref_service,
       std::unique_ptr<CategoryRanker> category_ranker,
       std::unique_ptr<UserClassifier> user_classifier,
@@ -317,6 +328,21 @@ class ContentSuggestionsService : public KeyedService,
   void RestoreDismissedCategoriesFromPrefs();
   void StoreDismissedCategoriesToPrefs();
 
+  // Callbacks for fetching favicons.
+  void OnGetFaviconFromCacheFinished(
+      const GURL& publisher_url,
+      int minimum_size_in_pixel,
+      int desired_size_in_pixel,
+      const ImageFetchedCallback& callback,
+      bool continue_to_google_server,
+      const favicon_base::LargeIconImageResult& result);
+  void OnGetFaviconFromGoogleServerFinished(
+      const GURL& publisher_url,
+      int minimum_size_in_pixel,
+      int desired_size_in_pixel,
+      const ImageFetchedCallback& callback,
+      bool success);
+
   // Whether the content suggestions feature is enabled.
   State state_;
 
@@ -362,10 +388,14 @@ class ContentSuggestionsService : public KeyedService,
 
   const std::vector<ContentSuggestion> no_suggestions_;
 
+  base::CancelableTaskTracker favicons_task_tracker_;
+
   // Keep a direct reference to this special provider to redirect debugging
   // calls to it. If the RemoteSuggestionsProvider is loaded, it is also present
   // in |providers_|, otherwise this is a nullptr.
   RemoteSuggestionsProvider* remote_suggestions_provider_;
+
+  favicon::LargeIconService* large_icon_service_;
 
   PrefService* pref_service_;
 

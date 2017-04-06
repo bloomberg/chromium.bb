@@ -42,6 +42,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
@@ -107,6 +108,7 @@ IOSChromeContentSuggestionsServiceFactory::
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
+  DependsOn(IOSChromeLargeIconServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
@@ -140,13 +142,16 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  favicon::LargeIconService* large_icon_service =
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(
+          chrome_browser_state);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           prefs, base::MakeUnique<base::DefaultClock>());
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(
-          State::ENABLED, signin_manager, history_service, prefs,
-          std::move(category_ranker), std::move(user_classifier),
+          State::ENABLED, signin_manager, history_service, large_icon_service,
+          prefs, std::move(category_ranker), std::move(user_classifier),
           std::move(scheduler));
 
   // Create the BookmarkSuggestionsProvider.
