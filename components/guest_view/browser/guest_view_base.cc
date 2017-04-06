@@ -445,26 +445,6 @@ void GuestViewBase::DidDetach() {
     Destroy(true);
 }
 
-bool GuestViewBase::HandleFindForEmbedder(
-    int request_id,
-    const base::string16& search_text,
-    const blink::WebFindOptions& options) {
-  if (ShouldHandleFindRequestsForEmbedder()) {
-    web_contents()->Find(request_id, search_text, options);
-    return true;
-  }
-  return false;
-}
-
-bool GuestViewBase::HandleStopFindingForEmbedder(
-    content::StopFindAction action) {
-  if (ShouldHandleFindRequestsForEmbedder()) {
-    web_contents()->StopFinding(action);
-    return true;
-  }
-  return false;
-}
-
 WebContents* GuestViewBase::GetOwnerWebContents() const {
   return owner_web_contents_;
 }
@@ -568,10 +548,6 @@ void GuestViewBase::SignalWhenReady(const base::Closure& callback) {
   // The default behavior is to call the |callback| immediately. Derived classes
   // can implement an alternative signal for readiness.
   callback.Run();
-}
-
-bool GuestViewBase::ShouldHandleFindRequestsForEmbedder() const {
-  return false;
 }
 
 int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) const {
@@ -724,23 +700,6 @@ void GuestViewBase::UpdateTargetURL(WebContents* source, const GURL& url) {
 
 bool GuestViewBase::ShouldResumeRequestsForCreatedWindow() {
   return false;
-}
-
-void GuestViewBase::FindReply(WebContents* source,
-                              int request_id,
-                              int number_of_matches,
-                              const gfx::Rect& selection_rect,
-                              int active_match_ordinal,
-                              bool final_update) {
-  if (ShouldHandleFindRequestsForEmbedder() &&
-      attached() && embedder_web_contents()->GetDelegate()) {
-    embedder_web_contents()->GetDelegate()->FindReply(embedder_web_contents(),
-                                                      request_id,
-                                                      number_of_matches,
-                                                      selection_rect,
-                                                      active_match_ordinal,
-                                                      final_update);
-  }
 }
 
 content::RenderWidgetHost* GuestViewBase::GetOwnerRenderWidgetHost() {

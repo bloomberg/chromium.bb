@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
@@ -187,23 +186,6 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
   return event_consumed;
 }
 
-bool BrowserPluginEmbedder::Find(int request_id,
-                                 const base::string16& search_text,
-                                 const blink::WebFindOptions& options) {
-  return GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
-      base::Bind(&BrowserPluginEmbedder::FindInGuest,
-                 request_id,
-                 search_text,
-                 options));
-}
-
-bool BrowserPluginEmbedder::StopFinding(StopFindAction action) {
-  return GetBrowserPluginGuestManager()->ForEachGuest(
-      web_contents(),
-      base::Bind(&BrowserPluginEmbedder::StopFindingInGuest, action));
-}
-
 BrowserPluginGuest* BrowserPluginEmbedder::GetFullPageGuest() {
   WebContentsImpl* guest_contents = static_cast<WebContentsImpl*>(
       GetBrowserPluginGuestManager()->GetFullPageGuest(web_contents()));
@@ -232,34 +214,6 @@ bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
   guest->GotResponseToLockMouseRequest(false);
 
   // Returns false to iterate over all guests.
-  return false;
-}
-
-// static
-bool BrowserPluginEmbedder::FindInGuest(int request_id,
-                                        const base::string16& search_text,
-                                        const blink::WebFindOptions& options,
-                                        WebContents* guest) {
-  if (static_cast<WebContentsImpl*>(guest)
-          ->GetBrowserPluginGuest()
-          ->HandleFindForEmbedder(request_id, search_text, options)) {
-    // There can only ever currently be one browser plugin that handles find so
-    // we can break the iteration at this point.
-    return true;
-  }
-  return false;
-}
-
-// static
-bool BrowserPluginEmbedder::StopFindingInGuest(StopFindAction action,
-                                               WebContents* guest) {
-  if (static_cast<WebContentsImpl*>(guest)
-          ->GetBrowserPluginGuest()
-          ->HandleStopFindingForEmbedder(action)) {
-    // There can only ever currently be one browser plugin that handles find so
-    // we can break the iteration at this point.
-    return true;
-  }
   return false;
 }
 

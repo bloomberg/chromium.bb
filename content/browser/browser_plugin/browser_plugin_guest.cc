@@ -148,6 +148,8 @@ int BrowserPluginGuest::GetGuestProxyRoutingID() {
   // create a RenderFrameProxyHost for the reverse path, or implement
   // MimeHandlerViewGuest using OOPIF (https://crbug.com/659750).
   SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
+  if (!owner_site_instance)
+    return MSG_ROUTING_NONE;
   int proxy_routing_id = GetWebContents()
                              ->GetFrameTree()
                              ->root()
@@ -179,8 +181,13 @@ void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
 
 void BrowserPluginGuest::WillDestroy() {
   is_in_destruction_ = true;
-  owner_web_contents_ = nullptr;
+
+  // It is important that the WebContents is notified of destruction before
+  // detaching.
+  GetWebContents()->BrowserPluginGuestWillDestroy();
+
   attached_ = false;
+  owner_web_contents_ = nullptr;
 }
 
 RenderWidgetHostImpl* BrowserPluginGuest::GetOwnerRenderWidgetHost() const {
@@ -430,17 +437,6 @@ void BrowserPluginGuest::OnRequireSequence(
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
   GetSurfaceManager()->RequireSequence(id, sequence);
-}
-
-bool BrowserPluginGuest::HandleFindForEmbedder(
-    int request_id,
-    const base::string16& search_text,
-    const blink::WebFindOptions& options) {
-  return delegate_->HandleFindForEmbedder(request_id, search_text, options);
-}
-
-bool BrowserPluginGuest::HandleStopFindingForEmbedder(StopFindAction action) {
-  return delegate_->HandleStopFindingForEmbedder(action);
 }
 
 void BrowserPluginGuest::ResendEventToEmbedder(

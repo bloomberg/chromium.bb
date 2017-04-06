@@ -5698,13 +5698,12 @@ void RenderFrameImpl::OnFind(int request_id,
     if (options.findNext) {
       // Just navigate back/forward.
       plugin->selectFindResult(options.forward, request_id);
-    } else {
-      if (!plugin->startFind(WebString::fromUTF16(search_text),
-                             options.matchCase, request_id)) {
-        // Send "no results".
-        SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
-                      gfx::Rect(), true /* final_status_update */);
-      }
+      render_view_->webview()->setFocusedFrame(frame_);
+    } else if (!plugin->startFind(WebString::fromUTF16(search_text),
+                                  options.matchCase, request_id)) {
+      // Send "no results".
+      SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
+                    gfx::Rect(), true /* final_status_update */);
     }
     return;
   }

@@ -4,19 +4,70 @@
 
 #include "content/browser/find_request_manager.h"
 
+#include <algorithm>
+
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/public/browser/guest_mode.h"
 
 namespace content {
 
 namespace {
 
+// The following functions allow traversal over all frames, including those
+// across WebContentses.
+//
+// Note that there are currently two different ways in which an inner
+// WebContents may be embedded in an outer WebContents:
+//
+// 1) As a guest of the outer WebContents's BrowserPluginEmbedder.
+// 2) Within an inner WebContentsTreeNode of the outer WebContents's
+//    WebContentsTreeNode.
+
+// Returns all child frames of |node|.
+std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
+  std::vector<FrameTreeNode*> children(node->child_count());
+  for (size_t i = 0; i != node->child_count(); ++i)
+    children[i] = node->child_at(i);
+
+  if (auto* inner_contents = WebContentsImpl::FromOuterFrameTreeNode(node)) {
+    children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
+  } else {
+    auto* contents = WebContentsImpl::FromFrameTreeNode(node);
+    if (node->IsMainFrame() && contents->GetBrowserPluginEmbedder()) {
+      for (auto* inner_contents : contents->GetInnerWebContents()) {
+        children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
+      }
+    }
+  }
+
+  return children;
+}
+
+// Returns the first child FrameTreeNode under |node|, if |node| has a child, or
+// nullptr otherwise.
+FrameTreeNode* GetFirstChild(FrameTreeNode* node) {
+  auto children = GetChildren(node);
+  if (!children.empty())
+    return children.front();
+  return nullptr;
+}
+
+// Returns the last child FrameTreeNode under |node|, if |node| has a child, or
+// nullptr otherwise.
+FrameTreeNode* GetLastChild(FrameTreeNode* node) {
+  auto children = GetChildren(node);
+  if (!children.empty())
+    return children.back();
+  return nullptr;
+}
+
 // Returns the deepest last child frame under |node|/|rfh| in the frame tree.
 FrameTreeNode* GetDeepestLastChild(FrameTreeNode* node) {
-  while (node->child_count())
-    node = node->child_at(node->child_count() - 1);
+  while (FrameTreeNode* last_child = GetLastChild(node))
+    node = last_child;
   return node;
 }
 RenderFrameHost* GetDeepestLastChild(RenderFrameHost* rfh) {
@@ -25,20 +76,82 @@ RenderFrameHost* GetDeepestLastChild(RenderFrameHost* rfh) {
   return GetDeepestLastChild(node)->current_frame_host();
 }
 
+// Returns the parent FrameTreeNode of |node|, if |node| has a parent, or
+// nullptr otherwise.
+FrameTreeNode* GetParent(FrameTreeNode* node) {
+  if (node->parent())
+    return node->parent();
+
+  // The parent frame may be in another WebContents.
+  if (node->IsMainFrame()) {
+    auto* contents = WebContentsImpl::FromFrameTreeNode(node);
+    if (GuestMode::IsCrossProcessFrameGuest(contents)) {
+      int node_id = contents->GetOuterDelegateFrameTreeNodeId();
+      if (node_id != FrameTreeNode::kFrameTreeNodeInvalidId)
+        return FrameTreeNode::GloballyFindByID(node_id);
+    } else if (auto* outer_contents = contents->GetOuterWebContents()) {
+      return outer_contents->GetMainFrame()->frame_tree_node();
+    }
+  }
+
+  return nullptr;
+}
+
+// Returns the previous sibling FrameTreeNode of |node|, if one exists, or
+// nullptr otherwise.
+FrameTreeNode* GetPreviousSibling(FrameTreeNode* node) {
+  if (FrameTreeNode* previous_sibling = node->PreviousSibling())
+    return previous_sibling;
+
+  // The previous sibling may be in another WebContents.
+  if (FrameTreeNode* parent = GetParent(node)) {
+    auto children = GetChildren(parent);
+    auto it = std::find(children.begin(), children.end(), node);
+    // It is odd that this node may not be a child of its parent, but this is
+    // actually possible during teardown, hence the need for the check for
+    // "it != children.end()".
+    if (it != children.end() && it != children.begin())
+      return *--it;
+  }
+
+  return nullptr;
+}
+
+// Returns the next sibling FrameTreeNode of |node|, if one exists, or nullptr
+// otherwise.
+FrameTreeNode* GetNextSibling(FrameTreeNode* node) {
+  if (FrameTreeNode* next_sibling = node->NextSibling())
+    return next_sibling;
+
+  // The next sibling may be in another WebContents.
+  if (FrameTreeNode* parent = GetParent(node)) {
+    auto children = GetChildren(parent);
+    auto it = std::find(children.begin(), children.end(), node);
+    // It is odd that this node may not be a child of its parent, but this is
+    // actually possible during teardown, hence the need for the check for
+    // "it != children.end()".
+    if (it != children.end() && ++it != children.end())
+      return *it;
+  }
+
+  return nullptr;
+}
+
 // Returns the FrameTreeNode directly after |node| in the frame tree in search
 // order, or nullptr if one does not exist. If |wrap| is set, then wrapping
 // between the first and last frames is permitted. Note that this traversal
 // follows the same ordering as in blink::FrameTree::traverseNextWithWrap().
 FrameTreeNode* TraverseNext(FrameTreeNode* node, bool wrap) {
-  if (node->child_count())
-    return node->child_at(0);
+  if (FrameTreeNode* first_child = GetFirstChild(node))
+    return first_child;
 
-  FrameTreeNode* sibling = node->NextSibling();
+  FrameTreeNode* sibling = GetNextSibling(node);
   while (!sibling) {
-    if (!node->parent())
+    FrameTreeNode* parent = GetParent(node);
+    if (!parent)
       return wrap ? node : nullptr;
-    node = node->parent();
-    sibling = node->NextSibling();
+    node = parent;
+    sibling = GetNextSibling(node);
   }
   return sibling;
 }
@@ -48,20 +161,57 @@ FrameTreeNode* TraverseNext(FrameTreeNode* node, bool wrap) {
 // between the first and last frames is permitted. Note that this traversal
 // follows the same ordering as in blink::FrameTree::traversePreviousWithWrap().
 FrameTreeNode* TraversePrevious(FrameTreeNode* node, bool wrap) {
-  if (FrameTreeNode* previous_sibling = node->PreviousSibling())
+  if (FrameTreeNode* previous_sibling = GetPreviousSibling(node))
     return GetDeepestLastChild(previous_sibling);
-  if (node->parent())
-    return node->parent();
+  if (FrameTreeNode* parent = GetParent(node))
+    return parent;
   return wrap ? GetDeepestLastChild(node) : nullptr;
 }
 
-// The same as either TraverseNext() or TraversePrevious() depending on
+// The same as either TraverseNext() or TraversePrevious(), depending on
 // |forward|.
 FrameTreeNode* TraverseNode(FrameTreeNode* node, bool forward, bool wrap) {
   return forward ? TraverseNext(node, wrap) : TraversePrevious(node, wrap);
 }
 
 }  // namespace
+
+// Observes searched WebContentses for frame changes, including deletion,
+// creation, and navigation.
+class FindRequestManager::FrameObserver : public WebContentsObserver {
+ public:
+  FrameObserver(WebContentsImpl* web_contents, FindRequestManager* manager)
+      : WebContentsObserver(web_contents), manager_(manager) {}
+
+  ~FrameObserver() override {}
+
+  void DidFinishLoad(RenderFrameHost* rfh, const GURL& validated_url) override {
+    if (manager_->current_session_id_ == kInvalidId)
+      return;
+
+    manager_->RemoveFrame(rfh);
+    manager_->AddFrame(rfh, true /* force */);
+  }
+
+  void RenderFrameDeleted(RenderFrameHost* rfh) override {
+    manager_->RemoveFrame(rfh);
+  }
+
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override {
+    manager_->RemoveFrame(old_host);
+  }
+
+  void FrameDeleted(RenderFrameHost* rfh) override {
+    manager_->RemoveFrame(rfh);
+  }
+
+ private:
+  // The FindRequestManager that owns this FrameObserver.
+  FindRequestManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameObserver);
+};
 
 #if defined(OS_ANDROID)
 FindRequestManager::ActivateNearestFindResultState::
@@ -88,8 +238,7 @@ FindRequestManager::FindMatchRectsState::~FindMatchRectsState() {}
 const int FindRequestManager::kInvalidId = -1;
 
 FindRequestManager::FindRequestManager(WebContentsImpl* web_contents)
-    : WebContentsObserver(web_contents),
-      contents_(web_contents),
+    : contents_(web_contents),
       current_session_id_(kInvalidId),
       pending_find_next_reply_(nullptr),
       pending_active_match_ordinal_(false),
@@ -120,8 +269,10 @@ void FindRequestManager::Find(int request_id,
 }
 
 void FindRequestManager::StopFinding(StopFindAction action) {
-  contents_->SendToAllFrames(
-      new FrameMsg_StopFinding(MSG_ROUTING_NONE, action));
+  for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
+    contents->SendToAllFrames(
+        new FrameMsg_StopFinding(MSG_ROUTING_NONE, action));
+  }
 
   current_session_id_ = kInvalidId;
 #if defined(OS_ANDROID)
@@ -293,16 +444,18 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
 
   // Request from each frame the distance to the nearest find result (in that
   // frame) from the point (x, y), defined in find-in-page coordinates.
-  for (FrameTreeNode* node : contents_->GetFrameTree()->Nodes()) {
-    RenderFrameHost* rfh = node->current_frame_host();
+  for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
+    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+      RenderFrameHost* rfh = node->current_frame_host();
 
-    if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
-      continue;
+      if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
+        continue;
 
-    activate_.pending_replies.insert(rfh);
-    rfh->Send(new FrameMsg_GetNearestFindResult(
-        rfh->GetRoutingID(), activate_.current_request_id,
-        activate_.x, activate_.y));
+      activate_.pending_replies.insert(rfh);
+      rfh->Send(new FrameMsg_GetNearestFindResult(rfh->GetRoutingID(),
+                                                  activate_.current_request_id,
+                                                  activate_.x, activate_.y));
+    }
   }
 }
 
@@ -328,17 +481,19 @@ void FindRequestManager::RequestFindMatchRects(int current_version) {
   match_rects_.request_version = current_version;
 
   // Request the latest find match rects from each frame.
-  for (FrameTreeNode* node : contents_->GetFrameTree()->Nodes()) {
-    RenderFrameHost* rfh = node->current_frame_host();
+  for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
+    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+      RenderFrameHost* rfh = node->current_frame_host();
 
-    if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
-      continue;
+      if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
+        continue;
 
-    match_rects_.pending_replies.insert(rfh);
-    auto it = match_rects_.frame_rects.find(rfh);
-    int version = (it != match_rects_.frame_rects.end())
-        ? it->second.version : kInvalidId;
-    rfh->Send(new FrameMsg_FindMatchRects(rfh->GetRoutingID(), version));
+      match_rects_.pending_replies.insert(rfh);
+      auto it = match_rects_.frame_rects.find(rfh);
+      int version = (it != match_rects_.frame_rects.end()) ? it->second.version
+                                                           : kInvalidId;
+      rfh->Send(new FrameMsg_FindMatchRects(rfh->GetRoutingID(), version));
+    }
   }
 }
 
@@ -359,28 +514,6 @@ void FindRequestManager::OnFindMatchRectsReply(
 }
 #endif
 
-void FindRequestManager::DidFinishLoad(RenderFrameHost* rfh,
-                                       const GURL& validated_url) {
-  if (current_session_id_ == kInvalidId)
-    return;
-
-  RemoveFrame(rfh);
-  AddFrame(rfh, true /* force */);
-}
-
-void FindRequestManager::RenderFrameDeleted(RenderFrameHost* rfh) {
-  RemoveFrame(rfh);
-}
-
-void FindRequestManager::RenderFrameHostChanged(RenderFrameHost* old_host,
-                                                RenderFrameHost* new_host) {
-  RemoveFrame(old_host);
-}
-
-void FindRequestManager::FrameDeleted(RenderFrameHost* rfh) {
-  RemoveFrame(rfh);
-}
-
 void FindRequestManager::Reset(const FindRequest& initial_request) {
   current_session_id_ = initial_request.id;
   current_request_ = initial_request;
@@ -394,6 +527,7 @@ void FindRequestManager::Reset(const FindRequest& initial_request) {
   active_match_ordinal_ = 0;
   selection_rect_ = gfx::Rect();
   last_reported_id_ = kInvalidId;
+  frame_observers_.clear();
 #if defined(OS_ANDROID)
   activate_ = ActivateNearestFindResultState();
   match_rects_.pending_replies.clear();
@@ -414,7 +548,8 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
 
     // The find next request will be directed at the focused frame if there is
     // one, or the first frame with matches otherwise.
-    RenderFrameHost* target_rfh = contents_->GetFocusedFrame();
+    RenderFrameHost* target_rfh =
+        contents_->GetFocusedWebContents()->GetFocusedFrame();
     if (!target_rfh || !CheckFrame(target_rfh))
       target_rfh = GetInitialFrame(request.options.forward);
 
@@ -426,8 +561,12 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
 
   // This is an initial find operation.
   Reset(request);
-  for (FrameTreeNode* node : contents_->GetFrameTree()->Nodes())
-    AddFrame(node->current_frame_host(), false /* force */);
+  for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
+    frame_observers_.push_back(base::MakeUnique<FrameObserver>(contents, this));
+    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+      AddFrame(node->current_frame_host(), false /* force */);
+    }
+  }
 }
 
 void FindRequestManager::AdvanceQueue(int request_id) {
@@ -485,6 +624,7 @@ RenderFrameHost* FindRequestManager::Traverse(RenderFrameHost* from_rfh,
                                               bool forward,
                                               bool matches_only,
                                               bool wrap) const {
+  DCHECK(from_rfh);
   FrameTreeNode* node =
       static_cast<RenderFrameHostImpl*>(from_rfh)->frame_tree_node();
 
@@ -572,7 +712,9 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
                           current_request_.options.forward,
                           true /* matches_only */,
                           true /* wrap */);
-  } else if ((target_rfh = contents_->GetFocusedFrame()) != nullptr) {
+  } else if ((target_rfh =
+                  contents_->GetFocusedWebContents()->GetFocusedFrame()) !=
+             nullptr) {
     // Otherwise, if there is a focused frame, then the active match will be in
     // the next frame with matches after that one.
     target_rfh = Traverse(target_rfh,
