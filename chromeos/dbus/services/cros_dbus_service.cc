@@ -113,6 +113,14 @@ std::unique_ptr<CrosDBusService> CrosDBusService::Create(
 }
 
 // static
+CrosDBusService::ServiceProviderList CrosDBusService::CreateServiceProviderList(
+    std::unique_ptr<ServiceProviderInterface> provider) {
+  ServiceProviderList list;
+  list.push_back(std::move(provider));
+  return list;
+}
+
+// static
 std::unique_ptr<CrosDBusService> CrosDBusService::CreateRealImpl(
     dbus::Bus* bus,
     const std::string& service_name,

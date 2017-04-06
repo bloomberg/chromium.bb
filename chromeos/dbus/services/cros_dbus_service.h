@@ -49,6 +49,10 @@ class CHROMEOS_EXPORT CrosDBusService {
       const dbus::ObjectPath& object_path,
       ServiceProviderList service_providers);
 
+  // Creates a ServiceProviderList containing a single provider.
+  static ServiceProviderList CreateServiceProviderList(
+      std::unique_ptr<ServiceProviderInterface> provider);
+
   virtual ~CrosDBusService();
 
  protected:

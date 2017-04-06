@@ -248,10 +248,19 @@ class DBusServices {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
     }
-    service_providers.push_back(base::MakeUnique<KioskInfoService>());
+    service_providers.push_back(base::MakeUnique<KioskInfoService>(
+        kLibCrosServiceInterface,
+        kKioskAppServiceGetRequiredPlatformVersionMethod));
     cros_dbus_service_ = CrosDBusService::Create(
         kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
         std::move(service_providers));
+
+    kiosk_info_service_ = CrosDBusService::Create(
+        kKioskAppServiceName, dbus::ObjectPath(kKioskAppServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            base::MakeUnique<KioskInfoService>(
+                kKioskAppServiceInterface,
+                kKioskAppServiceGetRequiredPlatformVersionMethod)));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -302,6 +311,7 @@ class DBusServices {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     cros_dbus_service_.reset();
+    kiosk_info_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -318,6 +328,8 @@ class DBusServices {
   // TODO(derat): Move these providers into more-specific services that are
   // split between different processes: http://crbug.com/692246
   std::unique_ptr<CrosDBusService> cros_dbus_service_;
+
+  std::unique_ptr<CrosDBusService> kiosk_info_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 

@@ -470,6 +470,7 @@ component("chromeos") {
 
 copy("dbus_service_files") {
   sources = [
+    "dbus/services/org.chromium.KioskAppService.conf",
     "dbus/services/org.chromium.LibCrosService.conf",
     "dbus/services/org.chromium.LivenessService.conf",
     "dbus/services/org.chromium.NetworkProxyService.conf",
