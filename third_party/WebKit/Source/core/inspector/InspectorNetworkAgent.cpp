@@ -555,19 +555,22 @@ DEFINE_TRACE(InspectorNetworkAgent) {
   InspectorBaseAgent::trace(visitor);
 }
 
-bool InspectorNetworkAgent::shouldBlockRequest(const ResourceRequest& request) {
+void InspectorNetworkAgent::shouldBlockRequest(const ResourceRequest& request,
+                                               bool* result) {
   protocol::DictionaryValue* blockedURLs =
       m_state->getObject(NetworkAgentState::blockedURLs);
   if (!blockedURLs)
-    return false;
+    return;
 
   String url = request.url().getString();
   for (size_t i = 0; i < blockedURLs->size(); ++i) {
     auto entry = blockedURLs->at(i);
-    if (matches(url, entry.first))
-      return true;
+    if (matches(url, entry.first)) {
+      *result = true;
+      return;
+    }
   }
-  return false;
+  return;
 }
 
 void InspectorNetworkAgent::didBlockRequest(
@@ -1549,8 +1552,9 @@ InspectorNetworkAgent::InspectorNetworkAgent(InspectedFrames* inspectedFrames)
           this,
           &InspectorNetworkAgent::removeFinishedReplayXHRFired) {}
 
-bool InspectorNetworkAgent::shouldForceCORSPreflight() {
-  return m_state->booleanProperty(NetworkAgentState::cacheDisabled, false);
+void InspectorNetworkAgent::shouldForceCORSPreflight(bool* result) {
+  if (m_state->booleanProperty(NetworkAgentState::cacheDisabled, false))
+    *result = true;
 }
 
 }  // namespace blink

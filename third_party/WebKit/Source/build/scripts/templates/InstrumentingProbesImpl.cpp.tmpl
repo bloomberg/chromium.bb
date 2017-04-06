@@ -53,23 +53,19 @@ namespace probe {
 {% set agent_probe_name = common_name or probe.name %}
   {{sink_class}}* sink = to{{sink_class}}({{probe.params[0].name}});
   if (!sink)
-    return {{probe.default_return_value}};
+    return;
 {% for param in probe.params %}
 {% if param.is_prp %}
   RefPtr<{{param.inner_type}}> {{param.value}} = {{param.name}};
 {% endif %}
 {% endfor %}
-{% set maybe_return = "return " if probe.returns_value else "" %}
 {% for agent in probe.agents %}
 {% set class_name = agent | agent_name_to_class %}
   if (sink->has{{class_name}}s()) {
     for ({{class_name}}* agent : sink->{{ class_name | to_lower_case }}s())
-      {{maybe_return}}agent->{{agent_probe_name}}({{caller()}});
+      agent->{{agent_probe_name}}({{caller()}});
   }
 {% endfor %}
-{% if probe.default_return_value %}
-  return {{probe.default_return_value}};
-{% endif %}
 {% endmacro -%}
 
 {% for file in files %}
@@ -90,7 +86,7 @@ namespace probe {
 
 {% else -%}
 
-CORE_EXPORT {{probe.return_type}} {{probe.name}}({{ params_list(probe) }}) {
+CORE_EXPORT void {{probe.name}}({{ params_list(probe) }}) {
 {% call probe_body(probe, "") %}
 {%- for param in probe.params %}
 {%- if not loop.first or "Keep" in param.options -%}

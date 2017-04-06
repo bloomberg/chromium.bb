@@ -37,6 +37,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
@@ -386,8 +387,9 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     crossOriginRequest.setServiceWorkerMode(
         WebURLRequest::ServiceWorkerMode::None);
 
-    bool shouldForcePreflight = request.isExternalRequest() ||
-                                probe::shouldForceCORSPreflight(document());
+    bool shouldForcePreflight = request.isExternalRequest();
+    if (!shouldForcePreflight)
+      probe::shouldForceCORSPreflight(document(), &shouldForcePreflight);
     bool canSkipPreflight =
         CrossOriginPreflightResultCache::shared().canSkipPreflight(
             getSecurityOrigin()->toString(), crossOriginRequest.url(),

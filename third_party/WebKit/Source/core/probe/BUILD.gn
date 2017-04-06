@@ -24,7 +24,6 @@ action("instrumentation_probes") {
 
   outputs = [
     "$blink_core_output_dir/CoreProbesInl.h",
-    "$blink_core_output_dir/InspectorOverridesInl.h",
     "$blink_core_output_dir/CoreProbesImpl.cpp",
     "$blink_core_output_dir/CoreProbeSink.h",
   ]

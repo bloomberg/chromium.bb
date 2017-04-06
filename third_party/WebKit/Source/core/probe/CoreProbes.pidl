@@ -42,7 +42,7 @@
  *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
  *       Keep - pass first parameter (used to access the CoreProbeSink instance) to agents.
  *
- *   returnValue: C++ return value. Only "void" and "bool" are supported.
+ *   returnValue: "void" for instant probes.
  *                Omitted for the scoped probes.
  *
  *   methodName: C++ name for the public instrumentation method and agents methods.
@@ -156,11 +156,8 @@ interface CoreProbes {
   CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
   UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
   ParseHTML(Document* document, HTMLDocumentParser* parser);
-}
-
-interface InspectorOverrides {
-  bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
-  bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
-  bool shouldForceCORSPreflight(Document*);
-  bool shouldBlockRequest(LocalFrame*, const ResourceRequest&);
+  void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
+  void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
+  void shouldForceCORSPreflight(Document*, bool* result);
+  void shouldBlockRequest(LocalFrame*, const ResourceRequest&, bool* result);
 }
