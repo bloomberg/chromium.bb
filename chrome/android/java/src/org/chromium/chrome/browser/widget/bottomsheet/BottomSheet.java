@@ -726,8 +726,8 @@ public class BottomSheet
             }
         });
 
-        mSettleAnimator.start();
         setInternalCurrentState(SHEET_STATE_SCROLLING);
+        mSettleAnimator.start();
     }
 
     /**
