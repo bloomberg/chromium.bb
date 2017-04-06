@@ -7,6 +7,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -51,9 +52,10 @@ const String& WorkerInspectorProxy::inspectorId() {
 
 WorkerThreadStartMode WorkerInspectorProxy::workerStartMode(
     Document* document) {
-  if (probe::shouldWaitForDebuggerOnWorkerStart(document))
-    return PauseWorkerGlobalScopeOnStart;
-  return DontPauseWorkerGlobalScopeOnStart;
+  bool result = false;
+  probe::shouldWaitForDebuggerOnWorkerStart(document, &result);
+  return result ? PauseWorkerGlobalScopeOnStart
+                : DontPauseWorkerGlobalScopeOnStart;
 }
 
 void WorkerInspectorProxy::workerThreadCreated(Document* document,
@@ -65,7 +67,8 @@ void WorkerInspectorProxy::workerThreadCreated(Document* document,
   inspectorProxies().insert(this);
   // We expect everyone starting worker thread to synchronously ask for
   // workerStartMode right before.
-  bool waitingForDebugger = probe::shouldWaitForDebuggerOnWorkerStart(document);
+  bool waitingForDebugger = false;
+  probe::shouldWaitForDebuggerOnWorkerStart(document, &waitingForDebugger);
   probe::didStartWorker(document, this, waitingForDebugger);
 }
 

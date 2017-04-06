@@ -73,7 +73,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   ~InspectorNetworkAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  // Called from instrumentation.
+  // Probes.
   void didBlockRequest(LocalFrame*,
                        const ResourceRequest&,
                        DocumentLoader*,
@@ -114,8 +114,8 @@ class CORE_EXPORT InspectorNetworkAgent final
   void didCommitLoad(LocalFrame*, DocumentLoader*);
   void scriptImported(unsigned long identifier, const String& sourceString);
   void didReceiveScriptResponse(unsigned long identifier);
-  bool shouldForceCORSPreflight();
-  bool shouldBlockRequest(const ResourceRequest&);
+  void shouldForceCORSPreflight(bool* result);
+  void shouldBlockRequest(const ResourceRequest&, bool* result);
 
   void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier,
                                                        ThreadableLoaderClient*);

@@ -126,6 +126,5 @@ CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*,
 }  // namespace blink
 
 #include "core/CoreProbesInl.h"
-#include "core/InspectorOverridesInl.h"
 
 #endif  // !defined(CoreProbes_h)

@@ -112,10 +112,10 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId) {
     idProxy.value->writeTimelineStartedEvent(sessionId);
 }
 
-bool InspectorWorkerAgent::shouldWaitForDebuggerOnWorkerStart() {
-  return autoAttachEnabled() &&
-         m_state->booleanProperty(WorkerAgentState::waitForDebuggerOnStart,
-                                  false);
+void InspectorWorkerAgent::shouldWaitForDebuggerOnWorkerStart(bool* result) {
+  if (autoAttachEnabled() &&
+      m_state->booleanProperty(WorkerAgentState::waitForDebuggerOnStart, false))
+    *result = true;
 }
 
 void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* proxy,
