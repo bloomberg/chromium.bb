@@ -14,6 +14,9 @@
 #include "extensions/browser/mock_extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class ExtensionPrefValueMap;
+class PrefService;
+
 namespace content {
 class BrowserContext;
 class ContentBrowserClient;
@@ -26,10 +29,9 @@ class TestExtensionsBrowserClient;
 
 // Base class for extensions module unit tests of browser process code. Sets up
 // the content module and extensions module client interfaces. Initializes
-// services for a browser context.
+// services for a browser context and sets up extension preferences.
 //
 // NOTE: Use this class only in extensions_unittests, not in Chrome unit_tests.
-// BrowserContextKeyedServiceFactory singletons persist between tests.
 // In Chrome those factories assume any BrowserContext is a Profile and will
 // cause crashes if it is not. http://crbug.com/395820
 class ExtensionsTest : public testing::Test {
@@ -41,11 +43,18 @@ class ExtensionsTest : public testing::Test {
   // TestBrowserContext.
   content::BrowserContext* browser_context() { return browser_context_.get(); }
 
+  // Returns the incognito context associated with the ExtensionsBrowserClient.
+  content::BrowserContext* incognito_context() {
+    return incognito_context_.get();
+  }
+
   // Returned as a TestExtensionsBrowserClient since most users need to call
   // test-specific methods on it.
   TestExtensionsBrowserClient* extensions_browser_client() {
     return extensions_browser_client_.get();
   }
+
+  PrefService* pref_service() { return pref_service_.get(); }
 
   // testing::Test overrides:
   void SetUp() override;
@@ -56,7 +65,10 @@ class ExtensionsTest : public testing::Test {
   std::unique_ptr<content::ContentBrowserClient> content_browser_client_;
   std::unique_ptr<content::ContentUtilityClient> content_utility_client_;
   std::unique_ptr<content::BrowserContext> browser_context_;
+  std::unique_ptr<content::BrowserContext> incognito_context_;
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;
+  std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+  std::unique_ptr<PrefService> pref_service_;
 
   // The existence of this object enables tests via
   // RenderViewHostTester.

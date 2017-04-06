@@ -12,19 +12,14 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/mock_pref_change_callback.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/testing_pref_store.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
@@ -75,43 +70,19 @@ class AppWindowGeometryCacheTest : public ExtensionsTest {
  protected:
   base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
-  std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
-  std::unique_ptr<PrefService> pref_service_;
-  std::unique_ptr<ExtensionPrefs> extension_prefs_;
+  ExtensionPrefs* extension_prefs_;  // Weak.
   std::unique_ptr<AppWindowGeometryCache> cache_;
 };
 
 void AppWindowGeometryCacheTest::SetUp() {
   ExtensionsTest::SetUp();
-
-  // Set up all the dependencies of ExtensionPrefs.
-  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-  PrefServiceFactory factory;
-  factory.set_user_prefs(new TestingPrefStore);
-  factory.set_extension_prefs(new TestingPrefStore);
-  user_prefs::PrefRegistrySyncable* pref_registry =
-      new user_prefs::PrefRegistrySyncable;
-  // Prefs should be registered before the PrefService is created.
-  ExtensionPrefs::RegisterProfilePrefs(pref_registry);
-  pref_service_ = factory.Create(pref_registry);
-
-  extension_prefs_.reset(ExtensionPrefs::Create(
-      browser_context(), pref_service_.get(),
-      browser_context()->GetPath().AppendASCII("Extensions"),
-      extension_pref_value_map_.get(), false /* extensions_disabled */,
-      std::vector<ExtensionPrefsObserver*>()));
-
-  cache_.reset(
-      new AppWindowGeometryCache(browser_context(), extension_prefs_.get()));
+  extension_prefs_ = ExtensionPrefs::Get(browser_context());
+  cache_.reset(new AppWindowGeometryCache(browser_context(), extension_prefs_));
   cache_->SetSyncDelayForTests(0);
 }
 
 void AppWindowGeometryCacheTest::TearDown() {
   cache_.reset();
-  extension_prefs_.reset();
-  pref_service_.reset();
-  extension_pref_value_map_.reset();
-
   ExtensionsTest::TearDown();
 }
 
@@ -362,9 +333,9 @@ TEST_F(AppWindowGeometryCacheTest, NoDuplicateWrites) {
   gfx::Rect screen_bounds2(0, 0, 1366, 768);
   gfx::Rect screen_bounds2_duplicate(0, 0, 1366, 768);
 
-  MockPrefChangeCallback observer(pref_service_.get());
+  MockPrefChangeCallback observer(pref_service());
   PrefChangeRegistrar registrar;
-  registrar.Init(pref_service_.get());
+  registrar.Init(pref_service());
   registrar.Add("extensions.settings", observer.GetCallback());
 
   // Write the first bounds - it should do > 0 writes.

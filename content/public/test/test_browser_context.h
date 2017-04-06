@@ -35,6 +35,12 @@ class TestBrowserContext : public BrowserContext {
       std::unique_ptr<PermissionManager> permission_manager);
   net::URLRequestContextGetter* GetRequestContext();
 
+  // Allow clients to make this an incognito context.
+  void set_is_off_the_record(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
+
+  // BrowserContext implementation.
   base::FilePath GetPath() const override;
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -68,6 +74,7 @@ class TestBrowserContext : public BrowserContext {
   std::unique_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<PermissionManager> permission_manager_;
   std::unique_ptr<MockBackgroundSyncController> background_sync_controller_;
+  bool is_off_the_record_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };

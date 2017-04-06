@@ -14,16 +14,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/values.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/testing_pref_store.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_listener_map.h"
-#include "extensions/browser/extension_pref_value_map.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
@@ -194,30 +188,8 @@ class EventRouterFilterTest : public ExtensionsTest {
 
   void SetUp() override {
     ExtensionsTest::SetUp();
-
     render_process_host_.reset(
         new content::MockRenderProcessHost(browser_context()));
-
-    // Set up all the dependencies of ExtensionPrefs.
-    extension_pref_value_map_.reset(new ExtensionPrefValueMap());
-    PrefServiceFactory factory;
-    factory.set_user_prefs(new TestingPrefStore());
-    factory.set_extension_prefs(new TestingPrefStore());
-    user_prefs::PrefRegistrySyncable* pref_registry =
-        new user_prefs::PrefRegistrySyncable();
-    // Prefs should be registered before the PrefService is created.
-    ExtensionPrefs::RegisterProfilePrefs(pref_registry);
-    pref_service_ = factory.Create(pref_registry);
-
-    std::unique_ptr<ExtensionPrefs> extension_prefs(ExtensionPrefs::Create(
-        browser_context(), pref_service_.get(),
-        browser_context()->GetPath().AppendASCII("Extensions"),
-        extension_pref_value_map_.get(), false /* extensions_disabled */,
-        std::vector<ExtensionPrefsObserver*>()));
-
-    ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
-        browser_context(), std::move(extension_prefs));
-
     ASSERT_TRUE(EventRouter::Get(browser_context()));  // constructs EventRouter
   }
 
@@ -272,8 +244,6 @@ class EventRouterFilterTest : public ExtensionsTest {
   }
 
   std::unique_ptr<content::RenderProcessHost> render_process_host_;
-  std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
-  std::unique_ptr<PrefService> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouterFilterTest);
 };

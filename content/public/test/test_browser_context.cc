@@ -84,7 +84,7 @@ std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
 }
 
 bool TestBrowserContext::IsOffTheRecord() const {
-  return false;
+  return is_off_the_record_;
 }
 
 DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {

@@ -24,19 +24,6 @@ namespace extensions {
 
 namespace {
 
-// An incognito version of a TestBrowserContext.
-class TestBrowserContextIncognito : public TestBrowserContext {
- public:
-  TestBrowserContextIncognito() {}
-  ~TestBrowserContextIncognito() override {}
-
-  // TestBrowserContext implementation.
-  bool IsOffTheRecord() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserContextIncognito);
-};
-
 // A trivial ProcessManagerDelegate.
 class TestProcessManagerDelegate : public ProcessManagerDelegate {
  public:
@@ -69,7 +56,6 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
 class ProcessManagerTest : public ExtensionsTest {
  public:
   ProcessManagerTest() : extension_registry_(browser_context()) {
-    extensions_browser_client()->SetIncognitoContext(&incognito_context_);
     extensions_browser_client()->set_process_manager_delegate(
         &process_manager_delegate_);
   }
@@ -78,7 +64,6 @@ class ProcessManagerTest : public ExtensionsTest {
 
   // Use original_context() to make it clear it is a non-incognito context.
   BrowserContext* original_context() { return browser_context(); }
-  BrowserContext* incognito_context() { return &incognito_context_; }
   ExtensionRegistry* extension_registry() { return &extension_registry_; }
   TestProcessManagerDelegate* process_manager_delegate() {
     return &process_manager_delegate_;
@@ -94,7 +79,6 @@ class ProcessManagerTest : public ExtensionsTest {
   }
 
  private:
-  TestBrowserContextIncognito incognito_context_;
   ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;
 
