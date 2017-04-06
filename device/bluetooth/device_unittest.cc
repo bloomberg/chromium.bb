@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
@@ -182,7 +183,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
 
   scoped_refptr<NiceMockBluetoothAdapter> adapter_;
   NiceMockBluetoothDevice device_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojom::DevicePtr proxy_;
   mojo::StrongBindingPtr<mojom::Device> binding_ptr_;
 
