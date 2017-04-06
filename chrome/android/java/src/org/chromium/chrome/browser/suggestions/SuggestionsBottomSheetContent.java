@@ -70,7 +70,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
 
-        // This mAdapter does not fetch until later requested, when the sheet is opened.
         final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
                 mContextMenuManager, mTileGroupDelegate);
@@ -79,6 +78,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         activity.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened() {
+                // TODO(https://crbug.com/689962) Ensure this call does not discard all suggestions
+                // every time the sheet is opened.
                 adapter.refreshSuggestions();
             }
         });
