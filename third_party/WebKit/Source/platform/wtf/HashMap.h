@@ -605,7 +605,7 @@ template <typename T,
           typename X,
           typename Y>
 inline void HashMap<T, U, V, W, X, Y>::erase(iterator it) {
-  m_impl.remove(it.m_impl);
+  m_impl.erase(it.m_impl);
 }
 
 template <typename T,

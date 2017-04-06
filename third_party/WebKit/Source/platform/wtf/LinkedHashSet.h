@@ -714,7 +714,7 @@ inline const T& LinkedHashSet<T, U, V, W>::front() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::removeFirst() {
   DCHECK(!isEmpty());
-  m_impl.remove(static_cast<Node*>(m_anchor.m_next));
+  m_impl.erase(static_cast<Node*>(m_anchor.m_next));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -732,7 +732,7 @@ inline const T& LinkedHashSet<T, U, V, W>::back() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::pop_back() {
   DCHECK(!isEmpty());
-  m_impl.remove(static_cast<Node*>(m_anchor.m_prev));
+  m_impl.erase(static_cast<Node*>(m_anchor.m_prev));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -868,7 +868,7 @@ template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
   if (it == end())
     return;
-  m_impl.remove(it.getNode());
+  m_impl.erase(it.getNode());
 }
 
 template <typename T, typename U, typename V, typename W>

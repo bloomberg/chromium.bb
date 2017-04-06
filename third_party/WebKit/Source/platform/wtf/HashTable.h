@@ -757,9 +757,9 @@ class HashTable final
   template <typename HashTranslator, typename T>
   bool contains(const T&) const;
 
-  void remove(KeyPeekInType);
-  void remove(iterator);
-  void remove(const_iterator);
+  void erase(KeyPeekInType);
+  void erase(iterator);
+  void erase(const_iterator);
   void clear();
 
   static bool isEmptyBucket(const ValueType& value) {
@@ -823,7 +823,7 @@ class HashTable final
   template <typename HashTranslator, typename T>
   LookupType lookupForWriting(const T&);
 
-  void remove(ValueType*);
+  void erase(ValueType*);
 
   bool shouldExpand() const {
     return (m_keyCount + m_deletedCount) * m_maxLoad >= m_tableSize;
@@ -1298,7 +1298,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // GC phase.
     //
     // With that weak processing taking care of removals, explicit
-    // remove()s of elements is rarely done. Which implies that the
+    // erase()s of elements is rarely done. Which implies that the
     // weak hash table will never be checked if it can be shrunk.
     //
     // To prevent weak hash tables with very low load factors from
@@ -1466,7 +1466,7 @@ void HashTable<Key,
                HashFunctions,
                Traits,
                KeyTraits,
-               Allocator>::remove(ValueType* pos) {
+               Allocator>::erase(ValueType* pos) {
   registerModification();
 #if DUMP_HASHTABLE_STATS
   atomicIncrement(&HashTableStats::instance().numRemoves);
@@ -1494,10 +1494,10 @@ template <typename Key,
           typename Allocator>
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    remove(iterator it) {
+    erase(iterator it) {
   if (it == end())
     return;
-  remove(const_cast<ValueType*>(it.m_iterator.m_position));
+  erase(const_cast<ValueType*>(it.m_iterator.m_position));
 }
 
 template <typename Key,
@@ -1509,10 +1509,10 @@ template <typename Key,
           typename Allocator>
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    remove(const_iterator it) {
+    erase(const_iterator it) {
   if (it == end())
     return;
-  remove(const_cast<ValueType*>(it.m_position));
+  erase(const_cast<ValueType*>(it.m_position));
 }
 
 template <typename Key,
@@ -1524,8 +1524,8 @@ template <typename Key,
           typename Allocator>
 inline void
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    remove(KeyPeekInType key) {
-  remove(find(key));
+    erase(KeyPeekInType key) {
+  erase(find(key));
 }
 
 template <typename Key,

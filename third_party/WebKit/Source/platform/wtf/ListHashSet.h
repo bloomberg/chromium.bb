@@ -817,7 +817,7 @@ inline T& ListHashSet<T, inlineCapacity, U, V>::front() {
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline void ListHashSet<T, inlineCapacity, U, V>::removeFirst() {
   DCHECK(!isEmpty());
-  m_impl.remove(m_head);
+  m_impl.erase(m_head);
   unlinkAndDelete(m_head);
 }
 
@@ -842,7 +842,7 @@ inline const T& ListHashSet<T, inlineCapacity, U, V>::back() const {
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline void ListHashSet<T, inlineCapacity, U, V>::pop_back() {
   DCHECK(!isEmpty());
-  m_impl.remove(m_tail);
+  m_impl.erase(m_tail);
   unlinkAndDelete(m_tail);
 }
 
@@ -996,7 +996,7 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 inline void ListHashSet<T, inlineCapacity, U, V>::erase(iterator it) {
   if (it == end())
     return;
-  m_impl.remove(it.getNode());
+  m_impl.erase(it.getNode());
   unlinkAndDelete(it.getNode());
 }
 
@@ -1013,7 +1013,7 @@ auto ListHashSet<T, inlineCapacity, U, V>::take(iterator it) -> ValueType {
   if (it == end())
     return ValueTraits::emptyValue();
 
-  m_impl.remove(it.getNode());
+  m_impl.erase(it.getNode());
   ValueType result = std::move(it.getNode()->m_value);
   unlinkAndDelete(it.getNode());
 
@@ -1029,7 +1029,7 @@ auto ListHashSet<T, inlineCapacity, U, V>::take(ValuePeekInType value)
 template <typename T, size_t inlineCapacity, typename U, typename V>
 auto ListHashSet<T, inlineCapacity, U, V>::takeFirst() -> ValueType {
   DCHECK(!isEmpty());
-  m_impl.remove(m_head);
+  m_impl.erase(m_head);
   ValueType result = std::move(m_head->m_value);
   unlinkAndDelete(m_head);
 

@@ -273,7 +273,7 @@ HashSet<Value, HashFunctions, Traits, Allocator>::addWithTranslator(T&& value) {
 
 template <typename T, typename U, typename V, typename W>
 inline void HashSet<T, U, V, W>::erase(iterator it) {
-  m_impl.remove(it.m_impl);
+  m_impl.erase(it.m_impl);
 }
 
 template <typename T, typename U, typename V, typename W>
