@@ -605,9 +605,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  const bool is_mash = wm_shell_->IsRunningInMash();
+  const Config config = wm_shell_->GetAshConfig();
 
-  if (!is_mash)
+  if (config != Config::MASH)
     user_metrics_recorder_->OnShellShuttingDown();
 
   shell_delegate_->PreShutdown();
@@ -620,7 +620,7 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-  if (!is_mash) {
+  if (config != Config::MASH) {
     RemovePreTargetHandler(
         window_tree_host_manager_->input_method_event_handler());
   }
@@ -636,10 +636,10 @@ Shell::~Shell() {
   RemovePreTargetHandler(event_transformation_handler_.get());
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
-  if (!is_mash) {
+  if (config != Config::MASH)
     RemovePreTargetHandler(system_gesture_filter_.get());
+  if (config == Config::CLASSIC)
     RemovePreTargetHandler(mouse_cursor_filter_.get());
-  }
   RemovePreTargetHandler(modality_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
@@ -905,7 +905,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
-  if (!is_mash) {
+  if (config == Config::CLASSIC) {
     display_manager_->RefreshFontParams();
 
     aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
@@ -1010,7 +1010,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   // process mouse events prior to screenshot session.
   // See http://crbug.com/459214
   screenshot_controller_.reset(new ScreenshotController());
-  if (!is_mash) {
+  // TODO: evaluate if MouseCursorEventFilter needs to work for mus/mash.
+  // http://crbug.com/706474.
+  if (config == Config::CLASSIC) {
     mouse_cursor_filter_.reset(new MouseCursorEventFilter());
     PrependPreTargetHandler(mouse_cursor_filter_.get());
   }
