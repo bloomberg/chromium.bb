@@ -10,41 +10,25 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "media/base/media_switches.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 
 namespace content {
-
-namespace {
-
-bool IgnoreMissingCdmHostFile() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnoreMissingCdmHostFile);
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<CdmHostFile> CdmHostFile::Create(
     const base::FilePath& file_path,
     const base::FilePath& sig_file_path) {
+  DVLOG(1) << __func__;
+
   // Open file at |file_path|.
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid()) {
-    DVLOG(1) << "Failed to open file at " << file_path.MaybeAsASCII();
-    return nullptr;
-  }
+  DVLOG(1) << "  " << file.IsValid() << ": " << file_path.MaybeAsASCII();
 
   // Also open the sig file at |sig_file_path|.
   base::File sig_file(sig_file_path,
                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!sig_file.IsValid()) {
-    DVLOG(1) << "Failed to open sig file at " << sig_file_path.MaybeAsASCII();
-    if (!IgnoreMissingCdmHostFile())
-      return nullptr;
-
-    DVLOG(1) << "Ignoring sig file failure at " << sig_file_path.MaybeAsASCII();
-  }
+  DVLOG(1) << "  " << sig_file.IsValid() << ": "
+           << sig_file_path.MaybeAsASCII();
 
   return std::unique_ptr<CdmHostFile>(
       new CdmHostFile(file_path, std::move(file), std::move(sig_file)));
@@ -61,12 +45,7 @@ CdmHostFile::CdmHostFile(const base::FilePath& file_path,
     : file_path_(file_path),
       file_(std::move(file)),
       sig_file_(std::move(sig_file)) {
-  DVLOG(1) << __func__ << ": " << file_path_.value();
-  DCHECK(!file_path_.empty()) << "File path is empty.";
-  DCHECK(file_.IsValid()) << "Invalid file.";
-
-  if (!IgnoreMissingCdmHostFile())
-    DCHECK(sig_file_.IsValid()) << "Invalid signature file.";
+  DCHECK(!file_path_.empty());
 }
 
 }  // namespace content

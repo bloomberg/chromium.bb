@@ -272,22 +272,33 @@ static bool g_verify_host_files_result = false;
 // Makes sure files and corresponding signature files are readable but not
 // writable.
 bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << ": " << num_files;
+
+  // We should always have the CDM and CDM adapter and at lease one common file.
+  // The common CDM host file (e.g. chrome) might not exist since we are running
+  // in browser_tests.
+  const uint32_t kMinNumHostFiles = 3;
 
   // We should always have the CDM and CDM adapter.
-  // We might not have any common CDM host file (e.g. chrome) since we are
-  // running in browser_tests.
-  if (num_files < 2) {
+  const int kNumCdmFiles = 2;
+
+  if (num_files < kMinNumHostFiles) {
     LOG(ERROR) << "Too few host files: " << num_files;
     g_verify_host_files_result = false;
     return true;
   }
 
+  int num_opened_files = 0;
   for (uint32_t i = 0; i < num_files; ++i) {
     const int kBytesToRead = 10;
     std::vector<char> buffer(kBytesToRead);
 
     base::File file(static_cast<base::PlatformFile>(host_files[i].file));
+    if (!file.IsValid())
+      continue;
+
+    num_opened_files++;
+
     int bytes_read = file.Read(0, buffer.data(), buffer.size());
     if (bytes_read != kBytesToRead) {
       LOG(ERROR) << "File bytes read: " << bytes_read;
@@ -297,6 +308,13 @@ bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
 
     // TODO(xhwang): Check that the files are not writable.
     // TODO(xhwang): Also verify the signature file when it's available.
+  }
+
+  // We should always have CDM files opened.
+  if (num_opened_files < kNumCdmFiles) {
+    LOG(ERROR) << "Too few opened files: " << num_opened_files;
+    g_verify_host_files_result = false;
+    return true;
   }
 
   g_verify_host_files_result = true;

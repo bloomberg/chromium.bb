@@ -21,7 +21,6 @@
 #include "content/common/media/cdm_host_file.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_client.h"
-#include "media/base/media_switches.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/cdm_paths.h"
 
@@ -35,11 +34,6 @@
 namespace content {
 
 namespace {
-
-bool IgnoreMissingCdmHostFile() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnoreMissingCdmHostFile);
-}
 
 // TODO(xhwang): Move this to a common place if needed.
 const base::FilePath::CharType kSignatureFileExtension[] =
@@ -120,12 +114,7 @@ void CdmHostFiles::CreateGlobalInstance() {
 
   std::unique_ptr<CdmHostFiles> cdm_host_files =
       base::MakeUnique<CdmHostFiles>();
-  if (!cdm_host_files->OpenFilesForAllRegisteredCdms()) {
-    DVLOG(1) << __func__ << " failed.";
-    cdm_host_files.reset();
-    return;
-  }
-
+  cdm_host_files->OpenFilesForAllRegisteredCdms();
   g_cdm_host_files.Get().reset(cdm_host_files.release());
 }
 
@@ -141,11 +130,7 @@ std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
   DVLOG(1) << __func__;
   std::unique_ptr<CdmHostFiles> cdm_host_files =
       base::MakeUnique<CdmHostFiles>();
-  if (!cdm_host_files->OpenFiles(cdm_adapter_path)) {
-    cdm_host_files.reset();
-    return nullptr;
-  }
-
+  cdm_host_files->OpenFiles(cdm_adapter_path);
   return cdm_host_files;
 }
 
@@ -193,17 +178,24 @@ bool CdmHostFiles::VerifyFiles(base::NativeLibrary cdm_adapter_library,
   // Fills |cdm_host_files| with common and CDM specific files for
   // |cdm_adapter_path|.
   std::vector<cdm::HostFile> cdm_host_files;
-  if (!TakePlatformFiles(cdm_adapter_path, &cdm_host_files)) {
-    DVLOG(1) << "Failed to take platform files.";
-    CloseAllFiles();
-    return true;
-  }
+  TakePlatformFiles(cdm_adapter_path, &cdm_host_files);
+
+  // std::vector::data() is not guaranteed to be nullptr when empty().
+  const cdm::HostFile* cdm_host_files_ptr =
+      cdm_host_files.empty() ? nullptr : cdm_host_files.data();
 
   // Call |verify_cdm_host_func| on the CDM with |cdm_host_files|. Note that
   // the ownership of these files are transferred to the CDM, which will close
   // the files immediately after use.
-  DVLOG(1) << __func__ << ": Calling " << kVerifyCdmHostFuncName << "().";
-  if (!verify_cdm_host_func(cdm_host_files.data(), cdm_host_files.size())) {
+  DVLOG(1) << __func__ << ": Calling " << kVerifyCdmHostFuncName << "() with "
+           << cdm_host_files.size() << " files.";
+  for (const auto& host_file : cdm_host_files) {
+    DVLOG(1) << " - File Path: " << host_file.file_path;
+    DVLOG(1) << " - File: " << host_file.file;
+    DVLOG(1) << " - Sig File: " << host_file.sig_file;
+  }
+
+  if (!verify_cdm_host_func(cdm_host_files_ptr, cdm_host_files.size())) {
     DVLOG(1) << "Failed to verify CDM host.";
     CloseAllFiles();
     return false;
@@ -215,39 +207,27 @@ bool CdmHostFiles::VerifyFiles(base::NativeLibrary cdm_adapter_library,
 }
 
 #if defined(POSIX_WITH_ZYGOTE)
-bool CdmHostFiles::OpenFilesForAllRegisteredCdms() {
+void CdmHostFiles::OpenFilesForAllRegisteredCdms() {
   std::vector<base::FilePath> cdm_adapter_paths;
   GetRegisteredCdms(&cdm_adapter_paths);
   if (cdm_adapter_paths.empty()) {
     DVLOG(1) << "No CDM registered.";
-    return false;
+    return;
   }
 
-  // Ignore
-  for (auto& cdm_adapter_path : cdm_adapter_paths) {
-    bool result = OpenCdmFiles(cdm_adapter_path);
-    if (!result)
-      DVLOG(1) << "CDM files cannot be opened for " << cdm_adapter_path.value();
-    // Ignore the failure and try other registered CDM.
-  }
+  for (auto& cdm_adapter_path : cdm_adapter_paths)
+    OpenCdmFiles(cdm_adapter_path);
 
-  if (cdm_specific_files_map_.empty()) {
-    DVLOG(1) << "CDM specific files cannot be opened for any registered CDM.";
-    return false;
-  }
-
-  return OpenCommonFiles();
+  OpenCommonFiles();
 }
 #endif
 
-bool CdmHostFiles::OpenFiles(const base::FilePath& cdm_adapter_path) {
-  if (!OpenCdmFiles(cdm_adapter_path))
-    return false;
-
-  return OpenCommonFiles();
+void CdmHostFiles::OpenFiles(const base::FilePath& cdm_adapter_path) {
+  OpenCdmFiles(cdm_adapter_path);
+  OpenCommonFiles();
 }
 
-bool CdmHostFiles::OpenCommonFiles() {
+void CdmHostFiles::OpenCommonFiles() {
   DCHECK(common_files_.empty());
 
   std::vector<CdmHostFilePath> cdm_host_file_paths;
@@ -255,34 +235,21 @@ bool CdmHostFiles::OpenCommonFiles() {
                                                   &cdm_host_file_paths);
 
   for (const CdmHostFilePath& value : cdm_host_file_paths) {
-    std::unique_ptr<CdmHostFile> cdm_host_file =
-        CdmHostFile::Create(value.file_path, value.sig_file_path);
-    if (cdm_host_file) {
-      common_files_.push_back(std::move(cdm_host_file));
-      continue;
-    }
-
-    if (!IgnoreMissingCdmHostFile())
-      return false;
+    common_files_.push_back(
+        CdmHostFile::Create(value.file_path, value.sig_file_path));
   }
-
-  return true;
 }
 
-bool CdmHostFiles::OpenCdmFiles(const base::FilePath& cdm_adapter_path) {
+void CdmHostFiles::OpenCdmFiles(const base::FilePath& cdm_adapter_path) {
   DCHECK(!cdm_adapter_path.empty());
   DCHECK(!cdm_specific_files_map_.count(cdm_adapter_path));
 
   std::unique_ptr<CdmHostFile> cdm_adapter_file =
       CdmHostFile::Create(cdm_adapter_path, GetSigFilePath(cdm_adapter_path));
-  if (!cdm_adapter_file)
-    return false;
 
   base::FilePath cdm_path = GetCdmPath(cdm_adapter_path);
   std::unique_ptr<CdmHostFile> cdm_file =
       CdmHostFile::Create(cdm_path, GetSigFilePath(cdm_path));
-  if (!cdm_file)
-    return false;
 
   ScopedFileVector cdm_specific_files;
   cdm_specific_files.reserve(2);
@@ -290,38 +257,26 @@ bool CdmHostFiles::OpenCdmFiles(const base::FilePath& cdm_adapter_path) {
   cdm_specific_files.push_back(std::move(cdm_file));
 
   cdm_specific_files_map_[cdm_adapter_path] = std::move(cdm_specific_files);
-  return true;
 }
 
-bool CdmHostFiles::TakePlatformFiles(
+void CdmHostFiles::TakePlatformFiles(
     const base::FilePath& cdm_adapter_path,
     std::vector<cdm::HostFile>* cdm_host_files) {
   DCHECK(cdm_host_files->empty());
-
-  if (!IgnoreMissingCdmHostFile())
-    DCHECK(!common_files_.empty());
-
-  // Check whether CDM specific files exist.
-  const auto& iter = cdm_specific_files_map_.find(cdm_adapter_path);
-  if (iter == cdm_specific_files_map_.end()) {
-    // This could happen on Linux where CDM files fail to open for Foo CDM, but
-    // now we hit Bar CDM.
-    DVLOG(1) << "No CDM specific files for " << cdm_adapter_path.value();
-    return false;
-  }
-
-  const ScopedFileVector& cdm_specific_files = iter->second;
-
-  cdm_host_files->reserve(common_files_.size() + cdm_specific_files.size());
 
   // Populate an array of cdm::HostFile.
   for (const auto& file : common_files_)
     cdm_host_files->push_back(file->TakePlatformFile());
 
-  for (const auto& file : cdm_specific_files)
-    cdm_host_files->push_back(file->TakePlatformFile());
-
-  return true;
+  // Check whether CDM specific files exist.
+  const auto& iter = cdm_specific_files_map_.find(cdm_adapter_path);
+  if (iter == cdm_specific_files_map_.end()) {
+    NOTREACHED() << "No CDM specific files for " << cdm_adapter_path.value();
+  } else {
+    const ScopedFileVector& cdm_specific_files = iter->second;
+    for (const auto& file : cdm_specific_files)
+      cdm_host_files->push_back(file->TakePlatformFile());
+  }
 }
 
 void CdmHostFiles::CloseAllFiles() {
