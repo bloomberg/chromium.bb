@@ -101,6 +101,9 @@ class SavedFilesService : public KeyedService,
   // Clears all retained files.
   void ClearQueue(const extensions::Extension* extension);
 
+  // Called to notify that the application has begun to exit.
+  void OnApplicationTerminating();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(::SavedFilesServiceUnitTest, RetainTwoFilesTest);
   FRIEND_TEST_ALL_PREFIXES(::SavedFilesServiceUnitTest, EvictionTest);

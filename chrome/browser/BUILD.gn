@@ -1924,8 +1924,14 @@ split_static_library("browser") {
         "media/cast_transport_host_filter.h",
       ]
     }
-    public_deps += [ "//chrome/browser/extensions" ]
-    allow_circular_includes_from += [ "//chrome/browser/extensions" ]
+    public_deps += [
+      "//chrome/browser/apps",
+      "//chrome/browser/extensions",
+    ]
+    allow_circular_includes_from += [
+      "//chrome/browser/apps",
+      "//chrome/browser/extensions",
+    ]
     deps += [
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",

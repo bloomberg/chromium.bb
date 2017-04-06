@@ -22,6 +22,9 @@ class SavedFilesServiceFactory : public BrowserContextKeyedServiceFactory {
   static SavedFilesService* GetForBrowserContext(
       content::BrowserContext* context);
 
+  static SavedFilesService* GetForBrowserContextIfExists(
+      content::BrowserContext* context);
+
   static SavedFilesServiceFactory* GetInstance();
 
  private:

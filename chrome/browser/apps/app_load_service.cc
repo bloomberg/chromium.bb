@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_load_service.h"
+#include "chrome/browser/apps/app_load_service.h"
 
-#include "apps/app_load_service_factory.h"
 #include "apps/app_restore_service.h"
 #include "apps/launcher.h"
+#include "chrome/browser/apps/app_load_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "content/public/browser/browser_context.h"
@@ -29,8 +29,7 @@ namespace apps {
 
 AppLoadService::PostReloadAction::PostReloadAction()
     : action_type(LAUNCH_FOR_RELOAD),
-      command_line(base::CommandLine::NO_PROGRAM) {
-}
+      command_line(base::CommandLine::NO_PROGRAM) {}
 
 AppLoadService::AppLoadService(content::BrowserContext* context)
     : context_(context) {

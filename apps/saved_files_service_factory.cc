@@ -18,6 +18,13 @@ SavedFilesService* SavedFilesServiceFactory::GetForBrowserContext(
 }
 
 // static
+SavedFilesService* SavedFilesServiceFactory::GetForBrowserContextIfExists(
+    content::BrowserContext* context) {
+  return static_cast<SavedFilesService*>(
+      GetInstance()->GetServiceForBrowserContext(context, false));
+}
+
+// static
 SavedFilesServiceFactory* SavedFilesServiceFactory::GetInstance() {
   return base::Singleton<SavedFilesServiceFactory>::get();
 }

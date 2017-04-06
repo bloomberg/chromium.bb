@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_load_service_factory.h"
+#include "chrome/browser/apps/app_load_service_factory.h"
 
-#include "apps/app_load_service.h"
+#include "chrome/browser/apps/app_load_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -28,8 +28,8 @@ AppLoadServiceFactory* AppLoadServiceFactory::GetInstance() {
 
 AppLoadServiceFactory::AppLoadServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "AppLoadService",
-        BrowserContextDependencyManager::GetInstance()) {
+          "AppLoadService",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
@@ -37,8 +37,7 @@ AppLoadServiceFactory::AppLoadServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
-AppLoadServiceFactory::~AppLoadServiceFactory() {
-}
+AppLoadServiceFactory::~AppLoadServiceFactory() {}
 
 KeyedService* AppLoadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -56,8 +55,8 @@ bool AppLoadServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 content::BrowserContext* AppLoadServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Redirected in incognito.
-  return extensions::ExtensionsBrowserClient::Get()->
-      GetOriginalContext(context);
+  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
+      context);
 }
 
 }  // namespace apps

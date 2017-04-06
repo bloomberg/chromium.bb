@@ -14,7 +14,6 @@
 #include "apps/saved_files_service_factory.h"
 #include "base/memory/ptr_util.h"
 #include "base/value_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_host.h"
@@ -202,9 +201,6 @@ SavedFilesService::SavedFilesService(content::BrowserContext* context)
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
 }
 
 SavedFilesService::~SavedFilesService() {}
@@ -212,23 +208,12 @@ SavedFilesService::~SavedFilesService() {}
 void SavedFilesService::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      const Extension* extension = host->extension();
-      if (extension) {
-        ClearQueueIfNoRetainPermission(extension);
-        Clear(extension->id());
-      }
-      break;
-    }
-
-    case chrome::NOTIFICATION_APP_TERMINATING: {
-      // Stop listening to NOTIFICATION_EXTENSION_HOST_DESTROYED in particular
-      // as all extension hosts will be destroyed as a result of shutdown.
-      registrar_.RemoveAll();
-      break;
-    }
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
+  ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+  const Extension* extension = host->extension();
+  if (extension) {
+    ClearQueueIfNoRetainPermission(extension);
+    Clear(extension->id());
   }
 }
 
@@ -274,6 +259,12 @@ void SavedFilesService::ClearQueueIfNoRetainPermission(
 void SavedFilesService::ClearQueue(const extensions::Extension* extension) {
   ClearSavedFileEntries(ExtensionPrefs::Get(context_), extension->id());
   Clear(extension->id());
+}
+
+void SavedFilesService::OnApplicationTerminating() {
+  // Stop listening to NOTIFICATION_EXTENSION_HOST_DESTROYED in particular
+  // as all extension hosts will be destroyed as a result of shutdown.
+  registrar_.RemoveAll();
 }
 
 SavedFilesService::SavedFiles* SavedFilesService::Get(

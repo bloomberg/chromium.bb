@@ -17,21 +17,8 @@ include_rules = [
   "+ui",
   "+win8",
 
-  # Temporary allowed includes.
-  # TODO(benwells): remove these (http://crbug.com/159366)
-  "+chrome/browser/chrome_notification_types.h",
-  "+chrome/browser/chromeos/login/users/user_manager.h",
-  "+chrome/browser/lifetime/application_lifetime.h",
-  "+chrome/common/chrome_switches.h",
-
   # For default app icon.
   "!chrome/grit/theme_resources.h",
-
-  # Pieces of the extensions system that need to move to src/extensions.
-  # See http://crbug.com/162530 for details.
-  "+chrome/browser/extensions/api/file_system/file_system_api.h",
-  "+chrome/browser/extensions/chrome_extension_web_contents_observer.h",
-  "+chrome/browser/extensions/unpacked_installer.h",
 ]
 
 specific_include_rules = {
@@ -48,6 +35,7 @@ specific_include_rules = {
     "+chrome/browser/profiles/profile_manager.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/browser/ui/simple_message_box_internal.h",
+    "+chrome/common/chrome_switches.h",
     "+chrome/test/base/in_process_browser_test.h",
     "+chrome/test/base/interactive_test_utils.h",
     "+chrome/test/base/testing_profile.h",
@@ -55,5 +43,8 @@ specific_include_rules = {
     # TODO(benwells): Move app_browsertest_util into apps component once there
     # is an apps shell to test with.
     "+chrome/browser/apps/app_browsertest_util.h",
+    # Pieces of the extensions system that need to move to src/extensions.
+    # See http://crbug.com/162530 for details.
+    "+chrome/browser/extensions/api/file_system/file_system_api.h",
   ]
 }

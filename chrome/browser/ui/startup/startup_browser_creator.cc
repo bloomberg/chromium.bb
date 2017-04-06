@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 
-#include "apps/app_load_service.h"
 #include "apps/switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -37,6 +36,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"

@@ -78,7 +78,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
-#include "chrome/browser/apps/shortcut_manager_factory.h"
+#include "chrome/browser/apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -182,7 +182,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::ExtensionManagementFactory::GetInstance();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  AppShortcutManagerFactory::GetInstance();
+  chrome_apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
