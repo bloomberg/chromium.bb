@@ -11,9 +11,9 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitFontSizeDelta::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   return CSSPropertyParserHelpers::consumeLength(
-      range, context->mode(), ValueRangeAll,
+      range, context.mode(), ValueRangeAll,
       CSSPropertyParserHelpers::UnitlessQuirk::Allow);
 }
 

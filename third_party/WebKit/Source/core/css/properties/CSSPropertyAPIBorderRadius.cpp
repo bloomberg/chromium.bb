@@ -12,13 +12,13 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIBorderRadius::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSValue* parsedValue1 = CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context->mode(), ValueRangeNonNegative);
+      range, context.mode(), ValueRangeNonNegative);
   if (!parsedValue1)
     return nullptr;
   CSSValue* parsedValue2 = CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context->mode(), ValueRangeNonNegative);
+      range, context.mode(), ValueRangeNonNegative);
   if (!parsedValue2)
     parsedValue2 = parsedValue1;
   return CSSValuePair::create(parsedValue1, parsedValue2,

@@ -12,7 +12,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIScale::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
   CSSValueID id = range.peek().id();

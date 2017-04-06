@@ -36,7 +36,7 @@ static bool consumePan(CSSParserTokenRange& range,
 
 const CSSValue* CSSPropertyAPITouchAction::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   CSSValueID id = range.peek().id();
   if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
