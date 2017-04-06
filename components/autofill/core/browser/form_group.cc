@@ -57,4 +57,14 @@ bool FormGroup::SetInfo(const AutofillType& type,
   return true;
 }
 
+bool FormGroup::HasInfo(ServerFieldType type) const {
+  return HasInfo(AutofillType(type));
+}
+
+bool FormGroup::HasInfo(const AutofillType& type) const {
+  // Use "en-US" as a placeholder locale. We are only interested in emptiness,
+  // not in the presentation of the string.
+  return !GetInfo(type, "en-US").empty();
+}
+
 }  // namespace autofill

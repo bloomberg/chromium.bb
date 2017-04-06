@@ -15,6 +15,7 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_request_delegate.h"
+#include "components/payments/core/profile_util.h"
 
 namespace payments {
 
@@ -161,11 +162,21 @@ void PaymentRequestState::PopulateProfileCache() {
     profile_cache_.push_back(
         base::MakeUnique<autofill::AutofillProfile>(*profiles[i]));
 
-    // TODO(tmartino): Implement deduplication rules specific to shipping and
-    // contact profiles.
+    // TODO(tmartino): Implement deduplication rules specific to shipping
+    // profiles.
     shipping_profiles_.push_back(profile_cache_[i].get());
-    contact_profiles_.push_back(profile_cache_[i].get());
   }
+
+  std::vector<autofill::AutofillProfile*> raw_profiles_for_filtering(
+      profile_cache_.size());
+  std::transform(profile_cache_.begin(), profile_cache_.end(),
+                 raw_profiles_for_filtering.begin(),
+                 [](const std::unique_ptr<autofill::AutofillProfile>& p) {
+                   return p.get();
+                 });
+
+  contact_profiles_ = profile_util::FilterProfilesForContact(
+      raw_profiles_for_filtering, GetApplicationLocale(), *spec_);
 
   // Create the list of available instruments.
   const std::vector<autofill::CreditCard*>& cards =
@@ -242,32 +253,8 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
   if (spec_->request_shipping() && selected_shipping_profile_ == nullptr)
     return false;
 
-  // TODO(mathp): Make an encompassing class to validate contact info.
-  if (spec_->request_payer_name() &&
-      (selected_contact_profile_ == nullptr ||
-       selected_contact_profile_
-           ->GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale_)
-           .empty())) {
-    return false;
-  }
-  if (spec_->request_payer_email() &&
-      (selected_contact_profile_ == nullptr ||
-       selected_contact_profile_
-           ->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
-                     app_locale_)
-           .empty())) {
-    return false;
-  }
-  if (spec_->request_payer_phone() &&
-      (selected_contact_profile_ == nullptr ||
-       selected_contact_profile_
-           ->GetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-                     app_locale_)
-           .empty())) {
-    return false;
-  }
-
-  return true;
+  profile_util::PaymentsProfileComparator comparator(app_locale_, *spec_);
+  return comparator.IsContactInfoComplete(selected_contact_profile_);
 }
 
 }  // namespace payments

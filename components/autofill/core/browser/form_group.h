@@ -53,6 +53,10 @@ class FormGroup {
                        const base::string16& value,
                        const std::string& app_locale);
 
+  // Returns true iff the string associated with |type| is nonempty.
+  bool HasInfo(ServerFieldType type) const;
+  bool HasInfo(const AutofillType& type) const;
+
  protected:
   // AutofillProfile needs to call into GetSupportedTypes() for objects of
   // non-AutofillProfile type, for which mere inheritance is insufficient.
