@@ -32,3 +32,24 @@ source_set("tab_collection_ui") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "tab_collection_mediator_unittest.mm",
+  ]
+  deps = [
+    ":tab_collection",
+    ":tab_collection_ui",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/tabs:test_support",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//url:url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+}

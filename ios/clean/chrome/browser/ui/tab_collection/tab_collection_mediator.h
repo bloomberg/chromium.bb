@@ -23,6 +23,9 @@ class WebStateList;
 // list.
 @property(nonatomic, weak) id<TabCollectionConsumer> consumer;
 
+// Stops observing all objects.
+- (void)disconnect;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_MEDIATOR_H_

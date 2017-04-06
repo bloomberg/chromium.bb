@@ -21,10 +21,27 @@
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
 
+- (void)dealloc {
+  [self disconnect];
+}
+
+#pragma mark - Public
+
+- (void)disconnect {
+  self.webStateList = nullptr;
+}
+
 #pragma mark - Properties
 
 - (void)setWebStateList:(WebStateList*)webStateList {
+  if (_webStateList) {
+    _webStateList->RemoveObserver(_webStateListObserver.get());
+    _webStateListObserver.reset();
+  }
   _webStateList = webStateList;
+  if (!_webStateList) {
+    return;
+  }
   _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
   _webStateList->AddObserver(_webStateListObserver.get());
 }
@@ -55,9 +72,10 @@
      didMoveWebState:(web::WebState*)webState
            fromIndex:(int)fromIndex
              toIndex:(int)toIndex {
-  NSMutableIndexSet* indexes = [[NSMutableIndexSet alloc] init];
-  [indexes addIndex:fromIndex];
-  [indexes addIndex:toIndex];
+  int minIndex = std::min(fromIndex, toIndex);
+  int length = std::abs(fromIndex - toIndex) + 1;
+  NSIndexSet* indexes =
+      [[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(minIndex, length)];
   [self.consumer reloadItemsAtIndexes:indexes];
 }
 

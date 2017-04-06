@@ -57,6 +57,7 @@
 
 - (void)stop {
   [super stop];
+  [self.mediator disconnect];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 
@@ -67,8 +68,7 @@
 }
 
 - (void)closeTabStripTabAtIndex:(int)index {
-  std::unique_ptr<web::WebState> closedWebState(
-      self.webStateList.DetachWebStateAt(index));
+  self.webStateList.CloseWebStateAt(index);
 }
 
 @end
