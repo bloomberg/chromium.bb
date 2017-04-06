@@ -600,9 +600,9 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
   return impl->OnMessageReceived(msg);
 }
 
-void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
-                                           bool is_new_navigation,
-                                           bool content_initiated) {
+void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
+                                              bool is_new_navigation,
+                                              bool content_initiated) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.initialize();
