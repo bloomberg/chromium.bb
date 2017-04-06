@@ -80,6 +80,26 @@ message ChallengePublicKeyInfo {
   repeated ChallengeSignatureAlgorithm signature_algorithm = 2;
 }
 
+// Policies which determine how a key can be used. |GetSupportedKeyPolicies|
+// request can be used to determine if a given policy value is supported.
+// This message is also used inside of |GetKeyDataReply|, which allows clients
+// to query current key state without submitting an authentication attempt.
+message KeyPolicy {
+  // Is this key additionally protected from brute force attacks as a low
+  // entropy credential? For such keys, delays between subsequent unsuccessful
+  // authorization attempts and/or a limit on the number of such attempts are
+  // enforced to slow down dictionary-based attacks. Set this to true when
+  // registering a key to protect it.
+  optional bool low_entropy_credential = 1;
+  // If true, the key is "locked" after too many unsuccessful authorization
+  // attempts. Future authentication attempts against a locked key fail with
+  // CRYPTOHOME_ERROR_TPM_DEFEND_LOCK error.
+  // Currently, such locking is supported only for keys with
+  // |low_entropy_credential| policy set to true,
+  // This field is ignored when registering a new key.
+  optional bool auth_locked = 2;
+}
+
 // Non-secret data describing the key.
 message KeyData {
   // The KeyType should specify the handling needed by Cryptohome
@@ -111,6 +131,9 @@ message KeyData {
   // Is set when |type| is |KEY_TYPE_CHALLENGE_RESPONSE|. Specifies the list of
   // keys that should be used for challenge requests.
   repeated ChallengePublicKeyInfo challenge_response_key = 7;
+  // Optional additional policy to apply to the key. Certain policy values
+  // require hardware support which may not be available.
+  optional KeyPolicy policy = 8;
 }
 
 // Key is not presently persisted to disk, but it acts as the single authority

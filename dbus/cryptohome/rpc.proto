@@ -117,6 +117,7 @@ message BaseReply {
   optional CryptohomeErrorCode error = 1;
 
   extensions 1000 to max;
+  // Next ID to use for extensions: 1011
 }
 
 // The MountRequest call may return more than just success or failure
@@ -400,4 +401,20 @@ message KeyChallengeResponse {
 message SignatureKeyChallengeResponseData {
   // The signature blob of the requested data.
   optional bytes signature = 1;
+}
+
+// Request a GetSupportedKeyPoliciesReply from cryptohome.
+message GetSupportedKeyPoliciesRequest {
+}
+
+// Response that informs the caller which KeyPolicy features are supported.
+message GetSupportedKeyPoliciesReply {
+  // Next ID to use: 2
+
+  extend BaseReply {
+    optional GetSupportedKeyPoliciesReply reply = 1010;
+  }
+
+  // Does it support low entropy credentials.
+  optional bool low_entropy_credentials = 1;
 }

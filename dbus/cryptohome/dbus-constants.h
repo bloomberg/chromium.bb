@@ -134,6 +134,7 @@ const char kCryptohomeRemoveFirmwareManagementParameters[] =
 const char kCryptohomeMigrateToDircrypto[] = "MigrateToDircrypto";
 const char kCryptohomeMigrateToDircryptoEx[] = "MigrateToDircryptoEx";
 const char kCryptohomeNeedsDircryptoMigration[] = "NeedsDircryptoMigration";
+const char kCryptohomeGetSupportedKeyPolicies[] = "GetSupportedKeyPolicies";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
