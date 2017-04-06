@@ -451,6 +451,7 @@ source_set("unit_tests") {
     "process_manager_unittest.cc",
     "process_map_unittest.cc",
     "quota_service_unittest.cc",
+    "renderer_startup_helper_unittest.cc",
     "runtime_data_unittest.cc",
     "sandboxed_unpacker_unittest.cc",
     "updater/update_service_unittest.cc",

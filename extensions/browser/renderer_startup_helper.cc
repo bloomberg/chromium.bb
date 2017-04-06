@@ -4,6 +4,9 @@
 
 #include "extensions/browser/renderer_startup_helper.h"
 
+#include "base/debug/dump_without_crashing.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -31,6 +34,8 @@ RendererStartupHelper::RendererStartupHelper(BrowserContext* browser_context)
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 RendererStartupHelper::~RendererStartupHelper() {}
@@ -45,6 +50,10 @@ void RendererStartupHelper::Observe(
           content::Source<content::RenderProcessHost>(source).ptr());
       break;
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+    // Fall through.
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+      // This is needed to take care of the case when a RenderProcessHost is
+      // reused for a different renderer process.
       UntrackProcess(content::Source<content::RenderProcessHost>(source).ptr());
       break;
     default:
@@ -96,6 +105,10 @@ void RendererStartupHelper::InitializeProcess(
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& ext : extensions) {
+    // OnLoadedExtension should have already been called for the extension.
+    DCHECK(base::ContainsKey(extension_process_map_, ext->id()));
+    DCHECK(!base::ContainsKey(extension_process_map_[ext->id()], process));
+
     // Renderers don't need to know about themes.
     if (!ext->is_theme()) {
       // TODO(kalman): Only include tab specific permissions for extension
@@ -105,18 +118,23 @@ void RendererStartupHelper::InitializeProcess(
       bool include_tab_permissions = true;
       loaded_extensions.push_back(
           ExtensionMsg_Loaded_Params(ext.get(), include_tab_permissions));
+      extension_process_map_[ext->id()].insert(process);
     }
   }
   process->Send(new ExtensionMsg_Loaded(loaded_extensions));
   auto iter = pending_active_extensions_.find(process);
   if (iter != pending_active_extensions_.end()) {
     for (const ExtensionId& id : iter->second) {
+      // The extension should be loaded in the process.
       DCHECK(extensions.Contains(id));
+      DCHECK(base::ContainsKey(extension_process_map_, id));
+      DCHECK(base::ContainsKey(extension_process_map_[id], process));
       process->Send(new ExtensionMsg_ActivateExtension(id));
     }
   }
 
   initialized_processes_.insert(process);
+  pending_active_extensions_.erase(process);
 }
 
 void RendererStartupHelper::UntrackProcess(
@@ -128,24 +146,50 @@ void RendererStartupHelper::UntrackProcess(
 
   initialized_processes_.erase(process);
   pending_active_extensions_.erase(process);
+  for (auto& extension_process_pair : extension_process_map_)
+    extension_process_pair.second.erase(process);
 }
 
 void RendererStartupHelper::ActivateExtensionInProcess(
     const Extension& extension,
     content::RenderProcessHost* process) {
+  // The extension should have been loaded already. Dump without crashing to
+  // debug crbug.com/528026.
+  if (!base::ContainsKey(extension_process_map_, extension.id())) {
+#if DCHECK_IS_ON()
+    NOTREACHED() << "Extension " << extension.id()
+                 << "activated before loading";
+#else
+    base::debug::DumpWithoutCrashing();
+    return;
+#endif
+  }
+
   // Renderers don't need to know about themes. We also don't normally
   // "activate" themes, but this could happen if someone tries to open a tab
   // to the e.g. theme's manifest.
   if (extension.is_theme())
     return;
 
-  if (initialized_processes_.count(process))
+  if (base::ContainsKey(initialized_processes_, process)) {
+    DCHECK(base::ContainsKey(extension_process_map_[extension.id()], process));
     process->Send(new ExtensionMsg_ActivateExtension(extension.id()));
-  else
+  } else {
     pending_active_extensions_[process].insert(extension.id());
+  }
 }
 
 void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
+  // Extension was already loaded.
+  // TODO(crbug.com/708230): Ensure that clients don't call this for an
+  // already loaded extension and change this to a DCHECK.
+  if (base::ContainsKey(extension_process_map_, extension.id()))
+    return;
+
+  // Mark the extension as loaded.
+  std::set<content::RenderProcessHost*>& loaded_process_set =
+      extension_process_map_[extension.id()];
+
   // Renderers don't need to know about themes.
   if (extension.is_theme())
     return;
@@ -157,19 +201,31 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   std::vector<ExtensionMsg_Loaded_Params> params(
       1,
       ExtensionMsg_Loaded_Params(&extension, false /* no tab permissions */));
-  for (content::RenderProcessHost* process : initialized_processes_)
+  for (content::RenderProcessHost* process : initialized_processes_) {
     process->Send(new ExtensionMsg_Loaded(params));
+    loaded_process_set.insert(process);
+  }
 }
 
 void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
-  // Renderers don't need to know about themes.
-  if (extension.is_theme())
+  // Extension is not loaded.
+  // TODO(crbug.com/708230): Ensure that clients call this for a loaded
+  // extension only and change this to a DCHECK.
+  if (!base::ContainsKey(extension_process_map_, extension.id()))
     return;
 
-  for (content::RenderProcessHost* process : initialized_processes_)
+  const std::set<content::RenderProcessHost*>& loaded_process_set =
+      extension_process_map_[extension.id()];
+  for (content::RenderProcessHost* process : loaded_process_set) {
+    DCHECK(base::ContainsKey(initialized_processes_, process));
     process->Send(new ExtensionMsg_Unloaded(extension.id()));
+  }
+
   for (auto& process_extensions_pair : pending_active_extensions_)
     process_extensions_pair.second.erase(extension.id());
+
+  // Mark the extension as unloaded.
+  extension_process_map_.erase(extension.id());
 }
 
 //////////////////////////////////////////////////////////////////////////////
