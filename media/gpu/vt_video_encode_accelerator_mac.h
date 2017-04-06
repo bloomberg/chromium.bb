@@ -87,12 +87,8 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   // is configured using ConfigureCompressionSession().
   bool ResetCompressionSession();
 
-  // Create a compression session, with HW encoder enforced if
-  // |require_hw_encoding| is set.
-  bool CreateCompressionSession(
-      base::ScopedCFTypeRef<CFDictionaryRef> attributes,
-      const gfx::Size& input_size,
-      bool require_hw_encoding);
+  // Create a compression session.
+  bool CreateCompressionSession(const gfx::Size& input_size);
 
   // Configure the current compression session using current encoder settings.
   bool ConfigureCompressionSession();
