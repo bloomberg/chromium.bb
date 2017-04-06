@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test AudioParam Nominal Range Values</title>
   </head>
 
@@ -223,27 +223,30 @@
       ];
 
       // Create the context so we can use it in the following test.
-      audit.defineTask("initialize", function (done) {
+      audit.define("initialize", (task, should) => {
         // Just any context so that we can create the nodes.
-        context = new OfflineAudioContext(1, 1, sampleRate);
-        done();
+        should(() => {
+          context = new OfflineAudioContext(1, 1, sampleRate);
+        }, "Create context for tests")
+        .notThrow();
+        task.done();
       });
 
       // Create a task for each entry in testConfigs
       for (let test in testConfigs) {
         var config = testConfigs[test]
-        audit.defineTask(config.creator, (function (c) {
-          return function (done) {
+        audit.define(config.creator, (function (c) {
+          return (task, should) => {
             var node = context[c.creator](...c.args);
-            testLimits(c.creator, node, c.limits);
-            done();
+            testLimits(should, c.creator, node, c.limits);
+            task.done();
           };
         })(config));
       }
 
       // Test the AudioListener params that were added for the automated Panner
-      audit.defineTask("AudioListener", function (done) {
-        testLimits("", context.listener, {
+      audit.define("AudioListener", (task, should) => {
+        testLimits(should, "", context.listener, {
           positionX: {
             minValue: -mostPositiveFloat,
             maxValue: mostPositiveFloat,
@@ -281,11 +284,11 @@
             maxValue: mostPositiveFloat,
           }
         });
-        done();
+        task.done();
       });
 
       // Verify that we have tested all the create methods available on the context.
-      audit.defineTask("verifyTests", function (done) {
+      audit.define("verifyTests", (task, should) => {
         var allNodes = new Set();
         // Create the set of all "create" methods from the context.
         for (var method in context) {
@@ -309,16 +312,17 @@
             output.push(" " + item.substring(6));
         }
 
-        Should("Number of nodes not tested", output.length === 0)
-          .summarize(": 0",
-                     ": " + output);
+        should(output.length === 0, "Number of nodes not tested")
+          .message(": 0",
+                   ": " + output);
       
-        done();
+        task.done();
       });
 
       // Simple test of a few automation methods to verify we get warnings.
-      audit.defineTask("automation", function (done) {
+      audit.define("automation", (task, should) => {
         // Just use a DelayNode for testing because the audio param has finite limits.
+        should(() => {
         var d = context.createDelay();
 
         // The console output should have the warnings that we're interested in.
@@ -327,15 +331,12 @@
         d.delayTime.exponentialRampToValueAtTime(3, 2);
         d.delayTime.setTargetAtTime(-1, 3, .1);
         d.delayTime.setValueCurveAtTime(Float32Array.from([.1, .2, 1.5, -1]), 4, .1);
-        done();
+        }, "Test automations (check console logs)")
+          .notThrow();
+        task.done();
       });
 
-      // All done!
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Is |object| an AudioParam?  We determine this by checking the constructor name.
       function isAudioParam(object) {
@@ -351,7 +352,7 @@
       // Check the min and max values for the AudioParam attribute named |paramName| for the |node|.
       // The expected limits is given by the dictionary |limits|.  If some test fails, add the name
       // of the failed 
-      function validateAudioParamLimits(node, paramName, limits) {
+      function validateAudioParamLimits(should, node, paramName, limits) {
         var nodeName = node.constructor.name;
         var parameter = node[paramName];
         var prefix = nodeName + "." + paramName;
@@ -359,26 +360,27 @@
         var success = true;
         if (hasValidLimits(limits[paramName])) {
           // Verify that the min and max values for the parameter are correct.
-          var isCorrect = Should(prefix + ".minValue", parameter.minValue)
+          var isCorrect = should(parameter.minValue, prefix + ".minValue")
             .beEqualTo(limits[paramName].minValue);
-          isCorrect = Should(prefix + ".maxValue", parameter.maxValue)
+          isCorrect = should(parameter.maxValue, prefix + ".maxValue")
             .beEqualTo(limits[paramName].maxValue) && isCorrect;
 
           // Verify that the min and max attributes are read-only
           parameter.minValue = Math.PI;
           var isReadOnly;
-          isReadOnly = Should(prefix + ".minValue = Math.PI", parameter.minValue)
+          isReadOnly = should(parameter.minValue, prefix + ".minValue = Math.PI")
             .notBeEqualTo(Math.PI);
 
-          Should(prefix + ".minValue is read-only", isReadOnly)
+          should(isReadOnly, prefix + ".minValue is read-only")
             .beEqualTo(true);
 
           isCorrect = isReadOnly && isCorrect;
 
           parameter.maxValue = Math.PI;
-          isReadOnly = Should(prefix + ".maxValue = Math.PI", parameter.maxValue)
+          isReadOnly = should(parameter.maxValue,
+              prefix + ".maxValue = Math.PI")
             .notBeEqualTo(Math.PI);
-          Should(prefix + ".maxValue is read-only", isReadOnly)
+          should(isReadOnly, prefix + ".maxValue is read-only")
             .beEqualTo(true);
 
           isCorrect = isReadOnly && isCorrect;
@@ -393,7 +395,8 @@
           if (newValue >= -mostPositiveFloat) {
             parameter.value = newValue;
             clippingTested = true;
-            isClipped = Should("Set " + prefix + ".value = " + newValue, parameter.value)
+            isClipped = should(parameter.value,
+                "Set " + prefix + ".value = " + newValue)
               .beEqualTo(parameter.minValue) && isClipped;
           }
 
@@ -402,13 +405,14 @@
           if (newValue <= mostPositiveFloat) {
             parameter.value = newValue;
             clippingTested = true;
-            isClipped = Should("Set " + prefix + ".value = " + newValue, parameter.value)
+            isClipped = should(parameter.value,
+                "Set " + prefix + ".value = " + newValue)
               .beEqualTo(parameter.maxValue) && isClipped;
-
           }
 
           if (clippingTested) {
-            Should(prefix + "was clipped to lie within the nominal range", isClipped)
+            should(isClipped,
+                prefix + "was clipped to lie within the nominal range")
               .beEqualTo(true);
           }
 
@@ -417,8 +421,9 @@
           success = isCorrect && success;
         } else {
           // Test config didn't specify valid limits.  Fail this test!
-//          testFailed("Limits for " + nodeName + "." + paramName + " were not correctly defined.");
-          Should("Limits for " + nodeName + "." + paramName + " were correctly defined", clippingTested)
+          should(clippingTested,
+              "Limits for " + nodeName + "." + paramName +
+              " were correctly defined")
             .beEqualTo(false);
        
           success = false;
@@ -430,7 +435,7 @@
       // Test all of the AudioParams for |node| using the expected values in |limits|.
       // |creatorName| is the name of the method to create the node, and is used to keep trakc of
       // which tests we've run.
-      function testLimits(creatorName, node, limits) {
+      function testLimits(should, creatorName, node, limits) {
         var nodeName = node.constructor.name;
         testedMethods.add(creatorName);
 
@@ -446,7 +451,8 @@
         Object.keys(node.__proto__).forEach(function (paramName) {
           if (isAudioParam(node[paramName])) {
             audioParams.push(paramName);
-            var isValid = validateAudioParamLimits(node, paramName, limits, incorrectParams);
+            var isValid = validateAudioParamLimits(should, node, paramName,
+              limits, incorrectParams);
             if (!isValid)
               incorrectParams.push(paramName);
       
@@ -457,14 +463,14 @@
         // Print an appropriate message depending on whether there were AudioParams defined or not.
         if (audioParams.length) {
           var message = "Nominal ranges for AudioParam(s) of " + node.constructor.name;
-          Should(message, success)
-            .summarize("are correct",
-                       "are incorrect for: " +  + incorrectParams);
+          should(success, message)
+            .message("are correct",
+                     "are incorrect for: " +  + incorrectParams);
           return success;
         } else {
-          Should(nodeName, !limits)
-            .summarize("has no AudioParams as expected",
-                       "has no AudioParams but test expected " + limits);
+          should(!limits, nodeName)
+            .message("has no AudioParams as expected",
+                     "has no AudioParams but test expected " + limits);
         }
       }
     </script>

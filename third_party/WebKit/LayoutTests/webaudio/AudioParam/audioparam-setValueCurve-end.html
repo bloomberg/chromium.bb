@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audio-param.js"></script>
   </head>
 
@@ -63,20 +63,16 @@
 
       // Define tests from the configs
       for (k in testConfigs) {
-        audit.defineTask(k + ": " + testConfigs[k].automation, (function (config) {
-          return function (done) {
-            runTest(config).then(done);
+        audit.define(k + ": " + testConfigs[k].automation, (function (config) {
+          return (task, should) => {
+            runTest(should, config).then(() => task.done());
           };
         })(testConfigs[k]));
       }
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
+      audit.run();
 
-      audit.runTasks();
-
-      function runTest(options) {
+      function runTest(should, options) {
         // For the test, use a gain node with a constant input to test the
         // automations.  
         var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
@@ -136,8 +132,11 @@
             message += ", 0.01";
           message += ")";
 
-          Should(message + ": value at time " + curveEndFrame / sampleRate, result[curveEndFrame])
-            .beCloseTo(expectedResult, options.threshold || 0);
+          should(result[curveEndFrame],
+              message + ": value at time " + curveEndFrame / sampleRate)
+            .beCloseTo(expectedResult, {
+              threshold: options.threshold || 0
+            });
         });
       }
 

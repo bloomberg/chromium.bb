@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/panner-formulas.js"></script>
     <title>Test setValueCurveAtTime Copies the Curve Data</title>
   </head>
@@ -20,7 +20,7 @@
 
       // Test that changing the curve array to setValueCurveAtTime doesn't
       // change the automation output.
-      audit.defineTask("test-copy", function (done) {
+      audit.define("test-copy", (task, should) => {
         // Two-channel context; channel 0 is the test result, and channel 1 is
         // the expected result.
         var context = new OfflineAudioContext(2, renderFrames, sampleRate);
@@ -76,18 +76,11 @@
 
           // The test result and the reference should be identical since
           // changing the curve data should not affect the automation.
-          var success = Should("setValueCurve output", testData).beEqualToArray(refData);
-
-          Should("Changing the curve data", success)
-            .summarize("did not change the result", "unexpectedly changed the result");
-        }).then(done);
+          should(testData, "setValueCurve output").beEqualToArray(refData);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

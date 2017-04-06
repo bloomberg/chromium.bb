@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
     <title>SetTarget Followed by Linear or Exponential Ramp Is Continuous</title>
   </head>
@@ -27,10 +27,10 @@
       // handle various cases where a linear or exponential ramp is scheduled at or after
       // SetTargetAtTime starts.
       
-      audit.defineTask("linear ramp replace", function (done) {
+      audit.define("linear ramp replace", (task, should) => {
         // Schedule a linear ramp to start at the same time as SetTargetAtTime.  This effectively
         // replaces the SetTargetAtTime as if it never existed.
-        runTest("Linear ramp", {
+        runTest(should, "Linear ramp", {
           automationFunction: function (audioparam, endValue, endTime) {
             audioparam.linearRampToValueAtTime(endValue, endTime);
           },
@@ -38,14 +38,14 @@
           automationTime: renderQuantum / sampleRate,
           thresholdSetTarget: 0,
           thresholdRamp: 1.26765e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("delayed linear ramp", function (done) {
+      audit.define("delayed linear ramp", (task, should) => {
         // Schedule a linear ramp to start after the SetTargetAtTime has already started rendering.
         // This is the main test to verify that the linear ramp is continuous with the
         // SetTargetAtTime curve.
-        runTest("Delayed linear ramp", {
+        runTest(should, "Delayed linear ramp", {
           automationFunction: function (audioparam, endValue, endTime) {
             audioparam.linearRampToValueAtTime(endValue, endTime);
           },
@@ -53,12 +53,12 @@
           automationTime: 4 * renderQuantum / sampleRate,
           thresholdSetTarget: 3.43632e-7,
           thresholdRamp: 1.07972e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("expo ramp replace", function (done) {
+      audit.define("expo ramp replace", (task, should) => {
         // Like "linear ramp replace", but with an exponential ramp instead.
-        runTest("Exponential ramp", {
+        runTest(should, "Exponential ramp", {
           automationFunction: function (audioparam, endValue, endTime) {
             audioparam.exponentialRampToValueAtTime(endValue, endTime);
           },
@@ -66,12 +66,12 @@
           automationTime: renderQuantum / sampleRate,
           thresholdSetTarget: 0,
           thresholdRamp: 1.14441e-5
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("delayed expo ramp", function (done) {
+      audit.define("delayed expo ramp", (task, should) => {
         // Like "delayed linear ramp", but with an exponential ramp instead.
-        runTest("Delayed exponential ramp", {
+        runTest(should, "Delayed exponential ramp", {
           automationFunction: function (audioparam, endValue, endTime) {
             audioparam.exponentialRampToValueAtTime(endValue, endTime);
           },
@@ -79,14 +79,10 @@
           automationTime: 4 * renderQuantum / sampleRate,
           thresholdSetTarget: 3.43632e-7,
           thresholdRamp: 4.29154e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       function computeExpectedResult(automationTime, timeConstant, endValue, endTime, rampFunction) {
         // The result is a constant value of 1 for one rendering quantum, then a SetTarget event
@@ -150,7 +146,7 @@
       //     the correct values.
       //   |options.thresholdRamp|
       //     Threshold to use for verifying that the ramp portion had the correct values.
-      function runTest(prefix, options) {
+      function runTest(should, prefix, options) {
         var automationFunction = options.automationFunction;
         var referenceFunction = options.referenceFunction;
         var automationTime = options.automationTime;
@@ -196,36 +192,37 @@
           var length = expected.initialPart.length;
 
           // Verify that the initial part of the curve is constant.
-          success = Should(prefix + ": Initial part", result.slice(0, length))
-            .beCloseToArray(expected.initialPart, 0) && success;
+          should(result.slice(0, length), prefix + ": Initial part")
+            .beCloseToArray(expected.initialPart);
 
           // Verify the SetTarget part of the curve, if the SetTarget did actually run.
           startIndex += length;
           length = expected.setTargetPart.length;
           if (length) {
-            success = Should(prefix + ": SetTarget part", result.slice(startIndex, startIndex +
-                length))
-              .beCloseToArray(expected.setTargetPart, thresholdSetTarget) && success;
+            should(result.slice(startIndex, startIndex + length),
+                prefix + ": SetTarget part")
+              .beCloseToArray(expected.setTargetPart, {
+                absoluteThreshold: thresholdSetTarget
+              });
           } else {
-            Should(prefix + ": SetTarget part", !length)
-              .summarize("was correctly replaced by the ramp",
-                         "was incorrectly replaced by the ramp");
+            should(!length, prefix + ": SetTarget part")
+              .message("was correctly replaced by the ramp",
+                       "was incorrectly replaced by the ramp");
           }
 
           // Verify the ramp part of the curve
           startIndex += length;
           length = expected.rampPart.length;
-          success = Should(prefix, result.slice(startIndex, startIndex + length))
-            .beCloseToArray(expected.rampPart, thresholdRamp) && success;
+          should(result.slice(startIndex, startIndex + length), prefix)
+            .beCloseToArray(expected.rampPart, {
+              absoluteThreshold: thresholdRamp
+            });
 
           // Verify that the end of the curve after the ramp (if any) is a constant.
           startIndex += length;
-          success = Should(prefix + ": Tail part", result.slice(startIndex))
-            .beCloseToArray(expected.tailPart, 0) && success;
+          should(result.slice(startIndex), prefix + ": Tail part")
+            .beCloseToArray(expected.tailPart);
 
-          Should(prefix, success)
-            .summarize("preceded by SetTarget is continuous",
-                       "preceded by SetTarget was not continuous");
         });
       }
     </script>

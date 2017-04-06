@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
     <title>Test setValueCurveAtTime with Huge Duration</title>
   </head>
@@ -17,7 +17,7 @@
       
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("long duration", function (done) {
+      audit.define("long duration", (task, should) => {
         // We only need to generate a small number of frames for this test.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var src = context.createBufferSource();
@@ -50,21 +50,12 @@
 
            var message = "setValueCurve([" + curve + "], 0, " + duration + ")";
 
-           success = Should("Max amplitude of " + message, max, {
-             brief: true
-           }).beLessThanOrEqualTo(expectedMax);
-
-           Should(message, success)
-             .summarize("correctly rounded",
-                        "incorrectly rendered with a peak value of " + max);
-        }).then(done);
+           should(max, "Max amplitude of " + message)
+             .beLessThanOrEqualTo(expectedMax);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

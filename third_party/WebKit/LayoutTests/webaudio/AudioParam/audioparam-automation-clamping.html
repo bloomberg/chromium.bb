@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Clamping of Automations</title>
   </head>
 
@@ -20,7 +20,7 @@
 
       var audit = Audit.createTaskRunner();
       
-      audit.defineTask("clamp", function (done) {
+      audit.define("clamp", (task, should) => {
         // Test clamping of automations.  Most AudioParam limits are essentially
         // unbounded, so clamping doesn't happen.  For most other AudioParams,
         // the behavior is sufficiently complicated with complicated outputs
@@ -55,7 +55,6 @@
 
         context.startRendering().then(function (buffer) {
           var result = buffer.getChannelData(0);
-          var success = true;
 
           // When the cutoff frequency of a lowpass filter is 0, nothing gets
           // through.  Hence the output of the filter between the clamping
@@ -76,11 +75,10 @@
           expectedSignal.fill(0);
 
           // Output should be zero.
-          success = Should("Clamped signal in frame range [" + clampStartFrame + ", " +
-            clampEndFrame + "]",
-            clampedSignal, {
-              verbose: true,
-            }).beCloseToArray(expectedSignal, 0);
+          should(clampedSignal,
+              "Clamped signal in frame range [" + clampStartFrame + ", " +
+              clampEndFrame + "]")
+            .beCloseToArray(expectedSignal, 0);
 
           // Find the actual clamp range based on the output values. 
           var actualClampStart = result.findIndex(x => x === 0);
@@ -88,23 +86,15 @@
             x => x != 0);
 
           // Verify that the expected clamping range is a subset of the actual range.
-          success = Should("Actual Clamp start",
-            actualClampStart).beLessThanOrEqualTo(clampStartFrame) && success;
-          success == Should("Actual Clamp end",
-            actualClampEnd).beGreaterThanOrEqualTo(clampEndFrame) && success;
+          should(actualClampStart, "Actual Clamp start")
+            .beLessThanOrEqualTo(clampStartFrame);
+          should(actualClampEnd, "Actual Clamp end")
+            .beGreaterThanOrEqualTo(clampEndFrame);
 
-          Should("Clamping of BiquadFilter.frequency automation performed",
-              success)
-            .summarize("correctly", "incorrectly");
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      // All done!
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       function solveLinearRamp(v, v0, t0, v1, t1) {
         // Solve the linear ramp equation for the time t at which the ramp

@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Interpolation for AudioParam.setValueCurveAtTime</title>
   </head>
 
@@ -112,8 +112,8 @@
 
       // Creates a function based on the test config that is suitable for use by defineTask().
       function createTaskFunction(config) {
-        return function (done) {
-          runTest(config).then(done);
+        return function (task, should) {
+          runTest(should, config).then(() => task.done());
         };
       }
 
@@ -121,12 +121,12 @@
       for (var k = 0; k < testConfigs.length; ++k) {
         var config = testConfigs[k];
         var name = k + ":curve=" + config.curveLength + ",duration=" + (config.curveDuration * sampleRate);
-        audit.defineTask(name, createTaskFunction(config));
+        audit.define(name, createTaskFunction(config));
       }
 
       // Simple test from crbug.com/441471.  Makes sure the end points and the middle point are
       // interpolated correctly.
-      audit.defineTask("crbug-441471", function (done) {
+      audit.define("crbug-441471", (task, should) => {
         // Any sample rate should work; we pick something small such that the time end points are on
         // a sampling point.
         var context = new OfflineAudioContext(1, 5000, 5000)
@@ -157,27 +157,22 @@
           var data = renderedBuffer.getChannelData(0);
           var endTime = startTime + duration;
           var midPoint = (startTime + endTime) / 2;
-          var success = true;
 
-          success = Should("Curve value at time " + startTime,
-            data[timeToSampleFrame(startTime, context.sampleRate)]).beEqualTo(c[0]) && success;
+          should(data[timeToSampleFrame(startTime, context.sampleRate)],
+            "Curve value at time " + startTime)
+            .beEqualTo(c[0]);
           // Due to round-off, the value at the midpoint is not exactly zero on arm64.  See
           // crbug.com/558563.  The current value is experimentally determined.
-          success = Should("Curve value at time " + midPoint,
-            data[timeToSampleFrame(midPoint, context.sampleRate)]).beCloseTo(0, Math.pow(2, -51)) && success;
-          success = Should("Curve value at time " + endTime,
-            data[timeToSampleFrame(endTime, context.sampleRate)]).beEqualTo(c[2]) && success;
-          Should("Test: crbug.com/44471", success)
-            .summarize("passed", "failed");
-        }).then(done);
+          should(data[timeToSampleFrame(midPoint, context.sampleRate)],
+            "Curve value at time " + midPoint)
+            .beCloseTo(0, {threshold: Math.pow(2, -51)});
+          should(data[timeToSampleFrame(endTime, context.sampleRate)],
+            "Curve value at time " + endTime)
+            .beEqualTo(c[2]);
+        }).then(() => task.done());
       });
 
-      // Must be the last defined task.
-      audit.defineTask("end", function (done) {
-        done();
-      });
-
-      function runTest(config) {
+      function runTest(should, config) {
         context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
 
         // A constant audio source of value 1.
@@ -206,23 +201,21 @@
 
         // Some consistency checks on the test parameters
         let prefix = "Length " + config.curveLength + ", duration " + config.curveDuration;
-        Should(prefix + ": Check: Curve end time", config.curveStartTime + config.curveDuration, {
-            brief: true
-          })
+        should(config.curveStartTime + config.curveDuration,
+          prefix + ": Check: Curve end time")
           .beLessThanOrEqualTo(testDurationSec);
-        Should(prefix + ": Check: Full gain start time", config.fullGainTime, {
-          brief: true
-        }).beLessThanOrEqualTo(testDurationSec);
-        Should(prefix + ": Check: Full gain start time", config.fullGainTime, {
-          brief: true
-        }).beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
+        should(config.fullGainTime, prefix + ": Check: Full gain start time")
+          .beLessThanOrEqualTo(testDurationSec);
+        should(config.fullGainTime,
+          prefix + ": Check: Full gain start time")
+          .beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
 
         // Rock and roll!
-        return context.startRendering().then(checkResult(config));
+        return context.startRendering().then(checkResult(should, config));
       }
 
       // Return a function to check that the rendered result matches the expected result.
-      function checkResult(config) {
+      function checkResult(should, config) {
         return function (renderedBuffer) {
           var success = true;
 
@@ -243,19 +236,11 @@
           }
 
           let prefix = "Curve length " + config.curveLength + ", duration " + config.curveDuration;
-          success = success && Should(prefix + ": SNR", SNR, {
-            brief: true
-          }).beGreaterThanOrEqualTo(config.snrThreshold);
+          should(SNR, prefix + ": SNR")
+            .beGreaterThanOrEqualTo(config.snrThreshold);
 
-          success = Should(prefix + ": Max difference", maxDiff)
-            .beLessThanOrEqualTo(config.maxErrorThreshold) && success;
-
-          var message = "Test: curve length = " + config.curveLength +
-            "; duration frames = " +
-            config.curveDuration * sampleRate;
-
-          Should(message, success)
-            .summarize("passed", "failed");
+          should(maxDiff, prefix + ": Max difference")
+            .beLessThanOrEqualTo(config.maxErrorThreshold);
         }
       }
 
@@ -294,9 +279,7 @@
          return expected;
       }
 
-      audit.runTasks();
-
-      successfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>

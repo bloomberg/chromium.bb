@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Negative AudioParam.exponentialRampToValueAtTime</title>
   </head>
 
@@ -15,7 +15,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("both negative values", function (done) {
+      audit.define("both negative values", (task, should) => {
         var renderDuration = 0.125;
 
         // Create context with two channels.  Channel 0 contains the positive-valued exponential and
@@ -52,12 +52,12 @@
           var actual = resultBuffer.getChannelData(1);
           var inverted = expected.map(sample => -sample);
 
-          Should("Negative exponential ramp from -1 to -2", actual)
+          should(actual, "Negative exponential ramp from -1 to -2")
             .beEqualToArray(inverted);
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("negative-end", function (done) {
+      audit.define("negative-end", (task, should) => {
         // Positive start value and negative end value should just do nothing.
         var renderDuration = 0.125;
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
@@ -80,12 +80,12 @@
         context.startRendering().then(function (resultBuffer) {
           var actual = resultBuffer.getChannelData(0);
 
-          Should("Exponential ramp from 2 to -1", actual)
+          should(actual, "Exponential ramp from 2 to -1")
             .beConstantValueOf(2);
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("positive-end", function (done) {
+      audit.define("positive-end", (task, should) => {
         // Positive start value and negative end value should just do nothing.
         var renderDuration = 0.125;
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
@@ -105,12 +105,12 @@
         context.startRendering().then(function (resultBuffer) {
           var actual = resultBuffer.getChannelData(0);
 
-          Should("Exponential ramp from -1 to 1", actual)
+          should(actual, "Exponential ramp from -1 to 1")
             .beConstantValueOf(-1);
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("propagate", function (done) {
+      audit.define("propagate", (task, should) => {
         // Test propagation of ramp if the exponential ramp start and end values have opposite sign.
         var renderDuration = 0.125;
         var linearRampEnd = renderDuration / 4;
@@ -137,18 +137,14 @@
           // Since the start value of the exponential ramp is -1 and the end value is 1, the ramp
           // should just propagate -1 from the end of the linear ramp "forever".
           var endFrame = Math.ceil(linearRampEnd * sampleRate);
-          Should("Exponential ramp from -1 to 1 after the end of the linear ramp",
-             actual.slice(endFrame))
+          should(actual.slice(endFrame),
+             "Exponential ramp from -1 to 1 after the end of the linear ramp")
             .beConstantValueOf(-1);
-        }).then(done);
+        }).then(() => task.done());
         
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

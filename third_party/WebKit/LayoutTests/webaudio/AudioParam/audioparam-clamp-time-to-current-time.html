@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -16,7 +16,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("setValue", function (taskDone) {
+      audit.define("setValue", (task, should) => {
         var suspendFrame = 128;
         createGraph({
             suspendFrame: suspendFrame,
@@ -28,25 +28,19 @@
             // Just verify that the cosine wave actually started at
             // suspendFrame.
             var result = resultBuffer.getChannelData(0);
-            var success = true;
 
-            success = Should("setValue: Output[0-" + (suspendFrame - 1) + "]",
-                result.slice(0, suspendFrame))
-              .beConstantValueOf(0) && success;
-            success = Should("setValue: Output[" + suspendFrame + "-" + (
-                  renderFrames - 1) + "]",
-                result.slice(suspendFrame))
-              .beConstantValueOf(1) && success;
-
-            Should("*** setValueAtTime in the past", success)
-              .summarize(
-                "correctly clamped to current time",
-                "was not correctly clamped to current time");
+            should(result.slice(0, suspendFrame),
+                "setValue: Output[0-" + (suspendFrame - 1) + "]")
+              .beConstantValueOf(0);
+            should(result.slice(suspendFrame),
+                "setValue: Output[" + suspendFrame + "-" + (renderFrames - 1) +
+                "]")
+              .beConstantValueOf(1);
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
-      audit.defineTask("linear", function (taskDone) {
+      audit.define("linear", (task, should) => {
         var suspendFrame = 128;
         createGraph({
             suspendFrame: suspendFrame,
@@ -58,25 +52,19 @@
             // Just verify that the cosine wave actually started at
             // suspendFrame.
             var result = resultBuffer.getChannelData(0);
-            var success = true;
 
-            success = Should("linear: Output[0-" + (suspendFrame - 1) + "]",
-                result.slice(0, suspendFrame))
-              .beConstantValueOf(1) && success;
-            success = Should("linear: Output[" + suspendFrame + "-" + (
-                  renderFrames - 1) + "]",
-                result.slice(suspendFrame))
-              .beConstantValueOf(0.5) && success;
+            should(result.slice(0, suspendFrame),
+              "linear: Output[0-" + (suspendFrame - 1) + "]")
+              .beConstantValueOf(1);
+            should(result.slice(suspendFrame),
+               "linear: Output[" + suspendFrame + "-" + (renderFrames - 1) + "]")
+              .beConstantValueOf(0.5);
 
-            Should("*** linearRampToValueAtTime in the past", success)
-              .summarize(
-                "correctly clamped to current time",
-                "was not correctly clamped to current time");
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
-      audit.defineTask("exponential", function (taskDone) {
+      audit.define("exponential", (task, should) => {
         var suspendFrame = 128;
         createGraph({
             suspendFrame: suspendFrame,
@@ -88,26 +76,19 @@
             // Just verify that the cosine wave actually started at
             // suspendFrame.
             var result = resultBuffer.getChannelData(0);
-            var success = true;
 
-            success = Should("exponential: Output[0-" + (suspendFrame - 1) + "]",
-                result.slice(0, suspendFrame))
-              .beConstantValueOf(1) && success;
-            success = Should("exponential: Output[" + suspendFrame + "-" + (
-                  renderFrames - 1) + "]",
-                result.slice(suspendFrame))
-              .beConstantValueOf(0.5) && success;
-
-            Should("*** exponentialRampToValueAtTime in the past",
-                success)
-              .summarize(
-                "correctly clamped to current time",
-                "was not correctly clamped to current time");
+            should(result.slice(0, suspendFrame),
+                "exponential: Output[0-" + (suspendFrame - 1) + "]")
+              .beConstantValueOf(1);
+            should(result.slice(suspendFrame),
+                "exponential: Output[" + suspendFrame + "-" + (renderFrames - 1) +
+                "]")
+              .beConstantValueOf(0.5);
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
-      audit.defineTask("setTarget", function (taskDone) {
+      audit.define("setTarget", (task, should) => {
         var suspendFrame = 128;
         createGraph({
             suspendFrame: suspendFrame,
@@ -120,32 +101,26 @@
             // Just verify that the cosine wave actually started at
             // suspendFrame.
             var result = resultBuffer.getChannelData(0);
-            var success = true;
 
-            success = Should("setTarget: Output[0-" + (suspendFrame - 1) + "]",
-                result.slice(0, suspendFrame))
-              .beConstantValueOf(1) && success;
+            should(result.slice(0, suspendFrame),
+                "setTarget: Output[0-" + (suspendFrame - 1) + "]")
+              .beConstantValueOf(1);
             // For the samples past the suspend time, we only care that first
             // value is 1 and that the rest are not zero.
-            success = Should("setTarget: Output[" + suspendFrame + "]",
-              result[suspendFrame]).beEqualTo(1) && success;
+            should(result[suspendFrame],
+               "setTarget: Output[" + suspendFrame + "]")
+              .beEqualTo(1);
 
             var positive = result.slice(suspendFrame + 1).every(x => x >
               0);
-            success = Should("Output[" + (suspendFrame + 1) + "-" +
-                (renderFrames - 1) + "] contains only positive values",
-                positive)
-              .beEqualTo(true) && success;
-
-            Should("*** setTargetAtTime in the past", success)
-              .summarize(
-                "correctly clamped to current time",
-                "was not correctly clamped to current time");
+            should(positive, "Output[" + (suspendFrame + 1) + "-" +
+                (renderFrames - 1) + "] contains only positive values")
+              .beEqualTo(true);
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
-      audit.defineTask("setValueCurve", function (taskDone) {
+      audit.define("setValueCurve", (task, should) => {
         var suspendFrame = 128;
         createGraph({
             suspendFrame: suspendFrame,
@@ -158,27 +133,21 @@
             // Just verify that the cosine wave actually started at
             // suspendFrame.
             var result = resultBuffer.getChannelData(0);
-            var success = true;
 
-            success = Should("setValueCurve: Output[0-" + (suspendFrame - 1) + "]",
-                result.slice(0, suspendFrame))
-              .beConstantValueOf(1) && success;
+            should(result.slice(0, suspendFrame),
+                "setValueCurve: Output[0-" + (suspendFrame - 1) + "]")
+              .beConstantValueOf(1);
 
             // The selected curve contains values greater than or equal to 2.
             // Just verify that all values are greater than or equal to 2.
             var biggerThan2 = result.slice(suspendFrame).every(x => x >=
               2);
-            success = Should("setValueCurve: Output[" + suspendFrame + "-" + (
-                  renderFrames - 1) + "]",
-                biggerThan2)
-              .beEqualTo(true) && success;
-
-            Should("*** setValueCurveAtTime in the past", success)
-              .summarize(
-                "correctly clamped to current time",
-                "was not correctly clamped to current time");
+            should(biggerThan2,
+                "setValueCurve: Output[" + suspendFrame + "-" +
+                (renderFrames - 1) + "]")
+              .beEqualTo(true);
           })
-          .then(taskDone);
+          .then(() => task.done());
       });
 
 
@@ -232,7 +201,7 @@
         return context.startRendering();
       }
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

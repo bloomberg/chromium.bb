@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>AudioParam with Huge End Time</title>
   </head>
 
@@ -22,36 +22,32 @@
       // automation is run.  We don't care about the actual results, just that it runs.
 
       // Test linear ramp with huge end time
-      audit.defineTask("linearRamp", function (done) {
+      audit.define("linearRamp", (task, should) => {
         var graph = createGraph();
         graph.gain.gain.linearRampToValueAtTime(0.1, largeTime);
 
         graph.source.start();
         graph.context.startRendering().then(function (buffer) {
-          Should("linearRampToValue(0.1, " + largeTime + ")", true)
-            .summarize("successfully rendered",
-                       "unsuccessfully rendered");
-        }).then(done);
+          should(true, "linearRampToValue(0.1, " + largeTime + ")")
+            .message("successfully rendered",
+                     "unsuccessfully rendered");
+        }).then(() => task.done());
       });
 
       // Test exponential ramp with huge end time
-      audit.defineTask("exponentialRamp", function (done) {
+      audit.define("exponentialRamp", (task, should) => {
         var graph = createGraph();
         graph.gain.gain.exponentialRampToValueAtTime(.1, largeTime);
 
         graph.source.start();
         graph.context.startRendering().then(function (buffer) {
-          Should("exponentialRampToValue(0.1, " + largeTime + ")", true)
-            .summarize("successfully rendered",
-                       "unsuccessfully rendered");
-        }).then(done);
+          should(true, "exponentialRampToValue(0.1, " + largeTime + ")")
+            .message("successfully rendered",
+                     "unsuccessfully rendered");
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Create the graph and return the context, the source, and the gain node.
       function createGraph() {

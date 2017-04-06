@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -23,7 +23,7 @@
 
       // Test that linearRampToValue properly sets the AudioParam .value attribute when the
       // linearRamp automation is running.
-      audit.defineTask("propagate", function (done) {
+      audit.define("propagate", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
 
         // Create a constant source.
@@ -61,25 +61,22 @@
             }
 
             var frame = context.currentTime * sampleRate - 1;
-            success = Should("gain.gain.value at frame " + frame, gain.gain.value)
-              .beEqualTo(expected) && success;
+            success = should(gain.gain.value,
+                "gain.gain.value at frame " + frame)
+              .beEqualTo(expected);
           }).then(context.resume.bind(context));
         }
 
         // Rock and roll!
         source.start();
         context.startRendering().then(function (result) {
-          Should("linearRampToValue", success)
-            .summarize("properly set the AudioParam value",
-                       "did not properly set the AudioParam value");
-        }).then(done);
+          should(success, "linearRampToValue")
+            .message("properly set the AudioParam value",
+                     "did not properly set the AudioParam value");
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

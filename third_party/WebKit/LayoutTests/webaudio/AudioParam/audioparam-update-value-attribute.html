@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/audio-param.js"></script>
     <title>Updating of Value Attribute from Timeline</title>
   </head>
@@ -22,9 +22,9 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("linear", function (done) {
+      audit.define("linear", (task, should) => {
         // Test the value attribute from a linearRamp event
-        runTest(function (g, v0, t0, v1, t1) {
+        runTest(should, function (g, v0, t0, v1, t1) {
           g.gain.linearRampToValueAtTime(v1, t1);
           return {
             expectedValue: function (testTime) {
@@ -36,9 +36,9 @@
         }).then(done);
       });
 
-      audit.defineTask("exponential", function (done) {
+      audit.define("exponential", (task, should) => {
         // Test the value attribute from an exponentialRamp event
-        runTest(function (g, v0, t0, v1, t1) {
+        runTest(should, function (g, v0, t0, v1, t1) {
           g.gain.exponentialRampToValueAtTime(v1, t1);
           return {
             expectedValue: function (testTime) {
@@ -50,9 +50,9 @@
         }).then(done);
       });
 
-      audit.defineTask("setTarget", function (done) {
+      audit.define("setTarget", (task, should) => {
         // Test the value attribute from a setTargetAtTime event
-        runTest(function (g, v0, t0, v1, t1) {
+        runTest(should, function (g, v0, t0, v1, t1) {
           var timeConstant = 0.1;
           var vFinal = 0;
           g.gain.setTargetAtTime(vFinal, t0, timeConstant);
@@ -66,9 +66,9 @@
         }).then(done);
       });
 
-      audit.defineTask("setValueCurve", function (done) {
+      audit.define("setValueCurve", (task, should) => {
         // Test the value attribute from a setValueCurve event
-        runTest(function (g, v0, t0, v1, t1) {
+        runTest(should, function (g, v0, t0, v1, t1) {
           var curve = [1, 1.5, 4];
           var duration = t1 - t0;
           g.gain.setValueCurveAtTime(Float32Array.from(curve), t0, duration);
@@ -82,15 +82,11 @@
         }).then(done);
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
 
       // Test that the .value getter has the correct value when a timeline is running.
       // The |testFunction| is the underlying test to be run.
-      function runTest(testFunction) {
+      function runTest(should, testFunction) {
         // Create a simple graph consisting of a constant source and a gain node where the
         // automations are run.  A setValueAtTime event starts things off.
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
@@ -123,9 +119,9 @@
 
         // Print an informative message about the test being run.
         //testPassed("Initialize " + test.message + " with setValueAtTime(" + v0 + ", " + t0 + ").");
-        Should("Initialize", true)
-          .summarize(test.message + " with setValueAtTime(" + v0 + ", " + t0 + ")",
-                     "");
+        should(true, "Initialize")
+          .message(test.message + " with setValueAtTime(" + v0 + ", " + t0 + ")",
+                   "");
           
         var success = true;
 
@@ -148,11 +144,8 @@
             var relError = Math.abs(expected - gain.gain.value) / Math.abs(expected);
             maxError = Math.max(relError, maxError);
 
-            success = Should(test.message + " at frame " + (sampleRate * sampleTime),
-                gain.gain.value, {
-                  precision: 7
-                })
-              .beCloseTo(expected, test.errorThreshold || 0) && success;
+            success = should(gain.gain.value, test.message + " at frame " + (sampleRate * sampleTime))
+              .beCloseTo(expected, {threshold: test.errorThreshold || 0});
           }).then(context.resume.bind(context));
         }
 
@@ -160,9 +153,9 @@
 
         return context.startRendering().then(function (resultBuffer) {
           // Just print a final pass (or fail) message.
-          Should("Gain .value attribute for " + test.message, success)
-            .summarize("correctly updated during automation",
-                       "not correctly updated during automation; max error = " + maxError);
+          should(success, "Gain .value attribute for " + test.message)
+            .message("correctly updated during automation",
+                     "not correctly updated during automation; max error = " + maxError);
         });
       }
     </script>
