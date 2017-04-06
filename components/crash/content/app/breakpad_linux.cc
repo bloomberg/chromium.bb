@@ -980,9 +980,7 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
                            true,  // Install handlers.
                            -1);   // Server file descriptor. -1 for in-process.
 
-  if (process_type != kWebViewSingleProcessType &&
-      process_type != kBrowserProcessType &&
-      !process_type.empty()) {
+  if (!is_browser_process) {
     g_signal_code_pipe_fd =
         GetCrashReporterClient()->GetAndroidCrashSignalFD();
     if (g_signal_code_pipe_fd != -1)
