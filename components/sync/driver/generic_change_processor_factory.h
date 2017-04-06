@@ -15,7 +15,7 @@
 namespace syncer {
 
 class GenericChangeProcessor;
-class SyncApiComponentFactory;
+class SyncClient;
 class SyncMergeResult;
 class SyncableService;
 struct UserShare;
@@ -39,7 +39,7 @@ class GenericChangeProcessorFactory {
       std::unique_ptr<DataTypeErrorHandler> error_handler,
       const base::WeakPtr<SyncableService>& local_service,
       const base::WeakPtr<SyncMergeResult>& merge_result,
-      SyncApiComponentFactory* driver_factory);
+      SyncClient* sync_client);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessorFactory);

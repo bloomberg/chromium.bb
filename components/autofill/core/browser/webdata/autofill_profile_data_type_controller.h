@@ -43,6 +43,9 @@ class AutofillProfileDataTypeController
   // Callback to notify that WebDatabase has loaded.
   void WebDatabaseLoaded();
 
+  // A pointer to the sync client.
+  syncer::SyncClient* const sync_client_;
+
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 

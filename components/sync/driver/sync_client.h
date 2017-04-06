@@ -59,8 +59,6 @@ class SyncableService;
 // to handle these scenarios gracefully.
 class SyncClient {
  public:
-  using ServiceProvider = base::Callback<base::WeakPtr<SyncableService>()>;
-
   SyncClient();
   virtual ~SyncClient();
 
@@ -102,10 +100,11 @@ class SyncClient {
   virtual scoped_refptr<ExtensionsActivity> GetExtensionsActivity() = 0;
   virtual sync_sessions::SyncSessionsClient* GetSyncSessionsClient() = 0;
 
-  // Returns a callback to retrieve a syncable service specified by |type|.
-  // Both the provider and the resulting weak pointer will only be accessed on
-  // the model thread.
-  virtual ServiceProvider GetSyncableServiceForType(ModelType type) = 0;
+  // Returns a weak pointer to the syncable service specified by |type|.
+  // Weak pointer may be unset if service is already destroyed.
+  // Note: Should only be dereferenced from the model type thread.
+  virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
+      ModelType type) = 0;
 
   // Returns a weak pointer to the ModelTypeSyncBridge specified by |type|. Weak
   // pointer may be unset if service is already destroyed.

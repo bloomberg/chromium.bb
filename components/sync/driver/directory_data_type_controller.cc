@@ -62,7 +62,6 @@ void DirectoryDataTypeController::DeactivateDataType(
 
 void DirectoryDataTypeController::GetAllNodes(
     const AllNodesCallback& callback) {
-  DCHECK(CalledOnValidThread());
   std::unique_ptr<base::ListValue> node_list = GetAllNodesForTypeFromDirectory(
       type(), sync_client_->GetSyncService()->GetUserShare()->directory.get());
   callback.Run(type(), std::move(node_list));
@@ -70,7 +69,6 @@ void DirectoryDataTypeController::GetAllNodes(
 
 void DirectoryDataTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
-  DCHECK(CalledOnValidThread());
   std::vector<int> num_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
   std::vector<int> num_to_delete_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
   sync_client_->GetSyncService()

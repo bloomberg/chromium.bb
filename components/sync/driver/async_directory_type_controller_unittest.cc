@@ -66,8 +66,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
       : SharedChangeProcessor(type) {}
 
   base::WeakPtr<SyncableService> Connect(
-      const SyncClient::ServiceProvider&,
-      SyncApiComponentFactory* driver_factory,
+      SyncClient*,
       GenericChangeProcessorFactory*,
       UserShare*,
       std::unique_ptr<DataTypeErrorHandler>,
