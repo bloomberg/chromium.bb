@@ -11,12 +11,12 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIVerticalAlign::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSValue* parsedValue = CSSPropertyParserHelpers::consumeIdentRange(
       range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
   if (!parsedValue) {
     parsedValue = CSSPropertyParserHelpers::consumeLengthOrPercent(
-        range, context.mode(), ValueRangeAll,
+        range, context->mode(), ValueRangeAll,
         CSSPropertyParserHelpers::UnitlessQuirk::Allow);
   }
   return parsedValue;

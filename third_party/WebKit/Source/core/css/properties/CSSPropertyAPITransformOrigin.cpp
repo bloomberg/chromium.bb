@@ -12,17 +12,17 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITransformOrigin::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSValue* resultX = nullptr;
   CSSValue* resultY = nullptr;
   if (CSSPropertyParserHelpers::consumeOneOrTwoValuedPosition(
-          range, context.mode(),
+          range, context->mode(),
           CSSPropertyParserHelpers::UnitlessQuirk::Forbid, resultX, resultY)) {
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     list->append(*resultX);
     list->append(*resultY);
     CSSValue* resultZ = CSSPropertyParserHelpers::consumeLength(
-        range, context.mode(), ValueRangeAll);
+        range, context->mode(), ValueRangeAll);
     if (!resultZ) {
       resultZ =
           CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);

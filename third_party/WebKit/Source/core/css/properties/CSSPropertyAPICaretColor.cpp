@@ -11,10 +11,10 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPICaretColor::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueAuto)
     return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
+  return CSSPropertyParserHelpers::consumeColor(range, context->mode());
 }
 
 }  // namespace blink

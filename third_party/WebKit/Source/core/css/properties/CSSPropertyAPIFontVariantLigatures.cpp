@@ -11,7 +11,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIFontVariantLigatures::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueNone)
     return CSSPropertyParserHelpers::consumeIdent(range);
 

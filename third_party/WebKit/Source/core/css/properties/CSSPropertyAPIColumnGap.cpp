@@ -11,10 +11,10 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIColumnGap::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNormal)
     return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLength(range, context.mode(),
+  return CSSPropertyParserHelpers::consumeLength(range, context->mode(),
                                                  ValueRangeNonNegative);
 }
 

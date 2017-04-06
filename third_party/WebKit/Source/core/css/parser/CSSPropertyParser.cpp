@@ -1837,10 +1837,8 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   // statement.
   const CSSPropertyDescriptor& cssPropertyDesc =
       CSSPropertyDescriptor::get(property);
-  if (cssPropertyDesc.parseSingleValue) {
-    DCHECK(m_context);
-    return cssPropertyDesc.parseSingleValue(m_range, *m_context);
-  }
+  if (cssPropertyDesc.parseSingleValue)
+    return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {
     case CSSPropertyFontFeatureSettings:

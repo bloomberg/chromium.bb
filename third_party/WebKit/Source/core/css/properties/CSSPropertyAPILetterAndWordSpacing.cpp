@@ -11,12 +11,12 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPILetterAndWordSpacing::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNormal)
     return CSSPropertyParserHelpers::consumeIdent(range);
   // TODO(timloh): allow <percentage>s in word-spacing.
   return CSSPropertyParserHelpers::consumeLength(
-      range, context.mode(), ValueRangeAll,
+      range, context->mode(), ValueRangeAll,
       CSSPropertyParserHelpers::UnitlessQuirk::Allow);
 }
 

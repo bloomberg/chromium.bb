@@ -15,14 +15,14 @@ using namespace CSSPropertyParserHelpers;
 
 const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
-  if (CSSValue* imageValue = consumeImageOrNone(range, &context))
+    const CSSParserContext* context) {
+  if (CSSValue* imageValue = consumeImageOrNone(range, context))
     return imageValue;
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   if (CSSValue* boxValue = consumeShapeBox(range))
     list->append(*boxValue);
   if (CSSValue* shapeValue =
-          CSSPropertyShapeUtils::consumeBasicShape(range, &context)) {
+          CSSPropertyShapeUtils::consumeBasicShape(range, context)) {
     list->append(*shapeValue);
     if (list->length() < 2) {
       if (CSSValue* boxValue = consumeShapeBox(range))

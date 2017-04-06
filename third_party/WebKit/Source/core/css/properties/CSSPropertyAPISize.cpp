@@ -18,7 +18,7 @@ static CSSValue* consumePageSize(CSSParserTokenRange& range) {
 
 const CSSValue* CSSPropertyAPISize::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSValueList* result = CSSValueList::createSpaceSeparated();
 
   if (range.peek().id() == CSSValueAuto) {
@@ -27,9 +27,9 @@ const CSSValue* CSSPropertyAPISize::parseSingleValue(
   }
 
   if (CSSValue* width = CSSPropertyParserHelpers::consumeLength(
-          range, context.mode(), ValueRangeNonNegative)) {
+          range, context->mode(), ValueRangeNonNegative)) {
     CSSValue* height = CSSPropertyParserHelpers::consumeLength(
-        range, context.mode(), ValueRangeNonNegative);
+        range, context->mode(), ValueRangeNonNegative);
     result->append(*width);
     if (height)
       result->append(*height);

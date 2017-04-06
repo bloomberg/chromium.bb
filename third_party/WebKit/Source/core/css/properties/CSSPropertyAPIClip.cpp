@@ -25,7 +25,7 @@ CSSValue* consumeClipComponent(CSSParserTokenRange& range,
 
 const CSSValue* CSSPropertyAPIClip::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueAuto)
     return CSSPropertyParserHelpers::consumeIdent(range);
 
@@ -34,22 +34,22 @@ const CSSValue* CSSPropertyAPIClip::parseSingleValue(
 
   CSSParserTokenRange args = CSSPropertyParserHelpers::consumeFunction(range);
   // rect(t, r, b, l) || rect(t r b l)
-  CSSValue* top = consumeClipComponent(args, context.mode());
+  CSSValue* top = consumeClipComponent(args, context->mode());
   if (!top)
     return nullptr;
   bool needsComma =
       CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args);
-  CSSValue* right = consumeClipComponent(args, context.mode());
+  CSSValue* right = consumeClipComponent(args, context->mode());
   if (!right ||
       (needsComma &&
        !CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args)))
     return nullptr;
-  CSSValue* bottom = consumeClipComponent(args, context.mode());
+  CSSValue* bottom = consumeClipComponent(args, context->mode());
   if (!bottom ||
       (needsComma &&
        !CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args)))
     return nullptr;
-  CSSValue* left = consumeClipComponent(args, context.mode());
+  CSSValue* left = consumeClipComponent(args, context->mode());
   if (!left || !args.atEnd())
     return nullptr;
   return CSSQuadValue::create(top, right, bottom, left,
