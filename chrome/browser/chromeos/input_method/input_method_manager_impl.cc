@@ -22,6 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/devicemode.h"
@@ -921,12 +921,14 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
       is_ime_menu_activated_(false) {
-  // TODO(mohsen): Revisit using FakeImeKeyboard with mash when InputController
-  // work is ready. http://crbug.com/601981
-  if (IsRunningAsSystemCompositor() && !ash_util::IsRunningInMash())
+  // TODO(crbug.com/642863): Revisit using FakeImeKeyboard with mash when
+  // InputController work is ready.
+  if (IsRunningAsSystemCompositor() &&
+      chromeos::GetAshConfig() == ash::Config::CLASSIC) {
     keyboard_.reset(ImeKeyboard::Create());
-  else
+  } else {
     keyboard_.reset(new FakeImeKeyboard());
+  }
 
   // Initializes the system IME list.
   std::unique_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
