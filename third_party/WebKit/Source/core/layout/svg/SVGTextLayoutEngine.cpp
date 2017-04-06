@@ -314,7 +314,7 @@ const LayoutSVGInlineText* SVGTextLayoutEngine::currentLogicalCharacterMetrics(
       m_descendantTextNodes[m_currentLogicalTextNodeIndex];
   const Vector<SVGTextMetrics>* metricsList = &logicalTextNode->metricsList();
   unsigned metricsListSize = metricsList->size();
-  DCHECK(m_logicalMetricsListOffset <= metricsListSize);
+  DCHECK_LE(m_logicalMetricsListOffset, metricsListSize);
 
   // Find the next non-collapsed text metrics cell.
   while (true) {

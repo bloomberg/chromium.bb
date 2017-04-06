@@ -131,7 +131,7 @@ class NGLayoutInlineItem {
         style_(style),
         layout_object_(layout_object),
         type_(type) {
-    DCHECK(end >= start);
+    DCHECK_GE(end, start);
   }
 
   NGLayoutInlineItemType Type() const {
@@ -192,7 +192,8 @@ inline void NGLayoutInlineItem::AssertOffset(unsigned offset) const {
 }
 
 inline void NGLayoutInlineItem::AssertEndOffset(unsigned offset) const {
-  DCHECK(offset >= start_offset_ && offset <= end_offset_);
+  DCHECK_GE(offset, start_offset_);
+  DCHECK_LE(offset, end_offset_);
 }
 
 inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {

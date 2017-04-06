@@ -30,7 +30,7 @@ ScrollAnchor::ScrollAnchor(ScrollableArea* scroller) : ScrollAnchor() {
 ScrollAnchor::~ScrollAnchor() {}
 
 void ScrollAnchor::setScroller(ScrollableArea* scroller) {
-  DCHECK(m_scroller != scroller);
+  DCHECK_NE(m_scroller, scroller);
   DCHECK(scroller);
   DCHECK(scroller->isRootFrameViewport() || scroller->isFrameView() ||
          scroller->isPaintLayerScrollableArea());
@@ -201,7 +201,7 @@ bool ScrollAnchor::findAnchorRecursive(LayoutObject* candidate) {
   if (result.status == Constrain)
     return true;
 
-  DCHECK(result.status == Continue);
+  DCHECK_EQ(result.status, Continue);
   return false;
 }
 

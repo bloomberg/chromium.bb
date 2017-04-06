@@ -234,7 +234,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   EPosition position = layer->layoutObject().style()->position();
   if (position == EPosition::kFixed)
     return layer->fixedToViewport() && m_layoutView.frameView()->isScrollable();
-  DCHECK(position == EPosition::kSticky);
+  DCHECK_EQ(position, EPosition::kSticky);
 
   // Don't promote sticky position elements that cannot move with scrolls.
   if (!layer->sticksToScroller())

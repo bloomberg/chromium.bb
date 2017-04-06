@@ -113,7 +113,7 @@ LayoutState::LayoutState(LayoutObject& root)
 
 LayoutState::~LayoutState() {
   if (m_layoutObject.view()->layoutState()) {
-    DCHECK(m_layoutObject.view()->layoutState() == this);
+    DCHECK_EQ(m_layoutObject.view()->layoutState(), this);
     m_layoutObject.view()->popLayoutState();
   }
 }

@@ -227,7 +227,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::LayoutItem(
   if (*layout_result)
     return layout_result->get();
 
-  DCHECK(item.Type() == NGLayoutInlineItem::kAtomicInline);
+  DCHECK_EQ(item.Type(), NGLayoutInlineItem::kAtomicInline);
   NGBlockNode* node = new NGBlockNode(item.GetLayoutObject());
   // TODO(kojii): Keep node in NGLayoutInlineItem.
   const ComputedStyle& style = node->Style();
@@ -553,8 +553,8 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 }
 
 MinMaxContentSize NGInlineLayoutAlgorithm::ComputeMinMaxContentSizeByLayout() {
-  DCHECK(ConstraintSpace().AvailableSize().inline_size == LayoutUnit() &&
-         ConstraintSpace().AvailableSize().block_size == NGSizeIndefinite);
+  DCHECK_EQ(ConstraintSpace().AvailableSize().inline_size, LayoutUnit());
+  DCHECK_EQ(ConstraintSpace().AvailableSize().block_size, NGSizeIndefinite);
   if (!Node()->Text().isEmpty())
     NGLineBreaker().BreakLines(this, Node()->Text(), start_offset_);
   MinMaxContentSize sizes;

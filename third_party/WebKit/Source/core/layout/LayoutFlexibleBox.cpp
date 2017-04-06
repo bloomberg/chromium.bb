@@ -1663,7 +1663,8 @@ ItemPosition LayoutFlexibleBox::alignmentForChild(
           .resolvedAlignSelf(selfAlignmentNormalBehavior(),
                              child.isAnonymous() ? style() : nullptr)
           .position();
-  DCHECK(align != ItemPositionAuto && align != ItemPositionNormal);
+  DCHECK_NE(align, ItemPositionAuto);
+  DCHECK_NE(align, ItemPositionNormal);
 
   if (align == ItemPositionBaseline && hasOrthogonalFlow(child))
     align = ItemPositionFlexStart;

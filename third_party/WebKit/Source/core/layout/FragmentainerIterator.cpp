@@ -149,7 +149,7 @@ bool FragmentainerIterator::setFragmentainersOfInterest() {
     if (m_endFragmentainerIndex > lastFragmentainerInClipRect)
       m_endFragmentainerIndex = lastFragmentainerInClipRect;
   }
-  DCHECK(m_endFragmentainerIndex >= m_currentFragmentainerIndex);
+  DCHECK_GE(m_endFragmentainerIndex, m_currentFragmentainerIndex);
   return true;
 }
 

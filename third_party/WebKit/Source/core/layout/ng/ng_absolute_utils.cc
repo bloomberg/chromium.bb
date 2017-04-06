@@ -88,7 +88,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
-  DCHECK(container_size.width != NGSizeIndefinite);
+  DCHECK_NE(container_size.width, NGSizeIndefinite);
 
   // Solving the equation:
   // left + marginLeft + width + marginRight + right  = container width
@@ -250,7 +250,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
 
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
-  DCHECK(container_size.height != NGSizeIndefinite);
+  DCHECK_NE(container_size.height, NGSizeIndefinite);
 
   // Solving the equation:
   // top + marginTop + height + marginBottom + bottom

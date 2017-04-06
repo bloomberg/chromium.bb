@@ -89,7 +89,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
     case NGPhysicalBoxFragment::kFragmentLineBox:
       // NGInlineNode produces multiple line boxes in an anonymous box. Only
       // the last break token is needed to be reported to the parent.
-      DCHECK(child->BreakToken() && child->BreakToken()->InputNode() == node_);
+      DCHECK(child->BreakToken());
+      DCHECK_EQ(child->BreakToken()->InputNode(), node_);
       last_inline_break_token_ =
           child->BreakToken()->IsFinished() ? nullptr : child->BreakToken();
       break;

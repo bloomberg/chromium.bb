@@ -232,21 +232,23 @@ LayoutUnit NGLayoutInlineItem::InlineSize() const {
   if (Type() == NGLayoutInlineItem::kText)
     return LayoutUnit(shape_result_->width());
 
-  DCHECK(Type() != NGLayoutInlineItem::kAtomicInline)
+  DCHECK_NE(Type(), NGLayoutInlineItem::kAtomicInline)
       << "Use NGInlineLayoutAlgorithm::InlineSize";
   // Bidi controls and out-of-flow objects do not have in-flow widths.
   return LayoutUnit();
 }
 
 LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
-  DCHECK(start >= StartOffset() && start <= end && end <= EndOffset());
+  DCHECK_GE(start, StartOffset());
+  DCHECK_LE(start, end);
+  DCHECK_LE(end, EndOffset());
 
   if (start == end)
     return LayoutUnit();
   if (start == start_offset_ && end == end_offset_)
     return InlineSize();
 
-  DCHECK(Type() == NGLayoutInlineItem::kText);
+  DCHECK_EQ(Type(), NGLayoutInlineItem::kText);
   return LayoutUnit(ShapeResultBuffer::getCharacterRange(
                         shape_result_, Direction(), shape_result_->width(),
                         start - StartOffset(), end - StartOffset())
@@ -257,7 +259,9 @@ void NGLayoutInlineItem::GetFallbackFonts(
     HashSet<const SimpleFontData*>* fallback_fonts,
     unsigned start,
     unsigned end) const {
-  DCHECK(start >= StartOffset() && start <= end && end <= EndOffset());
+  DCHECK_GE(start, StartOffset());
+  DCHECK_LE(start, end);
+  DCHECK_LE(end, EndOffset());
 
   // TODO(kojii): Implement |start| and |end|.
   shape_result_->fallbackFonts(fallback_fonts);

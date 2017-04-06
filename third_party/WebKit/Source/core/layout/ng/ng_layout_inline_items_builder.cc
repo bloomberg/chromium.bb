@@ -55,7 +55,8 @@ static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
                                     const ComputedStyle* after_style) {
   // Remove if either before/after the newline is zeroWidthSpaceCharacter.
   UChar32 last = 0;
-  DCHECK(!before.isEmpty() && before[before.length() - 1] == ' ');
+  DCHECK(!before.isEmpty());
+  DCHECK_EQ(before[before.length() - 1], ' ');
   if (before.length() >= 2) {
     last = before[before.length() - 2];
     if (last == zeroWidthSpaceCharacter)
@@ -188,8 +189,10 @@ void NGLayoutInlineItemsBuilder::Append(
     UChar character,
     const ComputedStyle* style,
     LayoutObject* layout_object) {
-  DCHECK(character != spaceCharacter && character != tabulationCharacter &&
-         character != newlineCharacter && character != zeroWidthSpaceCharacter);
+  DCHECK_NE(character, spaceCharacter);
+  DCHECK_NE(character, tabulationCharacter);
+  DCHECK_NE(character, newlineCharacter);
+  DCHECK_NE(character, zeroWidthSpaceCharacter);
 
   text_.append(character);
   unsigned end_offset = text_.length();
@@ -236,7 +239,8 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpaceIfExists(
 void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
     unsigned* next_start_offset) {
   DCHECK_NE(last_collapsible_space_, CollapsibleSpace::None);
-  DCHECK(!text_.isEmpty() && text_[text_.length() - 1] == spaceCharacter);
+  DCHECK(!text_.isEmpty());
+  DCHECK_EQ(text_[text_.length() - 1], spaceCharacter);
 
   unsigned new_size = text_.length() - 1;
   text_.resize(new_size);

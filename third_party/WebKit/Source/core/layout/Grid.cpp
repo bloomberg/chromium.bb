@@ -31,8 +31,8 @@ void Grid::ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize) {
 }
 
 void Grid::insert(LayoutBox& child, const GridArea& area) {
-  DCHECK(area.rows.isTranslatedDefinite() &&
-         area.columns.isTranslatedDefinite());
+  DCHECK(area.rows.isTranslatedDefinite());
+  DCHECK(area.columns.isTranslatedDefinite());
   ensureGridSize(area.rows.endLine(), area.columns.endLine());
 
   for (const auto& row : area.rows) {
@@ -164,8 +164,8 @@ GridIterator::GridIterator(const Grid& grid,
       m_childIndex(0) {
   DCHECK(!m_grid.isEmpty());
   DCHECK(!m_grid[0].isEmpty());
-  DCHECK(m_rowIndex < m_grid.size());
-  DCHECK(m_columnIndex < m_grid[0].size());
+  DCHECK_LT(m_rowIndex, m_grid.size());
+  DCHECK_LT(m_columnIndex, m_grid[0].size());
 }
 
 LayoutBox* GridIterator::nextGridItem() {
@@ -212,7 +212,8 @@ std::unique_ptr<GridArea> GridIterator::nextEmptyGridArea(
     size_t varyingTrackSpan) {
   DCHECK(!m_grid.isEmpty());
   DCHECK(!m_grid[0].isEmpty());
-  DCHECK(fixedTrackSpan >= 1 && varyingTrackSpan >= 1);
+  DCHECK_GE(fixedTrackSpan, 1u);
+  DCHECK_GE(varyingTrackSpan, 1u);
 
   size_t rowSpan =
       (m_direction == ForColumns) ? varyingTrackSpan : fixedTrackSpan;

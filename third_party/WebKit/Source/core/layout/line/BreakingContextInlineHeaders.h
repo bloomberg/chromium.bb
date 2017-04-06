@@ -1119,9 +1119,10 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       if (hyphenation && (m_nextObject || isLineEmpty ||
                           hasVisibleText(layoutText, m_current.offset()))) {
         m_width.addUncommittedWidth(-wordMeasurement.width);
-        DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
-        DCHECK(m_current.offset() ==
-               static_cast<unsigned>(wordMeasurement.endOffset));
+        DCHECK_EQ(lastSpace,
+                  static_cast<unsigned>(wordMeasurement.startOffset));
+        DCHECK_EQ(m_current.offset(),
+                  static_cast<unsigned>(wordMeasurement.endOffset));
         if (hyphenate(layoutText, style, font, *hyphenation,
                       lastSpaceWordSpacing, wordMeasurement)) {
           m_width.addUncommittedWidth(wordMeasurement.width);

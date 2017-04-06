@@ -103,7 +103,7 @@ PaintInvalidationState::PaintInvalidationState(
 #endif
 {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  DCHECK(&m_paintingLayer == currentObject.paintingLayer());
+  DCHECK_EQ(&m_paintingLayer, currentObject.paintingLayer());
 
   if (currentObject == parentState.m_currentObject) {
 // Sometimes we create a new PaintInvalidationState from parentState on the same
@@ -243,9 +243,9 @@ void PaintInvalidationState::updateForCurrentObject(
     return;
 
   if (m_currentObject.isLayoutView()) {
-    DCHECK(&parentState.m_currentObject ==
-           LayoutAPIShim::layoutObjectFrom(
-               toLayoutView(m_currentObject).frame()->ownerLayoutItem()));
+    DCHECK_EQ(&parentState.m_currentObject,
+              LayoutAPIShim::layoutObjectFrom(
+                  toLayoutView(m_currentObject).frame()->ownerLayoutItem()));
     m_paintOffset +=
         toLayoutBox(parentState.m_currentObject).contentBoxOffset();
     // a LayoutView paints with a defined size but a pixel-rounded offset.
@@ -435,9 +435,9 @@ LayoutPoint PaintInvalidationState::computeLocationInBacking(
         point = m_svgTransform.mapPoint(point);
       point += FloatPoint(m_paintOffset);
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-      DCHECK(point ==
-             slowLocalOriginToAncestorPoint(
-                 m_currentObject, m_paintInvalidationContainer, FloatPoint()));
+      DCHECK_EQ(point, slowLocalOriginToAncestorPoint(
+                           m_currentObject, m_paintInvalidationContainer,
+                           FloatPoint()));
 #endif
     } else {
       point = slowLocalToAncestorPoint(
@@ -569,7 +569,7 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(
 }
 
 PaintLayer& PaintInvalidationState::paintingLayer() const {
-  DCHECK(&m_paintingLayer == m_currentObject.paintingLayer());
+  DCHECK_EQ(&m_paintingLayer, m_currentObject.paintingLayer());
   return m_paintingLayer;
 }
 
@@ -644,7 +644,7 @@ PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
 void PaintInvalidatorContextAdapter::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  DCHECK(&object == &m_paintInvalidationState.currentObject());
+  DCHECK_EQ(&object, &m_paintInvalidationState.currentObject());
   m_paintInvalidationState.mapLocalRectToVisualRectInBacking(rect);
 }
 

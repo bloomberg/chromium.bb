@@ -192,7 +192,7 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
   if (layer->nearestFixedPositionLayer() !=
       squashingLayer.nearestFixedPositionLayer())
     return SquashingDisallowedReasonNearestFixedPositionMismatch;
-  DCHECK(layer->layoutObject().style()->position() != EPosition::kFixed);
+  DCHECK_NE(layer->layoutObject().style()->position(), EPosition::kFixed);
 
   if ((squashingLayer.layoutObject().style()->subtreeWillChangeContents() &&
        squashingLayer.layoutObject()

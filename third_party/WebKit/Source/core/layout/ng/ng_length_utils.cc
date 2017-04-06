@@ -121,7 +121,7 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
                               LayoutUnit content_size,
                               LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
-  DCHECK(type != LengthResolveType::kMarginBorderPaddingSize);
+  DCHECK_NE(type, LengthResolveType::kMarginBorderPaddingSize);
 
   if (type == LengthResolveType::kMinSize && length.isAuto())
     return LayoutUnit();
@@ -290,7 +290,7 @@ int ResolveUsedColumnCount(int computed_count,
     DCHECK(computed_count);
     return computed_count;
   }
-  DCHECK(computed_size > LayoutUnit());
+  DCHECK_GT(computed_size, LayoutUnit());
   int count_from_width =
       ((available_size + used_gap) / (computed_size + used_gap)).toInt();
   count_from_width = std::max(1, count_from_width);

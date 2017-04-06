@@ -45,7 +45,7 @@ class ShapeInterval {
     DCHECK(isUndefined());
   }
 
-  ShapeInterval(T x1, T x2) : m_x1(x1), m_x2(x2) { DCHECK(x2 >= x1); }
+  ShapeInterval(T x1, T x2) : m_x1(x1), m_x2(x2) { DCHECK_GE(x2, x1); }
 
   bool isUndefined() const { return m_x2 < m_x1; }
   T x1() const { return isUndefined() ? 0 : m_x1; }

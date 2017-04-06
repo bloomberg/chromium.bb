@@ -43,11 +43,11 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
   LayoutObjectChildList* children() { return &m_children; }
 
   LayoutObject* firstChild() const {
-    DCHECK(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->firstChild();
   }
   LayoutObject* lastChild() const {
-    DCHECK(children() == virtualChildren());
+    DCHECK_EQ(children(), virtualChildren());
     return children()->lastChild();
   }
 
