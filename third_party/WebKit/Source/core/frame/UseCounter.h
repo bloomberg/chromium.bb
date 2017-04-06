@@ -1518,7 +1518,7 @@ class CORE_EXPORT UseCounter {
     GenericSensorOnActivate = 1902,
     GenericSensorOnChange = 1903,
     GenericSensorOnError = 1904,
-    GenericSensorState = 1905,
+    GenericSensorActivated = 1905,
     GyroscopeConstructor = 1906,
     MagnetometerConstructor = 1907,
     OrientationSensorPopulateMatrix = 1908,

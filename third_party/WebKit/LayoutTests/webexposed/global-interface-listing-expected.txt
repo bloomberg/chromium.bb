@@ -6377,10 +6377,10 @@ interface Selection
     method toString
 interface Sensor : EventTarget
     attribute @@toStringTag
+    getter activated
     getter onactivate
     getter onchange
     getter onerror
-    getter state
     getter timestamp
     method constructor
     method start

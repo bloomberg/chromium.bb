@@ -32,7 +32,7 @@ class Sensor : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class SensorState { Unconnected, Activating, Activated, Idle, Errored };
+  enum class SensorState { Idle, Activating, Activated };
 
   ~Sensor() override;
 
@@ -48,7 +48,7 @@ class Sensor : public EventTargetWithInlineData,
   }
 
   // Getters
-  String state() const;
+  bool activated() const;
   DOMHighResTimeStamp timestamp(ScriptState*, bool& isNull) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);

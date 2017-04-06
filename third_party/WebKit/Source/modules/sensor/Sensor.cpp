@@ -25,7 +25,7 @@ Sensor::Sensor(ExecutionContext* executionContext,
     : ContextLifecycleObserver(executionContext),
       m_sensorOptions(sensorOptions),
       m_type(type),
-      m_state(Sensor::SensorState::Unconnected),
+      m_state(SensorState::Idle),
       m_lastUpdateTimestamp(0.0) {
   // Check secure context.
   String errorMessage;
@@ -57,9 +57,7 @@ Sensor::Sensor(ExecutionContext* executionContext,
 Sensor::~Sensor() = default;
 
 void Sensor::start() {
-  if (m_state != Sensor::SensorState::Unconnected &&
-      m_state != Sensor::SensorState::Idle &&
-      m_state != Sensor::SensorState::Errored)
+  if (m_state != Sensor::SensorState::Idle)
     return;
 
   initSensorProxyIfNeeded();
@@ -74,35 +72,15 @@ void Sensor::start() {
 }
 
 void Sensor::stop() {
-  if (m_state == Sensor::SensorState::Unconnected ||
-      m_state == Sensor::SensorState::Idle ||
-      m_state == Sensor::SensorState::Errored)
+  if (m_state == Sensor::SensorState::Idle)
     return;
 
   stopListening();
 }
 
-static String ToString(Sensor::SensorState state) {
-  switch (state) {
-    case Sensor::SensorState::Unconnected:
-      return "unconnected";
-    case Sensor::SensorState::Activating:
-      return "activating";
-    case Sensor::SensorState::Activated:
-      return "activated";
-    case Sensor::SensorState::Idle:
-      return "idle";
-    case Sensor::SensorState::Errored:
-      return "errored";
-    default:
-      NOTREACHED();
-  }
-  return "idle";
-}
-
 // Getters
-String Sensor::state() const {
-  return ToString(m_state);
+bool Sensor::activated() const {
+  return m_state == SensorState::Activated;
 }
 
 DOMHighResTimeStamp Sensor::timestamp(ScriptState* scriptState,
@@ -135,9 +113,7 @@ DEFINE_TRACE(Sensor) {
 }
 
 bool Sensor::hasPendingActivity() const {
-  if (m_state == Sensor::SensorState::Unconnected ||
-      m_state == Sensor::SensorState::Idle ||
-      m_state == Sensor::SensorState::Errored)
+  if (m_state == Sensor::SensorState::Idle)
     return false;
   return getExecutionContext() && hasEventListeners();
 }
@@ -221,13 +197,11 @@ void Sensor::onSensorError(ExceptionCode code,
 }
 
 void Sensor::onStartRequestCompleted(bool result) {
-  if (m_state != Sensor::SensorState::Activating)
+  if (m_state != SensorState::Activating)
     return;
 
   if (!result) {
-    reportError(
-        OperationError,
-        "start() call has failed possibly due to inappropriate options.");
+    reportError(NotReadableError, "start() call has failed.");
     return;
   }
 
@@ -290,7 +264,7 @@ void Sensor::updateState(Sensor::SensorState newState) {
 void Sensor::reportError(ExceptionCode code,
                          const String& sanitizedMessage,
                          const String& unsanitizedMessage) {
-  updateState(Sensor::SensorState::Errored);
+  updateState(SensorState::Idle);
   if (getExecutionContext()) {
     auto error =
         DOMException::create(code, sanitizedMessage, unsanitizedMessage);
