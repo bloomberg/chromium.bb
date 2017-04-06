@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -205,7 +206,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     connection_callback_responses_.push_back(wifi_guid);
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::string other_wifi_service_path_;
   std::vector<std::string> connection_callback_responses_;

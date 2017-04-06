@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/attestation/attestation.pb.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +40,7 @@ class FakeCryptohomeClientTest : public ::testing::Test {
                void(int, bool, const std::string&));
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   FakeCryptohomeClient fake_cryptohome_client_;
   CryptohomeClient::AsyncMethodCallback async_method_callback_;
