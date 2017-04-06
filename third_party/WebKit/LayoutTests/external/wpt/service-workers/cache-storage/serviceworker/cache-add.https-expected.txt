@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Partial response (status code 206) is unsupported
 PASS Cache.add and Cache.addAll 
 PASS Cache.add called with no arguments 
 PASS Cache.add called with relative URL specified as a string 
@@ -8,8 +7,8 @@ PASS Cache.add called with Request object
 PASS Cache.add called with POST request 
 PASS Cache.add called twice with the same Request object 
 PASS Cache.add with request with null body (not consumed) 
-FAIL Cache.add with 206 response promise_test: Unhandled rejection with value: object "ReferenceError: assert_promise_rejects is not defined"
-FAIL Cache.addAll with 206 response promise_test: Unhandled rejection with value: object "TypeError: test.unreached_func is not a function"
+PASS Cache.add with 206 response 
+PASS Cache.addAll with 206 response 
 PASS Cache.add with request that results in a status of 404 
 PASS Cache.add with request that results in a status of 500 
 PASS Cache.addAll with no arguments 
