@@ -204,7 +204,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void finish(double finishTime);
   void finish() { finish(0.0); }
 
-  bool passesAccessControlCheck(SecurityOrigin*) const;
+  bool passesAccessControlCheck(const SecurityOrigin*) const;
 
   virtual PassRefPtr<const SharedBuffer> resourceBuffer() const {
     return m_data;

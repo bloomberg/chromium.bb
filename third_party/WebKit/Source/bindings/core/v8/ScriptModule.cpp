@@ -20,12 +20,14 @@ ScriptModule::~ScriptModule() {}
 
 ScriptModule ScriptModule::compile(v8::Isolate* isolate,
                                    const String& source,
-                                   const String& fileName) {
+                                   const String& fileName,
+                                   AccessControlStatus accessControlStatus) {
   v8::TryCatch tryCatch(isolate);
   tryCatch.SetVerbose(true);
   v8::Local<v8::Module> module;
-  if (!v8Call(V8ScriptRunner::compileModule(isolate, source, fileName), module,
-              tryCatch)) {
+  if (!v8Call(V8ScriptRunner::compileModule(isolate, source, fileName,
+                                            accessControlStatus),
+              module, tryCatch)) {
     // Compilation error is not used in Blink implementaion logic.
     // Note: Error message is delivered to user (e.g. console) by message
     // listeners set on v8::Isolate. See V8Initializer::initalizeMainThread().

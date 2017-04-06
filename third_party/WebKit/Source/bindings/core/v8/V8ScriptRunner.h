@@ -81,7 +81,8 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   V8CacheOptions);
   static v8::MaybeLocal<v8::Module> compileModule(v8::Isolate*,
                                                   const String& source,
-                                                  const String& fileName);
+                                                  const String& fileName,
+                                                  AccessControlStatus);
   static v8::MaybeLocal<v8::Value> runCompiledScript(v8::Isolate*,
                                                      v8::Local<v8::Script>,
                                                      ExecutionContext*);

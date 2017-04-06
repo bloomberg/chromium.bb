@@ -436,7 +436,8 @@ AtomicString Resource::httpContentType() const {
   return response().httpContentType();
 }
 
-bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const {
+bool Resource::passesAccessControlCheck(
+    const SecurityOrigin* securityOrigin) const {
   StoredCredentials storedCredentials =
       lastResourceRequest().allowStoredCredentials()
           ? AllowStoredCredentials

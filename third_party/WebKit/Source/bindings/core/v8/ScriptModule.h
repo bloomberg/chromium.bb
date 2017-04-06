@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
@@ -28,7 +29,8 @@ class CORE_EXPORT ScriptModule final {
  public:
   static ScriptModule compile(v8::Isolate*,
                               const String& source,
-                              const String& fileName);
+                              const String& fileName,
+                              AccessControlStatus);
 
   // TODO(kouhei): Remove copy ctor
   ScriptModule() {}

@@ -40,7 +40,8 @@ class DummyModulator : public Modulator {
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   ScriptModule compileModule(const String& script,
-                             const String& urlStr) override;
+                             const String& urlStr,
+                             AccessControlStatus) override;
 };
 
 }  // namespace blink

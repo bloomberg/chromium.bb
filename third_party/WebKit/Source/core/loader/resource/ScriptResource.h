@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/loader/resource/TextResource.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceClient.h"
 
@@ -74,6 +75,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   const String& script();
 
   static bool mimeTypeAllowedByNosniff(const ResourceResponse&);
+
+  AccessControlStatus calculateAccessControlStatus(const SecurityOrigin*) const;
 
  private:
   class ScriptResourceFactory : public ResourceFactory {

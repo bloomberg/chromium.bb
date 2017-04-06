@@ -498,19 +498,21 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(
 v8::MaybeLocal<v8::Module> V8ScriptRunner::compileModule(
     v8::Isolate* isolate,
     const String& source,
-    const String& fileName) {
+    const String& fileName,
+    AccessControlStatus accessControlStatus) {
   TRACE_EVENT1("v8", "v8.compileModule", "fileName", fileName.utf8());
   // TODO(adamk): Add Inspector integration?
   // TODO(adamk): Pass more info into ScriptOrigin.
-  v8::ScriptOrigin origin(v8String(isolate, fileName),
-                          v8::Integer::New(isolate, 0),  // line_offset
-                          v8::Integer::New(isolate, 0),  // col_offset
-                          v8Boolean(true, isolate),      // accessControlStatus
-                          v8::Local<v8::Integer>(),      // script id
-                          v8String(isolate, ""),         // source_map_url
-                          v8Boolean(false, isolate),     // accessControlStatus
-                          v8Boolean(false, isolate),     // is_wasm
-                          v8Boolean(true, isolate));     // is_module
+  v8::ScriptOrigin origin(
+      v8String(isolate, fileName), v8::Integer::New(isolate, 0),  // line_offset
+      v8::Integer::New(isolate, 0),                               // col_offset
+      v8Boolean(accessControlStatus == SharableCrossOrigin, isolate),
+      v8::Local<v8::Integer>(),  // script id
+      v8String(isolate, ""),     // source_map_url
+      v8Boolean(accessControlStatus == OpaqueResource, isolate),
+      v8Boolean(false, isolate),  // is_wasm
+      v8Boolean(true, isolate));  // is_module
+
   v8::ScriptCompiler::Source scriptSource(v8String(isolate, source), origin);
   return v8::ScriptCompiler::CompileModule(isolate, &scriptSource);
 }

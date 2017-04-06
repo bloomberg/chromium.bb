@@ -41,7 +41,8 @@ void DummyModulator::fetchNewSingleModule(const ModuleScriptFetchRequest&,
 }
 
 ScriptModule DummyModulator::compileModule(const String& script,
-                                           const String& urlStr) {
+                                           const String& urlStr,
+                                           AccessControlStatus) {
   NOTREACHED();
   return ScriptModule();
 }

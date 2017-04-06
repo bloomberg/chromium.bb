@@ -63,10 +63,12 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   SecurityOrigin* securityOrigin() override { return m_securityOrigin.get(); }
 
   ScriptModule compileModule(const String& script,
-                             const String& urlStr) override {
+                             const String& urlStr,
+                             AccessControlStatus accessControlStatus) override {
     ScriptState::Scope scope(m_scriptState.get());
     return ScriptModule::compile(m_scriptState->isolate(),
-                                 "export default 'foo';", "");
+                                 "export default 'foo';", "",
+                                 accessControlStatus);
   }
 
   DECLARE_TRACE();

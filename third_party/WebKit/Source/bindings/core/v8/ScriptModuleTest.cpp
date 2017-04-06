@@ -74,15 +74,15 @@ DEFINE_TRACE(ScriptModuleTestModulator) {
 
 TEST(ScriptModuleTest, compileSuccess) {
   V8TestingScope scope;
-  ScriptModule module =
-      ScriptModule::compile(scope.isolate(), "export const a = 42;", "foo.js");
+  ScriptModule module = ScriptModule::compile(
+      scope.isolate(), "export const a = 42;", "foo.js", SharableCrossOrigin);
   ASSERT_FALSE(module.isNull());
 }
 
 TEST(ScriptModuleTest, compileFail) {
   V8TestingScope scope;
-  ScriptModule module =
-      ScriptModule::compile(scope.isolate(), "123 = 456", "foo.js");
+  ScriptModule module = ScriptModule::compile(scope.isolate(), "123 = 456",
+                                              "foo.js", SharableCrossOrigin);
   ASSERT_TRUE(module.isNull());
 }
 
@@ -90,11 +90,11 @@ TEST(ScriptModuleTest, equalAndHash) {
   V8TestingScope scope;
 
   ScriptModule moduleNull;
-  ScriptModule moduleA =
-      ScriptModule::compile(scope.isolate(), "export const a = 'a';", "a.js");
+  ScriptModule moduleA = ScriptModule::compile(
+      scope.isolate(), "export const a = 'a';", "a.js", SharableCrossOrigin);
   ASSERT_FALSE(moduleA.isNull());
-  ScriptModule moduleB =
-      ScriptModule::compile(scope.isolate(), "export const b = 'b';", "b.js");
+  ScriptModule moduleB = ScriptModule::compile(
+      scope.isolate(), "export const b = 'b';", "b.js", SharableCrossOrigin);
   ASSERT_FALSE(moduleB.isNull());
   Vector<char> moduleDeletedBuffer(sizeof(ScriptModule));
   ScriptModule& moduleDeleted =
@@ -134,7 +134,7 @@ TEST(ScriptModuleTest, moduleRequests) {
   V8TestingScope scope;
   ScriptModule module = ScriptModule::compile(
       scope.isolate(), "import 'a'; import 'b'; export const c = 'c';",
-      "foo.js");
+      "foo.js", SharableCrossOrigin);
   ASSERT_FALSE(module.isNull());
 
   auto requests = module.moduleRequests(scope.getScriptState());
@@ -150,8 +150,8 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
   auto contextData = V8PerContextData::from(scope.context());
   contextData->setModulator(modulator);
 
-  ScriptModule module =
-      ScriptModule::compile(scope.isolate(), "export const a = 42;", "foo.js");
+  ScriptModule module = ScriptModule::compile(
+      scope.isolate(), "export const a = 42;", "foo.js", SharableCrossOrigin);
   ASSERT_FALSE(module.isNull());
   ScriptValue exception = module.instantiate(scope.getScriptState());
   ASSERT_TRUE(exception.isEmpty());
@@ -168,18 +168,19 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   auto contextData = V8PerContextData::from(scope.context());
   contextData->setModulator(modulator);
 
-  ScriptModule moduleA =
-      ScriptModule::compile(scope.isolate(), "export const a = 'a';", "foo.js");
+  ScriptModule moduleA = ScriptModule::compile(
+      scope.isolate(), "export const a = 'a';", "foo.js", SharableCrossOrigin);
   ASSERT_FALSE(moduleA.isNull());
   resolver->pushScriptModule(moduleA);
 
-  ScriptModule moduleB =
-      ScriptModule::compile(scope.isolate(), "export const b = 'b';", "foo.js");
+  ScriptModule moduleB = ScriptModule::compile(
+      scope.isolate(), "export const b = 'b';", "foo.js", SharableCrossOrigin);
   ASSERT_FALSE(moduleB.isNull());
   resolver->pushScriptModule(moduleB);
 
   ScriptModule module = ScriptModule::compile(
-      scope.isolate(), "import 'a'; import 'b'; export const c = 123;", "c.js");
+      scope.isolate(), "import 'a'; import 'b'; export const c = 123;", "c.js",
+      SharableCrossOrigin);
   ASSERT_FALSE(module.isNull());
   ScriptValue exception = module.instantiate(scope.getScriptState());
   ASSERT_TRUE(exception.isEmpty());

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/text/WTFString.h"
@@ -56,7 +57,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator> {
                                      const KURL& baseURL);
 
   virtual ScriptModule compileModule(const String& script,
-                                     const String& urlStr) = 0;
+                                     const String& urlStr,
+                                     AccessControlStatus) = 0;
 
  private:
   friend class ModuleMap;

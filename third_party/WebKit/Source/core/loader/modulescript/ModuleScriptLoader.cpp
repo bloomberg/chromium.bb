@@ -200,12 +200,16 @@ void ModuleScriptLoader::notifyFinished(Resource*) {
   // Step 8. Let source text be the result of UTF-8 decoding response's body.
   String sourceText = resource()->script();
 
+  AccessControlStatus accessControlStatus =
+      resource()->calculateAccessControlStatus(m_modulator->securityOrigin());
+
   // Step 9. Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, cryptographic
   // nonce, parser state, and credentials mode.
   m_moduleScript = createModuleScript(
       sourceText, resource()->response().url(), m_modulator, m_nonce,
-      m_parserState, resource()->resourceRequest().fetchCredentialsMode());
+      m_parserState, resource()->resourceRequest().fetchCredentialsMode(),
+      accessControlStatus);
 
   advanceState(State::Finished);
 }
@@ -217,7 +221,8 @@ ModuleScript* ModuleScriptLoader::createModuleScript(
     Modulator* modulator,
     const String& nonce,
     ParserDisposition parserState,
-    WebURLRequest::FetchCredentialsMode credentialsMode) {
+    WebURLRequest::FetchCredentialsMode credentialsMode,
+    AccessControlStatus accessControlStatus) {
   // Step 1. Let script be a new module script that this algorithm will
   // subsequently initialize.
   // Step 2. Set script's settings object to the environment settings object
@@ -225,7 +230,8 @@ ModuleScript* ModuleScriptLoader::createModuleScript(
   // Note: "script's settings object" will be "modulator".
 
   // Delegate to Modulator::compileModule to process Steps 3-6.
-  ScriptModule result = modulator->compileModule(sourceText, url.getString());
+  ScriptModule result = modulator->compileModule(sourceText, url.getString(),
+                                                 accessControlStatus);
   // Step 6: "...return null, and abort these steps."
   if (result.isNull())
     return nullptr;

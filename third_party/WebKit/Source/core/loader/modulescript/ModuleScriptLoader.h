@@ -74,7 +74,8 @@ class CORE_EXPORT ModuleScriptLoader final
                                           Modulator*,
                                           const String& nonce,
                                           ParserDisposition,
-                                          WebURLRequest::FetchCredentialsMode);
+                                          WebURLRequest::FetchCredentialsMode,
+                                          AccessControlStatus);
 
   void advanceState(State newState);
 #if DCHECK_IS_ON()

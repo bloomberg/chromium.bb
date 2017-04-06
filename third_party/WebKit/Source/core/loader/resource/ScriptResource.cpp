@@ -108,4 +108,21 @@ bool ScriptResource::mimeTypeAllowedByNosniff(
              response.httpContentType());
 }
 
+AccessControlStatus ScriptResource::calculateAccessControlStatus(
+    const SecurityOrigin* securityOrigin) const {
+  if (response().wasFetchedViaServiceWorker()) {
+    if (response().serviceWorkerResponseType() ==
+        WebServiceWorkerResponseTypeOpaque) {
+      return OpaqueResource;
+    }
+
+    return SharableCrossOrigin;
+  }
+
+  if (passesAccessControlCheck(securityOrigin))
+    return SharableCrossOrigin;
+
+  return NotSharableCrossOrigin;
+}
+
 }  // namespace blink

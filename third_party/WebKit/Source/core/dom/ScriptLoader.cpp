@@ -736,16 +736,8 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   if (!m_isExternalScript) {
     accessControlStatus = SharableCrossOrigin;
   } else if (sourceCode.resource()) {
-    if (sourceCode.resource()->response().wasFetchedViaServiceWorker()) {
-      if (sourceCode.resource()->response().serviceWorkerResponseType() ==
-          WebServiceWorkerResponseTypeOpaque)
-        accessControlStatus = OpaqueResource;
-      else
-        accessControlStatus = SharableCrossOrigin;
-    } else if (sourceCode.resource()->passesAccessControlCheck(
-                   m_element->document().getSecurityOrigin())) {
-      accessControlStatus = SharableCrossOrigin;
-    }
+    accessControlStatus = sourceCode.resource()->calculateAccessControlStatus(
+        m_element->document().getSecurityOrigin());
   }
 
   const bool isImportedScript = contextDocument != elementDocument;
