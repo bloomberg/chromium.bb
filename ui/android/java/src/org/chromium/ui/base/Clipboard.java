@@ -197,7 +197,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     @Override
     public void onPrimaryClipChanged() {
         if (mMd5Hasher == null) return;
-        RecordUserAction.record("MobileOmniboxClipboardChanged");
+        RecordUserAction.record("MobileClipboardChanged");
         mClipboardMd5 = weakMd5Hash();
         // Always update the clipboard change time even if the clipboard
         // content hasn't changed.  This is because if the user put something

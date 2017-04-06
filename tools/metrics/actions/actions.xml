@@ -9525,6 +9525,21 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of at least 2017/02/28.</obsolete>
 </action>
 
+<action name="MobileClipboardChanged">
+  <owner>jif@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <description>
+    Emitted when Chrome detects that the clipboard contains new content.
+
+    On iOS: this occurs either when Chrome enters the foreground and notices
+    that the content of the clipboard changed, or when the users selects the
+    omnibox and Chrome notices that the content of the clipboard changed.
+
+    On Android: this occurs when Chrome starts up or when the clipboard changes
+    while Chrome is running (in the foreground or not).
+  </description>
+</action>
+
 <action name="MobileComeToForeground">
   <owner>tedchoc@chromium.org</owner>
   <description>
@@ -10118,6 +10133,9 @@ should be able to be added at any place in this file.
     On Android: this occurs when Chrome starts up or when the clipboard changes
     while Chrome is running (in the foreground or not).
   </description>
+  <obsolete>
+    Replaced with MobileOmniboxClipboardChanged in April 2017.
+  </obsolete>
 </action>
 
 <action name="MobileOmniboxDeleteGesture">

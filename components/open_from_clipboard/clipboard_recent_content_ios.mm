@@ -130,7 +130,7 @@ void ClipboardRecentContentIOS::UpdateIfNeeded() {
   if (!HasPasteboardChanged())
     return;
 
-  base::RecordAction(base::UserMetricsAction("MobileOmniboxClipboardChanged"));
+  base::RecordAction(base::UserMetricsAction("MobileClipboardChanged"));
 
   GURL url_from_pasteboard = URLFromPasteboard();
   last_pasteboard_change_date_.reset([[NSDate date] retain]);
