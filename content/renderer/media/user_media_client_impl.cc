@@ -247,8 +247,7 @@ class UserMediaClientImpl::UserMediaRequestInfo
                        bool is_pending);
 
   blink::WebMediaStreamTrack CreateAndStartVideoTrack(
-      const blink::WebMediaStreamSource& source,
-      const blink::WebMediaConstraints& constraints);
+      const blink::WebMediaStreamSource& source);
 
   // Triggers |callback| when all sources used in this request have either
   // successfully started, or a source has failed to start.
@@ -271,6 +270,15 @@ class UserMediaClientImpl::UserMediaRequestInfo
   }
   void set_enable_automatic_output_device_selection(bool value) {
     enable_automatic_output_device_selection_ = value;
+  }
+  const VideoCaptureSettings& video_capture_settings() const {
+    return video_capture_settings_;
+  }
+  void SetVideoCaptureSettings(const VideoCaptureSettings& settings,
+                               bool is_content_capture) {
+    DCHECK(settings.HasValue());
+    is_video_content_capture_ = is_content_capture;
+    video_capture_settings_ = settings;
   }
 
   blink::WebMediaStream* web_stream() { return &web_stream_; }
@@ -298,6 +306,8 @@ class UserMediaClientImpl::UserMediaRequestInfo
   const int request_id_;
   State state_;
   bool enable_automatic_output_device_selection_;
+  VideoCaptureSettings video_capture_settings_;
+  bool is_video_content_capture_;
   blink::WebMediaStream web_stream_;
   const blink::WebUserMediaRequest request_;
   StreamControls stream_controls_;
@@ -513,6 +523,8 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSettings(
   }
   current_request_info_->stream_controls()->video.device_id =
       settings.device_id();
+  current_request_info_->SetVideoCaptureSettings(
+      settings, false /* is_content_capture */);
   GenerateStreamForCurrentRequestInfo();
 }
 
@@ -536,6 +548,8 @@ void UserMediaClientImpl::FinalizeSelectVideoContentSettings(
   }
   current_request_info_->stream_controls()->video.device_id =
       settings.device_id();
+  current_request_info_->SetVideoCaptureSettings(settings,
+                                                 true /* is_content_capture */);
   GenerateStreamForCurrentRequestInfo();
 }
 
@@ -651,9 +665,7 @@ void UserMediaClientImpl::OnStreamGenerated(
 
   blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
       video_array.size());
-  CreateVideoTracks(video_array,
-                    current_request_info_->request().videoConstraints(),
-                    &video_track_vector);
+  CreateVideoTracks(video_array, &video_track_vector);
 
   blink::WebString blink_id = blink::WebString::fromUTF8(label);
   current_request_info_->web_stream()->initialize(blink_id, audio_track_vector,
@@ -790,9 +802,9 @@ void UserMediaClientImpl::OnDeviceStopped(
 }
 
 blink::WebMediaStreamSource UserMediaClientImpl::InitializeVideoSourceObject(
-    const StreamDeviceInfo& device,
-    const blink::WebMediaConstraints& constraints) {
+    const StreamDeviceInfo& device) {
   DCHECK(CalledOnValidThread());
+  DCHECK(current_request_info_);
 
   blink::WebMediaStreamSource source = FindOrInitializeSourceObject(device);
   if (!source.getExtraData()) {
@@ -868,15 +880,21 @@ MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
     const StreamDeviceInfo& device,
     const MediaStreamSource::SourceStoppedCallback& stop_callback) {
   DCHECK(CalledOnValidThread());
-  content::MediaStreamVideoCapturerSource* ret =
-      new content::MediaStreamVideoCapturerSource(stop_callback, device,
-                                                  render_frame());
-  return ret;
+  DCHECK(current_request_info_);
+  if (IsOldVideoConstraints()) {
+    return new MediaStreamVideoCapturerSource(stop_callback, device,
+                                              render_frame());
+  }
+
+  DCHECK(current_request_info_->video_capture_settings().HasValue());
+  return new MediaStreamVideoCapturerSource(
+      stop_callback, device,
+      current_request_info_->video_capture_settings().capture_params(),
+      render_frame());
 }
 
 void UserMediaClientImpl::CreateVideoTracks(
     const StreamDeviceInfoArray& devices,
-    const blink::WebMediaConstraints& constraints,
     blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks) {
   DCHECK(CalledOnValidThread());
   DCHECK(current_request_info_);
@@ -884,9 +902,9 @@ void UserMediaClientImpl::CreateVideoTracks(
 
   for (size_t i = 0; i < devices.size(); ++i) {
     blink::WebMediaStreamSource source =
-        InitializeVideoSourceObject(devices[i], constraints);
+        InitializeVideoSourceObject(devices[i]);
     (*webkit_tracks)[i] =
-        current_request_info_->CreateAndStartVideoTrack(source, constraints);
+        current_request_info_->CreateAndStartVideoTrack(source);
   }
 }
 
@@ -1275,6 +1293,7 @@ UserMediaClientImpl::UserMediaRequestInfo::UserMediaRequestInfo(
     : request_id_(request_id),
       state_(State::NOT_SENT_FOR_GENERATION),
       enable_automatic_output_device_selection_(false),
+      is_video_content_capture_(false),
       request_(request),
       is_processing_user_gesture_(is_processing_user_gesture),
       security_origin_(security_origin),
@@ -1301,18 +1320,28 @@ void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
 
 blink::WebMediaStreamTrack
 UserMediaClientImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
-    const blink::WebMediaStreamSource& source,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaStreamSource& source) {
   DCHECK(source.getType() == blink::WebMediaStreamSource::TypeVideo);
+  DCHECK(request_.video());
+  DCHECK(video_capture_settings_.HasValue());
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   sources_.push_back(source);
   sources_waiting_for_callback_.push_back(native_source);
+  if (IsOldVideoConstraints()) {
+    return MediaStreamVideoTrack::CreateVideoTrack(
+        native_source, request_.videoConstraints(),
+        base::Bind(&UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
+                   AsWeakPtr()),
+        true);
+  }
   return MediaStreamVideoTrack::CreateVideoTrack(
-      native_source, constraints, base::Bind(
-          &UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
-          AsWeakPtr()),
+      native_source, video_capture_settings_.track_adapter_settings(),
+      video_capture_settings_.noise_reduction(), is_video_content_capture_,
+      video_capture_settings_.min_frame_rate(),
+      base::Bind(&UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
+                 AsWeakPtr()),
       true);
 }
 

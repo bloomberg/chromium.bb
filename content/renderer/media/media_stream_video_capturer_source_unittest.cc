@@ -12,10 +12,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/child/child_process.h"
+#include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_constraint_factory.h"
+#include "content/renderer/media/video_track_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,6 +107,21 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         enabled);
   }
 
+  blink::WebMediaStreamTrack StartSource(
+      const VideoTrackAdapterSettings& adapter_settings,
+      const base::Optional<bool>& noise_reduction,
+      bool is_screencast,
+      double min_frame_rate) {
+    bool enabled = true;
+    // CreateVideoTrack will trigger OnConstraintsApplied.
+    return MediaStreamVideoTrack::CreateVideoTrack(
+        source_, adapter_settings, noise_reduction, is_screencast,
+        min_frame_rate,
+        base::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
+                   base::Unretained(this)),
+        enabled);
+  }
+
   MockVideoCapturerSource& mock_delegate() { return *delegate_; }
 
   const char* GetPowerLineFrequencyForTesting() const {
@@ -134,7 +152,13 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   MockConstraintFactory constraint_factory_;
 };
 
-TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureFixedResolutionByDefault) {
+// This test does not apply with spec-compliant constraints.
+// TODO(guidou): Remove this test. http://crbug.com/706408
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       TabCaptureFixedResolutionByDefaultOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -159,8 +183,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureFixedResolutionByDefault) {
   EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
+// This test does not apply with spec-compliant constraints.
+// TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoCapturerSourceTest,
-       DesktopCaptureAllowAnyResolutionChangeByDefault) {
+       DesktopCaptureAllowAnyResolutionChangeByDefaultOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -185,8 +214,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
+// This test does not apply with spec-compliant constraints.
+// TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoCapturerSourceTest,
-       TabCaptureConstraintsImplyFixedAspectRatio) {
+       TabCaptureConstraintsImplyFixedAspectRatioOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -218,8 +252,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
+// This test does not apply with spec-compliant constraints.
+// TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoCapturerSourceTest,
-       TabCaptureConstraintsImplyAllowingAnyResolutionChange) {
+       TabCaptureConstraintsImplyAllowingAnyResolutionChangeOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -251,8 +290,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
+// This test does not apply with spec-compliant constraints.
+// TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoCapturerSourceTest,
-       DeviceCaptureConstraintsSupportPowerLineFrequency) {
+       DeviceCaptureConstraintsSupportPowerLineFrequencyOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   for (int frequency = -100; frequency < 100; ++frequency) {
     StreamDeviceInfo device_info;
     device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
@@ -291,7 +335,11 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   }
 }
 
-TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
+// TODO(guidou): Remove this test. http://crbug.com/706408
+TEST_F(MediaStreamVideoCapturerSourceTest, EndedOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   std::unique_ptr<MockVideoCapturerSource> delegate(
       new MockVideoCapturerSource());
   delegate_ = delegate.get();
@@ -310,6 +358,47 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _));
   blink::WebMediaStreamTrack track = StartSource();
+  base::RunLoop().RunUntilIdle();
+
+  OnStarted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
+            webkit_source_.getReadyState());
+
+  EXPECT_FALSE(source_stopped_);
+
+  EXPECT_CALL(mock_delegate(), StopCapture());
+  OnStarted(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
+            webkit_source_.getReadyState());
+  // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
+  EXPECT_TRUE(source_stopped_);
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kMediaStreamOldVideoConstraints);
+  std::unique_ptr<MockVideoCapturerSource> delegate(
+      new MockVideoCapturerSource());
+  delegate_ = delegate.get();
+  EXPECT_CALL(*delegate_, GetPreferredFormats());
+  source_ = new MediaStreamVideoCapturerSource(
+      base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
+                 base::Unretained(this)),
+      std::move(delegate));
+  webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
+                            blink::WebMediaStreamSource::TypeVideo,
+                            blink::WebString::fromASCII("dummy_source_name"),
+                            false /* remote */);
+  webkit_source_.setExtraData(source_);
+  webkit_source_id_ = webkit_source_.id();
+
+  InSequence s;
+  EXPECT_CALL(mock_delegate(), StartCapture(_, _, _));
+  blink::WebMediaStreamTrack track = StartSource(
+      VideoTrackAdapterSettings(), base::Optional<bool>(), false, 0.0);
   base::RunLoop().RunUntilIdle();
 
   OnStarted(true);
@@ -362,7 +451,11 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
   base::Closure got_frame_cb_;
 };
 
-TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       CaptureTimeAndMetadataPlumbingOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
@@ -378,6 +471,62 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   EXPECT_CALL(mock_delegate(), RequestRefreshFrame());
   EXPECT_CALL(mock_delegate(), StopCapture());
   blink::WebMediaStreamTrack track = StartSource();
+  running_cb.Run(true);
+
+  base::RunLoop run_loop;
+  base::TimeTicks reference_capture_time =
+      base::TimeTicks::FromInternalValue(60013);
+  base::TimeTicks capture_time;
+  media::VideoFrameMetadata metadata;
+  FakeMediaStreamVideoSink fake_sink(
+      &capture_time, &metadata,
+      media::BindToCurrentLoop(run_loop.QuitClosure()));
+  fake_sink.ConnectToTrack(track);
+  const scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
+  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
+  child_process_->io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(deliver_frame_cb, frame, reference_capture_time));
+  run_loop.Run();
+  fake_sink.DisconnectFromTrack();
+  EXPECT_EQ(reference_capture_time, capture_time);
+  double metadata_value;
+  EXPECT_TRUE(metadata.GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                 &metadata_value));
+  EXPECT_EQ(30.0, metadata_value);
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kMediaStreamOldVideoConstraints);
+  std::unique_ptr<MockVideoCapturerSource> delegate(
+      new MockVideoCapturerSource());
+  delegate_ = delegate.get();
+  EXPECT_CALL(*delegate_, GetPreferredFormats());
+  source_ = new MediaStreamVideoCapturerSource(
+      base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
+                 base::Unretained(this)),
+      std::move(delegate));
+  webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
+                            blink::WebMediaStreamSource::TypeVideo,
+                            blink::WebString::fromASCII("dummy_source_name"),
+                            false /* remote */);
+  webkit_source_.setExtraData(source_);
+  webkit_source_id_ = webkit_source_.id();
+
+  VideoCaptureDeliverFrameCB deliver_frame_cb;
+  media::VideoCapturerSource::RunningCallback running_cb;
+
+  InSequence s;
+  //  EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
+  EXPECT_CALL(mock_delegate(), StartCapture(_, _, _))
+      .WillOnce(testing::DoAll(testing::SaveArg<1>(&deliver_frame_cb),
+                               testing::SaveArg<2>(&running_cb)));
+  EXPECT_CALL(mock_delegate(), RequestRefreshFrame());
+  EXPECT_CALL(mock_delegate(), StopCapture());
+  blink::WebMediaStreamTrack track = StartSource(
+      VideoTrackAdapterSettings(), base::Optional<bool>(), false, 0.0);
   running_cb.Run(true);
 
   base::RunLoop run_loop;

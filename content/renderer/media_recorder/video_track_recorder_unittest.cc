@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -69,9 +70,7 @@ class VideoTrackRecorderTest
     blink_source_.setExtraData(mock_source_);
     blink_track_.initialize(blink_source_);
 
-    blink::WebMediaConstraints constraints;
-    constraints.initialize();
-    track_ = new MediaStreamVideoTrack(mock_source_, constraints,
+    track_ = new MediaStreamVideoTrack(mock_source_,
                                        MediaStreamSource::ConstraintsCallback(),
                                        true /* enabled */);
     blink_track_.setTrackData(track_);

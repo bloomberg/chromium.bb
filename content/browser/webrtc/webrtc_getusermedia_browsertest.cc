@@ -5,9 +5,11 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -18,6 +20,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -494,11 +497,53 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+// TODO(guidou): Remove this test. http://crbug.com/706408
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithSecondVideoCropped) {
+                       TwoGetUserMediaWithSecondVideoCroppedOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
   std::string constraints1 = "{video: true}";
   std::string constraints2 = "{video: {mandatory: {maxHeight: 360}}}";
   std::string expected_result = "w=640:h=480-w=640:h=360";
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaWithSecondVideoCropped) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kMediaStreamOldVideoConstraints);
+  std::string constraints1 = "{video: true}";
+  std::string constraints2 =
+      "{video: {width: {exact: 640}, height: {exact: 360}}}";
+  std::string expected_result = "w=640:h=480-w=640:h=360";
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
+}
+
+// Test fails under MSan, http://crbug.com/445745
+// TODO(guidou): Remove this test. http://crbug.com/706408
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVgaOldConstraints \
+  DISABLED_TwoGetUserMediaWithFirstHdSecondVgaOldConstraints
+#else
+#define MAYBE_TwoGetUserMediaWithFirstHdSecondVgaOldConstraints \
+  TwoGetUserMediaWithFirstHdSecondVgaOldConstraints
+#endif
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTest,
+    MAYBE_TwoGetUserMediaWithFirstHdSecondVgaOldConstraints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kMediaStreamOldVideoConstraints);
+  std::string constraints1 =
+      "{video: {mandatory: {maxWidth:1280 , minWidth:1280 , maxHeight: 720, "
+      "minHeight: 720}}}";
+  std::string constraints2 =
+      "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
+  std::string expected_result = "w=1280:h=720-w=640:h=480";
   RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
                                                   expected_result);
 }
@@ -513,11 +558,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kMediaStreamOldVideoConstraints);
   std::string constraints1 =
-      "{video: {mandatory: {maxWidth:1280 , minWidth:1280 , maxHeight: 720,\
-      minHeight: 720}}}";
+      "{video: {width : {exact: 1280}, height: {exact: 720}}}";
   std::string constraints2 =
-      "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
+      "{video: {width : {exact: 640}, height: {exact: 480}}}";
   std::string expected_result = "w=1280:h=720-w=640:h=480";
   RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
                                                   expected_result);
@@ -528,8 +575,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        DISABLED_TwoGetUserMediaWithFirst1080pSecondVga) {
   std::string constraints1 =
-      "{video: {mandatory: {maxWidth:1920 , minWidth:1920 , maxHeight: 1080,\
-      minHeight: 1080}}}";
+      "{video: {mandatory: {maxWidth:1920 , minWidth:1920 , maxHeight: 1080, "
+      "minHeight: 1080}}}";
   std::string constraints2 =
       "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
   std::string expected_result = "w=1920:h=1080-w=640:h=480";

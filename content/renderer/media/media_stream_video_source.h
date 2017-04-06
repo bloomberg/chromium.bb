@@ -5,17 +5,17 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_SOURCE_H_
 
-#include <string>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/secure_display_link_tracker.h"
 #include "media/base/video_frame.h"
@@ -28,6 +28,9 @@ namespace content {
 
 class MediaStreamVideoTrack;
 class VideoTrackAdapter;
+struct VideoTrackAdapterSettings;
+
+CONTENT_EXPORT bool IsOldVideoConstraints();
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
 // MediaStreamVideoTrack.
@@ -69,9 +72,14 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Puts |track| in the registered tracks list.
   void AddTrack(MediaStreamVideoTrack* track,
+                const VideoTrackAdapterSettings& track_adapter_settings,
                 const VideoCaptureDeliverFrameCB& frame_callback,
-                const blink::WebMediaConstraints& constraints,
                 const ConstraintsCallback& callback);
+  // TODO(guidou): Remove this method. http://crbug.com/706408
+  void AddTrackLegacy(MediaStreamVideoTrack* track,
+                      const VideoCaptureDeliverFrameCB& frame_callback,
+                      const blink::WebMediaConstraints& constraints,
+                      const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track);
 
   // Called by |track| to notify the source whether it has any paths to a
@@ -86,7 +94,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
 
-  const media::VideoCaptureFormat* GetCurrentFormat() const;
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
 
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -107,11 +115,17 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // width set as a mandatory constraint if set when calling
   // MediaStreamVideoSource::AddTrack. If max height and max width is not set
   // |max_requested_height| and |max_requested_width| are 0.
+  // TODO(guidou): Remove when the standard constraints code stabilizes.
+  // http://crbug.com/706408
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) = 0;
+
+  // TODO(guidou): Rename to GetCurrentFormat. http://crbug.com/706804
+  virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
+      const;
 
   // An implementation must start capturing frames using the requested
   // |format|. The fulfilled |constraints| are provided as additional context,
@@ -119,6 +133,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // started or the source failed to start OnStartDone must be called. An
   // implementation must call |frame_callback| on the IO thread with the
   // captured frames.
+  // TODO(guidou): Remove |format| and |constraints| parameters.
+  // http://crbug.com/706408
   virtual void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const blink::WebMediaConstraints& constraints,
@@ -142,6 +158,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   enum State {
     NEW,
+    // TODO(guidou): Remove this state. http://crbug.com/706408
     RETRIEVING_CAPABILITIES,
     STARTING,
     STARTED,
@@ -165,13 +182,16 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // if the capture delegate has started and the constraints provided in
   // AddTrack match the format that was used to start the device.
   // Note that it must be ok to delete the MediaStreamVideoSource object
-  // in the context of the callback. If gUM fail, the implementation will
+  // in the context of the callback. If gUM fails, the implementation will
   // simply drop the references to the blink source and track which will lead
-  // to that this object is deleted.
+  // to this object being deleted.
   void FinalizeAddTrack();
+  // TODO(guidou): Remove this method. http://crbug.com/706408
+  void FinalizeAddTrackLegacy();
 
   State state_;
 
+  // TODO(guidou): Remove this field. http://crbug.com/706408
   media::VideoCaptureFormat current_format_;
 
   struct TrackDescriptor {
@@ -179,12 +199,21 @@ class CONTENT_EXPORT MediaStreamVideoSource
                     const VideoCaptureDeliverFrameCB& frame_callback,
                     const blink::WebMediaConstraints& constraints,
                     const ConstraintsCallback& callback);
-    TrackDescriptor(const TrackDescriptor& other);
+    TrackDescriptor(MediaStreamVideoTrack* track,
+                    const VideoCaptureDeliverFrameCB& frame_callback,
+                    std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
+                    const ConstraintsCallback& callback);
+    TrackDescriptor(TrackDescriptor&& other);
+    TrackDescriptor& operator=(TrackDescriptor&& other);
     ~TrackDescriptor();
 
     MediaStreamVideoTrack* track;
     VideoCaptureDeliverFrameCB frame_callback;
+    // TODO(guidou): remove this field. http://crbug.com/706408
     blink::WebMediaConstraints constraints;
+    // TODO(guidou): Make |adapter_settings| a regular field instead of a
+    // unique_ptr.
+    std::unique_ptr<VideoTrackAdapterSettings> adapter_settings;
     ConstraintsCallback callback;
   };
   std::vector<TrackDescriptor> track_descriptors_;

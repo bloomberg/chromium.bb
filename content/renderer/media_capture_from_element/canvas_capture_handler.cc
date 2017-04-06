@@ -172,8 +172,6 @@ void CanvasCaptureHandler::StartVideoCapture(
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(params.requested_format.IsValid());
-
-  // TODO(emircan): Accomodate to the given frame rate constraints here.
   capture_format_ = params.requested_format;
   delegate_.reset(new CanvasCaptureHandlerDelegate(new_frame_callback));
   DCHECK(delegate_);
@@ -267,10 +265,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   webkit_source.setExtraData(media_stream_source.get());
 
   web_track->initialize(webkit_source);
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
   web_track->setTrackData(new MediaStreamVideoTrack(
-      media_stream_source.release(), constraints,
+      media_stream_source.release(),
       MediaStreamVideoSource::ConstraintsCallback(), true));
 }
 

@@ -443,6 +443,17 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   }
 
  private:
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
+      const override {
+    DCHECK(!IsOldVideoConstraints());
+    if (host_) {
+      return media::VideoCaptureFormat(
+          host_->plugin_frame_size_, kDefaultOutputFrameRate,
+          ToPixelFormat(host_->plugin_frame_format_));
+    }
+    return base::Optional<media::VideoCaptureFormat>();
+  }
+
   const base::WeakPtr<PepperMediaStreamVideoTrackHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSource);
@@ -522,14 +533,11 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   webkit_source.setExtraData(source);  // Takes ownership of |source|.
 
   const bool enabled = true;
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
   track_ = MediaStreamVideoTrack::CreateVideoTrack(
-       source, constraints,
-       base::Bind(
-           &PepperMediaStreamVideoTrackHost::OnTrackStarted,
-           base::Unretained(this)),
-       enabled);
+      source,
+      base::Bind(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
+                 base::Unretained(this)),
+      enabled);
   // Note: The call to CreateVideoTrack() returned a track that holds a
   // ref-counted reference to |webkit_source| (and, implicitly, |source|).
 }

@@ -123,7 +123,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   // Returns no value if there is no request being processed. Use only for
   // testing.
   // TODO(guidou): Remove this method once spec-compliant constraints algorithm
-  // for audio is implemented. http://crbug.com/657733
+  // for audio is implemented. http://crbug.com/543997
   base::Optional<bool> AutomaticOutputDeviceSelectionEnabledForCurrentRequest();
 
  private:
@@ -149,8 +149,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
   blink::WebMediaStreamSource InitializeVideoSourceObject(
-      const StreamDeviceInfo& device,
-      const blink::WebMediaConstraints& constraints);
+      const StreamDeviceInfo& device);
 
   blink::WebMediaStreamSource InitializeAudioSourceObject(
       const StreamDeviceInfo& device,
@@ -159,7 +158,6 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   void CreateVideoTracks(
       const StreamDeviceInfoArray& devices,
-      const blink::WebMediaConstraints& constraints,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   void CreateAudioTracks(

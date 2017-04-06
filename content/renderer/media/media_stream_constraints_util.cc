@@ -21,7 +21,9 @@ template <typename P, typename T>
 bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
                                   P picker,
                                   T* value) {
-  DCHECK(!constraints.isNull());
+  if (constraints.isNull())
+    return false;
+
   const auto& the_field = constraints.basic().*picker;
   if (the_field.hasExact()) {
     *value = the_field.exact();
@@ -41,7 +43,9 @@ template <typename P, typename T>
 bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
-  DCHECK(!constraints.isNull());
+  if (constraints.isNull())
+    return false;
+
   const auto& the_field = constraints.basic().*picker;
   if (the_field.hasMax()) {
     *value = the_field.max();
@@ -69,7 +73,9 @@ template <typename P, typename T>
 bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
-  DCHECK(!constraints.isNull());
+  if (constraints.isNull())
+    return false;
+
   const auto& the_field = constraints.basic().*picker;
   if (the_field.hasMin()) {
     *value = the_field.min();

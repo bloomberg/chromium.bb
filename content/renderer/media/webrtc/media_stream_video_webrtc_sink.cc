@@ -4,6 +4,11 @@
 
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -12,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -21,6 +27,14 @@
 #include "third_party/webrtc/api/videotracksource.h"
 
 namespace content {
+
+namespace {
+
+rtc::Optional<bool> ToRtcOptional(const base::Optional<bool>& value) {
+  return value ? rtc::Optional<bool>(*value) : rtc::Optional<bool>();
+}
+
+}  // namespace
 
 class MediaStreamVideoWebRtcSink::WebRtcVideoSource
     : public webrtc::VideoTrackSource {
@@ -249,27 +263,45 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     const blink::WebMediaStreamTrack& track,
     PeerConnectionDependencyFactory* factory)
     : weak_factory_(this) {
-  DCHECK(MediaStreamVideoTrack::GetVideoTrack(track));
-  const blink::WebMediaConstraints& constraints =
-      MediaStreamVideoTrack::GetVideoTrack(track)->constraints();
-
-  // Check for presence of mediaStreamSource constraint. The value is ignored.
-  std::string value;
-  bool is_screencast = GetConstraintValueAsString(
-      constraints, &blink::WebMediaTrackConstraintSet::mediaStreamSource,
-      &value);
-
-  // Extract denoising preference, if no value is set this currently falls back
-  // to a codec-specific default inside webrtc, hence the tri-state of {on, off
-  // unset}.
-  // TODO(pbos): Add tests that make sure that googNoiseReduction has properly
-  // propagated from getUserMedia down to a VideoTrackSource.
+  MediaStreamVideoTrack* video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  DCHECK(video_track);
   rtc::Optional<bool> needs_denoising;
-  bool denoising_value;
-  if (GetConstraintValueAsBoolean(
-          constraints, &blink::WebMediaTrackConstraintSet::googNoiseReduction,
-          &denoising_value)) {
-    needs_denoising = rtc::Optional<bool>(denoising_value);
+  bool is_screencast = false;
+  double min_frame_rate = 0.0;
+  double max_frame_rate = 0.0;
+
+  if (IsOldVideoConstraints()) {
+    const blink::WebMediaConstraints& constraints = video_track->constraints();
+
+    // Check for presence of mediaStreamSource constraint. The value is ignored.
+    std::string value;
+    is_screencast = GetConstraintValueAsString(
+        constraints, &blink::WebMediaTrackConstraintSet::mediaStreamSource,
+        &value);
+
+    // Extract denoising preference, if no value is set this currently falls
+    // back to a codec-specific default inside webrtc, hence the tri-state of
+    // {on, off unset}.
+    // TODO(pbos): Add tests that make sure that googNoiseReduction has properly
+    // propagated from getUserMedia down to a VideoTrackSource.
+    bool denoising_value;
+    if (GetConstraintValueAsBoolean(
+            constraints, &blink::WebMediaTrackConstraintSet::googNoiseReduction,
+            &denoising_value)) {
+      needs_denoising = rtc::Optional<bool>(denoising_value);
+    }
+    GetConstraintMinAsDouble(constraints,
+                             &blink::WebMediaTrackConstraintSet::frameRate,
+                             &min_frame_rate);
+    GetConstraintMaxAsDouble(constraints,
+                             &blink::WebMediaTrackConstraintSet::frameRate,
+                             &max_frame_rate);
+  } else {
+    needs_denoising = ToRtcOptional(video_track->noise_reduction());
+    is_screencast = video_track->is_screencast();
+    min_frame_rate = video_track->min_frame_rate();
+    max_frame_rate = video_track->adapter_settings().max_frame_rate;
   }
 
   // Enable automatic frame refreshes for the screen capture sources, which will
@@ -282,22 +314,15 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     // Start with the default refresh interval, and refine based on constraints.
     refresh_interval =
         base::TimeDelta::FromMicroseconds(kDefaultRefreshIntervalMicros);
-    double value = 0.0;
-    if (GetConstraintMinAsDouble(
-            constraints, &blink::WebMediaTrackConstraintSet::frameRate,
-            &value) &&
-        value > 0.0) {
+    if (min_frame_rate > 0.0) {
       refresh_interval =
           base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
-              base::Time::kMicrosecondsPerSecond / value));
+              base::Time::kMicrosecondsPerSecond / min_frame_rate));
     }
-    if (GetConstraintMaxAsDouble(
-            constraints, &blink::WebMediaTrackConstraintSet::frameRate,
-            &value) &&
-        value > 0.0) {
+    if (max_frame_rate > 0.0) {
       const base::TimeDelta alternate_refresh_interval =
           base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
-              base::Time::kMicrosecondsPerSecond / value));
+              base::Time::kMicrosecondsPerSecond / max_frame_rate));
       refresh_interval = std::max(refresh_interval, alternate_refresh_interval);
     }
     if (refresh_interval.InMicroseconds() < kLowerBoundRefreshIntervalMicros) {

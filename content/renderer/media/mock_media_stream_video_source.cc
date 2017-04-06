@@ -29,6 +29,17 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
       MediaStreamVideoSource::kDefaultFrameRate, media::PIXEL_FORMAT_I420));
 }
 
+MockMediaStreamVideoSource::MockMediaStreamVideoSource(
+    const media::VideoCaptureFormat& format,
+    bool respond_to_request_refresh_frame)
+    : format_(format),
+      manual_get_supported_formats_(false),
+      respond_to_request_refresh_frame_(respond_to_request_refresh_frame),
+      max_requested_height_(format.frame_size.height()),
+      max_requested_width_(format.frame_size.width()),
+      max_requested_frame_rate_(format.frame_rate),
+      attempted_to_start_(false) {}
+
 MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
 
 void MockMediaStreamVideoSource::StartMockedSource() {
@@ -81,12 +92,19 @@ void MockMediaStreamVideoSource::StartSourceImpl(
     const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());
-  format_ = format;
+  if (IsOldVideoConstraints())
+    format_ = format;
+
   attempted_to_start_ = true;
   frame_callback_ = frame_callback;
 }
 
 void MockMediaStreamVideoSource::StopSourceImpl() {
+}
+
+base::Optional<media::VideoCaptureFormat>
+MockMediaStreamVideoSource::GetCurrentFormatImpl() const {
+  return format_;
 }
 
 void MockMediaStreamVideoSource::DeliverVideoFrame(

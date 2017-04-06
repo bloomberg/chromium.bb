@@ -11,6 +11,7 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/video_track_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -58,6 +59,7 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
 void MockMediaStreamRegistry::AddVideoTrack(
     const std::string& track_id,
     const blink::WebMediaConstraints& constraints) {
+  DCHECK(IsOldVideoConstraints());
   blink::WebMediaStreamSource blink_source;
   blink_source.initialize("mock video source id",
                           blink::WebMediaStreamSource::TypeVideo,
@@ -75,10 +77,40 @@ void MockMediaStreamRegistry::AddVideoTrack(
   test_stream_.addTrack(blink_track);
 }
 
+void MockMediaStreamRegistry::AddVideoTrack(
+    const std::string& track_id,
+    const VideoTrackAdapterSettings& adapter_settings,
+    const base::Optional<bool>& noise_reduction,
+    bool is_screencast,
+    double min_frame_rate) {
+  DCHECK(!IsOldVideoConstraints());
+  blink::WebMediaStreamSource blink_source;
+  blink_source.initialize("mock video source id",
+                          blink::WebMediaStreamSource::TypeVideo,
+                          "mock video source name", false /* remote */);
+  MockMediaStreamVideoSource* native_source =
+      new MockMediaStreamVideoSource(false /* manual get supported formats */);
+  blink_source.setExtraData(native_source);
+  blink::WebMediaStreamTrack blink_track;
+  blink_track.initialize(blink::WebString::fromUTF8(track_id), blink_source);
+
+  MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
+      native_source, adapter_settings, noise_reduction, is_screencast,
+      min_frame_rate, MediaStreamVideoSource::ConstraintsCallback(),
+      true /* enabled */);
+  blink_track.setTrackData(native_track);
+  test_stream_.addTrack(blink_track);
+}
+
 void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
-  AddVideoTrack(track_id, constraints);
+  if (IsOldVideoConstraints()) {
+    blink::WebMediaConstraints constraints;
+    constraints.initialize();
+    AddVideoTrack(track_id, constraints);
+  } else {
+    AddVideoTrack(track_id, VideoTrackAdapterSettings(), base::Optional<bool>(),
+                  false /* is_screncast */, 0.0 /* min_frame_rate */);
+  }
 }
 
 void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {

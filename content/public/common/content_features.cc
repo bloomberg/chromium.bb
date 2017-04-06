@@ -120,6 +120,10 @@ const base::Feature kMediaDocumentDownloadButton{
     base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables the old algorithm for processing video constraints in getUserMedia().
+const base::Feature kMediaStreamOldVideoConstraints{
+    "MediaStreamOldVideoConstraints", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the memory coordinator.
 // WARNING:
 // The memory coordinator is not ready for use and enabling this may cause

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_TRACK_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_TRACK_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -19,6 +20,8 @@
 
 namespace content {
 
+struct VideoTrackAdapterSettings;
+
 // MediaStreamVideoTrack is a video specific representation of a
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
 // and can be retrieved from a blink object using
@@ -29,23 +32,51 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // MediaStreamVideoTrack instance. The MediaStreamVideoTrack object is owned
   // by the blink object in its WebMediaStreamTrack::ExtraData member.
   // |callback| is triggered if the track is added to the source
-  // successfully and will receive video frames that match |constraints|
-  // or if the source fail to provide video frames.
+  // successfully and will receive video frames that match the given settings
+  // or if the source fails to provide video frames.
   // If |enabled| is true, sinks added to the track will
-  // receive video frames when the source deliver frames to the track.
+  // receive video frames when the source delivers frames to the track.
+  // TODO(guidou): Remove the variant that takes a |constraints| argument.
+  // http://crbug.com/706408
+  static blink::WebMediaStreamTrack CreateVideoTrack(
+      MediaStreamVideoSource* source,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
   static blink::WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
       const blink::WebMediaConstraints& constraints,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
+  static blink::WebMediaStreamTrack CreateVideoTrack(
+      MediaStreamVideoSource* source,
+      const VideoTrackAdapterSettings& adapter_settings,
+      const base::Optional<bool>& noise_reduction,
+      bool is_screencast,
+      double min_frame_rate,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
 
   static MediaStreamVideoTrack* GetVideoTrack(
       const blink::WebMediaStreamTrack& track);
 
-  // Constructor for video tracks.
+  // Constructors for video tracks.
+  // TODO(guidou): Remove the variant that takes a |constraints| argument.
+  // http://crbug.com/706408
+  MediaStreamVideoTrack(
+      MediaStreamVideoSource* source,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
   MediaStreamVideoTrack(
       MediaStreamVideoSource* source,
       const blink::WebMediaConstraints& constraints,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
+  MediaStreamVideoTrack(
+      MediaStreamVideoSource* source,
+      const VideoTrackAdapterSettings& adapter_settings,
+      const base::Optional<bool>& noise_reduction,
+      bool is_screen_cast,
+      double min_frame_rate,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
   ~MediaStreamVideoTrack() override;
@@ -59,7 +90,26 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
 
-  const blink::WebMediaConstraints& constraints() const { return constraints_; }
+  const blink::WebMediaConstraints& constraints() const {
+    DCHECK(IsOldVideoConstraints());
+    return constraints_;
+  }
+  const base::Optional<bool>& noise_reduction() const {
+    DCHECK(!IsOldVideoConstraints());
+    return noise_reduction_;
+  }
+  bool is_screencast() const {
+    DCHECK(!IsOldVideoConstraints());
+    return is_screencast_;
+  }
+  double min_frame_rate() const {
+    DCHECK(!IsOldVideoConstraints());
+    return min_frame_rate_;
+  }
+  const VideoTrackAdapterSettings& adapter_settings() const {
+    DCHECK(!IsOldVideoConstraints());
+    return *adapter_settings_;
+  }
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.
@@ -94,7 +144,14 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   class FrameDeliverer;
   const scoped_refptr<FrameDeliverer> frame_deliverer_;
 
+  // TODO(guidou): remove this field. http://crbug.com/706408
   const blink::WebMediaConstraints constraints_;
+
+  // TODO(guidou): Make this field a regular field instead of a unique_ptr.
+  std::unique_ptr<VideoTrackAdapterSettings> adapter_settings_;
+  base::Optional<bool> noise_reduction_;
+  bool is_screencast_;
+  double min_frame_rate_;
 
   // Weak ref to the source this tracks is connected to.
   base::WeakPtr<MediaStreamVideoSource> source_;

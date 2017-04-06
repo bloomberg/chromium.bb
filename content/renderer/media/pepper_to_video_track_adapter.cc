@@ -262,13 +262,9 @@ bool PepperToVideoTrackAdapter::Open(MediaStreamRegistryInterface* registry,
                            false /* remote */);
   webkit_source.setExtraData(writer);
 
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
   bool track_enabled = true;
-
   stream.addTrack(MediaStreamVideoTrack::CreateVideoTrack(
-      writer, constraints, MediaStreamVideoSource::ConstraintsCallback(),
-      track_enabled));
+      writer, MediaStreamVideoSource::ConstraintsCallback(), track_enabled));
 
   *frame_writer = new PpFrameWriterProxy(writer->AsWeakPtr());
   return true;

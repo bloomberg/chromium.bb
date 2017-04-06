@@ -17,8 +17,8 @@
 
 namespace content {
 
-struct VideoTrackAdapterSettings {
-  VideoTrackAdapterSettings() = default;
+struct CONTENT_EXPORT VideoTrackAdapterSettings {
+  VideoTrackAdapterSettings();
   VideoTrackAdapterSettings(int max_width,
                             int max_height,
                             double min_aspect_ratio,

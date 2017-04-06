@@ -6,13 +6,17 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
+#include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_track_adapter.h"
@@ -307,6 +311,11 @@ media::VideoCaptureFormat GetBestCaptureFormat(
 
 }  // anonymous namespace
 
+bool IsOldVideoConstraints() {
+  return base::FeatureList::IsEnabled(
+      features::kMediaStreamOldVideoConstraints);
+}
+
 // static
 MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     const blink::WebMediaStreamSource& source) {
@@ -327,12 +336,13 @@ MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK(CalledOnValidThread());
 }
 
-void MediaStreamVideoSource::AddTrack(
+void MediaStreamVideoSource::AddTrackLegacy(
     MediaStreamVideoTrack* track,
     const VideoCaptureDeliverFrameCB& frame_callback,
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(IsOldVideoConstraints());
   DCHECK(!constraints.isNull());
   DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
   tracks_.push_back(track);
@@ -372,6 +382,45 @@ void MediaStreamVideoSource::AddTrack(
     case RETRIEVING_CAPABILITIES: {
       // The |callback| will be triggered once the source has started or
       // the capabilities have been retrieved.
+      break;
+    }
+    case ENDED:
+    case STARTED: {
+      // Currently, reconfiguring the source is not supported.
+      FinalizeAddTrackLegacy();
+    }
+  }
+}
+
+void MediaStreamVideoSource::AddTrack(
+    MediaStreamVideoTrack* track,
+    const VideoTrackAdapterSettings& track_adapter_settings,
+    const VideoCaptureDeliverFrameCB& frame_callback,
+    const ConstraintsCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
+  tracks_.push_back(track);
+  secure_tracker_.Add(track, true);
+
+  track_descriptors_.push_back(TrackDescriptor(
+      track, frame_callback,
+      base::MakeUnique<VideoTrackAdapterSettings>(track_adapter_settings),
+      callback));
+
+  switch (state_) {
+    case NEW: {
+      state_ = STARTING;
+      blink::WebMediaConstraints ignored_constraints;
+      StartSourceImpl(
+          media::VideoCaptureFormat() /* ignored */, ignored_constraints,
+          base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
+      break;
+    }
+    case STARTING: {
+      break;
+    }
+    case RETRIEVING_CAPABILITIES: {
+      NOTREACHED();
       break;
     }
     case ENDED:
@@ -433,12 +482,21 @@ base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {
   return track_adapter_->io_task_runner();
 }
 
-const media::VideoCaptureFormat*
-    MediaStreamVideoSource::GetCurrentFormat() const {
+base::Optional<media::VideoCaptureFormat>
+MediaStreamVideoSource::GetCurrentFormat() const {
   DCHECK(CalledOnValidThread());
-  if (state_ == STARTING || state_ == STARTED)
-    return &current_format_;
-  return nullptr;
+  if (IsOldVideoConstraints()) {
+    if (state_ == STARTING || state_ == STARTED)
+      return current_format_;
+    return base::Optional<media::VideoCaptureFormat>();
+  } else {
+    return GetCurrentFormatImpl();
+  }
+}
+
+base::Optional<media::VideoCaptureFormat>
+MediaStreamVideoSource::GetCurrentFormatImpl() const {
+  return base::Optional<media::VideoCaptureFormat>();
 }
 
 void MediaStreamVideoSource::DoStopSource() {
@@ -455,6 +513,7 @@ void MediaStreamVideoSource::DoStopSource() {
 void MediaStreamVideoSource::OnSupportedFormats(
     const media::VideoCaptureFormats& formats) {
   DCHECK(CalledOnValidThread());
+  DCHECK(IsOldVideoConstraints());
   DCHECK_EQ(RETRIEVING_CAPABILITIES, state_);
 
   supported_formats_ = formats;
@@ -466,7 +525,7 @@ void MediaStreamVideoSource::OnSupportedFormats(
     DVLOG(3) << "OnSupportedFormats failed to find an usable format";
     // This object can be deleted after calling FinalizeAddTrack. See comment
     // in the header file.
-    FinalizeAddTrack();
+    FinalizeAddTrackLegacy();
     return;
   }
 
@@ -528,23 +587,26 @@ void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
-
+    double frame_rate =
+        GetCurrentFormat() ? GetCurrentFormat()->frame_rate : 0.0;
     track_adapter_->StartFrameMonitoring(
-        current_format_.frame_rate,
-        base::Bind(&MediaStreamVideoSource::SetMutedState,
-                   weak_factory_.GetWeakPtr()));
-
+        frame_rate, base::Bind(&MediaStreamVideoSource::SetMutedState,
+                               weak_factory_.GetWeakPtr()));
   } else {
     StopSource();
   }
 
   // This object can be deleted after calling FinalizeAddTrack. See comment in
   // the header file.
-  FinalizeAddTrack();
+  if (IsOldVideoConstraints())
+    FinalizeAddTrackLegacy();
+  else
+    FinalizeAddTrack();
 }
 
-void MediaStreamVideoSource::FinalizeAddTrack() {
+void MediaStreamVideoSource::FinalizeAddTrackLegacy() {
   DCHECK(CalledOnValidThread());
+  DCHECK(IsOldVideoConstraints());
   const media::VideoCaptureFormats formats(1, current_format_);
 
   std::vector<TrackDescriptor> track_descriptors;
@@ -557,7 +619,7 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
         FilterFormats(track.constraints, formats, &unsatisfied_constraint)
             .empty()) {
       result = MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
-      DVLOG(3) << "FinalizeAddTrack() ignoring device on constraint "
+      DVLOG(3) << "FinalizeAddTrackLegacy() ignoring device on constraint "
                << unsatisfied_constraint;
     }
 
@@ -592,11 +654,44 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
       track.track->SetTargetSize(desired_size.width(), desired_size.height());
     }
 
-    DVLOG(3) << "FinalizeAddTrack() result " << result;
+    DVLOG(3) << "FinalizeAddTrackLegacy() result " << result;
 
     if (!track.callback.is_null())
       track.callback.Run(this, result,
                          blink::WebString::fromUTF8(unsatisfied_constraint));
+  }
+}
+
+void MediaStreamVideoSource::FinalizeAddTrack() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!IsOldVideoConstraints());
+  std::vector<TrackDescriptor> track_descriptors;
+  track_descriptors.swap(track_descriptors_);
+  for (const auto& track : track_descriptors) {
+    MediaStreamRequestResult result = MEDIA_DEVICE_OK;
+    if (state_ != STARTED)
+      result = MEDIA_DEVICE_TRACK_START_FAILURE;
+
+    if (result == MEDIA_DEVICE_OK) {
+      track_adapter_->AddTrack(track.track, track.frame_callback,
+                               *track.adapter_settings);
+
+      // Calculate resulting frame size if the source delivers frames
+      // according to the current format. Note: Format may change later.
+      gfx::Size desired_size;
+      VideoTrackAdapter::CalculateTargetSize(
+          GetCurrentFormat() ? GetCurrentFormat()->frame_size
+                             : gfx::Size(track.adapter_settings->max_width,
+                                         track.adapter_settings->max_height),
+          gfx::Size(track.adapter_settings->max_width,
+                    track.adapter_settings->max_height),
+          track.adapter_settings->min_aspect_ratio,
+          track.adapter_settings->max_aspect_ratio, &desired_size);
+      track.track->SetTargetSize(desired_size.width(), desired_size.height());
+    }
+
+    if (!track.callback.is_null())
+      track.callback.Run(this, result, blink::WebString());
   }
 }
 
@@ -629,10 +724,26 @@ MediaStreamVideoSource::TrackDescriptor::TrackDescriptor(
       frame_callback(frame_callback),
       constraints(constraints),
       callback(callback) {
+  DCHECK(IsOldVideoConstraints());
 }
 
 MediaStreamVideoSource::TrackDescriptor::TrackDescriptor(
-    const TrackDescriptor& other) = default;
+    MediaStreamVideoTrack* track,
+    const VideoCaptureDeliverFrameCB& frame_callback,
+    std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
+    const ConstraintsCallback& callback)
+    : track(track),
+      frame_callback(frame_callback),
+      adapter_settings(std::move(adapter_settings)),
+      callback(callback) {
+  DCHECK(!IsOldVideoConstraints());
+}
+
+MediaStreamVideoSource::TrackDescriptor::TrackDescriptor(
+    TrackDescriptor&& other) = default;
+MediaStreamVideoSource::TrackDescriptor&
+MediaStreamVideoSource::TrackDescriptor::operator=(
+    MediaStreamVideoSource::TrackDescriptor&& other) = default;
 
 MediaStreamVideoSource::TrackDescriptor::~TrackDescriptor() {
 }

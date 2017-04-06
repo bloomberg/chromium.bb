@@ -17,6 +17,8 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   explicit MockMediaStreamVideoSource(bool manual_get_supported_formats);
   MockMediaStreamVideoSource(bool manual_get_supported_formats,
                              bool respond_to_request_refresh_frame);
+  MockMediaStreamVideoSource(const media::VideoCaptureFormat& format,
+                             bool respond_to_request_refresh_frame);
   virtual ~MockMediaStreamVideoSource();
 
   MOCK_METHOD1(DoSetMutedState, void(bool muted_state));
@@ -67,6 +69,8 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
       const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
+      const override;
 
  private:
   media::VideoCaptureFormat format_;

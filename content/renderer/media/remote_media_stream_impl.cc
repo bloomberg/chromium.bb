@@ -160,13 +160,9 @@ class RemoteVideoTrackAdapter
         new MediaStreamRemoteVideoSource(std::move(observer)));
     InitializeWebkitTrack(blink::WebMediaStreamSource::TypeVideo);
     webkit_track()->source().setExtraData(video_source.get());
-    // Initial constraints must be provided to a MediaStreamVideoTrack. But
-    // no constraints are available initially on a remote video track.
-    blink::WebMediaConstraints constraints;
-    constraints.initialize();
-    MediaStreamVideoTrack* media_stream_track =
-        new MediaStreamVideoTrack(video_source.release(), constraints,
-            MediaStreamVideoSource::ConstraintsCallback(), enabled);
+    MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
+        video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
+        enabled);
     webkit_track()->setTrackData(media_stream_track);
   }
 };

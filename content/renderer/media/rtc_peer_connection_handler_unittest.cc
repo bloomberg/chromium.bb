@@ -331,11 +331,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     CHECK(audio_source->ConnectToTrack(audio_tracks[0]));
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
         static_cast<size_t>(1));
-    blink::WebMediaConstraints video_constraints;
-    video_constraints.initialize();
     video_tracks[0] = MediaStreamVideoTrack::CreateVideoTrack(
-        native_video_source, video_constraints,
-        MediaStreamVideoSource::ConstraintsCallback(), true);
+        native_video_source, MediaStreamVideoSource::ConstraintsCallback(),
+        true);
 
     blink::WebMediaStream local_stream;
     local_stream.initialize(blink::WebString::fromUTF8(stream_label),

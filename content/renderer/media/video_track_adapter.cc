@@ -324,6 +324,13 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   return true;
 }
 
+VideoTrackAdapterSettings::VideoTrackAdapterSettings()
+    : VideoTrackAdapterSettings(std::numeric_limits<int>::max(),
+                                std::numeric_limits<int>::max(),
+                                0.0,
+                                std::numeric_limits<double>::max(),
+                                0.0) {}
+
 VideoTrackAdapterSettings::VideoTrackAdapterSettings(int max_width,
                                                      int max_height,
                                                      double min_aspect_ratio,

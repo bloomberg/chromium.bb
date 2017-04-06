@@ -43,12 +43,9 @@ bool AddVideoTrackToMediaStream(
       track_id, blink::WebMediaStreamSource::TypeVideo, track_id, is_remote);
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.setExtraData(media_stream_source);
-
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
   web_media_stream->addTrack(MediaStreamVideoTrack::CreateVideoTrack(
-      media_stream_source, constraints,
-      MediaStreamVideoSource::ConstraintsCallback(), true));
+      media_stream_source, MediaStreamVideoSource::ConstraintsCallback(),
+      true));
   return true;
 }
 

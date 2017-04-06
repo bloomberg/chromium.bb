@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
@@ -45,8 +46,8 @@ class MediaStreamRemoteVideoSourceTest
             std::unique_ptr<TrackObserver>(
                 new TrackObserver(base::ThreadTaskRunnerHandle::Get(),
                                   webrtc_video_track_.get())))),
-        number_of_successful_constraints_applied_(0),
-        number_of_failed_constraints_applied_(0) {
+        number_of_successful_track_starts_(0),
+        number_of_failed_track_starts_(0) {
     webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
                               blink::WebString::fromASCII("dummy_source_name"),
@@ -66,23 +67,19 @@ class MediaStreamRemoteVideoSourceTest
 
   MediaStreamVideoTrack* CreateTrack() {
     bool enabled = true;
-    blink::WebMediaConstraints constraints;
-    constraints.initialize();
     return new MediaStreamVideoTrack(
         source(),
-        constraints,
-        base::Bind(
-            &MediaStreamRemoteVideoSourceTest::OnConstraintsApplied,
-            base::Unretained(this)),
+        base::Bind(&MediaStreamRemoteVideoSourceTest::OnTrackStarted,
+                   base::Unretained(this)),
         enabled);
   }
 
   int NumberOfSuccessConstraintsCallbacks() const {
-    return number_of_successful_constraints_applied_;
+    return number_of_successful_track_starts_;
   }
 
   int NumberOfFailedConstraintsCallbacks() const {
-    return number_of_failed_constraints_applied_;
+    return number_of_failed_track_starts_;
   }
 
   void StopWebRtcTrack() {
@@ -94,14 +91,14 @@ class MediaStreamRemoteVideoSourceTest
   }
 
  private:
-  void OnConstraintsApplied(MediaStreamSource* source,
-                            MediaStreamRequestResult result,
-                            const blink::WebString& result_name) {
+  void OnTrackStarted(MediaStreamSource* source,
+                      MediaStreamRequestResult result,
+                      const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);
     if (result == MEDIA_DEVICE_OK)
-      ++number_of_successful_constraints_applied_;
+      ++number_of_successful_track_starts_;
     else
-      ++number_of_failed_constraints_applied_;
+      ++number_of_failed_track_starts_;
   }
 
   base::MessageLoopForUI message_loop_;
@@ -111,8 +108,8 @@ class MediaStreamRemoteVideoSourceTest
   // |remote_source_| is owned by |webkit_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;
   blink::WebMediaStreamSource webkit_source_;
-  int number_of_successful_constraints_applied_;
-  int number_of_failed_constraints_applied_;
+  int number_of_successful_track_starts_;
+  int number_of_failed_track_starts_;
 };
 
 TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
