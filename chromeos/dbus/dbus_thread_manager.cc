@@ -13,6 +13,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -114,6 +115,10 @@ ArcObbMounterClient* DBusThreadManager::GetArcObbMounterClient() {
 AuthPolicyClient* DBusThreadManager::GetAuthPolicyClient() {
   return clients_browser_ ? clients_browser_->auth_policy_client_.get()
                           : nullptr;
+}
+
+BiodClient* DBusThreadManager::GetBiodClient() {
+  return clients_common_->biod_client_.get();
 }
 
 CrasAudioClient* DBusThreadManager::GetCrasAudioClient() {
@@ -295,6 +300,11 @@ DBusThreadManager* DBusThreadManager::Get() {
 DBusThreadManagerSetter::DBusThreadManagerSetter() {}
 
 DBusThreadManagerSetter::~DBusThreadManagerSetter() {}
+
+void DBusThreadManagerSetter::SetBiodClient(
+    std::unique_ptr<BiodClient> client) {
+  DBusThreadManager::Get()->clients_common_->biod_client_ = std::move(client);
+}
 
 void DBusThreadManagerSetter::SetCrasAudioClient(
     std::unique_ptr<CrasAudioClient> client) {

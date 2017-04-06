@@ -26,6 +26,7 @@ namespace chromeos {
 // Style Note: Clients are sorted by names.
 class ArcObbMounterClient;
 class AuthPolicyClient;
+class BiodClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -120,6 +121,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // http://crbug.com/647367
   ArcObbMounterClient* GetArcObbMounterClient();
   AuthPolicyClient* GetAuthPolicyClient();
+  BiodClient* GetBiodClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
   CryptohomeClient* GetCryptohomeClient();
@@ -176,6 +178,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
+  void SetBiodClient(std::unique_ptr<BiodClient> client);
   void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);
