@@ -66,11 +66,15 @@ class MockBluetoothLowEnergyCharacteristicsFinder
 
 class MockConnectionObserver : public ConnectionObserver {
  public:
-  MockConnectionObserver() : num_send_completed_(0) {}
+  MockConnectionObserver()
+      : num_send_completed_(0), delete_on_disconnect_(false) {}
 
   void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
-                                 Connection::Status new_status) override {}
+                                 Connection::Status new_status) override {
+    if (new_status == Connection::Status::DISCONNECTED && delete_on_disconnect_)
+      delete connection;
+  }
 
   void OnMessageReceived(const Connection& connection,
                          const WireMessage& message) override {}
@@ -91,10 +95,16 @@ class MockConnectionObserver : public ConnectionObserver {
 
   int GetNumSendCompleted() { return num_send_completed_; }
 
+  bool delete_on_disconnect() { return delete_on_disconnect_; }
+  void set_delete_on_disconnect(bool delete_on_disconnect) {
+    delete_on_disconnect_ = delete_on_disconnect;
+  }
+
  private:
   std::string last_deserialized_message_;
   bool last_send_success_;
   int num_send_completed_;
+  bool delete_on_disconnect_;
 };
 
 }  // namespace
@@ -735,7 +745,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   NotifySessionStarted(connection.get());
 
   // |connection| will call WriteRemoteCharacteristics(_,_) to try to send the
-  // message |kMaxNumberOfTries| times. There is alredy one EXPECTA_CALL for
+  // message |kMaxNumberOfTries| times. There is alredy one EXPECT_CALL for
   // WriteRemoteCharacteristic(_,_,_) in NotifySessionStated, that's why we use
   // |kMaxNumberOfTries-1| in the EXPECT_CALL statement.
   EXPECT_EQ(0, connection_observer_.GetNumSendCompleted());
@@ -978,6 +988,36 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   RunWriteCharacteristicSuccessCallback();
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+// Test for fix to crbug.com/708744. Without the fix, this test will crash.
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       ReceiverErrorAndConnectionDeletedTest) {
+  connection_observer_.set_delete_on_disconnect(true);
+
+  TestBluetoothLowEnergyWeaveClientConnection* connection =
+      CreateConnection().release();
+
+  InitializeConnection(connection, kDefaultMaxPacketSize);
+
+  EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_tx_characteristic_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  connection->GattCharacteristicValueChanged(
+      adapter_.get(), rx_characteristic_.get(), kErroneousPacket);
+
+  EXPECT_EQ(last_value_written_on_tx_characteristic_,
+            kConnectionCloseApplicationError);
+  EXPECT_EQ(receiver_factory_->GetMostRecentInstance()->GetReasonToClose(),
+            ReasonForClose::APPLICATION_ERROR);
+
+  RunWriteCharacteristicSuccessCallback();
+
+  // We cannot check if connection's status and sub_status are DISCONNECTED
+  // because it has been deleted.
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,

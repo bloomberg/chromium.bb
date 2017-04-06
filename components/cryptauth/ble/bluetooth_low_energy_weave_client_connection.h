@@ -112,6 +112,9 @@ class BluetoothLowEnergyWeaveClientConnection
 
  protected:
   // Exposed for testing.
+  // NOTE: This method may indirectly cause this object's destructor to be
+  // called. Do not perform any operations that touch the internals of this
+  // class after calling this method.
   void DestroyConnection();
 
   // Exposed for testing.

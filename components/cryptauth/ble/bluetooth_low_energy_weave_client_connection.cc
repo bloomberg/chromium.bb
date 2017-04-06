@@ -508,7 +508,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
       break;
     case WriteRequestType::CONNECTION_CLOSE:
       DestroyConnection();
-      break;
+      return;
     default:
       NOTREACHED();
   }
