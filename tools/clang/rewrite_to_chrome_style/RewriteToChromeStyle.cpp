@@ -658,6 +658,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
   // Functions that are named similarily to a type - they should be prefixed
   // with a "Get" prefix.
   static const char* kConflictingMethods[] = {
+      "accumulatorMap",
       "animationWorklet",
       "audioWorklet",
       "binaryType",
@@ -673,6 +674,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "emptySpellCheckerClient",
       "entryType",
       "error",
+      "eventTargetDataMap",
       "fileUtilities",
       "font",
       "frame",
@@ -681,6 +683,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "gridCell",
       "hash",
       "heapObjectHeader",
+      "heapObjectSet",
       "iconURL",
       "image",
       "inputMethodController",
@@ -708,6 +711,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "path",
       "position",
       "processingInstruction",
+      "qualifiedNameCache",
       "readyState",
       "relList",
       "referrer",
@@ -721,6 +725,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "scrollAnimator",
       "selectionInDOMTree",
       "selectionInFlatTree",
+      "selectorTextCache",
       "settings",
       "signalingState",
       "snapshotById",
