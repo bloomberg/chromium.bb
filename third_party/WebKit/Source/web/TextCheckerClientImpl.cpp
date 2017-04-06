@@ -19,8 +19,7 @@ DEFINE_TRACE(TextCheckerClientImpl) {
 }
 
 WebTextCheckClient* TextCheckerClientImpl::webTextCheckClient() const {
-  // TODO(xiaochengh): Move WebTextCheckClient to WebLocalFrame.
-  return m_webLocalFrame->viewImpl()->textCheckClient();
+  return m_webLocalFrame->textCheckClient();
 }
 
 void TextCheckerClientImpl::checkSpellingOfString(const String& text,

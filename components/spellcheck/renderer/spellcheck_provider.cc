@@ -10,6 +10,7 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -41,7 +42,6 @@ SpellCheckProvider::SpellCheckProvider(
       spellcheck_(spellcheck) {
   DCHECK(spellcheck_);
   if (render_view) {  // NULL in unit tests.
-    render_view->GetWebView()->setTextCheckClient(this);
     EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
   }
 }

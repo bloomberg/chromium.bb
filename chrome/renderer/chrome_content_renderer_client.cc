@@ -565,6 +565,14 @@ void ChromeContentRendererClient::RenderFrameCreated(
       render_frame->IsMainFrame()) {
     new SearchBox(render_frame);
   }
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  // TODO(xiaochengh): Use a different SpellCheckProvider for each RenderFrame.
+  if (SpellCheckProvider* provider =
+          SpellCheckProvider::Get(render_frame->GetRenderView())) {
+    render_frame->GetWebFrame()->setTextCheckClient(provider);
+  }
+#endif
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -573,7 +581,16 @@ void ChromeContentRendererClient::RenderViewCreated(
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  new SpellCheckProvider(render_view, spellcheck_.get());
+  SpellCheckProvider* provider =
+      new SpellCheckProvider(render_view, spellcheck_.get());
+  // For a main frame of a view, RenderFrameCreated is called earlier than
+  // RenderViewCreated. This workaround ensures that WebTextCheckClient is
+  // still set for any main frame.
+  // TODO(xiaochengh): Remove this workaround once SpellCheckProvider becomes
+  // a RenderFrameObserver.
+  if (content::RenderFrame* main_frame = render_view->GetMainRenderFrame())
+    main_frame->GetWebFrame()->setTextCheckClient(provider);
+
   new SpellCheckPanel(render_view);
 #endif
   new prerender::PrerendererClient(render_view);

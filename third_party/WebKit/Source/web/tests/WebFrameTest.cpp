@@ -6290,10 +6290,11 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  TextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  TextCheckClient textcheck;
+  frame->setTextCheckClient(&textcheck);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 
@@ -6337,10 +6338,11 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  TextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  TextCheckClient textcheck;
+  frame->setTextCheckClient(&textcheck);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 
@@ -6379,10 +6381,12 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  TextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
-  LocalFrame* frame = webViewHelper.webView()->mainFrameImpl()->frame();
+  WebLocalFrameImpl* webFrame = webViewHelper.webView()->mainFrameImpl();
+  TextCheckClient textcheck;
+  webFrame->setTextCheckClient(&textcheck);
+
+  LocalFrame* frame = webFrame->frame();
   Document* document = frame->document();
   Element* element = document->getElementById("data");
 
@@ -6456,10 +6460,10 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornTextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
-
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  StubbornTextCheckClient textcheck;
+  frame->setTextCheckClient(&textcheck);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 
@@ -6497,9 +6501,10 @@ TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
-  webViewHelper.webView()->setTextCheckClient(0);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  frame->setTextCheckClient(0);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 
@@ -6517,10 +6522,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornTextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
-
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  StubbornTextCheckClient textcheck;
+  frame->setTextCheckClient(&textcheck);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 
@@ -6557,10 +6562,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornTextCheckClient textcheck;
-  webViewHelper.webView()->setTextCheckClient(&textcheck);
-
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
+  StubbornTextCheckClient textcheck;
+  frame->setTextCheckClient(&textcheck);
+
   Document* document = frame->frame()->document();
   Element* element = document->getElementById("data");
 

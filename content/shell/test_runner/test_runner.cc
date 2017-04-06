@@ -1893,8 +1893,11 @@ WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
   return mock_content_settings_client_.get();
 }
 
+WebTextCheckClient* TestRunner::GetWebTextCheckClient() const {
+  return spellcheck_.get();
+}
+
 void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
-  web_view->setTextCheckClient(spellcheck_.get());
   web_view->setCredentialManagerClient(credential_manager_client_.get());
 }
 

@@ -100,6 +100,7 @@ class TestRunner : public WebTestRunner {
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
+  blink::WebTextCheckClient* GetWebTextCheckClient() const override;
   void InitializeWebViewWithMocks(blink::WebView* web_view) override;
   void SetFocus(blink::WebView* web_view, bool focus) override;
 

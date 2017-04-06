@@ -2526,4 +2526,9 @@ TextCheckerClient& WebLocalFrameImpl::textCheckerClient() const {
   return *m_textCheckerClient;
 }
 
+void WebLocalFrameImpl::setTextCheckClient(
+    WebTextCheckClient* textCheckClient) {
+  m_textCheckClient = textCheckClient;
+}
+
 }  // namespace blink

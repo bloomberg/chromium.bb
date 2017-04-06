@@ -180,6 +180,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   bool executeCommand(const WebString&) override;
   bool executeCommand(const WebString&, const WebString& value) override;
   bool isCommandEnabled(const WebString&) const override;
+  void setTextCheckClient(WebTextCheckClient*) override;
   void enableSpellChecking(bool) override;
   bool isSpellCheckingEnabled() const override;
   void replaceMisspelledRange(const WebString&) override;
@@ -405,6 +406,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   static void selectWordAroundPosition(LocalFrame*, VisiblePosition);
 
   TextCheckerClient& textCheckerClient() const;
+  WebTextCheckClient* textCheckClient() const { return m_textCheckClient; }
 
   TextFinder* textFinder() const;
   // Returns the text finder object if it already exists.
@@ -425,7 +427,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebNode contextMenuNode() const { return m_contextMenuNode.get(); }
   void setContextMenuNode(Node* node) { m_contextMenuNode = node; }
   void clearContextMenuNode() { m_contextMenuNode.clear(); }
-
 
   DECLARE_TRACE();
 
@@ -503,8 +504,9 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   std::unique_ptr<WebInputMethodControllerImpl> m_inputMethodController;
 
-  // Stores the TextCheckerClient which communicates with SpellCheckProvider.
+  // Stores the TextCheckerClient to bridge SpellChecker and WebTextCheckClient.
   Member<TextCheckerClientImpl> m_textCheckerClient;
+  WebTextCheckClient* m_textCheckClient;
 
   // Oilpan: WebLocalFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

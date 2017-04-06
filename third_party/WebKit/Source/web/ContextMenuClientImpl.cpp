@@ -157,6 +157,8 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
   r.setToShadowHostIfInRestrictedShadowRoot();
 
   LocalFrame* selectedFrame = r.innerNodeFrame();
+  WebLocalFrameImpl* selectedWebFrame =
+      WebLocalFrameImpl::fromFrame(selectedFrame);
 
   WebContextMenuData data;
   data.mousePosition = selectedFrame->view()->contentsToViewport(
@@ -326,9 +328,9 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
       Vector<String> suggestions;
       description.split('\n', suggestions);
       data.dictionarySuggestions = suggestions;
-    } else if (m_webView->textCheckClient()) {
+    } else if (selectedWebFrame->textCheckClient()) {
       int misspelledOffset, misspelledLength;
-      m_webView->textCheckClient()->checkSpelling(
+      selectedWebFrame->textCheckClient()->checkSpelling(
           data.misspelledWord, misspelledOffset, misspelledLength,
           &data.dictionarySuggestions);
     }
@@ -388,8 +390,6 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
   if (fromTouch && !shouldShowContextMenuFromTouch(data))
     return false;
 
-  WebLocalFrameImpl* selectedWebFrame =
-      WebLocalFrameImpl::fromFrame(selectedFrame);
   selectedWebFrame->setContextMenuNode(r.innerNodeOrImageMapImage());
   if (!selectedWebFrame->client())
     return false;

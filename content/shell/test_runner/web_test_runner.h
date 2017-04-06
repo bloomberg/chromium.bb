@@ -19,6 +19,7 @@ class DictionaryValue;
 namespace blink {
 class WebContentSettingsClient;
 class WebLocalFrame;
+class WebTextCheckClient;
 class WebView;
 }
 
@@ -29,6 +30,10 @@ class WebTestRunner {
   // Returns a mock WebContentSettings that is used for layout tests. An
   // embedder should use this for all WebViews it creates.
   virtual blink::WebContentSettingsClient* GetWebContentSettings() const = 0;
+
+  // Returns a mock WebTextCheckClient that is used for layout tests. An
+  // embedder should use this for all WebLocalFrames it creates.
+  virtual blink::WebTextCheckClient* GetWebTextCheckClient() const = 0;
 
   // After WebTestDelegate::TestFinished was invoked, the following methods
   // can be used to determine what kind of dump the main WebViewTestProxy can

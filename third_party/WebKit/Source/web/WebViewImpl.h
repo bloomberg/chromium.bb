@@ -175,7 +175,6 @@ class WEB_EXPORT WebViewImpl final
   void setCredentialManagerClient(WebCredentialManagerClient*) override;
   void setPrerendererClient(WebPrerendererClient*) override;
   void setSpellCheckClient(WebSpellCheckClient*) override;
-  void setTextCheckClient(WebTextCheckClient*) override;
   WebSettings* settings() override;
   WebString pageEncoding() const override;
   bool tabsToLinks() const override;
@@ -314,8 +313,6 @@ class WEB_EXPORT WebViewImpl final
   WebViewClient* client() { return m_client; }
 
   WebSpellCheckClient* spellCheckClient() { return m_spellCheckClient; }
-
-  WebTextCheckClient* textCheckClient() { return m_textCheckClient; }
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -615,9 +612,6 @@ class WEB_EXPORT WebViewImpl final
 
   WebViewClient* m_client;  // Can be 0 (e.g. unittests, shared workers, etc.)
   WebSpellCheckClient* m_spellCheckClient;
-
-  // TODO(xiaochengh): Move this pointer to WebLocalFrameImpl.
-  WebTextCheckClient* m_textCheckClient;
 
   Persistent<ChromeClientImpl> m_chromeClientImpl;
   ContextMenuClientImpl m_contextMenuClientImpl;
