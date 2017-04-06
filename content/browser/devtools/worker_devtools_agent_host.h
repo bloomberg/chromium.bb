@@ -7,14 +7,15 @@
 
 #include "base/macros.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 
 namespace content {
 
 class BrowserContext;
 
-class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
-                                public IPC::Listener {
+class CONTENT_EXPORT WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
+                                               public IPC::Listener {
  public:
   typedef std::pair<int, int> WorkerId;
 
@@ -33,6 +34,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
 
   void PauseForDebugOnStart();
   bool IsPausedForDebugOnStart();
+  bool IsReadyForInspection();
 
   void WorkerReadyForInspection();
   void WorkerRestarted(WorkerId worker_id);
@@ -48,6 +50,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
     WORKER_INSPECTED,
     WORKER_TERMINATED,
     WORKER_PAUSED_FOR_DEBUG_ON_START,
+    WORKER_READY_FOR_DEBUG_ON_START,
     WORKER_PAUSED_FOR_REATTACH,
   };
 

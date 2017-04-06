@@ -87,7 +87,13 @@ void WorkerDevToolsAgentHost::PauseForDebugOnStart() {
 }
 
 bool WorkerDevToolsAgentHost::IsPausedForDebugOnStart() {
-  return state_ == WORKER_PAUSED_FOR_DEBUG_ON_START;
+  return state_ == WORKER_PAUSED_FOR_DEBUG_ON_START ||
+         state_ == WORKER_READY_FOR_DEBUG_ON_START;
+}
+
+bool WorkerDevToolsAgentHost::IsReadyForInspection() {
+  return state_ == WORKER_INSPECTED || state_ == WORKER_UNINSPECTED ||
+         state_ == WORKER_READY_FOR_DEBUG_ON_START;
 }
 
 void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
@@ -101,6 +107,8 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
           chunk_processor_.state_cookie()));
     }
     OnAttachedStateChanged(true);
+  } else if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
+    state_ = WORKER_READY_FOR_DEBUG_ON_START;
   }
 }
 

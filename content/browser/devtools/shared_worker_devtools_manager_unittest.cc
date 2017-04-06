@@ -13,6 +13,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
+#include "content/browser/devtools/worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/browser/browser_context.h"
@@ -297,6 +298,36 @@ TEST_F(SharedWorkerDevToolsManagerTest, ReattachTest) {
   CheckWorkerState(3, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerDestroyed(3, 2);
   CheckWorkerNotExist(3, 2);
+  CheckWorkerCount(0);
+}
+
+TEST_F(SharedWorkerDevToolsManagerTest, PauseOnStartTest) {
+  SharedWorkerInstance instance(
+      GURL("http://example.com/w3.js"), base::string16(), base::string16(),
+      blink::WebContentSecurityPolicyTypeReport, blink::WebAddressSpacePublic,
+      browser_context_->GetResourceContext(), partition_id_,
+      blink::WebSharedWorkerCreationContextTypeNonsecure);
+  std::unique_ptr<TestDevToolsClientHost> client_host(
+      new TestDevToolsClientHost());
+  manager_->WorkerCreated(3, 1, instance);
+  CheckWorkerState(3, 1, WorkerState::WORKER_UNINSPECTED);
+  scoped_refptr<WorkerDevToolsAgentHost> agent_host(
+      static_cast<WorkerDevToolsAgentHost*>(
+          manager_->GetDevToolsAgentHostForWorker(3, 1)));
+  EXPECT_TRUE(agent_host.get());
+  CheckWorkerState(3, 1, WorkerState::WORKER_UNINSPECTED);
+  agent_host->PauseForDebugOnStart();
+  CheckWorkerState(3, 1, WorkerState::WORKER_PAUSED_FOR_DEBUG_ON_START);
+  EXPECT_FALSE(agent_host->IsReadyForInspection());
+  manager_->WorkerReadyForInspection(3, 1);
+  CheckWorkerState(3, 1, WorkerState::WORKER_READY_FOR_DEBUG_ON_START);
+  client_host->InspectAgentHost(agent_host.get());
+  CheckWorkerState(3, 1, WorkerState::WORKER_INSPECTED);
+  client_host->InspectAgentHost(nullptr);
+  agent_host = nullptr;
+  CheckWorkerState(3, 1, WorkerState::WORKER_UNINSPECTED);
+  manager_->WorkerDestroyed(3, 1);
+  CheckWorkerNotExist(3, 1);
   CheckWorkerCount(0);
 }
 
