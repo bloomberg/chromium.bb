@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_method_data.h"
 
 namespace payments {
 namespace data_util {
@@ -68,6 +69,67 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
   }
 
   return response;
+}
+
+bool ParseBasicCardSupportedNetworks(
+    const std::vector<PaymentMethodData>& method_data,
+    std::vector<std::string>* out_supported_networks,
+    std::set<std::string>* out_basic_card_specified_networks) {
+  DCHECK(out_supported_networks->empty());
+  DCHECK(out_basic_card_specified_networks->empty());
+
+  std::set<std::string> card_networks{"amex",     "diners",     "discover",
+                                      "jcb",      "mastercard", "mir",
+                                      "unionpay", "visa"};
+  for (const PaymentMethodData& method_data_entry : method_data) {
+    if (method_data_entry.supported_methods.empty())
+      return false;
+
+    for (const std::string& method : method_data_entry.supported_methods) {
+      if (method.empty())
+        continue;
+
+      // If a card network is specified right in "supportedMethods", add it.
+      const char kBasicCardMethodName[] = "basic-card";
+      auto card_it = card_networks.find(method);
+      if (card_it != card_networks.end()) {
+        out_supported_networks->push_back(method);
+        // |method| removed from |card_networks| so that it is not doubly added
+        // to |supported_card_networks_| if "basic-card" is specified with no
+        // supported networks.
+        card_networks.erase(card_it);
+      } else if (method == kBasicCardMethodName) {
+        // For the "basic-card" method, check "supportedNetworks".
+        if (method_data_entry.supported_networks.empty()) {
+          // Empty |supported_networks| means all networks are supported.
+          out_supported_networks->insert(out_supported_networks->end(),
+                                         card_networks.begin(),
+                                         card_networks.end());
+          out_basic_card_specified_networks->insert(card_networks.begin(),
+                                                    card_networks.end());
+          // Clear the set so that no further networks are added to
+          // |out_supported_networks|.
+          card_networks.clear();
+        } else {
+          // The merchant has specified a few basic card supported networks. Use
+          // the mapping to transform to known basic-card types.
+          for (const std::string& supported_network :
+               method_data_entry.supported_networks) {
+            // Make sure that the network was not already added to
+            // |out_supported_networks|. If it's still in |card_networks| it's
+            // fair game.
+            auto it = card_networks.find(supported_network);
+            if (it != card_networks.end()) {
+              out_supported_networks->push_back(supported_network);
+              out_basic_card_specified_networks->insert(supported_network);
+              card_networks.erase(it);
+            }
+          }
+        }
+      }
+    }
+  }
+  return true;
 }
 
 }  // namespace data_util

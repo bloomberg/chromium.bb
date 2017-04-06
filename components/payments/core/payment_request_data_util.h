@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DATA_UTIL_H_
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DATA_UTIL_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,7 @@ namespace payments {
 
 struct BasicCardResponse;
 struct PaymentAddress;
+class PaymentMethodData;
 
 namespace data_util {
 
@@ -35,6 +37,21 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
     const base::string16& cvc,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale);
+
+// Parse the supported card networks from supportedMethods and  "basic-card"'s
+// supportedNetworks. |out_supported_networks| is filled with list of networks
+// in the order that they were specified by the merchant.
+// |out_basic_card_supported_networks| is a subset of |out_supported_networks|
+// that includes all networks that were specified as part of "basic-card". This
+// is used to know whether to return the card network name (e.g., "visa") or
+// "basic-card" in the PaymentResponse. Returns true on success, false on
+// invalid data specified. |method_data.supported_networks| is expected to only
+// contain basic-card card network names (the list is at
+// https://www.w3.org/Payments/card-network-ids).
+bool ParseBasicCardSupportedNetworks(
+    const std::vector<PaymentMethodData>& method_data,
+    std::vector<std::string>* out_supported_networks,
+    std::set<std::string>* out_basic_card_supported_networks);
 
 }  // namespace data_util
 }  // namespace payments

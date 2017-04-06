@@ -7,8 +7,39 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/payments/core/payment_method_data.h"
+#include "components/payments/core/payment_request_data_util.h"
 
 namespace payments {
+
+namespace {
+
+// Returns the card network name associated with a given BasicCardNetwork. Names
+// are inspired by https://www.w3.org/Payments/card-network-ids.
+std::string GetBasicCardNetworkName(const mojom::BasicCardNetwork& network) {
+  switch (network) {
+    case mojom::BasicCardNetwork::AMEX:
+      return "amex";
+    case mojom::BasicCardNetwork::DINERS:
+      return "diners";
+    case mojom::BasicCardNetwork::DISCOVER:
+      return "discover";
+    case mojom::BasicCardNetwork::JCB:
+      return "jcb";
+    case mojom::BasicCardNetwork::MASTERCARD:
+      return "mastercard";
+    case mojom::BasicCardNetwork::MIR:
+      return "mir";
+    case mojom::BasicCardNetwork::UNIONPAY:
+      return "unionpay";
+    case mojom::BasicCardNetwork::VISA:
+      return "visa";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+}  // namespace
 
 const char kBasicCardMethodName[] = "basic-card";
 
@@ -97,79 +128,39 @@ std::string PaymentRequestSpec::GetFormattedCurrencyCode() {
 }
 
 void PaymentRequestSpec::PopulateValidatedMethodData(
-    const std::vector<mojom::PaymentMethodDataPtr>& method_data) {
-  if (method_data.empty()) {
+    const std::vector<mojom::PaymentMethodDataPtr>& method_data_mojom) {
+  if (method_data_mojom.empty()) {
     LOG(ERROR) << "Invalid payment methods or data";
     NotifyOnInvalidSpecProvided();
     return;
   }
 
-  std::set<std::string> card_networks{"amex",     "diners",     "discover",
-                                      "jcb",      "mastercard", "mir",
-                                      "unionpay", "visa"};
-  for (const mojom::PaymentMethodDataPtr& method_data_entry : method_data) {
-    std::vector<std::string> supported_methods =
-        method_data_entry->supported_methods;
-    if (supported_methods.empty()) {
-      LOG(ERROR) << "Invalid payment methods or data";
-      NotifyOnInvalidSpecProvided();
-      return;
+  std::vector<PaymentMethodData> method_data_vector;
+  method_data_vector.reserve(method_data_mojom.size());
+  for (const mojom::PaymentMethodDataPtr& method_data_entry :
+       method_data_mojom) {
+    PaymentMethodData method_data;
+    method_data.supported_methods = method_data_entry->supported_methods;
+    // Transfer the supported basic card networks.
+    std::vector<std::string> supported_networks;
+    for (const mojom::BasicCardNetwork& network :
+         method_data_entry->supported_networks) {
+      supported_networks.push_back(GetBasicCardNetworkName(network));
     }
+    method_data.supported_networks = std::move(supported_networks);
 
-    for (const std::string& method : supported_methods) {
-      if (method.empty())
-        continue;
-
-      // If a card network is specified right in "supportedMethods", add it.
-      auto card_it = card_networks.find(method);
-      if (card_it != card_networks.end()) {
-        supported_card_networks_.push_back(method);
-        // |method| removed from |card_networks| so that it is not doubly added
-        // to |supported_card_networks_| if "basic-card" is specified with no
-        // supported networks.
-        card_networks.erase(card_it);
-      } else if (method == kBasicCardMethodName) {
-        // For the "basic-card" method, check "supportedNetworks".
-        if (method_data_entry->supported_networks.empty()) {
-          // Empty |supported_networks| means all networks are supported.
-          supported_card_networks_.insert(supported_card_networks_.end(),
-                                          card_networks.begin(),
-                                          card_networks.end());
-          basic_card_specified_networks_.insert(card_networks.begin(),
-                                                card_networks.end());
-          // Clear the set so that no further networks are added to
-          // |supported_card_networks_|.
-          card_networks.clear();
-        } else {
-          // The merchant has specified a few basic card supported networks. Use
-          // the mapping to transform to known basic-card types.
-          using mojom::BasicCardNetwork;
-          std::unordered_map<BasicCardNetwork, std::string> networks = {
-              {BasicCardNetwork::AMEX, "amex"},
-              {BasicCardNetwork::DINERS, "diners"},
-              {BasicCardNetwork::DISCOVER, "discover"},
-              {BasicCardNetwork::JCB, "jcb"},
-              {BasicCardNetwork::MASTERCARD, "mastercard"},
-              {BasicCardNetwork::MIR, "mir"},
-              {BasicCardNetwork::UNIONPAY, "unionpay"},
-              {BasicCardNetwork::VISA, "visa"}};
-          for (const BasicCardNetwork& supported_network :
-               method_data_entry->supported_networks) {
-            // Make sure that the network was not already added to
-            // |supported_card_networks_|.
-            auto card_it = card_networks.find(networks[supported_network]);
-            if (card_it != card_networks.end()) {
-              supported_card_networks_.push_back(networks[supported_network]);
-              basic_card_specified_networks_.insert(
-                  networks[supported_network]);
-              card_networks.erase(card_it);
-            }
-          }
-        }
-      }
-    }
+    // TODO(crbug.com/708603): Add browser-side support for
+    // |method_data.supported_types|.
+    method_data_vector.push_back(std::move(method_data));
   }
 
+  if (!data_util::ParseBasicCardSupportedNetworks(
+          method_data_vector, &supported_card_networks_,
+          &basic_card_specified_networks_)) {
+    LOG(ERROR) << "Invalid payment methods or data";
+    NotifyOnInvalidSpecProvided();
+    return;
+  }
   supported_card_networks_set_.insert(supported_card_networks_.begin(),
                                       supported_card_networks_.end());
 }

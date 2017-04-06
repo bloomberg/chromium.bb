@@ -93,7 +93,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     observer_for_testing_ = observer_for_testing;
   }
 
-  // Validates the |method_data| and fills |supported_card_networks_|.
+  // Validates the |method_data| and fills |supported_card_networks_|,
+  // |supported_card_networks_set_| and |basic_card_specified_networks_|.
   void PopulateValidatedMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& method_data);
 
