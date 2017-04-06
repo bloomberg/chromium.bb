@@ -76,13 +76,17 @@ class FakeCIDBConnection(object):
            'status': status,
            'finish_time': datetime.datetime.now(),
            'important': important,
-           'buildbucket_id': buildbucket_id}
+           'buildbucket_id': buildbucket_id,
+           'final': False}
     self.buildTable.append(row)
     return build_id
 
-  def FinishBuild(self, build_id, status=None, summary=None):
+  def FinishBuild(self, build_id, status=None, summary=None, strict=True):
     """Update the build with finished status."""
     build = self.buildTable[build_id]
+
+    if strict and build['final']:
+      return 0
 
     values = {}
     if status is not None:
@@ -92,6 +96,9 @@ class FakeCIDBConnection(object):
 
     if values:
       build.update(values)
+      return 1
+    else:
+      return 0
 
   def UpdateMetadata(self, build_id, metadata):
     """See cidb.UpdateMetadata.

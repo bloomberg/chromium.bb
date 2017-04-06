@@ -797,17 +797,37 @@ class BuildTableTest(CIDBIntegrationTest):
                                   'build_config',
                                   'bot_hostname')
 
-    bot_db.FinishBuild(build_id, status=constants.BUILDER_STATUS_ABORTED,
-                       summary='summary')
-    self.assertEqual(
-        bot_db.GetBuildStatus(build_id)['status'],
-        constants.BUILDER_STATUS_ABORTED)
-    self.assertEqual(
-        bot_db.GetBuildStatus(build_id)['build_config'],
-        'build_config')
-    self.assertEqual(
-        bot_db.GetBuildStatus(build_id)['summary'],
-        'summary')
+    r = bot_db.FinishBuild(build_id, status=constants.BUILDER_STATUS_ABORTED,
+                           summary='summary')
+    self.assertEqual(r, 1)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['status'],
+                     constants.BUILDER_STATUS_ABORTED)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['build_config'],
+                     'build_config')
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['summary'],
+                     'summary')
+
+    # Final status cannot be changed with strict=True
+    r = bot_db.FinishBuild(build_id, status=constants.BUILDER_STATUS_PASSED,
+                           summary='updated summary')
+    self.assertEqual(r, 0)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['status'],
+                     constants.BUILDER_STATUS_ABORTED)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['build_config'],
+                     'build_config')
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['summary'],
+                     'summary')
+
+    # Final status can be changed with strict=False
+    r = bot_db.FinishBuild(build_id, status=constants.BUILDER_STATUS_PASSED,
+                           summary='updated summary', strict=False)
+    self.assertEqual(r, 1)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['status'],
+                     constants.BUILDER_STATUS_PASSED)
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['build_config'],
+                     'build_config')
+    self.assertEqual(bot_db.GetBuildStatus(build_id)['summary'],
+                     'updated summary')
 
   def _GetBuildToBuildbucketIdList(self, slave_statuses):
     """Convert slave_statuses to a list of (build_config, buildbucket_id)."""

@@ -182,10 +182,14 @@ class CleanUpStage(generic_stages.BuilderStage):
             # change its status to 'aborted' in CIDB.
             build = db.GetBuildStatusWithBuildbucketId(buildbucket_id)
             if build is not None:
-              db.FinishBuild(build['id'],
-                             status=constants.BUILDER_STATUS_ABORTED,
-                             summary=('Canceled by master build %s '
-                                      'CleanUpStage' % build_id))
+              result = db.FinishBuild(
+                  build['id'], status=constants.BUILDER_STATUS_ABORTED,
+                  summary=('Canceled by master build %s CleanUpStage' %
+                           build_id))
+              if result:
+                logging.info('Updated build %s build_id %s to status %s.',
+                             build['build_config'], build['id'],
+                             constants.BUILDER_STATUS_ABORTED)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

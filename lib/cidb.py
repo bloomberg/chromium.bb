@@ -458,8 +458,8 @@ class SchemaVersionedMySQLConnection(object):
       The number of rows that were updated.
     """
     self._ReflectToMetadata()
-    upd = self._meta.tables[table].update().where(where)
-    r = self._Execute(upd, values)
+    upd = self._meta.tables[table].update().where(where).values(values)
+    r = self._Execute(upd)
     return r.rowcount
 
   def _Select(self, table, row_id, columns):
@@ -942,9 +942,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
          'finish_time': current_timestamp,
          'final': True})
 
-
   @minimum_schema(25)
-  def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None):
+  def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
+                  strict=True):
     """Update the given build row, marking it as finished.
 
     This should be called once per build, as the last update to the build.
@@ -958,8 +958,20 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       metadata_url: google storage url to metadata.json file for this build,
                     e.g. ('gs://chromeos-image-archive/master-paladin/'
                           'R39-6225.0.0-rc1/metadata.json')
+      strict: If |strict| is True, can only update the build status when 'final'
+        is False. |strict| can only be False when the caller wants to change the
+        entry ignoring the 'final' value (For example, a build was marked as
+        status='aborted' and final='true', a cron job to adjust the finish_time
+        will call this method with strict=False).
+
+    Returns:
+      The number of rows that were updated.
     """
     self._ReflectToMetadata()
+
+    clause = 'id = %d' % build_id
+    if strict:
+      clause += ' AND final = False'
 
     # The current timestamp is evaluated on the database, not locally.
     current_timestamp = sqlalchemy.func.current_timestamp()
@@ -967,7 +979,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'finish_time': current_timestamp,
         'final': True
     }
-
     if status is not None:
       values.update(status=status)
     if summary is not None:
@@ -976,8 +987,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if metadata_url is not None:
       values.update(metadata_url=metadata_url)
 
-    self._Update('buildTable', build_id, values)
-
+    return self._UpdateWhere('buildTable', clause, values)
 
   @minimum_schema(16)
   def FinishChildConfig(self, build_id, child_config, status=None):
