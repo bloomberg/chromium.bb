@@ -52,12 +52,11 @@ public class BottomSheetContentController extends BottomNavigationView
 
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onTransitionPeekToHalf(float transitionFraction) {
+        public void onSheetOffsetChanged(float heightFraction) {
             float offsetY = (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
                     + mDistanceBelowToolbarPx;
             setTranslationY((int) Math.max(offsetY, 0f));
-            setVisibility(
-                    MathUtils.areFloatsEqual(transitionFraction, 0f) ? View.GONE : View.VISIBLE);
+            setVisibility(MathUtils.areFloatsEqual(heightFraction, 0f) ? View.GONE : View.VISIBLE);
         }
 
         @Override
