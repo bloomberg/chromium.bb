@@ -316,7 +316,10 @@ TestInterfaceOriginTrialEnabled* V8TestInterfaceOriginTrialEnabled::toImplWithTy
 }
 
 TestInterfaceOriginTrialEnabled* NativeValueTraits<TestInterfaceOriginTrialEnabled>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceOriginTrialEnabled::toImplWithTypeCheck(isolate, value);
+  TestInterfaceOriginTrialEnabled* nativeValue = V8TestInterfaceOriginTrialEnabled::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceOriginTrialEnabled.");
+  return nativeValue;
 }
 
 }  // namespace blink

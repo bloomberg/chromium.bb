@@ -213,7 +213,10 @@ TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate*
 }
 
 TestSpecialOperations* NativeValueTraits<TestSpecialOperations>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestSpecialOperations::toImplWithTypeCheck(isolate, value);
+  TestSpecialOperations* nativeValue = V8TestSpecialOperations::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestSpecialOperations.");
+  return nativeValue;
 }
 
 }  // namespace blink

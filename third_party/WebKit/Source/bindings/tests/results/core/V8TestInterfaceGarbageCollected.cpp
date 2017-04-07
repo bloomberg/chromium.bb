@@ -414,7 +414,10 @@ TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCh
 }
 
 TestInterfaceGarbageCollected* NativeValueTraits<TestInterfaceGarbageCollected>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, value);
+  TestInterfaceGarbageCollected* nativeValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceGarbageCollected.");
+  return nativeValue;
 }
 
 }  // namespace blink

@@ -235,7 +235,10 @@ TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::toImplWithTypeCheck(v8::Is
 }
 
 TestIntegerIndexedGlobal* NativeValueTraits<TestIntegerIndexedGlobal>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestIntegerIndexedGlobal::toImplWithTypeCheck(isolate, value);
+  TestIntegerIndexedGlobal* nativeValue = V8TestIntegerIndexedGlobal::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestIntegerIndexedGlobal.");
+  return nativeValue;
 }
 
 }  // namespace blink

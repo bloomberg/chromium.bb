@@ -2970,7 +2970,10 @@ TestInterfaceImplementation* V8TestInterface::toImplWithTypeCheck(v8::Isolate* i
 }
 
 TestInterfaceImplementation* NativeValueTraits<TestInterfaceImplementation>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterface::toImplWithTypeCheck(isolate, value);
+  TestInterfaceImplementation* nativeValue = V8TestInterface::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterface.");
+  return nativeValue;
 }
 
 void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

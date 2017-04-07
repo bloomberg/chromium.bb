@@ -163,7 +163,10 @@ TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::toImplWi
 }
 
 TestInterfaceEventInitConstructor* NativeValueTraits<TestInterfaceEventInitConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceEventInitConstructor::toImplWithTypeCheck(isolate, value);
+  TestInterfaceEventInitConstructor* nativeValue = V8TestInterfaceEventInitConstructor::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceEventInitConstructor.");
+  return nativeValue;
 }
 
 }  // namespace blink

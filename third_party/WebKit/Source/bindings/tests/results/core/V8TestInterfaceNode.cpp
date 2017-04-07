@@ -400,7 +400,10 @@ TestInterfaceNode* V8TestInterfaceNode::toImplWithTypeCheck(v8::Isolate* isolate
 }
 
 TestInterfaceNode* NativeValueTraits<TestInterfaceNode>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceNode::toImplWithTypeCheck(isolate, value);
+  TestInterfaceNode* nativeValue = V8TestInterfaceNode::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceNode.");
+  return nativeValue;
 }
 
 }  // namespace blink

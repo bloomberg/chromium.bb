@@ -80,7 +80,10 @@ TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8
 }
 
 TestDataView* NativeValueTraits<TestDataView>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8DataView::toImplWithTypeCheck(isolate, value);
+  TestDataView* nativeValue = V8DataView::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to DataView.");
+  return nativeValue;
 }
 
 }  // namespace blink

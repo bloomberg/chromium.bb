@@ -39,6 +39,11 @@ def callback_function_context(callback_function):
         argument.idl_type.add_includes_for_type(callback_function.extended_attributes)
 
     context = {
+        # While both |callback_function_name| and |cpp_class| are identical at
+        # the moment, the two are being defined because their values may change
+        # in the future (e.g. if we support [ImplementedAs=] in callback
+        # functions).
+        'callback_function_name': callback_function.name,
         'cpp_class': callback_function.name,
         'cpp_includes': sorted(includes),
         'forward_declarations': sorted(forward_declarations),

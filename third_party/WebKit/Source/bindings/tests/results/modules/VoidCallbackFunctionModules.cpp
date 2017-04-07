@@ -79,7 +79,10 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
 }
 
 VoidCallbackFunctionModules* NativeValueTraits<VoidCallbackFunctionModules>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return VoidCallbackFunctionModules::create(ScriptState::current(isolate), value);
+  VoidCallbackFunctionModules* nativeValue = VoidCallbackFunctionModules::create(ScriptState::current(isolate), value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to VoidCallbackFunctionModules.");
+  return nativeValue;
 }
 
 }  // namespace blink

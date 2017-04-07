@@ -86,7 +86,10 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
 }
 
 StringSequenceCallbackFunctionLongSequenceArg* NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return StringSequenceCallbackFunctionLongSequenceArg::create(ScriptState::current(isolate), value);
+  StringSequenceCallbackFunctionLongSequenceArg* nativeValue = StringSequenceCallbackFunctionLongSequenceArg::create(ScriptState::current(isolate), value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to StringSequenceCallbackFunctionLongSequenceArg.");
+  return nativeValue;
 }
 
 }  // namespace blink

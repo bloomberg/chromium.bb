@@ -381,7 +381,10 @@ TestInterfaceSecureContext* V8TestInterfaceSecureContext::toImplWithTypeCheck(v8
 }
 
 TestInterfaceSecureContext* NativeValueTraits<TestInterfaceSecureContext>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceSecureContext::toImplWithTypeCheck(isolate, value);
+  TestInterfaceSecureContext* nativeValue = V8TestInterfaceSecureContext::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceSecureContext.");
+  return nativeValue;
 }
 
 void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

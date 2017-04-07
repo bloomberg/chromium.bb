@@ -236,7 +236,10 @@ TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::toImplWithTypeCh
 }
 
 TestInterfaceNamedConstructor* NativeValueTraits<TestInterfaceNamedConstructor>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceNamedConstructor::toImplWithTypeCheck(isolate, value);
+  TestInterfaceNamedConstructor* nativeValue = V8TestInterfaceNamedConstructor::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceNamedConstructor.");
+  return nativeValue;
 }
 
 }  // namespace blink

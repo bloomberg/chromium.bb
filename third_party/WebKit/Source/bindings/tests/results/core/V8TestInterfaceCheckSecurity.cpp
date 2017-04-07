@@ -555,7 +555,10 @@ TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::toImplWithTypeCheck(v8
 }
 
 TestInterfaceCheckSecurity* NativeValueTraits<TestInterfaceCheckSecurity>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceCheckSecurity::toImplWithTypeCheck(isolate, value);
+  TestInterfaceCheckSecurity* nativeValue = V8TestInterfaceCheckSecurity::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceCheckSecurity.");
+  return nativeValue;
 }
 
 }  // namespace blink

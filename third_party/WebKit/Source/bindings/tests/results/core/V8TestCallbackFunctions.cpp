@@ -335,7 +335,10 @@ TestCallbackFunctions* V8TestCallbackFunctions::toImplWithTypeCheck(v8::Isolate*
 }
 
 TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestCallbackFunctions::toImplWithTypeCheck(isolate, value);
+  TestCallbackFunctions* nativeValue = V8TestCallbackFunctions::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestCallbackFunctions.");
+  return nativeValue;
 }
 
 }  // namespace blink

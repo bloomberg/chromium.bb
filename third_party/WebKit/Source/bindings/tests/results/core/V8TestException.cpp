@@ -171,7 +171,10 @@ TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
 }
 
 TestException* NativeValueTraits<TestException>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestException::toImplWithTypeCheck(isolate, value);
+  TestException* nativeValue = V8TestException::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestException.");
+  return nativeValue;
 }
 
 }  // namespace blink

@@ -82,7 +82,10 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
 }
 
 VoidCallbackFunctionTypedef* NativeValueTraits<VoidCallbackFunctionTypedef>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return VoidCallbackFunctionTypedef::create(ScriptState::current(isolate), value);
+  VoidCallbackFunctionTypedef* nativeValue = VoidCallbackFunctionTypedef::create(ScriptState::current(isolate), value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to VoidCallbackFunctionTypedef.");
+  return nativeValue;
 }
 
 }  // namespace blink

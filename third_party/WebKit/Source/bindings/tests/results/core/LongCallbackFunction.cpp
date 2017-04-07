@@ -87,7 +87,10 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
 }
 
 LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return LongCallbackFunction::create(ScriptState::current(isolate), value);
+  LongCallbackFunction* nativeValue = LongCallbackFunction::create(ScriptState::current(isolate), value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to LongCallbackFunction.");
+  return nativeValue;
 }
 
 }  // namespace blink

@@ -133,7 +133,10 @@ TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate*
 }
 
 TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
+  TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceDocument.");
+  return nativeValue;
 }
 
 }  // namespace blink

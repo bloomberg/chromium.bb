@@ -221,7 +221,10 @@ TestInterface3* V8TestInterface3::toImplWithTypeCheck(v8::Isolate* isolate, v8::
 }
 
 TestInterface3* NativeValueTraits<TestInterface3>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterface3::toImplWithTypeCheck(isolate, value);
+  TestInterface3* nativeValue = V8TestInterface3::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterface3.");
+  return nativeValue;
 }
 
 }  // namespace blink

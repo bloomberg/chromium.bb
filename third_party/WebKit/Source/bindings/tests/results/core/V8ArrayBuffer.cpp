@@ -80,7 +80,10 @@ TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
 }
 
 TestArrayBuffer* NativeValueTraits<TestArrayBuffer>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8ArrayBuffer::toImplWithTypeCheck(isolate, value);
+  TestArrayBuffer* nativeValue = V8ArrayBuffer::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to ArrayBuffer.");
+  return nativeValue;
 }
 
 }  // namespace blink

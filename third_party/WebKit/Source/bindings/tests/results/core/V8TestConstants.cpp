@@ -198,7 +198,10 @@ TestConstants* V8TestConstants::toImplWithTypeCheck(v8::Isolate* isolate, v8::Lo
 }
 
 TestConstants* NativeValueTraits<TestConstants>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestConstants::toImplWithTypeCheck(isolate, value);
+  TestConstants* nativeValue = V8TestConstants::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestConstants.");
+  return nativeValue;
 }
 
 }  // namespace blink

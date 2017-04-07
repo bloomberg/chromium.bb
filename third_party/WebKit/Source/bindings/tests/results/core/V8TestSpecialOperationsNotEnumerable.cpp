@@ -127,7 +127,10 @@ TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toImpl
 }
 
 TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(isolate, value);
+  TestSpecialOperationsNotEnumerable* nativeValue = V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestSpecialOperationsNotEnumerable.");
+  return nativeValue;
 }
 
 }  // namespace blink

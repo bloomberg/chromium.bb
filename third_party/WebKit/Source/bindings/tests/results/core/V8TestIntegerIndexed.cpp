@@ -214,7 +214,10 @@ TestIntegerIndexed* V8TestIntegerIndexed::toImplWithTypeCheck(v8::Isolate* isola
 }
 
 TestIntegerIndexed* NativeValueTraits<TestIntegerIndexed>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestIntegerIndexed::toImplWithTypeCheck(isolate, value);
+  TestIntegerIndexed* nativeValue = V8TestIntegerIndexed::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestIntegerIndexed.");
+  return nativeValue;
 }
 
 }  // namespace blink

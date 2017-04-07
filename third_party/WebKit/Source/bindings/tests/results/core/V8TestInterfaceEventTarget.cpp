@@ -160,7 +160,10 @@ TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Is
 }
 
 TestInterfaceEventTarget* NativeValueTraits<TestInterfaceEventTarget>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8TestInterfaceEventTarget::toImplWithTypeCheck(isolate, value);
+  TestInterfaceEventTarget* nativeValue = V8TestInterfaceEventTarget::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to TestInterfaceEventTarget.");
+  return nativeValue;
 }
 
 }  // namespace blink

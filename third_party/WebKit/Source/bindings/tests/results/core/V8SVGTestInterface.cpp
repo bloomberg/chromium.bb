@@ -131,7 +131,10 @@ SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, 
 }
 
 SVGTestInterface* NativeValueTraits<SVGTestInterface>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  return V8SVGTestInterface::toImplWithTypeCheck(isolate, value);
+  SVGTestInterface* nativeValue = V8SVGTestInterface::toImplWithTypeCheck(isolate, value);
+  if (!nativeValue)
+    exceptionState.throwTypeError("Unable to convert value to SVGTestInterface.");
+  return nativeValue;
 }
 
 }  // namespace blink

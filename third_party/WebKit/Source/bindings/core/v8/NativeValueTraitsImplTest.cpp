@@ -7,8 +7,10 @@
 #include <utility>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/TestSequenceCallback.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8Internals.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,6 +21,29 @@ namespace {
 template <typename T>
 v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
   return blink::ToV8(value, scope->context()->Global(), scope->isolate());
+}
+
+TEST(NativeValueTraitsImplTest, IDLInterface) {
+  V8TestingScope scope;
+  {
+    DummyExceptionStateForTesting exceptionState;
+    Internals* internals = NativeValueTraits<Internals>::nativeValue(
+        scope.isolate(), v8::Number::New(scope.isolate(), 42), exceptionState);
+    EXPECT_TRUE(exceptionState.hadException());
+    EXPECT_EQ("Unable to convert value to Internals.",
+              exceptionState.message());
+    EXPECT_EQ(nullptr, internals);
+  }
+  {
+    DummyExceptionStateForTesting exceptionState;
+    TestSequenceCallback* callbackFunction =
+        NativeValueTraits<TestSequenceCallback>::nativeValue(
+            scope.isolate(), v8::Undefined(scope.isolate()), exceptionState);
+    EXPECT_TRUE(exceptionState.hadException());
+    EXPECT_EQ("Unable to convert value to TestSequenceCallback.",
+              exceptionState.message());
+    EXPECT_EQ(nullptr, callbackFunction);
+  }
 }
 
 void ThrowException(v8::Local<v8::Name>,
