@@ -34,18 +34,23 @@ class TestObserver : public ConnectTetheringOperation::Observer {
   TestObserver() : has_received_failure(false) {}
 
   void OnSuccessfulConnectTetheringResponse(
+      const cryptauth::RemoteDevice& remote_device,
       const std::string& ssid,
       const std::string& password) override {
+    this->remote_device = remote_device;
     this->ssid = ssid;
     this->password = password;
   }
 
   void OnConnectTetheringFailure(
+      const cryptauth::RemoteDevice& remote_device,
       ConnectTetheringResponse_ResponseCode error_code) override {
     has_received_failure = true;
+    this->remote_device = remote_device;
     this->error_code = error_code;
   }
 
+  cryptauth::RemoteDevice remote_device;
   std::string ssid;
   std::string password;
 
@@ -152,6 +157,7 @@ class ConnectTetheringOperationTest : public testing::Test {
     if (expected_response_code ==
         ConnectTetheringResponse_ResponseCode::
             ConnectTetheringResponse_ResponseCode_SUCCESS) {
+      EXPECT_EQ(test_device_, test_observer_->remote_device);
       EXPECT_EQ(std::string(kTestSsid), test_observer_->ssid);
       EXPECT_EQ(std::string(kTestPassword), test_observer_->password);
     } else {

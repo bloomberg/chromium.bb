@@ -12,16 +12,9 @@ namespace chromeos {
 
 namespace tether {
 
-// static
-std::unique_ptr<FakeWifiHotspotConnector> FakeWifiHotspotConnector::Create() {
-  return base::WrapUnique(
-      new FakeWifiHotspotConnector(NetworkStateHandler::InitializeForTest()));
-}
-
 FakeWifiHotspotConnector::FakeWifiHotspotConnector(
-    std::unique_ptr<NetworkStateHandler> network_state_handler)
-    : WifiHotspotConnector(network_state_handler.get(), nullptr),
-      network_state_handler_(std::move(network_state_handler)) {}
+    NetworkStateHandler* network_state_handler)
+    : WifiHotspotConnector(network_state_handler, nullptr) {}
 
 FakeWifiHotspotConnector::~FakeWifiHotspotConnector() {}
 

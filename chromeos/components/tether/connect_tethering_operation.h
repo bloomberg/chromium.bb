@@ -50,9 +50,11 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   class Observer {
    public:
     virtual void OnSuccessfulConnectTetheringResponse(
+        const cryptauth::RemoteDevice& remote_device,
         const std::string& ssid,
         const std::string& password) = 0;
     virtual void OnConnectTetheringFailure(
+        const cryptauth::RemoteDevice& remote_device,
         ConnectTetheringResponse_ResponseCode error_code) = 0;
   };
 
@@ -73,17 +75,23 @@ class ConnectTetheringOperation : public MessageTransferOperation {
                          const cryptauth::RemoteDevice& remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
-
- private:
-  friend class ConnectTetheringOperationTest;
-
   void NotifyObserversOfSuccessfulResponse(const std::string& ssid,
                                            const std::string& password);
   void NotifyObserversOfConnectionFailure(
       ConnectTetheringResponse_ResponseCode error_code);
 
+ private:
+  friend class ConnectTetheringOperationTest;
+
+  cryptauth::RemoteDevice remote_device_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
-  bool has_authenticated_;
+
+  // These values are saved in OnMessageReceived() and returned in
+  // OnOperationFinished().
+  std::string ssid_to_return_;
+  std::string password_to_return_;
+  ConnectTetheringResponse_ResponseCode error_code_to_return_;
+
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTetheringOperation);

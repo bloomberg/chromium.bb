@@ -17,7 +17,7 @@ namespace tether {
 // Test double for WifiHotspotConnector.
 class FakeWifiHotspotConnector : public WifiHotspotConnector {
  public:
-  static std::unique_ptr<FakeWifiHotspotConnector> Create();
+  FakeWifiHotspotConnector(NetworkStateHandler* network_state_handler);
   ~FakeWifiHotspotConnector() override;
 
   // Pass an empty string for |wifi_guid| to signify a failed connection.
@@ -34,17 +34,9 @@ class FakeWifiHotspotConnector : public WifiHotspotConnector {
       const WifiHotspotConnector::WifiConnectionCallback& callback) override;
 
  private:
-  FakeWifiHotspotConnector(
-      std::unique_ptr<NetworkStateHandler> network_state_handler);
-
   std::string most_recent_ssid_;
   std::string most_recent_password_;
   WifiHotspotConnector::WifiConnectionCallback most_recent_callback_;
-
-  // Not actually used. Only stored to keep the pointer valid for the lifetime
-  // of the object so that AddObserver() and RemoteObserver() can be called in
-  // the base class constructor/destructor.
-  std::unique_ptr<NetworkStateHandler> network_state_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWifiHotspotConnector);
 };
