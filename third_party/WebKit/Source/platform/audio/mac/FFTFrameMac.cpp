@@ -49,7 +49,7 @@ FFTFrame::FFTFrame(unsigned fftSize)
   m_log2FFTSize = static_cast<unsigned>(log2(fftSize));
 
   // We only allow power of two
-  ASSERT(1UL << m_log2FFTSize == m_FFTSize);
+  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
 
   // Lazily create and share fftSetup with other frames
   m_FFTSetup = fftSetupForSize(fftSize);
@@ -116,7 +116,7 @@ FFTSetup FFTFrame::fftSetupForSize(unsigned fftSize) {
   }
 
   int pow2size = static_cast<int>(log2(fftSize));
-  ASSERT(pow2size < kMaxFFTPow2Size);
+  DCHECK_LT(pow2size, kMaxFFTPow2Size);
   if (!fftSetups[pow2size])
     fftSetups[pow2size] = vDSP_create_fftsetup(pow2size, FFT_RADIX2);
 

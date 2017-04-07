@@ -58,7 +58,7 @@ class AudioArray {
     // Although n is a size_t, its true limit is max unsigned because we use
     // unsigned in zeroRange() and copyToRange(). Also check for integer
     // overflow.
-    RELEASE_ASSERT(n <= std::numeric_limits<unsigned>::max() / sizeof(T));
+    CHECK_LE(n, std::numeric_limits<unsigned>::max() / sizeof(T));
 
     unsigned initialSize = sizeof(T) * n;
 
@@ -79,12 +79,12 @@ class AudioArray {
       static size_t extraAllocationBytes = 0;
 
       // Again, check for integer overflow.
-      RELEASE_ASSERT(initialSize + extraAllocationBytes >= initialSize);
+      CHECK_GE(initialSize + extraAllocationBytes, initialSize);
 
       T* allocation = static_cast<T*>(WTF::Partitions::fastMalloc(
           initialSize + extraAllocationBytes,
           WTF_HEAP_PROFILER_TYPE_NAME(AudioArray<T>)));
-      RELEASE_ASSERT(allocation);
+      CHECK(allocation);
 
       T* alignedData = alignedAddress(allocation, alignment);
 

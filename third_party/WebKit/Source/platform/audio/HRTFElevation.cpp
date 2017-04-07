@@ -309,11 +309,13 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(
     HRTFElevation* hrtfElevation2,
     float x,
     float sampleRate) {
-  ASSERT(hrtfElevation1 && hrtfElevation2);
+  DCHECK(hrtfElevation1);
+  DCHECK(hrtfElevation2);
   if (!hrtfElevation1 || !hrtfElevation2)
     return nullptr;
 
-  ASSERT(x >= 0.0 && x < 1.0);
+  DCHECK_GE(x, 0.0);
+  DCHECK_LT(x, 1.0);
 
   std::unique_ptr<HRTFKernelList> kernelListL =
       WTF::makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);

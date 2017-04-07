@@ -156,7 +156,8 @@ class BufferSourceProvider final : public AudioSourceProvider {
 
   // Consumes samples from the in-memory buffer.
   void provideInput(AudioBus* bus, size_t framesToProcess) override {
-    ASSERT(m_source && bus);
+    DCHECK(m_source);
+    DCHECK(bus);
     if (!m_source || !bus)
       return;
 
