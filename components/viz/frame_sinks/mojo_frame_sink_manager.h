@@ -36,12 +36,13 @@ class MojoFrameSinkManager : public cc::SurfaceObserver,
                              public GpuCompositorFrameSinkDelegate,
                              public cc::mojom::FrameSinkManager {
  public:
-  MojoFrameSinkManager(DisplayProvider* display_provider,
+  MojoFrameSinkManager(bool use_surface_references,
+                       DisplayProvider* display_provider,
                        cc::mojom::FrameSinkManagerRequest request,
                        cc::mojom::FrameSinkManagerClientPtr client);
   ~MojoFrameSinkManager() override;
 
-  cc::SurfaceManager* manager() { return &manager_; }
+  cc::SurfaceManager* surface_manager() { return &manager_; }
 
   // cc::mojom::MojoFrameSinkManager implementation:
   void CreateRootCompositorFrameSink(

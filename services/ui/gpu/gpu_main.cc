@@ -212,7 +212,7 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
       image_factory);
 
   frame_sink_manager_ = base::MakeUnique<viz::MojoFrameSinkManager>(
-      display_provider_.get(), std::move(request), std::move(client));
+      true, display_provider_.get(), std::move(request), std::move(client));
 }
 
 void GpuMain::TearDownOnCompositorThread() {

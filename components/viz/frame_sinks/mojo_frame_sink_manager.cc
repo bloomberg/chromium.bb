@@ -19,10 +19,13 @@
 namespace viz {
 
 MojoFrameSinkManager::MojoFrameSinkManager(
+    bool use_surface_references,
     DisplayProvider* display_provider,
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtr client)
-    : manager_(cc::SurfaceManager::LifetimeType::REFERENCES),
+    : manager_(use_surface_references
+                   ? cc::SurfaceManager::LifetimeType::REFERENCES
+                   : cc::SurfaceManager::LifetimeType::SEQUENCES),
       display_provider_(display_provider),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
