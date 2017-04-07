@@ -5369,7 +5369,7 @@ class MemberSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
-TEST(HeapTest, MemberSameThreadCheck) {
+TEST(HeapDeathTest, MemberSameThreadCheck) {
   EXPECT_DEATH(MemberSameThreadCheckTester().test(), "");
 }
 #endif
@@ -5408,7 +5408,7 @@ class PersistentSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
-TEST(HeapTest, PersistentSameThreadCheck) {
+TEST(HeapDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().test(), "");
 }
 #endif
@@ -5458,7 +5458,7 @@ class MarkingSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
-TEST(HeapTest, MarkingSameThreadCheck) {
+TEST(HeapDeathTest, MarkingSameThreadCheck) {
   // This will crash during marking, at the DCHECK in Visitor::markHeader() or
   // earlier.
   EXPECT_DEATH(MarkingSameThreadCheckTester().test(), "");
