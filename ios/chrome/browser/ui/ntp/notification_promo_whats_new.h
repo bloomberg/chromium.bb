@@ -42,7 +42,6 @@ class NotificationPromoWhatsNew {
   bool valid() const { return valid_; }
   const std::string& promo_type() { return promo_type_; }
   const std::string& promo_text() { return promo_text_; }
-  const std::string& promo_name() { return promo_name_; }
   WhatsNewIcon icon() { return icon_; }
   bool IsURLPromo() const;
   const GURL& url() { return url_; }
@@ -77,9 +76,6 @@ class NotificationPromoWhatsNew {
 
   // Type of whats new promo.
   std::string promo_type_;
-
-  // Name of promo.
-  std::string promo_name_;
 
   // Icon of promo.
   WhatsNewIcon icon_;

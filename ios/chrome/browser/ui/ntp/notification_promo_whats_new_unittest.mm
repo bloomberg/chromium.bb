@@ -137,17 +137,59 @@ TEST_F(NotificationPromoWhatsNewTest, NotificationPromoCommandTest) {
 
 // Test that a url-based, valid promo is shown with the correct text and icon.
 TEST_F(NotificationPromoWhatsNewTest, NotificationPromoURLTest) {
-  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT", "Test URL", "0",
-       "url", "http://blog.chromium.org", "", "TestURLPromo", "", "0", "0");
-  RunTests("Test URL", "url", "http://blog.chromium.org/", 0, WHATS_NEW_INFO,
-           true);
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_MOVE_TO_DOCK_TIP", "0", "url", "http://blog.chromium.org", "",
+       "TestURLPromo", "", "0", "0");
+  RunTests(l10n_util::GetStringUTF8(IDS_IOS_MOVE_TO_DOCK_TIP), "url",
+           "http://blog.chromium.org/", 0, WHATS_NEW_INFO, true);
 }
 
-// Test that an invalid promo is not shown.
-TEST_F(NotificationPromoWhatsNewTest, NotificationPromoInvalidTest) {
-  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT", "Test URL", "0",
-       "url", "", "", "TestURLPromo", "", "0", "0");
-  RunTests("Test URL", "url", "", 0, WHATS_NEW_INFO, false);
+// Test that a promo without a valid promo type is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoNoTypeTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_MOVE_TO_DOCK_TIP", "0", "invalid type",
+       "http://blog.chromium.org", "", "TestPromo", "", "0", "0");
+  EXPECT_FALSE(promo_.CanShow());
+}
+
+// Test that a url promo with an empty url is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoEmptyURLTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_MOVE_TO_DOCK_TIP", "0", "url", "", "", "TestURLPromo", "", "0",
+       "0");
+  EXPECT_FALSE(promo_.CanShow());
+}
+
+// Test that a url promo with an invalid url is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoInvalidURLTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_MOVE_TO_DOCK_TIP", "0", "url", "INVALID URL", "",
+       "TestURLPromo", "", "0", "0");
+  EXPECT_FALSE(promo_.CanShow());
+}
+
+// Test that a command-based promo with an invalid command is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoInvalidCommandTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_APP_RATING_PROMO_STRING", "0", "chrome_command", "",
+       "INVALID COMMAND", "CommandPromo", "logo", "0", "0");
+  EXPECT_FALSE(promo_.CanShow());
+}
+
+// Test that a promo without a metric name is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoNoMetricTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT",
+       "IDS_IOS_MOVE_TO_DOCK_TIP", "0", "url", "http://blog.chromium.org", "",
+       "", "", "0", "0");
+  EXPECT_FALSE(promo_.CanShow());
+}
+
+// Test that if no localized text is found, the promo is not shown.
+TEST_F(NotificationPromoWhatsNewTest, NotificationPromoNoLocalizedTextTest) {
+  Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT", "TEST BAD STRING",
+       "0", "url", "http://blog.chromium.org", "", "TestURLPromo", "", "0",
+       "0");
+  EXPECT_FALSE(promo_.CanShow());
 }
 
 // Test that if max_seconds_since_install is set, and the current time is before

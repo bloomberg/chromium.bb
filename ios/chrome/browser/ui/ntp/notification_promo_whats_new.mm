@@ -42,13 +42,13 @@ const PromoStringToIdsMapEntry kPromoStringToIdsMap[] = {
 };
 
 // Returns a localized version of |promo_text| if it has an entry in the
-// |kPromoStringToIdsMap|. If there is no entry, |promo_text| is returned.
+// |kPromoStringToIdsMap|. If there is no entry, an empty string is returned.
 std::string GetLocalizedPromoText(const std::string& promo_text) {
   for (size_t i = 0; i < arraysize(kPromoStringToIdsMap); ++i) {
     if (kPromoStringToIdsMap[i].promo_text_str == promo_text)
       return l10n_util::GetStringUTF8(kPromoStringToIdsMap[i].message_id);
   }
-  return promo_text;
+  return std::string();
 }
 
 }  // namespace
@@ -141,12 +141,6 @@ bool NotificationPromoWhatsNew::CanShow() const {
     }
   }
 
-  if (promo_name_ == "WKWVGotFasterPromo") {
-    // Promo is not relevant anymore: It was shown during the migration to the
-    // WKWebview.
-    return false;
-  }
-
   return true;
 }
 
@@ -195,21 +189,23 @@ WhatsNewIcon NotificationPromoWhatsNew::ParseIconName(
 bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
   valid_ = false;
 
-  notification_promo_.promo_payload()->GetString("promo_type", &promo_type_);
-  notification_promo_.promo_payload()->GetString("metric_name", &metric_name_);
   promo_text_ = GetLocalizedPromoText(notification_promo_.promo_text());
+  if (promo_text_.empty())
+    return valid_;
 
+  notification_promo_.promo_payload()->GetString("metric_name", &metric_name_);
+  if (metric_name_.empty())
+    return valid_;
+
+  notification_promo_.promo_payload()->GetString("promo_type", &promo_type_);
   if (IsURLPromo()) {
     std::string url_text;
     notification_promo_.promo_payload()->GetString("url", &url_text);
     url_ = GURL(url_text);
     if (url_.is_empty() || !url_.is_valid()) {
-      valid_ = false;
       return valid_;
     }
-  }
-
-  if (IsChromeCommand()) {
+  } else if (IsChromeCommand()) {
     std::string command;
     notification_promo_.promo_payload()->GetString("command", &command);
     if (command == "bookmark") {
@@ -217,20 +213,19 @@ bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
     } else if (command == "ratethisapp") {
       command_id_ = IDC_RATE_THIS_APP;
     } else {
-      valid_ = false;
       return valid_;
     }
+  } else {  // If |promo_type_| is not set to URL or Command, return early.
+    return valid_;
   }
 
-  valid_ =
-      !metric_name_.empty() && !promo_type_.empty() && !promo_text_.empty();
+  valid_ = true;
 
-  notification_promo_.promo_payload()->GetString("promo_name", &promo_name_);
+  // Optional values don't need validation.
   std::string icon_name;
   notification_promo_.promo_payload()->GetString("icon", &icon_name);
   icon_ = ParseIconName(icon_name);
 
-  // Optional values don't need validation.
   seconds_since_install_ = 0;
   notification_promo_.promo_payload()->GetInteger("seconds_since_install",
                                                   &seconds_since_install_);
