@@ -173,8 +173,7 @@ const CGFloat kAnimationDuration = 0.3;
     _titleLabel.font = [MDCTypography subheadFont];
     _subtitleLabel.font = [MDCTypography body1Font];
     _publisherLabel.font = [MDCTypography captionFont];
-    _faviconView.font =
-        [[MDCTypography fontLoader] regularFontOfSize:kFaviconSize / 2];
+    _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
 
     _subtitleLabel.textColor = [[MDCPalette greyPalette] tint700];
     _publisherLabel.textColor = [[MDCPalette greyPalette] tint700];
