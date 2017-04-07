@@ -364,7 +364,6 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
     }
   }
 
-  // Exist early if we can't create an unique name.
   if (!create_file_success) {
     DPLOG(WARNING) << "Failed to get temporary file name in "
                    << UTF16ToUTF8(dir.value());
