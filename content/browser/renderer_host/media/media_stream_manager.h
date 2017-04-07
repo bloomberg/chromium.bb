@@ -260,10 +260,6 @@ class CONTENT_EXPORT MediaStreamManager
   void SetGenerateStreamCallbackForTesting(
       GenerateStreamTestCallback test_callback);
 
-#if defined(OS_WIN)
-  void FlushVideoCaptureThreadForTesting();
-#endif
-
   // This method is called when all tracks are started.
   void OnStreamStarted(const std::string& label);
 

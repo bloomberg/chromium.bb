@@ -36,6 +36,7 @@
 
 using testing::_;
 using testing::SaveArg;
+using testing::InvokeWithoutArgs;
 
 namespace content {
 
@@ -354,38 +355,26 @@ TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesUniqueOrigin) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that the callback for a valid origin does get called.
-  EXPECT_CALL(*this, ValidOriginCallback(testing::_));
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, ValidOriginCallback(testing::_))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   host_->EnumerateDevices(
       true, true, true, url::Origin(GURL("http://localhost")),
       base::Bind(&MediaDevicesDispatcherHostTest::ValidOriginCallback,
                  base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-#if defined(OS_WIN)
-  // On Windows, the underlying MediaStreamManager uses a separate thread for
-  // video capture which must be flushed to guarantee that the callback bound to
-  // EnumerateDevices above is invoked before the end of this test's body.
-  media_stream_manager_->FlushVideoCaptureThreadForTesting();
-  base::RunLoop().RunUntilIdle();
-#endif
+  run_loop.Run();
 }
 
 TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
-  EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback());
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback())
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   host_->GetVideoInputCapabilities(
       origin_,
       base::Bind(
           &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
           base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-#if defined(OS_WIN)
-  // On Windows, the underlying MediaStreamManager uses a separate thread for
-  // video capture which must be flushed to guarantee that the callback bound to
-  // GetVIdeoInputCapabilities above is invoked before the end of this test's
-  // body.
-  media_stream_manager_->FlushVideoCaptureThreadForTesting();
-  base::RunLoop().RunUntilIdle();
-#endif
+  run_loop.Run();
 }
 
 };  // namespace content

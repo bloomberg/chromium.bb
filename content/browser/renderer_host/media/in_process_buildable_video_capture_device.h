@@ -10,7 +10,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
-#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ class InProcessBuildableVideoCaptureDevice
  public:
   InProcessBuildableVideoCaptureDevice(
       scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
-      media::VideoCaptureDeviceFactory* device_factory);
+      media::VideoCaptureSystem* video_capture_system);
   ~InProcessBuildableVideoCaptureDevice() override;
 
   // BuildableVideoCaptureDevice implementation:
@@ -70,7 +70,7 @@ class InProcessBuildableVideoCaptureDevice
                        std::unique_ptr<media::VideoCaptureDevice> device);
 
   void DoStartDeviceCaptureOnDeviceThread(
-      const media::VideoCaptureDeviceDescriptor& descriptor,
+      const std::string& device_id,
       const media::VideoCaptureParams& params,
       std::unique_ptr<media::VideoCaptureDeviceClient> client,
       ReceiveDeviceCallback result_callback);
@@ -93,7 +93,7 @@ class InProcessBuildableVideoCaptureDevice
       base::OnceClosure done_cb);
 
   const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
-  media::VideoCaptureDeviceFactory* const device_factory_;
+  media::VideoCaptureSystem* const video_capture_system_;
   std::unique_ptr<media::VideoCaptureDevice> device_;
   State state_ = State::NO_DEVICE;
 };
