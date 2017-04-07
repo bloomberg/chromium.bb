@@ -436,7 +436,7 @@ class CORE_EXPORT HTMLMediaElement
   void invokeResourceSelectionAlgorithm();
   void loadInternal();
   void selectMediaResource();
-  void loadResource(const WebMediaPlayerSource&, const ContentType&);
+  void loadResource(const WebMediaPlayerSource&, const String& contentType);
   void startPlayerLoad(const KURL& playerProvidedUrl = KURL());
   void setPlayerPreload();
   WebMediaPlayer::LoadType loadType() const;
@@ -453,7 +453,7 @@ class CORE_EXPORT HTMLMediaElement
   void waitForSourceChange();
   void setIgnorePreloadNone();
 
-  KURL selectNextSourceChild(ContentType*, InvalidURLAction);
+  KURL selectNextSourceChild(String* contentType, InvalidURLAction);
 
   void mediaLoadingFailed(WebMediaPlayer::NetworkState);
 

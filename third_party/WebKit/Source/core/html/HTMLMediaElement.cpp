@@ -84,6 +84,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/network/NetworkStateNotifier.h"
+#include "platform/network/ParsedContentType.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeFromURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -141,6 +142,43 @@ enum MediaControlsShow {
   MediaControlsShowDisabledSettings,
   MediaControlsShowMax
 };
+
+// These values are used for the Media.MediaElement.ContentTypeResult histogram.
+// Do not reorder.
+enum ContentTypeParseableResult {
+  IsSupportedParseable = 0,
+  MayBeSupportedParseable,
+  IsNotSupportedParseable,
+  IsSupportedNotParseable,
+  MayBeSupportedNotParseable,
+  IsNotSupportedNotParseable,
+  ContentTypeParseableMax
+};
+
+void ReportContentTypeResultToUMA(String contentType,
+                                  MIMETypeRegistry::SupportsType result) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, contentTypeParseableHistogram,
+      new EnumerationHistogram("Media.MediaElement.ContentTypeParseable",
+                               ContentTypeParseableMax));
+  ParsedContentType parsedContentType(contentType);
+  ContentTypeParseableResult umaResult = IsNotSupportedNotParseable;
+  switch (result) {
+    case MIMETypeRegistry::IsSupported:
+      umaResult = parsedContentType.isValid() ? IsSupportedParseable
+                                              : IsSupportedNotParseable;
+      break;
+    case MIMETypeRegistry::MayBeSupported:
+      umaResult = parsedContentType.isValid() ? MayBeSupportedParseable
+                                              : MayBeSupportedNotParseable;
+      break;
+    case MIMETypeRegistry::IsNotSupported:
+      umaResult = parsedContentType.isValid() ? IsNotSupportedParseable
+                                              : IsNotSupportedNotParseable;
+      break;
+  }
+  contentTypeParseableHistogram.count(umaResult);
+}
 
 String urlForLoggingMedia(const KURL& url) {
   static const unsigned maximumURLLengthForLogging = 128;
@@ -247,9 +285,10 @@ const AtomicString& VideoKindToString(
   return emptyAtom;
 }
 
-bool canLoadURL(const KURL& url, const ContentType& contentType) {
+bool canLoadURL(const KURL& url, const String& contentTypeStr) {
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
+  ContentType contentType(contentTypeStr);
   String contentMIMEType = contentType.type().lower();
   String contentTypeCodecs = contentType.parameter(codecs);
 
@@ -273,7 +312,8 @@ bool canLoadURL(const KURL& url, const ContentType& contentType) {
   if (contentMIMEType != "application/octet-stream" ||
       contentTypeCodecs.isEmpty()) {
     return MIMETypeRegistry::supportsMediaMIMEType(contentMIMEType,
-                                                   contentTypeCodecs);
+                                                   contentTypeCodecs) !=
+           MIMETypeRegistry::IsNotSupported;
   }
 
   return false;
@@ -353,7 +393,13 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::supportsType(
   if (type == "application/octet-stream")
     return MIMETypeRegistry::IsNotSupported;
 
-  return MIMETypeRegistry::supportsMediaMIMEType(type, typeCodecs);
+  // Check if stricter parsing of |contentType| will cause problems.
+  // TODO(jrummell): Either switch to ParsedContentType or remove this UMA,
+  // depending on the results reported.
+  MIMETypeRegistry::SupportsType result =
+      MIMETypeRegistry::supportsMediaMIMEType(type, typeCodecs);
+  ReportContentTypeResultToUMA(contentType.raw(), result);
+  return result;
 }
 
 URLRegistry* HTMLMediaElement::s_mediaStreamRegistry = 0;
@@ -1054,8 +1100,7 @@ void HTMLMediaElement::loadSourceFromObject() {
 
   // No type is available when the resource comes from the 'srcObject'
   // attribute.
-  loadResource(WebMediaPlayerSource(WebMediaStream(m_srcObject)),
-               ContentType((String())));
+  loadResource(WebMediaPlayerSource(WebMediaStream(m_srcObject)), String());
 }
 
 void HTMLMediaElement::loadSourceFromAttribute() {
@@ -1079,11 +1124,11 @@ void HTMLMediaElement::loadSourceFromAttribute() {
 
   // No type is available when the url comes from the 'src' attribute so
   // MediaPlayer will have to pick a media engine based on the file extension.
-  loadResource(WebMediaPlayerSource(WebURL(mediaURL)), ContentType((String())));
+  loadResource(WebMediaPlayerSource(WebURL(mediaURL)), String());
 }
 
 void HTMLMediaElement::loadNextSourceChild() {
-  ContentType contentType((String()));
+  String contentType;
   KURL mediaURL = selectNextSourceChild(&contentType, Complain);
   if (!mediaURL.isValid()) {
     waitForSourceChange();
@@ -1098,15 +1143,14 @@ void HTMLMediaElement::loadNextSourceChild() {
 }
 
 void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
-                                    const ContentType& contentType) {
+                                    const String& contentType) {
   DCHECK(isMainThread());
   KURL url;
   if (source.isURL()) {
     url = source.getAsURL();
     DCHECK(isSafeToLoadURL(url, Complain));
     BLINK_MEDIA_LOG << "loadResource(" << (void*)this << ", "
-                    << urlForLoggingMedia(url) << ", " << contentType.raw()
-                    << ")";
+                    << urlForLoggingMedia(url) << ", " << contentType << ")";
   }
 
   LocalFrame* frame = document().frame();
@@ -2901,7 +2945,7 @@ bool HTMLMediaElement::havePotentialSourceChild() {
   HTMLSourceElement* currentSourceNode = m_currentSourceNode;
   Node* nextNode = m_nextChildNodeToConsider;
 
-  KURL nextURL = selectNextSourceChild(0, DoNothing);
+  KURL nextURL = selectNextSourceChild(nullptr, DoNothing);
 
   m_currentSourceNode = currentSourceNode;
   m_nextChildNodeToConsider = nextNode;
@@ -2909,7 +2953,7 @@ bool HTMLMediaElement::havePotentialSourceChild() {
   return nextURL.isValid();
 }
 
-KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType,
+KURL HTMLMediaElement::selectNextSourceChild(String* contentType,
                                              InvalidURLAction actionIfInvalid) {
   // Don't log if this was just called to find out if there are any valid
   // <source> elements.
@@ -2993,7 +3037,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType,
 
   if (canUseSourceElement) {
     if (contentType)
-      *contentType = ContentType(type);
+      *contentType = type;
     m_currentSourceNode = source;
     m_nextChildNodeToConsider = source->nextSibling();
   } else {
