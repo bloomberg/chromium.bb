@@ -21,6 +21,7 @@ DownloadCreateInfo::DownloadCreateInfo(
       total_bytes(0),
       offset(0),
       has_user_gesture(false),
+      transient(false),
       result(DOWNLOAD_INTERRUPT_REASON_NONE),
       save_info(std::move(save_info)),
       request_net_log(net_log),

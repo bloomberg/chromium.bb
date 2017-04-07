@@ -135,6 +135,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // populate the DownloadCreateInfo when the time comes.
   std::unique_ptr<DownloadSaveInfo> save_info_;
   uint32_t download_id_;
+  bool transient_;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 
   // Data flow

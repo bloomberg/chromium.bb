@@ -38,7 +38,8 @@ DownloadUrlParameters::DownloadUrlParameters(
       render_frame_host_routing_id_(render_frame_host_routing_id),
       url_request_context_getter_(url_request_context_getter),
       url_(url),
-      do_not_prompt_for_login_(false) {}
+      do_not_prompt_for_login_(false),
+      transient_(false) {}
 
 DownloadUrlParameters::~DownloadUrlParameters() {
 }

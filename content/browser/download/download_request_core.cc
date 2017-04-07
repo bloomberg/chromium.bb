@@ -62,6 +62,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
     return std::move(save_info_);
   }
   uint32_t download_id() const { return download_id_; }
+  bool is_transient() const { return transient_; }
   const DownloadUrlParameters::OnStartedCallback& callback() const {
     return on_started_callback_;
   }
@@ -71,6 +72,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
 
   std::unique_ptr<DownloadSaveInfo> save_info_;
   uint32_t download_id_ = DownloadItem::kInvalidId;
+  bool transient_ = false;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 };
 
@@ -85,6 +87,7 @@ void DownloadRequestData::Attach(net::URLRequest* request,
   request_data->save_info_.reset(
       new DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;
+  request_data->transient_ = parameters->is_transient();
   request_data->on_started_callback_ = parameters->callback();
   request->SetUserData(&kKey, request_data);
 }
@@ -199,6 +202,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
   if (request_data) {
     save_info_ = request_data->TakeSaveInfo();
     download_id_ = request_data->download_id();
+    transient_ = request_data->is_transient();
     on_started_callback_ = request_data->callback();
     DownloadRequestData::Detach(request_);
     is_partial_request_ = save_info_->offset > 0;
@@ -228,6 +232,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
   create_info->referrer_url = GURL(request()->referrer());
   create_info->result = result;
   create_info->download_id = download_id_;
+  create_info->transient = transient_;
   create_info->offset = create_info->save_info->offset;
   return create_info;
 }

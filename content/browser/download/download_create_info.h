@@ -72,6 +72,10 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // True if the download was initiated by user action.
   bool has_user_gesture;
 
+  // Whether the download should be transient. A transient download is
+  // short-lived and is not shown in the UI.
+  bool transient;
+
   base::Optional<ui::PageTransition> transition_type;
 
   // The remote IP address where the download was fetched from.  Copied from

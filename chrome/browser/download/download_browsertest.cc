@@ -2208,6 +2208,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           web_contents, url));
   params->set_file_path(target_file_full_path);
+  params->set_transient(true);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2225,6 +2226,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   ASSERT_EQ(1u, downloads.size());
   content::DownloadUpdatedObserver(
       downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
+  ASSERT_TRUE(downloads[0]->IsTransient());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
