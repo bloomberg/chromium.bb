@@ -92,6 +92,14 @@ const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
+std::unique_ptr<base::Value> NetLogQuicStreamFactoryJobCallback(
+    const QuicServerId* server_id,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("server_id", server_id->ToString());
+  return std::move(dict);
+}
+
 std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
     std::string trigger,
     NetLogCaptureMode capture_mode) {
@@ -386,12 +394,26 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
           was_alternative_service_recently_broken),
       server_info_(std::move(server_info)),
       started_another_job_(false),
-      net_log_(net_log),
+      net_log_(
+          NetLogWithSource::Make(net_log.net_log(),
+                                 NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
       num_sent_client_hellos_(0),
       session_(nullptr),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB,
+      base::Bind(&NetLogQuicStreamFactoryJobCallback, &key_.server_id()));
+  // Associate |net_log_| with |net_log|.
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
+      net_log.source().ToEventParametersCallback());
+  net_log.AddEvent(
+      NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
+      net_log_.source().ToEventParametersCallback());
+}
 
 QuicStreamFactory::Job::~Job() {
+  net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB);
   DCHECK(callback_.is_null());
 
   // If disk cache has a pending WaitForDataReadyCallback, cancel that callback.

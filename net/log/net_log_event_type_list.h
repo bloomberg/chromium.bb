@@ -1094,6 +1094,15 @@ EVENT_TYPE(HTTP_STREAM_JOB_INIT_CONNECTION)
 //   }
 EVENT_TYPE(HTTP_STREAM_REQUEST_BOUND_TO_JOB)
 
+// Identifies the NetLogSource() for the QuicStreamFactory::Job that the
+// HttpStreamFactoryImpl::Job was attached to.
+// The event parameters are:
+//  {
+//      "source_dependency": <Source identifier for the QuicStreamFactory::Job
+//                            to which we were attached>,
+//  }
+EVENT_TYPE(HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB)
+
 // Identifies the NetLogSource() for the Request that the Job was attached to.
 // The event parameters are:
 //   {
@@ -1630,6 +1639,27 @@ EVENT_TYPE(HTTP2_PROXY_CLIENT_SESSION)
 //   {
 //     "source_dependency":  <Source identifier for the underlying session>,
 //   }
+
+// ------------------------------------------------------------------------
+// QuicStreamFactory::Job
+// ------------------------------------------------------------------------
+
+// Measures the time taken to execute the QuicStreamFactory::Job.
+// The event parameters are:
+//   {
+//     "server_id": <The QuicServerId that the Job serves>,
+//   }
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB)
+
+// Identifies the NetLogSource() for the HttpStreamFactoryImpl::Job that the
+// Job was attached to.
+// The event parameters are:
+//  {
+//     "source_dependency": <Source identifier for the
+//                           HttpStreamFactoryImpl::Job to which we were
+//                           attached>,
+//  }
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB)
 
 // ------------------------------------------------------------------------
 // QuicSession
