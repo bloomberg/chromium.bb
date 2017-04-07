@@ -4934,69 +4934,48 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
 }
 
 static int cost_mv_ref(const AV1_COMP *const cpi, PREDICTION_MODE mode,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                       int is_compound,
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
                        int16_t mode_context) {
-#if CONFIG_REF_MV
-  int mode_cost = 0;
-#if CONFIG_EXT_INTER
-  int16_t mode_ctx =
-      is_compound ? mode_context : (mode_context & NEWMV_CTX_MASK);
-#else
-  int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
-#endif  // CONFIG_EXT_INTER
-  int16_t is_all_zero_mv = mode_context & (1 << ALL_ZERO_FLAG_OFFSET);
-
-  assert(is_inter_mode(mode));
-
-#if CONFIG_EXT_INTER
-  if (is_compound) {
-    return cpi
-        ->inter_compound_mode_cost[mode_context][INTER_COMPOUND_OFFSET(mode)];
-  } else {
-    if (mode == NEWMV) {
-#else
-  if (mode == NEWMV) {
-#endif  // CONFIG_EXT_INTER
-      mode_cost = cpi->newmv_mode_cost[mode_ctx][0];
-      return mode_cost;
-    } else {
-      mode_cost = cpi->newmv_mode_cost[mode_ctx][1];
-      mode_ctx = (mode_context >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
-
-      if (is_all_zero_mv) return mode_cost;
-
-      if (mode == ZEROMV) {
-        mode_cost += cpi->zeromv_mode_cost[mode_ctx][0];
-        return mode_cost;
-      } else {
-        mode_cost += cpi->zeromv_mode_cost[mode_ctx][1];
-        mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
-
-        if (mode_context & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
-        if (mode_context & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
-        if (mode_context & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
-
-        mode_cost += cpi->refmv_mode_cost[mode_ctx][mode != NEARESTMV];
-        return mode_cost;
-      }
-    }
-#if CONFIG_EXT_INTER
-  }
-#endif  // CONFIG_EXT_INTER
-#else
-  assert(is_inter_mode(mode));
 #if CONFIG_EXT_INTER
   if (is_inter_compound_mode(mode)) {
     return cpi
         ->inter_compound_mode_cost[mode_context][INTER_COMPOUND_OFFSET(mode)];
-  } else {
-#endif  // CONFIG_EXT_INTER
-    return cpi->inter_mode_cost[mode_context][INTER_OFFSET(mode)];
-#if CONFIG_EXT_INTER
   }
-#endif  // CONFIG_EXT_INTER
+#endif
+
+#if CONFIG_REF_MV
+  int mode_cost = 0;
+  int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
+  int16_t is_all_zero_mv = mode_context & (1 << ALL_ZERO_FLAG_OFFSET);
+
+  assert(is_inter_mode(mode));
+
+  if (mode == NEWMV) {
+    mode_cost = cpi->newmv_mode_cost[mode_ctx][0];
+    return mode_cost;
+  } else {
+    mode_cost = cpi->newmv_mode_cost[mode_ctx][1];
+    mode_ctx = (mode_context >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
+
+    if (is_all_zero_mv) return mode_cost;
+
+    if (mode == ZEROMV) {
+      mode_cost += cpi->zeromv_mode_cost[mode_ctx][0];
+      return mode_cost;
+    } else {
+      mode_cost += cpi->zeromv_mode_cost[mode_ctx][1];
+      mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
+
+      if (mode_context & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
+      if (mode_context & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
+      if (mode_context & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
+
+      mode_cost += cpi->refmv_mode_cost[mode_ctx][mode != NEARESTMV];
+      return mode_cost;
+    }
+  }
+#else
+  assert(is_inter_mode(mode));
+  return cpi->inter_mode_cost[mode_context][INTER_OFFSET(mode)];
 #endif  // CONFIG_REF_MV
 }
 
@@ -5189,11 +5168,7 @@ static int set_and_cost_bmi_mvs(
 #else  // CONFIG_REF_MV
   mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
 #endif  // CONFIG_REF_MV
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-  return cost_mv_ref(cpi, mode, is_compound, mode_ctx) + thismvcost;
-#else
   return cost_mv_ref(cpi, mode, mode_ctx) + thismvcost;
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
 }
 
 static int64_t encode_inter_mb_segment_sub8x8(
@@ -5422,15 +5397,9 @@ static int check_best_zero_mv(
 #else
     int16_t rfc = mode_context[ref_frames[0]];
 #endif  // CONFIG_REF_MV
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-    int c1 = cost_mv_ref(cpi, NEARMV, ref_frames[1] > INTRA_FRAME, rfc);
-    int c2 = cost_mv_ref(cpi, NEARESTMV, ref_frames[1] > INTRA_FRAME, rfc);
-    int c3 = cost_mv_ref(cpi, ZEROMV, ref_frames[1] > INTRA_FRAME, rfc);
-#else
     int c1 = cost_mv_ref(cpi, NEARMV, rfc);
     int c2 = cost_mv_ref(cpi, NEARESTMV, rfc);
     int c3 = cost_mv_ref(cpi, ZEROMV, rfc);
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
 
 #if !CONFIG_REF_MV
     (void)bsize;
@@ -5464,19 +5433,14 @@ static int check_best_zero_mv(
            frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int) {
 #if CONFIG_REF_MV
     int16_t rfc = compound_mode_context[ref_frames[0]];
-    int c1 = cost_mv_ref(cpi, NEAREST_NEARMV, 1, rfc);
-    int c2 = cost_mv_ref(cpi, NEAREST_NEARESTMV, 1, rfc);
-    int c3 = cost_mv_ref(cpi, ZERO_ZEROMV, 1, rfc);
-    int c4 = cost_mv_ref(cpi, NEAR_NEARESTMV, 1, rfc);
-    int c5 = cost_mv_ref(cpi, NEAR_NEARMV, 1, rfc);
 #else
     int16_t rfc = mode_context[ref_frames[0]];
+#endif  // CONFIG_REF_MV
     int c1 = cost_mv_ref(cpi, NEAREST_NEARMV, rfc);
     int c2 = cost_mv_ref(cpi, NEAREST_NEARESTMV, rfc);
     int c3 = cost_mv_ref(cpi, ZERO_ZEROMV, rfc);
     int c4 = cost_mv_ref(cpi, NEAR_NEARESTMV, rfc);
     int c5 = cost_mv_ref(cpi, NEAR_NEARMV, rfc);
-#endif  // CONFIG_REF_MV
 
     if (this_mode == NEAREST_NEARMV) {
       if (c1 > c3) return 0;
@@ -7977,11 +7941,18 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
       frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
+#if CONFIG_REF_MV
+      av1_set_mvcost(x, mbmi->ref_frame[1], 1, mbmi->ref_mv_idx);
+#endif  // CONFIG_REF_MV
       *rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
                                  &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
     } else {
+      assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
       frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
+#if CONFIG_REF_MV
+      av1_set_mvcost(x, mbmi->ref_frame[0], 0, mbmi->ref_mv_idx);
+#endif  // CONFIG_REF_MV
       *rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
                                  &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
@@ -8750,20 +8721,17 @@ static int64_t handle_inter_mode(
   // initiation of a motion field.
   if (discount_newmv_test(cpi, this_mode, frame_mv[refs[0]], mode_mv,
                           refs[0])) {
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER
     rd_stats->rate +=
-        AOMMIN(cost_mv_ref(cpi, this_mode, is_comp_pred, mode_ctx),
-               cost_mv_ref(cpi, NEARESTMV, is_comp_pred, mode_ctx));
+        AOMMIN(cost_mv_ref(cpi, this_mode, mode_ctx),
+               cost_mv_ref(cpi, is_comp_pred ? NEAREST_NEARESTMV : NEARESTMV,
+                           mode_ctx));
 #else
     rd_stats->rate += AOMMIN(cost_mv_ref(cpi, this_mode, mode_ctx),
                              cost_mv_ref(cpi, NEARESTMV, mode_ctx));
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
   } else {
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-    rd_stats->rate += cost_mv_ref(cpi, this_mode, is_comp_pred, mode_ctx);
-#else
     rd_stats->rate += cost_mv_ref(cpi, this_mode, mode_ctx);
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
   }
 
   if (RDCOST(x->rdmult, x->rddiv, rd_stats->rate, 0) > ref_best_rd &&
@@ -8907,9 +8875,11 @@ static int64_t handle_inter_mode(
     pred_exists = 0;
 
     *args->compmode_interinter_cost =
-        compound_type_cost[mbmi->interinter_compound_data.type] +
         av1_cost_literal(get_interinter_compound_type_bits(
-            bsize, mbmi->interinter_compound_data.type));
+            bsize, mbmi->interinter_compound_data.type)) +
+        (masked_compound_used
+             ? compound_type_cost[mbmi->interinter_compound_data.type]
+             : 0);
   }
 
   if (is_comp_interintra_pred) {
