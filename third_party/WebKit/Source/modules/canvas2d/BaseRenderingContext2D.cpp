@@ -31,6 +31,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/CheckedNumeric.h"
 
 namespace blink {
 
@@ -1530,6 +1531,11 @@ ImageData* BaseRenderingContext2D::getImageData(
     int sw,
     int sh,
     ExceptionState& exceptionState) const {
+  if (!WTF::CheckMul(sw, sh).IsValid<int>()) {
+    exceptionState.throwRangeError("Out of memory at ImageData creation");
+    return nullptr;
+  }
+
   m_usageCounters.numGetImageDataCalls++;
   m_usageCounters.areaGetImageDataCalls += sw * sh;
   if (!originClean())
@@ -1550,6 +1556,12 @@ ImageData* BaseRenderingContext2D::getImageData(
   if (sh < 0) {
     sy += sh;
     sh = -sh;
+  }
+
+  if (!WTF::CheckAdd(sx, sw).IsValid<int>() ||
+      !WTF::CheckAdd(sy, sh).IsValid<int>()) {
+    exceptionState.throwRangeError("Out of memory at ImageData creation");
+    return nullptr;
   }
 
   Optional<ScopedUsHistogramTimer> timer;
@@ -1574,7 +1586,6 @@ ImageData* BaseRenderingContext2D::getImageData(
   }
 
   IntRect imageDataRect(sx, sy, sw, sh);
-  DVLOG(1) << sx << ", " << sy << ", " << sw << ", " << sh;
   ImageBuffer* buffer = imageBuffer();
   if (!buffer || isContextLost()) {
     ImageData* result = ImageData::create(imageDataRect.size());
@@ -1611,6 +1622,10 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
                                           int dirtyWidth,
                                           int dirtyHeight,
                                           ExceptionState& exceptionState) {
+  if (!WTF::CheckMul(dirtyWidth, dirtyHeight).IsValid<int>()) {
+    return;
+  }
+
   m_usageCounters.numPutImageDataCalls++;
   m_usageCounters.areaPutImageDataCalls += dirtyWidth * dirtyHeight;
   if (data->data()->bufferBase()->isNeutered()) {
