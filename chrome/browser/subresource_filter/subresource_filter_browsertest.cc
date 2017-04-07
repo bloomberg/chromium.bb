@@ -213,7 +213,6 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
         switches::kEnableFeatures,
         base::JoinString(
             {kSafeBrowsingSubresourceFilter.name, "SafeBrowsingV4OnlyEnabled",
-             kSubresourceFilterSafeBrowsingActivationThrottle.name,
              kSafeBrowsingSubresourceFilterExperimentalUI.name},
             ","));
   }

@@ -14,10 +14,7 @@
 content::NavigationThrottle* MaybeCreateSubresourceFilterNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     safe_browsing::SafeBrowsingService* safe_browsing_service) {
-  bool feature_enabled = base::FeatureList::IsEnabled(
-      subresource_filter::kSubresourceFilterSafeBrowsingActivationThrottle);
-  if (feature_enabled && navigation_handle->IsInMainFrame() &&
-      safe_browsing_service &&
+  if (navigation_handle->IsInMainFrame() && safe_browsing_service &&
       safe_browsing_service->database_manager()->IsSupported() &&
       safe_browsing::V4FeatureList::GetV4UsageStatus() ==
           safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY) {

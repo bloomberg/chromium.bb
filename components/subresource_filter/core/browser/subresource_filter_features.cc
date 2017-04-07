@@ -20,10 +20,6 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
     "SubresourceFilterExperimentalUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSubresourceFilterSafeBrowsingActivationThrottle{
-    "SubresourceFilterSafeBrowsingActivationThrottle",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
 const char kActivationLevelDryRun[] = "dryrun";
