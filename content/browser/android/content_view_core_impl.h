@@ -263,6 +263,17 @@ class ContentViewCoreImpl : public ContentViewCore,
                        bool is_mobile_optimized_hint,
                        const gfx::SelectionBound& selection_start);
 
+  void UpdateImeAdapter(int text_input_type,
+                        int text_input_flags,
+                        int text_input_mode,
+                        const std::string& text,
+                        int selection_start,
+                        int selection_end,
+                        int composition_start,
+                        int composition_end,
+                        bool show_ime_if_needed,
+                        bool reply_to_request);
+
   bool HasFocus();
   void RequestDisallowInterceptTouchEvent();
   void OnGestureEventAck(const blink::WebGestureEvent& event,

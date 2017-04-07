@@ -132,9 +132,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             resultReceivers[i] = runTestOnUiThreadAndGetResult(new Callable<ResultReceiver>() {
                 @Override
                 public ResultReceiver call() throws Exception {
-                    return containerView.getContentViewCore()
-                            .getImeAdapterForTest()
-                            .getNewShowKeyboardReceiver();
+                    return containerView.getContentViewCore().getNewShowKeyboardReceiver();
                 }
             });
         }
@@ -275,3 +273,4 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         assertTrue(criteria.isSatisfied());
     }
 }
+

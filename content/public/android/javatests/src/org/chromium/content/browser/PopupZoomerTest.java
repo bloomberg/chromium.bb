@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.input.ImeAdapter;
+import org.chromium.content.browser.input.TestImeAdapterDelegate;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -78,21 +79,25 @@ public class PopupZoomerTest extends ContentShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
+        mContentViewCore = new ContentViewCore(getActivity(), "");
 
         final Context context = getActivity();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
                 mContentViewCore = new ContentViewCore(context, "");
+                ImeAdapter imeAdapter = new ImeAdapter(
+                        getContentViewCore().getContainerView().getResources().getConfiguration(),
+                        getContentViewCore().getWebContents(),
+                        new TestInputMethodManagerWrapper(mContentViewCore),
+                        new TestImeAdapterDelegate(getContentViewCore().getContainerView()));
                 mContentViewCore.setSelectionPopupControllerForTesting(new SelectionPopupController(
                         context, null, null, null, mContentViewCore.getRenderCoordinates()));
-                mContentViewCore.setImeAdapterForTest(
-                        new ImeAdapter(getContentViewCore().getWebContents(),
-                                getContentViewCore().getContainerView(),
-                                new TestInputMethodManagerWrapper(mContentViewCore)));
-                mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
                 mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
+                mContentViewCore.setImeAdapterForTest(imeAdapter);
             }
         });
     }

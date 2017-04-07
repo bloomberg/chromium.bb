@@ -17,6 +17,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.util.Pair;
 import android.view.ActionMode;
@@ -35,6 +37,7 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -58,7 +61,6 @@ import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
@@ -66,6 +68,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
@@ -89,7 +92,7 @@ import java.util.Map;
 public class ContentViewCore
         implements AccessibilityStateChangeListener, DisplayAndroidObserver,
                    SystemCaptioningBridge.SystemCaptioningBridgeListener, WindowAndroidProvider,
-                   JoystickZoomProvider.PinchZoomHandler, ImeEventObserver {
+                   JoystickZoomProvider.PinchZoomHandler {
     private static final String TAG = "cr_ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -167,6 +170,32 @@ public class ContentViewCore
             // renderer is considered background even if the pending navigation happens in the
             // foreground renderer. See crbug.com/421041 for more details.
             ChildProcessLauncher.determinedVisibility(contentViewCore.getCurrentRenderProcessId());
+        }
+    }
+
+    /**
+     * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
+     * editable node at the right timing, which is after input method window shows up.
+     */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelCreator")
+    private static class ShowKeyboardResultReceiver extends ResultReceiver {
+
+        // Unfortunately, the memory life cycle of ResultReceiver object, once passed in
+        // showSoftInput(), is in the control of Android's input method framework and IME app,
+        // so we use a weakref to avoid tying CVC's lifetime to that of ResultReceiver object.
+        private final WeakReference<ContentViewCore> mContentViewCore;
+
+        public ShowKeyboardResultReceiver(ContentViewCore contentViewCore, Handler handler) {
+            super(handler);
+            mContentViewCore = new WeakReference<>(contentViewCore);
+        }
+
+        @Override
+        public void onReceiveResult(int resultCode, Bundle resultData) {
+            ContentViewCore contentViewCore = mContentViewCore.get();
+            if (contentViewCore == null) return;
+            contentViewCore.onShowKeyboardReceiveResult(resultCode);
         }
     }
 
@@ -293,6 +322,10 @@ public class ContentViewCore
     // WebView.
     private boolean mShouldSetAccessibilityFocusOnPageLoad;
 
+    // Temporary notification to tell onSizeChanged to focus a form element,
+    // because the OSK was just brought up.
+    private final Rect mFocusPreOSKViewportRect = new Rect();
+
     // Whether a touch scroll sequence is active, used to hide text selection
     // handles. Note that a scroll sequence will *always* bound a pinch
     // sequence, so this will also be true for the duration of a pinch gesture.
@@ -322,6 +355,10 @@ public class ContentViewCore
 
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
+
+    // NOTE: This object will not be released by Android framework until the matching
+    // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
+    private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
 
     // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
     private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers;
@@ -435,10 +472,6 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
-    public void addImeEventObserver(ImeEventObserver imeEventObserver) {
-        mImeAdapter.addEventObserver(imeEventObserver);
-    }
-
     @VisibleForTesting
     public void setImeAdapterForTest(ImeAdapter imeAdapter) {
         mImeAdapter = imeAdapter;
@@ -447,6 +480,55 @@ public class ContentViewCore
     @VisibleForTesting
     public ImeAdapter getImeAdapterForTest() {
         return mImeAdapter;
+    }
+
+    private ImeAdapter createImeAdapter(ViewGroup containerView) {
+        return new ImeAdapter(containerView.getResources().getConfiguration(), mWebContents,
+                new InputMethodManagerWrapper(mContext), new ImeAdapter.ImeAdapterDelegate() {
+                    @Override
+                    public void onImeEvent() {
+                        mPopupZoomer.hide(true);
+                        getContentViewClient().onImeEvent();
+                        if (isFocusedNodeEditable()) mWebContents.dismissTextHandles();
+                    }
+
+                    @Override
+                    public void onKeyboardBoundsUnchanged() {
+                        assert mWebContents != null;
+                        mWebContents.scrollFocusedEditableNodeIntoView();
+                    }
+
+                    @Override
+                    public boolean performContextMenuAction(int id) {
+                        assert mWebContents != null;
+                        switch (id) {
+                            case android.R.id.selectAll:
+                                mWebContents.selectAll();
+                                return true;
+                            case android.R.id.cut:
+                                mWebContents.cut();
+                                return true;
+                            case android.R.id.copy:
+                                mWebContents.copy();
+                                return true;
+                            case android.R.id.paste:
+                                mWebContents.paste();
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+
+                    @Override
+                    public View getAttachedView() {
+                        return mContainerView;
+                    }
+
+                    @Override
+                    public ResultReceiver getNewShowKeyboardReceiver() {
+                        return ContentViewCore.this.getNewShowKeyboardReceiver();
+                    }
+                });
     }
 
     /**
@@ -484,22 +566,20 @@ public class ContentViewCore
 
         setContainerViewInternals(internalDispatcher);
 
-        ViewGroup containerView = viewDelegate.getContainerView();
-        initPopupZoomer(mContext, containerView);
-        mImeAdapter = new ImeAdapter(
-                mWebContents, containerView, new InputMethodManagerWrapper(mContext));
-        mImeAdapter.addEventObserver(this);
+        initPopupZoomer(mContext, viewDelegate.getContainerView());
+        mImeAdapter = createImeAdapter(viewDelegate.getContainerView());
 
-        mSelectionPopupController = new SelectionPopupController(
-                mContext, windowAndroid, webContents, containerView, mRenderCoordinates);
+        mSelectionPopupController = new SelectionPopupController(mContext, windowAndroid,
+                webContents, viewDelegate.getContainerView(), mRenderCoordinates);
         mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
+        mSelectionPopupController.setContainerView(viewDelegate.getContainerView());
 
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
         mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH);
 
-        setContainerView(containerView);
+        setContainerView(viewDelegate.getContainerView());
     }
 
     /**
@@ -582,7 +662,6 @@ public class ContentViewCore
             if (mContainerView != null) {
                 hideSelectPopupWithCancelMessage();
                 mPopupZoomer.hide(false);
-                mImeAdapter.setContainerView(containerView);
             }
 
             mContainerView = containerView;
@@ -1217,13 +1296,12 @@ public class ContentViewCore
 
         // Execute a delayed form focus operation because the OSK was brought
         // up earlier.
-        Rect focusPreOSKViewportRect = mImeAdapter.getFocusPreOSKViewportRect();
-        if (!focusPreOSKViewportRect.isEmpty()) {
+        if (!mFocusPreOSKViewportRect.isEmpty()) {
             Rect rect = new Rect();
             getContainerView().getWindowVisibleDisplayFrame(rect);
-            if (!rect.equals(focusPreOSKViewportRect)) {
+            if (!rect.equals(mFocusPreOSKViewportRect)) {
                 // Only assume the OSK triggered the onSizeChanged if width was preserved.
-                if (rect.width() == focusPreOSKViewportRect.width()) {
+                if (rect.width() == mFocusPreOSKViewportRect.width()) {
                     assert mWebContents != null;
                     mWebContents.scrollFocusedEditableNodeIntoView();
                 }
@@ -1235,7 +1313,7 @@ public class ContentViewCore
     private void cancelRequestToScrollFocusedEditableNodeIntoView() {
         // Zero-ing the rect will prevent |updateAfterSizeChanged()| from
         // issuing the delayed form focus event.
-        mImeAdapter.getFocusPreOSKViewportRect().setEmpty();
+        mFocusPreOSKViewportRect.setEmpty();
     }
 
     /**
@@ -1694,17 +1772,31 @@ public class ContentViewCore
         TraceEvent.end("ContentViewCore:updateFrameInfo");
     }
 
-    // ImeEventObserver
+    @CalledByNative
+    private void updateImeAdapter(int textInputType, int textInputFlags, int textInputMode,
+            String text, int selectionStart, int selectionEnd, int compositionStart,
+            int compositionEnd, boolean showImeIfNeeded, boolean replyToRequest) {
+        try {
+            TraceEvent.begin("ContentViewCore.updateImeAdapter");
+            boolean focusedNodeEditable = (textInputType != TextInputType.NONE);
+            boolean focusedNodeIsPassword = (textInputType == TextInputType.PASSWORD);
 
-    @Override
-    public void onImeEvent() {
-        mPopupZoomer.hide(true);
-    }
+            mImeAdapter.updateState(textInputType, textInputFlags, textInputMode, showImeIfNeeded,
+                    text, selectionStart, selectionEnd, compositionStart, compositionEnd,
+                    replyToRequest);
 
-    @Override
-    public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        mJoystickScrollProvider.setEnabled(!editable);
-        mSelectionPopupController.updateSelectionState(editable, password);
+            boolean editableToggled = (focusedNodeEditable != isFocusedNodeEditable());
+            mSelectionPopupController.updateSelectionState(focusedNodeEditable,
+                    focusedNodeIsPassword);
+            if (editableToggled) {
+                if (mJoystickScrollProvider != null) {
+                    mJoystickScrollProvider.setEnabled(!focusedNodeEditable);
+                }
+                getContentViewClient().onFocusedNodeEditabilityChanged(focusedNodeEditable);
+            }
+        } finally {
+            TraceEvent.end("ContentViewCore.updateImeAdapter");
+        }
     }
 
     /**
@@ -1826,7 +1918,10 @@ public class ContentViewCore
      */
     @CalledByNative
     private boolean hasFocus() {
-        return ViewUtils.hasFocus(mContainerView);
+        // If the container view is not focusable, we consider it always focused from
+        // Chromium's point of view.
+        if (!mContainerView.isFocusable()) return true;
+        return mContainerView.hasFocus();
     }
 
     /**
@@ -2448,6 +2543,35 @@ public class ContentViewCore
      */
     public void setSelectionClient(SelectionClient selectionClient) {
         mSelectionPopupController.setSelectionClient(selectionClient);
+    }
+
+    /**
+     * Call this when we get result from ResultReceiver passed in calling showSoftInput().
+     * @param resultCode The result of showSoftInput() as defined in InputMethodManager.
+     */
+    public void onShowKeyboardReceiveResult(int resultCode) {
+        if (resultCode == InputMethodManager.RESULT_SHOWN) {
+            // If OSK is newly shown, delay the form focus until
+            // the onSizeChanged (in order to adjust relative to the
+            // new size).
+            // TODO(jdduke): We should not assume that onSizeChanged will
+            // always be called, crbug.com/294908.
+            getContainerView().getWindowVisibleDisplayFrame(mFocusPreOSKViewportRect);
+        } else if (hasFocus() && resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
+            // If the OSK was already there, focus the form immediately.
+            if (mWebContents != null) {
+                mWebContents.scrollFocusedEditableNodeIntoView();
+            }
+        }
+    }
+
+    @VisibleForTesting
+    public ResultReceiver getNewShowKeyboardReceiver() {
+        if (mShowKeyboardResultReceiver == null) {
+            // Note: the returned object will get leaked by Android framework.
+            mShowKeyboardResultReceiver = new ShowKeyboardResultReceiver(this, new Handler());
+        }
+        return mShowKeyboardResultReceiver;
     }
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
