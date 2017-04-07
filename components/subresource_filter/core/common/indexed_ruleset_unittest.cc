@@ -28,6 +28,10 @@ constexpr proto::SourceType kAnyParty = proto::SOURCE_TYPE_ANY;
 constexpr proto::SourceType kFirstParty = proto::SOURCE_TYPE_FIRST_PARTY;
 constexpr proto::SourceType kThirdParty = proto::SOURCE_TYPE_THIRD_PARTY;
 
+constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
+constexpr proto::ActivationType kGenericBlock =
+    proto::ACTIVATION_TYPE_GENERICBLOCK;
+
 // Note: Returns unique origin on origin_string == nullptr.
 url::Origin GetOrigin(const char* origin_string) {
   return origin_string ? url::Origin(GURL(origin_string)) : url::Origin();
@@ -83,9 +87,9 @@ class UrlRuleBuilder {
 
 }  // namespace
 
-class IndexedRulesetTest : public testing::Test {
+class SubresourceFilterIndexedRulesetTest : public testing::Test {
  public:
-  IndexedRulesetTest() = default;
+  SubresourceFilterIndexedRulesetTest() = default;
 
  protected:
   bool ShouldAllow(const char* url,
@@ -153,10 +157,10 @@ class IndexedRulesetTest : public testing::Test {
   std::unique_ptr<IndexedRulesetMatcher> matcher_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedRulesetTest);
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterIndexedRulesetTest);
 };
 
-TEST_F(IndexedRulesetTest, OneRuleWithoutMetaInfo) {
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithoutMetaInfo) {
   const struct {
     UrlPattern url_pattern;
     const char* url;
@@ -302,7 +306,7 @@ TEST_F(IndexedRulesetTest, OneRuleWithoutMetaInfo) {
   }
 }
 
-TEST_F(IndexedRulesetTest, OneRuleWithThirdParty) {
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithThirdParty) {
   const struct {
     const char* url_pattern;
     proto::SourceType source_type;
@@ -360,7 +364,7 @@ TEST_F(IndexedRulesetTest, OneRuleWithThirdParty) {
   }
 }
 
-TEST_F(IndexedRulesetTest, OneRuleWithDomainList) {
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
   const struct {
     const char* url_pattern;
     std::vector<std::string> domains;
@@ -458,7 +462,7 @@ TEST_F(IndexedRulesetTest, OneRuleWithDomainList) {
   }
 }
 
-TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithElementTypes) {
   constexpr proto::ElementType kAll = proto::ELEMENT_TYPE_ALL;
   constexpr proto::ElementType kImage = proto::ELEMENT_TYPE_IMAGE;
   constexpr proto::ElementType kFont = proto::ELEMENT_TYPE_FONT;
@@ -514,11 +518,8 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
   }
 }
 
-TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithActivationTypes) {
   constexpr proto::ActivationType kNone = proto::ACTIVATION_TYPE_UNSPECIFIED;
-  constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
-  constexpr proto::ActivationType kGenericBlock =
-      proto::ACTIVATION_TYPE_GENERICBLOCK;
 
   const struct {
     const char* url_pattern;
@@ -565,7 +566,23 @@ TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
   }
 }
 
-TEST_F(IndexedRulesetTest, MatchWithDisableGenericRules) {
+TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithElementAndActivationTypes) {
+  UrlRuleBuilder builder(UrlPattern("allow.ex.com"), true /* is_whitelist */);
+  builder.rule().set_activation_types(kDocument);
+
+  AddUrlRule(builder.rule());
+  AddBlacklistRule(UrlPattern("ex.com"));
+  Finish();
+
+  EXPECT_FALSE(ShouldAllow("http://ex.com"));
+  EXPECT_TRUE(ShouldAllow("http://allow.ex.com"));
+  EXPECT_FALSE(ShouldDeactivate("http://allow.ex.com", nullptr /* initiator */,
+                                kGenericBlock));
+  EXPECT_TRUE(ShouldDeactivate("http://allow.ex.com", nullptr /* initiator */,
+                               kDocument));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
   // Generic rules.
   ASSERT_NO_FATAL_FAILURE(
       AddUrlRule(UrlRuleBuilder(UrlPattern("some_text", kSubstring)).rule()));
@@ -632,14 +649,14 @@ TEST_F(IndexedRulesetTest, MatchWithDisableGenericRules) {
   }
 }
 
-TEST_F(IndexedRulesetTest, EmptyRuleset) {
+TEST_F(SubresourceFilterIndexedRulesetTest, EmptyRuleset) {
   Finish();
   EXPECT_TRUE(ShouldAllow("http://example.com"));
   EXPECT_TRUE(ShouldAllow("http://another.example.com?param=val"));
   EXPECT_TRUE(ShouldAllow(nullptr));
 }
 
-TEST_F(IndexedRulesetTest, NoRuleApplies) {
+TEST_F(SubresourceFilterIndexedRulesetTest, NoRuleApplies) {
   AddSimpleRule(UrlPattern("?filtered_content=", kSubstring), false);
   AddSimpleRule(UrlPattern("&filtered_content=", kSubstring), false);
   Finish();
@@ -648,7 +665,7 @@ TEST_F(IndexedRulesetTest, NoRuleApplies) {
   EXPECT_TRUE(ShouldAllow("http://example.com?filtered_not"));
 }
 
-TEST_F(IndexedRulesetTest, SimpleBlacklist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
   AddSimpleRule(UrlPattern("?param=", kSubstring), false);
   Finish();
 
@@ -656,14 +673,14 @@ TEST_F(IndexedRulesetTest, SimpleBlacklist) {
   EXPECT_FALSE(ShouldAllow("http://example.org?param=image1"));
 }
 
-TEST_F(IndexedRulesetTest, SimpleWhitelist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleWhitelist) {
   AddSimpleRule(UrlPattern("example.com/?filtered_content=", kSubstring), true);
   Finish();
 
   EXPECT_TRUE(ShouldAllow("https://example.com?filtered_content=image1"));
 }
 
-TEST_F(IndexedRulesetTest, BlacklistWhitelist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistWhitelist) {
   AddSimpleRule(UrlPattern("?filter=", kSubstring), false);
   AddSimpleRule(UrlPattern("whitelisted.com/?filter=", kSubstring), true);
   Finish();
@@ -673,9 +690,7 @@ TEST_F(IndexedRulesetTest, BlacklistWhitelist) {
   EXPECT_FALSE(ShouldAllow("http://blacklisted.com?filter=on"));
 }
 
-TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
-  const auto kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
-
+TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistAndActivationType) {
   AddSimpleRule(UrlPattern("example.com", kSubstring), false);
   AddWhitelistRuleWithActivationTypes(UrlPattern("example.com", kSubstring),
                                       kDocument);
@@ -687,7 +702,7 @@ TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
 }
 
-TEST_F(IndexedRulesetTest, RuleWithUnsupportedOptions) {
+TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedOptions) {
   const struct {
     int element_types;
     int activation_types;

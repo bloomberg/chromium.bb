@@ -95,6 +95,7 @@ class RulesetIndexer {
 
   MutableUrlPatternIndex blacklist_;
   MutableUrlPatternIndex whitelist_;
+  MutableUrlPatternIndex activation_;
 
   flatbuffers::FlatBufferBuilder builder_;
 

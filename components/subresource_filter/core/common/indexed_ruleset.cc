@@ -39,6 +39,9 @@ class UrlRuleFlatBufferConverter {
   // this client version.
   bool is_convertible() const { return is_convertible_; }
 
+  bool has_element_types() const { return !!element_types_; }
+  bool has_activation_types() const { return !!activation_types_; }
+
   // Writes the URL |rule| to the FlatBuffer using the |builder|, and returns
   // the offset to the serialized rule.
   flatbuffers::Offset<flat::UrlRule> SerializeConvertedRule(
@@ -200,7 +203,7 @@ class UrlRuleFlatBufferConverter {
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 14;
+const int RulesetIndexer::kIndexedFormatVersion = 15;
 
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;
@@ -212,21 +215,27 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
   UrlRuleFlatBufferConverter converter(rule);
   if (!converter.is_convertible())
     return false;
+  DCHECK_NE(rule.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
   auto rule_offset = converter.SerializeConvertedRule(&builder_);
 
-  MutableUrlPatternIndex* index_part =
-      (rule.semantics() == proto::RULE_SEMANTICS_BLACKLIST ? &blacklist_
-                                                           : &whitelist_);
+  auto add_rule_to_index = [&rule, rule_offset](MutableUrlPatternIndex* index) {
+    NGram ngram =
+        GetMostDistinctiveNGram(index->ngram_index, rule.url_pattern());
+    if (ngram) {
+      index->ngram_index[ngram].push_back(rule_offset);
+    } else {
+      // TODO(pkalinnikov): Index fallback rules as well.
+      index->fallback_rules.push_back(rule_offset);
+    }
+  };
 
-  DCHECK_NE(rule.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
-  NGram ngram =
-      GetMostDistinctiveNGram(index_part->ngram_index, rule.url_pattern());
-
-  if (ngram) {
-    index_part->ngram_index[ngram].push_back(rule_offset);
+  if (rule.semantics() == proto::RULE_SEMANTICS_BLACKLIST) {
+    add_rule_to_index(&blacklist_);
   } else {
-    // TODO(pkalinnikov): Index fallback rules as well.
-    index_part->fallback_rules.push_back(rule_offset);
+    if (converter.has_element_types())
+      add_rule_to_index(&whitelist_);
+    if (converter.has_activation_types())
+      add_rule_to_index(&activation_);
   }
 
   return true;
@@ -235,12 +244,14 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
 void RulesetIndexer::Finish() {
   auto blacklist_offset = SerializeUrlPatternIndex(blacklist_);
   auto whitelist_offset = SerializeUrlPatternIndex(whitelist_);
+  auto activation_offset = SerializeUrlPatternIndex(activation_);
 
-  auto url_rules_index_offset =
-      flat::CreateIndexedRuleset(builder_, blacklist_offset, whitelist_offset);
+  auto url_rules_index_offset = flat::CreateIndexedRuleset(
+      builder_, blacklist_offset, whitelist_offset, activation_offset);
   builder_.Finish(url_rules_index_offset);
 }
 
+// static
 NGram RulesetIndexer::GetMostDistinctiveNGram(
     const MutableNGramIndex& ngram_index,
     base::StringPiece pattern) {
@@ -486,7 +497,7 @@ bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
     return false;
   }
   return IsMatch(
-      root_->whitelist_index(), document_url, parent_document_origin,
+      root_->activation_index(), document_url, parent_document_origin,
       proto::ELEMENT_TYPE_UNSPECIFIED, activation_type,
       FirstPartyOrigin::IsThirdParty(document_url, parent_document_origin),
       false);

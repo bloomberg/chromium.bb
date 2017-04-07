@@ -94,8 +94,11 @@ table IndexedRuleset {
   // The index of all blacklist URL rules.
   blacklist_index : UrlPatternIndex;
 
-  // The index of all whitelist URL rules.
+  // The index of all whitelist URL rules, except pure activation rules.
   whitelist_index : UrlPatternIndex;
+
+  // The index of all whitelist URL rules with activation options.
+  activation_index : UrlPatternIndex;
 }
 
 root_type IndexedRuleset;
