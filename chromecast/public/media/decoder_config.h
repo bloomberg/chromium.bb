@@ -212,7 +212,7 @@ enum class TransferID : uint8_t {
 };
 
 // Table 4
-enum class MatrixID : int8_t {
+enum class MatrixID : uint8_t {
   RGB = 0,
   BT709 = 1,
   UNSPECIFIED = 2,
