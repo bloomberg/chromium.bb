@@ -65,3 +65,26 @@ source_set("tab_grid_ui") {
     "//ui/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "tab_grid_mediator_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":tab_grid",
+    ":tab_grid_ui",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/base",
+    "//ios/shared/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/tabs:test_support",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
