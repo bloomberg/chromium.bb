@@ -94,8 +94,6 @@ crbug.com/700795 [ Linux ] inspector/animation/animation-transition-setTiming-cr
 # Reliably timeout on Linux ASAN bots.
 crbug.com/248938 [ Linux ] virtual/threaded/animations/transition-and-animation-2.html [ Skip ]
 
-crbug.com/446661 [Linux ] geolocation-api/success-clear-watch.html [ Timeout Pass ]
-
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeout ]
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
 crbug.com/525975 [ Linux ] http/tests/websocket/workers/close-before-open.html [ Timeout Pass ]
