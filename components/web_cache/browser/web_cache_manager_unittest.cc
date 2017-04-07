@@ -6,15 +6,12 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
-
 namespace web_cache {
 
 class WebCacheManagerTest : public testing::Test {
@@ -28,9 +25,7 @@ class WebCacheManagerTest : public testing::Test {
   static const WebCacheManager::RendererInfo kStats;
   static const WebCacheManager::RendererInfo kStats2;
 
-  WebCacheManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
+  WebCacheManagerTest() = default;
 
   // Thunks to access protected members of WebCacheManager
   static std::map<int, WebCacheManager::RendererInfo>& stats(
@@ -99,8 +94,7 @@ class WebCacheManagerTest : public testing::Test {
 
  private:
   WebCacheManager manager_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 // static

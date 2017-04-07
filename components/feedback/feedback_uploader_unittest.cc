@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -20,7 +19,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,8 +46,7 @@ namespace feedback {
 class FeedbackUploaderTest : public testing::Test {
  protected:
   FeedbackUploaderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        context_(new content::TestBrowserContext()),
+      : context_(new content::TestBrowserContext()),
         prefs_(new sync_preferences::TestingPrefServiceSyncable()),
         dispatched_reports_count_(0),
         expected_reports_(0) {
@@ -105,9 +103,8 @@ class FeedbackUploaderTest : public testing::Test {
     run_loop_->Run();
   }
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  content::TestBrowserThread ui_thread_;
   std::unique_ptr<content::TestBrowserContext> context_;
   std::unique_ptr<PrefService> prefs_;
 
