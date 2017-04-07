@@ -1755,7 +1755,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public final void onBackPressed() {
-        RecordUserAction.record("SystemBack");
+        if (mNativeInitialized) RecordUserAction.record("SystemBack");
         if (VrShellDelegate.onBackPressed()) return;
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
