@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
@@ -131,7 +132,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getProgressBarHeight() {
-        return getResources().getDimensionPixelSize(R.dimen.chrome_home_progress_bar_height);
+        // On Android versions that do not support themed status bars (< M), use a thicker progress
+        // bar so it is more visible.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return getResources().getDimensionPixelSize(R.dimen.chrome_home_progress_bar_height);
+        }
+        return super.getProgressBarHeight();
     }
 
     @Override
