@@ -1672,6 +1672,16 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 }
 
 #if defined(OS_ANDROID)
+void ForwardInstalledAppProviderRequest(
+    base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
+    blink::mojom::InstalledAppProviderRequest request) {
+  if (!interface_provider ||
+      ChromeOriginTrialPolicy().IsFeatureDisabled("InstalledApp")) {
+    return;
+  }
+  interface_provider->GetInterface(std::move(request));
+}
+
 void ForwardShareServiceRequest(
     base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
     blink::mojom::ShareServiceRequest request) {
@@ -3189,8 +3199,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
       render_frame_host->GetJavaInterfaces()
           ->CreateInterfaceFactory<payments::mojom::PaymentRequest>());
   registry->AddInterface(
-      render_frame_host->GetJavaInterfaces()
-          ->CreateInterfaceFactory<blink::mojom::InstalledAppProvider>());
+      base::Bind(&ForwardInstalledAppProviderRequest,
+                 render_frame_host->GetJavaInterfaces()->GetWeakPtr()));
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (web_contents) {
