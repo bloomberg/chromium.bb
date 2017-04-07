@@ -16,10 +16,10 @@
 
 namespace content {
 
-// TODO(guidou): Change default width and height to larger values. See
-// http://crbug.com/257097.
-const int kDefaultScreenCastWidth = MediaStreamVideoSource::kDefaultWidth;
-const int kDefaultScreenCastHeight = MediaStreamVideoSource::kDefaultHeight;
+const int kDefaultScreenCastWidth = 2880;
+const int kDefaultScreenCastHeight = 1800;
+const double kDefaultScreenCastAspectRatio =
+    static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
 const double kDefaultScreenCastFrameRate =
     MediaStreamVideoSource::kDefaultFrameRate;
 const int kMinScreenCastDimension = 1;
@@ -224,12 +224,33 @@ VideoCaptureSettings SelectResultFromCandidates(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   std::string device_id = SelectDeviceIDFromCandidates(candidates.device_id_set,
                                                        basic_constraint_set);
+  // If a maximum width or height is explicitly given, use them as default.
+  // If only one of them is given, use the default aspect ratio to determine the
+  // other default value.
   // TODO(guidou): Use native screen-capture resolution as default.
   // http://crbug.com/257097
+  int default_height = kDefaultScreenCastHeight;
+  int default_width = kDefaultScreenCastWidth;
+  bool has_explicit_max_height =
+      candidates.resolution_set.max_height() < kMaxScreenCastDimension;
+  bool has_explicit_max_width =
+      candidates.resolution_set.max_width() < kMaxScreenCastDimension;
+  if (has_explicit_max_height && has_explicit_max_width) {
+    default_height = candidates.resolution_set.max_height();
+    default_width = candidates.resolution_set.max_width();
+  } else if (has_explicit_max_height) {
+    default_height = candidates.resolution_set.max_height();
+    default_width = static_cast<int>(
+        std::round(default_height * kDefaultScreenCastAspectRatio));
+  } else if (has_explicit_max_width) {
+    default_width = candidates.resolution_set.max_width();
+    default_height = static_cast<int>(
+        std::round(default_width / kDefaultScreenCastAspectRatio));
+  }
   media::VideoCaptureParams capture_params =
-      SelectVideoCaptureParamsFromCandidates(
-          candidates, basic_constraint_set, kDefaultScreenCastHeight,
-          kDefaultScreenCastWidth, kDefaultScreenCastFrameRate);
+      SelectVideoCaptureParamsFromCandidates(candidates, basic_constraint_set,
+                                             default_height, default_width,
+                                             kDefaultScreenCastFrameRate);
 
   base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
       candidates.noise_reduction_set, basic_constraint_set);
