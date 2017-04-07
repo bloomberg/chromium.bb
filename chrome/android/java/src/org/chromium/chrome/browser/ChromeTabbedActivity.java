@@ -720,6 +720,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         assert isMainIntent(intent);
 
         if (!mIntentHandler.isIntentUserVisible()) return false;
+        if (FeatureUtilities.isChromeHomeEnabled()) return false;
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
             return false;
