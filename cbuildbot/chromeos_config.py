@@ -2129,6 +2129,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone',
       'butterfly',
       'chell',
+      'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -2170,8 +2171,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_experimental_boards = frozenset([
-      # (crbug.com/708262) We've temporarily marked cyan-paladin experimental.
-      'cyan',
       'fizz',
       'gale',
       'kip',
