@@ -1295,7 +1295,8 @@ GL_FUNCTIONS = [
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
   'arguments':
       'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
-      'GLenum type, GLsizei bufSize, GLsizei* length, void* data', },
+      'GLenum type, GLsizei bufSize, GLsizei* length, GLsizei* columns, '
+      'GLsizei* rows, void* data', },
 { 'return_type': 'void',
   'names': ['glReadPixels'],
   'arguments':
@@ -1306,7 +1307,8 @@ GL_FUNCTIONS = [
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
   'arguments':
       'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
-      'GLenum type, GLsizei bufSize, GLsizei* length, void* pixels', },
+      'GLenum type, GLsizei bufSize, GLsizei* length, GLsizei* columns, '
+      'GLsizei* rows, void* pixels', },
 { 'return_type': 'void',
   'names': ['glReleaseShaderCompiler'],
   'arguments': 'void', },

@@ -1687,11 +1687,13 @@ error::Error GLES2DecoderPassthroughImpl::DoReadPixels(GLint x,
                                                        GLenum type,
                                                        GLsizei bufsize,
                                                        GLsizei* length,
+                                                       GLsizei* columns,
+                                                       GLsizei* rows,
                                                        void* pixels,
                                                        int32_t* success) {
   FlushErrors();
   glReadPixelsRobustANGLE(x, y, width, height, format, type, bufsize, length,
-                          pixels);
+                          columns, rows, pixels);
   *success = FlushErrors() ? 0 : 1;
   return error::kNoError;
 }
