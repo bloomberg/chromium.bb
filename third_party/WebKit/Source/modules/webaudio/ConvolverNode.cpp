@@ -141,10 +141,20 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer,
       context() && context()->hasRealtimeConstraint(), m_normalize));
 
   {
+    // The context must be locked since changing the buffer can
+    // re-configure the number of channels that are output.
+    BaseAudioContext::AutoLocker contextLocker(context());
+
     // Synchronize with process().
     MutexLocker locker(m_processLock);
     m_reverb = std::move(reverb);
     m_buffer = buffer;
+    if (buffer) {
+      // This will propagate the channel count to any nodes connected further
+      // downstream in the graph.
+      output(0).setNumberOfChannels(computeNumberOfOutputChannels(
+          input(0).numberOfChannels(), m_buffer->numberOfChannels()));
+    }
   }
 }
 
@@ -175,6 +185,15 @@ double ConvolverHandler::latencyTime() const {
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
+}
+
+unsigned ConvolverHandler::computeNumberOfOutputChannels(
+    unsigned inputChannels,
+    unsigned responseChannels) const {
+  // The number of output channels for a Convolver must be one or two.
+  // And can only be one if there's a mono source and a mono response
+  // buffer.
+  return clampTo(std::max(inputChannels, responseChannels), 1, 2);
 }
 
 void ConvolverHandler::setChannelCount(unsigned long channelCount,
@@ -215,10 +234,8 @@ void ConvolverHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
     return;
 
   if (m_buffer) {
-    unsigned numberOfChannels = input->numberOfChannels();
-    unsigned numberOfReverbeChannels = m_buffer->numberOfChannels();
-    unsigned numberOfOutputChannels =
-        std::min(2u, std::max(numberOfChannels, numberOfReverbeChannels));
+    unsigned numberOfOutputChannels = computeNumberOfOutputChannels(
+        input->numberOfChannels(), m_buffer->numberOfChannels());
 
     if (isInitialized() &&
         numberOfOutputChannels != output(0).numberOfChannels()) {

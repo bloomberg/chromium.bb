@@ -65,6 +65,12 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
   double tailTime() const override;
   double latencyTime() const override;
 
+  // Determine how many output channels to use from the number of
+  // input channels and the number of channels in the impulse response
+  // buffer.
+  unsigned computeNumberOfOutputChannels(unsigned inputChannels,
+                                         unsigned responseChannels) const;
+
   std::unique_ptr<Reverb> m_reverb;
   // This Persistent doesn't make a reference cycle including the owner
   // ConvolverNode.
