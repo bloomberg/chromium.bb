@@ -28,12 +28,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    # TODO(junov) needs new baseline
-    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmap',
-        bug=585607)
-    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmapWorker',
-        bug=585607)
-
     # TODO(ccameron) fix these on Mac Retina
     self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
 
