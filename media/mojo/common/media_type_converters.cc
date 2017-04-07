@@ -219,6 +219,8 @@ TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
   config->encryption_scheme =
       media::mojom::EncryptionScheme::From(input.encryption_scheme());
   config->color_space_info = input.color_space_info();
+  if (input.hdr_metadata())
+    config->hdr_metadata = *input.hdr_metadata();
   return config;
 }
 
@@ -232,6 +234,8 @@ TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
                     input->natural_size, input->extra_data,
                     input->encryption_scheme.To<media::EncryptionScheme>());
   config.set_color_space_info(input->color_space_info);
+  if (input->hdr_metadata)
+    config.set_hdr_metadata(*input->hdr_metadata);
   return config;
 }
 

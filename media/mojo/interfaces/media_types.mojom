@@ -86,6 +86,27 @@ struct VideoColorSpace {
   RangeID range;
 };
 
+// This defines a mojo transport format for media::HDRMetadata.
+// See media/base/hdr_metadata.h for description.
+struct MasteringMetadata {
+  float primary_r_chromaticity_x;
+  float primary_r_chromaticity_y;
+  float primary_g_chromaticity_x;
+  float primary_g_chromaticity_y;
+  float primary_b_chromaticity_x;
+  float primary_b_chromaticity_y;
+  float white_point_chromaticity_x;
+  float white_point_chromaticity_y;
+  float luminance_max;
+  float luminance_min;
+};
+
+struct HDRMetadata {
+  MasteringMetadata mastering_metadata;
+  uint32 max_cll;
+  uint32 max_fall;
+};
+
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
@@ -112,6 +133,7 @@ struct VideoDecoderConfig {
   array<uint8> extra_data;
   EncryptionScheme encryption_scheme;
   VideoColorSpace color_space_info;
+  HDRMetadata? hdr_metadata;
 };
 
 // Native struct media::SubsampleEntry;

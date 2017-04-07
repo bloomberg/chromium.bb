@@ -42,7 +42,11 @@ struct MEDIA_EXPORT MasteringMetadata {
 // HDR metadata common for HDR10 and WebM/VP9-based HDR formats.
 struct MEDIA_EXPORT HDRMetadata {
   MasteringMetadata mastering_metadata;
+  // Max content light level (CLL), i.e. maximum brightness level present in the
+  // stream), in nits.
   unsigned max_cll = 0;
+  // Max frame-average light level (FALL), i.e. maximum average brightness of
+  // the brightest frame in the stream), in nits.
   unsigned max_fall = 0;
 
   HDRMetadata();
