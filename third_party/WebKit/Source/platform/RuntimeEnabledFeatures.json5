@@ -285,7 +285,7 @@
     },
     {
       name: "CSSSnapSize",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSStickyPosition",
