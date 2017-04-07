@@ -924,6 +924,9 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   if (tx_size <= TX_4X4) return 0;
 
   switch (AOMMAX(block_size_wide[bsize], block_size_high[bsize])) {
+#if CONFIG_EXT_PARTITION
+    case 128:
+#endif
     case 64:
     case 32: max_tx_size = TX_32X32; break;
     case 16: max_tx_size = TX_16X16; break;
