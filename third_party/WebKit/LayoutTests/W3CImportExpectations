@@ -289,7 +289,6 @@ external/wpt/imagebitmap-renderingcontext [ Skip ]
 # external/wpt/innerText [ Pass ]
 external/wpt/js [ Skip ]
 external/wpt/lint [ Skip ]
-external/wpt/lint.whitelist [ Skip ]
 external/wpt/manifest [ Skip ]
 external/wpt/mathml [ Skip ]
 ## Owners: none; No tests in the directory.
