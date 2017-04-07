@@ -104,7 +104,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 // static
 void NavigatorVibration::collectHistogramMetrics(const LocalFrame& frame) {
   NavigatorVibrationType type;
-  bool userGesture = UserGestureIndicator::processingUserGesture();
+  bool userGesture = frame.hasReceivedUserGesture();
   UseCounter::count(&frame, UseCounter::NavigatorVibrate);
   if (!frame.isMainFrame()) {
     UseCounter::count(&frame, UseCounter::NavigatorVibrateSubFrame);
