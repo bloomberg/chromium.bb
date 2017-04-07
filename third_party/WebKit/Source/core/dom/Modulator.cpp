@@ -11,20 +11,12 @@ namespace blink {
 
 namespace {
 const char kPerContextDataKey[] = "Modulator";
-
-V8PerContextData* getPerContextData(LocalFrame* frame) {
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState)
-    return nullptr;
-  return scriptState->perContextData();
-}
 }  // namespace
 
-Modulator* Modulator::from(LocalFrame* frame) {
-  return from(getPerContextData(frame));
-}
-
-Modulator* Modulator::from(V8PerContextData* perContextData) {
+Modulator* Modulator::from(ScriptState* scriptState) {
+  if (!scriptState)
+    return nullptr;
+  V8PerContextData* perContextData = scriptState->perContextData();
   if (!perContextData)
     return nullptr;
   return static_cast<Modulator*>(perContextData->getData(kPerContextDataKey));
@@ -32,14 +24,16 @@ Modulator* Modulator::from(V8PerContextData* perContextData) {
 
 Modulator::~Modulator() {}
 
-void Modulator::setModulator(LocalFrame* frame, Modulator* modulator) {
-  V8PerContextData* perContextData = getPerContextData(frame);
+void Modulator::setModulator(ScriptState* scriptState, Modulator* modulator) {
+  DCHECK(scriptState);
+  V8PerContextData* perContextData = scriptState->perContextData();
   DCHECK(perContextData);
   perContextData->addData(kPerContextDataKey, modulator);
 }
 
-void Modulator::clearModulator(LocalFrame* frame) {
-  V8PerContextData* perContextData = getPerContextData(frame);
+void Modulator::clearModulator(ScriptState* scriptState) {
+  DCHECK(scriptState);
+  V8PerContextData* perContextData = scriptState->perContextData();
   DCHECK(perContextData);
   perContextData->clearData(kPerContextDataKey);
 }

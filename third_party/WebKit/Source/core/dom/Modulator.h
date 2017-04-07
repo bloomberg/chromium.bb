@@ -15,12 +15,12 @@
 
 namespace blink {
 
-class LocalFrame;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
 class ScriptModule;
 class ScriptModuleResolver;
+class ScriptState;
 class SecurityOrigin;
 class WebTaskRunner;
 
@@ -46,12 +46,11 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   USING_GARBAGE_COLLECTED_MIXIN(Modulator);
 
  public:
-  static Modulator* from(LocalFrame*);
-  static Modulator* from(V8PerContextData*);
+  static Modulator* from(ScriptState*);
   virtual ~Modulator();
 
-  static void setModulator(LocalFrame*, Modulator*);
-  static void clearModulator(LocalFrame*);
+  static void setModulator(ScriptState*, Modulator*);
+  static void clearModulator(ScriptState*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
