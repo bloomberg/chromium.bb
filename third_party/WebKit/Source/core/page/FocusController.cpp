@@ -933,7 +933,11 @@ bool FocusController::advanceFocusAcrossFrames(
     start = toHTMLFrameOwnerElement(from->owner());
   }
 
-  return advanceFocusInDocumentOrder(to, start, type, false,
+  // If we're coming from a parent frame, we need to restart from the first or
+  // last focusable element.
+  bool initialFocus = to->tree().parent() == from;
+
+  return advanceFocusInDocumentOrder(to, start, type, initialFocus,
                                      sourceCapabilities);
 }
 
@@ -998,7 +1002,11 @@ bool FocusController::advanceFocusInDocumentOrder(
   }
 
   if (element == document->focusedElement()) {
-    // Focus wrapped around to the same element.
+    // Focus is either coming from a remote frame or has wrapped around.
+    if (focusedFrame() != document->frame()) {
+      setFocusedFrame(document->frame());
+      dispatchFocusEvent(*document, *element);
+    }
     return true;
   }
 
@@ -1012,14 +1020,17 @@ bool FocusController::advanceFocusInDocumentOrder(
       return false;
 
     document->clearFocusedElement();
-    setFocusedFrame(owner->contentFrame());
 
-    // If contentFrame is remote, continue the search for focusable
-    // elements in that frame's process.
-    // clearFocusedElement() fires events that might detach the
-    // contentFrame, hence the need to null-check it again.
+    // If contentFrame is remote, continue the search for focusable elements in
+    // that frame's process. The target contentFrame's process will grab focus
+    // from inside advanceFocusInDocumentOrder().
+    //
+    // clearFocusedElement() fires events that might detach the contentFrame,
+    // hence the need to null-check it again.
     if (owner->contentFrame() && owner->contentFrame()->isRemoteFrame())
       toRemoteFrame(owner->contentFrame())->advanceFocus(type, frame);
+    else
+      setFocusedFrame(owner->contentFrame());
 
     return true;
   }
