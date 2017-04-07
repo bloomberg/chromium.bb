@@ -3971,6 +3971,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
 #endif
+#if CONFIG_PVQ
+      cpi->td.mb.pvq_q = &this_tile->pvq_q;
+      cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
+#endif  // CONFIG_PVQ
 #if !CONFIG_ANS
       aom_start_encode(&mode_bc, buf->data + data_offset);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
@@ -3984,7 +3988,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       aom_buf_ans_flush(buf_ans);
       tile_size = buf_ans_write_end(buf_ans);
 #endif  // !CONFIG_ANS
-
+#if CONFIG_PVQ
+      cpi->td.mb.pvq_q = NULL;
+#endif
       buf->size = tile_size;
 
       // Record the maximum tile size we see, so we can compact headers later.

@@ -422,8 +422,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
 #if CONFIG_PVQ
   if (cpi->oxcf.pass != 1) {
-    const int tile_cols = 1 << cm->log2_tile_cols;
-    const int tile_rows = 1 << cm->log2_tile_rows;
+    const int tile_cols = cm->tile_cols;
+    const int tile_rows = cm->tile_rows;
     int tile_col, tile_row;
 
     for (tile_row = 0; tile_row < tile_rows; ++tile_row)
