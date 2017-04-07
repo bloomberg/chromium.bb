@@ -11,11 +11,11 @@ function test() {
     target._resourceCategoryFilterUI._toggleTypeFilter(categoryName, false);
     InspectorTest.addResult("Clicked '" + categoryName + "' button.");
 
-    var requestFoo = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
+    var requestFoo = new SDK.NetworkRequest(InspectorTest.networkManager, "", "", "", "", "");
     requestFoo.setResourceType(types.Script);
     requestFoo.setRequestId("foo");
     target._appendRequest(requestFoo);
-    var requestBar = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
+    var requestBar = new SDK.NetworkRequest(InspectorTest.networkManager, "", "", "", "", "");
     requestBar.setResourceType(types.Script);
     requestBar.setRequestId("bar");
     target._appendRequest(requestBar);
