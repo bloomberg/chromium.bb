@@ -33,7 +33,6 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/loader/LinkLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -195,13 +194,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
-
-  void dispatchDidReceiveResponseInternal(unsigned long identifier,
-                                          const ResourceResponse&,
-                                          WebURLRequest::FrameType,
-                                          WebURLRequest::RequestContext,
-                                          Resource*,
-                                          LinkLoader::CanLoadResources);
 
   void addCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
 
