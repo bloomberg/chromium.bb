@@ -124,6 +124,9 @@ crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-back
 
 crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Pass Failure Crash ]
 
+# Can be broken into smaller tests, probably.
+crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout Pass ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
