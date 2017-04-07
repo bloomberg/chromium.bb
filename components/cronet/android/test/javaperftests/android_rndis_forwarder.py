@@ -28,7 +28,9 @@ class AndroidRndisForwarder(object):
     self._host_ip = rndis_configurator.host_ip
     self._original_dns = None, None, None
     self._RedirectPorts()
-    self._OverrideDns()
+    # The netd commands fail on Lollipop and newer releases, but aren't
+    # necessary as DNS isn't used.
+    # self._OverrideDns()
     self._OverrideDefaultGateway()
     # Need to override routing policy again since call to setifdns
     # sometimes resets policy table

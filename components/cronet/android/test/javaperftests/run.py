@@ -21,6 +21,15 @@ Prerequisites:
 3. cronet_perf_test_apk has been built for the Android device, e.g. via:
      ./components/cronet/tools/cr_cronet.py gn -r
      ninja -C out/Release cronet_perf_test_apk
+4. If "sudo ufw status" doesn't say "Status: inactive", run "sudo ufw disable".
+5. sudo apt-get install lighttpd
+6. If the usb0 interface on the host keeps losing it's IPv4 address
+   (WaitFor(HasHostAddress) will keep failing), NetworkManager may need to be
+   told to leave usb0 alone with these commands:
+     sudo bash -c "printf \"\\n[keyfile]\
+         \\nunmanaged-devices=interface-name:usb0\\n\" \
+         >> /etc/NetworkManager/NetworkManager.conf"
+     sudo service network-manager restart
 
 Invocation:
 ./run.py
@@ -224,7 +233,7 @@ class QuicServer(object):
     # the redirect done in build/android/pylib/pexpect.py.
     # pylint: disable=no-member
     self._process = pexpect.spawn(QUIC_SERVER,
-                                  ['--quic_in_memory_cache_dir=%s' %
+                                  ['--quic_response_cache_dir=%s' %
                                       self._quic_server_doc_root,
                                    '--certificate_file=%s' % QUIC_CERT,
                                    '--key_file=%s' % QUIC_KEY,
