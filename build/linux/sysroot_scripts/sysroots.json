@@ -29,12 +29,6 @@
         "SysrootDir": "debian_jessie_mips-sysroot",
         "Tarball": "debian_jessie_mips_sysroot.tgz"
     },
-    "precise_amd64": {
-        "Revision": "d3d82f7c4e34a753953581a48e62ef577b334529",
-        "Sha1Sum": "8fffb717217b2dc4e29b3a1305877bcd0552f55e",
-        "SysrootDir": "ubuntu_precise_amd64-sysroot",
-        "Tarball": "ubuntu_precise_amd64_sysroot.tgz"
-    },
     "trusty_arm": {
         "Revision": "d3d82f7c4e34a753953581a48e62ef577b334529",
         "Sha1Sum": "f78eb929410b94cdf48276db82a7e7adcafcc277",
