@@ -46,6 +46,10 @@ CSSMatrix* CSSMatrix::create(ExecutionContext* executionContext,
                              const String& s,
                              ExceptionState& exceptionState) {
   UseCounter::count(executionContext, UseCounter::WebKitCSSMatrix);
+  if (!s.isEmpty()) {
+    UseCounter::count(executionContext,
+                      UseCounter::WebkitCSSMatrixConstructFromString);
+  }
   return new CSSMatrix(s, exceptionState);
 }
 

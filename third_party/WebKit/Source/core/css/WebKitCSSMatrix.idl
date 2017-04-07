@@ -56,7 +56,7 @@
     attribute unrestricted double m43;
     attribute unrestricted double m44;
 
-    [RaisesException] void setMatrixValue([Default=Undefined] optional DOMString string);
+    [RaisesException, MeasureAs=WebkitCSSMatrixSetMatrixValue] void setMatrixValue([Default=Undefined] optional DOMString string);
 
     // Multiply this matrix by secondMatrix, on the right (result = this * secondMatrix)
     [LegacyInterfaceTypeChecking] WebKitCSSMatrix multiply([Default=Undefined] optional WebKitCSSMatrix secondMatrix);
