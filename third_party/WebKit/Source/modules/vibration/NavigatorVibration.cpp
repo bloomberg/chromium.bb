@@ -81,6 +81,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   // TODO(lunalu): When FeaturePolicy is ready, take out the check for the
   // runtime flag. Please pay attention to the user gesture code below.
   if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
+      RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled() &&
       !frame->isFeatureEnabled(blink::WebFeaturePolicyFeature::Vibrate)) {
     frame->domWindow()->printErrorMessage(
         "Navigator.vibrate() is not enabled in feature policy for this "
