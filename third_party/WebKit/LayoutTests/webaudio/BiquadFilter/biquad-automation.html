@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/biquad-filters.js"></script>
     <script src="../resources/audioparam-testing.js"></script>
   </head>
@@ -128,22 +128,22 @@
         return {filter: f, source: b};
       }
 
-      function createFilterVerifier(filterCreator, threshold, parameters, input, message) {
+      function createFilterVerifier(should, filterCreator, threshold, parameters, input, message) {
         return function (resultBuffer) {
           var actual = resultBuffer.getChannelData(0);
           var coefs = generateFilterCoefficients(filterCreator, parameters, automationEndTime);
 
           reference = timeVaryingFilter(input, coefs);
 
-          Should(message, actual, {
-            verbose: true
-          }).beCloseToArray(reference, threshold);
+          should(actual, message).beCloseToArray(reference, {
+            absoluteThreshold: threshold
+          });
         };
       }
 
       // Automate just the frequency parameter.  A bandpass filter is used where the center
       // frequency is swept across the source (which is a simple tone).
-      audit.defineTask("automate-freq", function (done) {
+      audit.define("automate-freq", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
 
         // Center frequency of bandpass filter and also the frequency of the test tone.
@@ -167,14 +167,15 @@
         f.frequency.linearRampToValueAtTime(parameters.freq[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 4.6455e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(should, createBandpassFilter, 4.6455e-6,
+            parameters, b.getChannelData(0),
             "Output of bandpass filter with frequency automation"))
-          .then(done);
+          .then(() => task.done());
       });
 
       // Automate just the Q parameter.  A bandpass filter is used where the Q of the filter is
       // swept.
-      audit.defineTask("automate-q", function (done) {
+      audit.define("automate-q", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
 
         // The frequency of the test tone.
@@ -199,14 +200,15 @@
         f.Q.linearRampToValueAtTime(parameters.Q[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 9.8348e-7, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(should, createBandpassFilter, 9.8348e-7,
+            parameters, b.getChannelData(0),
             "Output of bandpass filter with Q automation"))
-          .then(done);
+          .then(() => task.done());
       });
 
       // Automate just the gain of the lowshelf filter.  A test tone will be in the lowshelf part of
       // the filter.  The output will vary as the gain of the lowshelf is changed.
-      audit.defineTask("automate-gain", function (done) {
+      audit.define("automate-gain", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
 
         // Frequency of the test tone.
@@ -229,14 +231,15 @@
         f.gain.linearRampToValueAtTime(parameters.gain[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createLowShelfFilter, 2.7657e-5, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(should, createLowShelfFilter, 2.7657e-5,
+            parameters, b.getChannelData(0),
             "Output of lowshelf filter with gain automation"))
-          .then(done);
+          .then(() => task.done());
       });
 
       // Automate just the detune parameter.  Basically the same test as for the frequncy parameter
       // but we just use the detune parameter to modulate the frequency parameter.
-      audit.defineTask("automate-detune", function (done) {
+      audit.define("automate-detune", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
         var centerFreq = 10*440;
         var parameters = {
@@ -253,14 +256,15 @@
         f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 3.1471e-5, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(should, createBandpassFilter, 3.1471e-5,
+            parameters, b.getChannelData(0),
             "Output of bandpass filter with detune automation"))
-          .then(done);
+          .then(() => task.done());
       });
 
       // Automate all of the filter parameters at once.  This is a basic check that everything is
       // working.  A peaking filter is used because it uses all of the parameters.
-      audit.defineTask("automate-all", function (done) {
+      audit.define("automate-all", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
         var graph = configureGraph(context, 10*440);
         var f = graph.filter;
@@ -289,9 +293,10 @@
         f.detune.linearRampToValueAtTime(parameters.detune[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createPeakingFilter, 6.2907e-4, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(should, createPeakingFilter, 6.2907e-4,
+            parameters, b.getChannelData(0),
             "Output of peaking filter with automation of all parameters"))
-          .then(done);
+          .then(() => task.done());
       });
 
       // Test that modulation of the frequency parameter of the filter works.  A sinusoid of 440 Hz
@@ -299,7 +304,7 @@
       // the filter is modulated by a sinusoid at 103 Hz, and the frequency modulation varies from
       // 116 to 412 Hz.  (This test was taken from the description in
       // https://github.com/WebAudio/web-audio-api/issues/509#issuecomment-94731355)
-      audit.defineTask("modulation", function (done) {
+      audit.define("modulation", (task, should) => {
         var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
 
         // Create a graph with the sinusoidal source at 440 Hz as the input to a biquad filter.
@@ -353,19 +358,17 @@
              reference = timeVaryingFilter(b.getChannelData(0),
                {b0: b0, b1: b1, b2: b2, a1: a1, a2: a2});
 
-             Should("Output of bandpass filter with sinusoidal modulation of bandpass center frequency",
-               actual)
-               .beCloseToArray(reference, 3.9787e-5);
+             should(actual,
+                 "Output of bandpass filter with sinusoidal modulation of bandpass center frequency"
+               )
+               .beCloseToArray(reference, {
+                 absoluteThreshold: 3.9787e-5
+               });
            })
-          .then(done);
+          .then(() => task.done());
       });
 
-      // All done!
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
