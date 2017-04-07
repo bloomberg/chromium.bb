@@ -103,6 +103,8 @@ class CORE_EXPORT LinkLoader final
   static WTF::Optional<Resource::Type> getResourceTypeFromAsAttribute(
       const String& as);
 
+  Resource* linkPreloadedResourceForTesting();
+
   DECLARE_TRACE();
 
  private:

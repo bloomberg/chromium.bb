@@ -139,8 +139,9 @@ class PLATFORM_EXPORT ResourceFetcher
   // Calling this method before main document resource is fetched is invalid.
   ResourceTimingInfo* getNavigationTimingInfo();
 
-  // This is only exposed for testing purposes.
-  HeapListHashSet<Member<Resource>>* preloads() { return m_preloads.get(); }
+  bool containsAsPreloadForTesting(Resource* resource) const {
+    return m_preloads && m_preloads->contains(resource);
+  }
 
   // Workaround for https://crbug.com/666214.
   // TODO(hiroshige): Remove this hack.

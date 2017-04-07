@@ -22,6 +22,8 @@
 
 namespace blink {
 
+namespace {
+
 class MockLinkLoaderClient final
     : public GarbageCollectedFinalized<MockLinkLoaderClient>,
       public LinkLoaderClient {
@@ -81,181 +83,175 @@ class NetworkHintsMock : public NetworkHintsInterface {
   mutable bool m_isCrossOrigin = false;
 };
 
-TEST(LinkLoaderTest, Preload) {
-  struct TestCase {
-    const char* href;
-    const char* as;
-    const char* type;
-    const char* media;
-    const ReferrerPolicy referrerPolicy;
-    const ResourceLoadPriority priority;
-    const WebURLRequest::RequestContext context;
-    const bool linkLoaderShouldLoadValue;
-    const bool expectingLoad;
-    const ReferrerPolicy expectedReferrerPolicy;
-  } cases[] = {
-      {"http://example.test/cat.jpg", "image", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityLow, WebURLRequest::RequestContextImage, true, true,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.js", "script", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityHigh, WebURLRequest::RequestContextScript, true,
-       true, ReferrerPolicyDefault},
-      {"http://example.test/cat.css", "style", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextStyle, true,
-       true, ReferrerPolicyDefault},
-      // TODO(yoav): It doesn't seem like the audio context is ever used. That
-      // should probably be fixed (or we can consolidate audio and video).
-      {"http://example.test/cat.wav", "audio", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.mp4", "video", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.vtt", "track", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.woff", "font", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityHigh, WebURLRequest::RequestContextFont, true, true,
-       ReferrerPolicyDefault},
-      // TODO(yoav): subresource should be *very* low priority (rather than
-      // low).
-      {"http://example.test/cat.empty", "", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityHigh, WebURLRequest::RequestContextSubresource, true,
-       true, ReferrerPolicyDefault},
-      {"http://example.test/cat.blob", "blabla", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false,
-       false, ReferrerPolicyDefault},
-      {"bla://example.test/cat.gif", "image", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage,
-       false, false, ReferrerPolicyDefault},
-      // MIME type tests
-      {"http://example.test/cat.webp", "image", "image/webp", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.svg", "image", "image/svg+xml", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.jxr", "image", "image/jxr", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextImage, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.js", "script", "text/javascript", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityHigh,
-       WebURLRequest::RequestContextScript, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.js", "script", "text/coffeescript", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextScript, false, false,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.css", "style", "text/css", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityVeryHigh,
-       WebURLRequest::RequestContextStyle, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.css", "style", "text/sass", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextStyle, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.wav", "audio", "audio/wav", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextVideo, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.wav", "audio", "audio/mp57", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextVideo, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.webm", "video", "video/webm", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextVideo, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.mp199", "video", "video/mp199", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextVideo, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.vtt", "track", "text/vtt", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextTrack, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.vtt", "track", "text/subtitlething", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextTrack, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.woff", "font", "font/woff2", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityHigh,
-       WebURLRequest::RequestContextFont, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.woff", "font", "font/woff84", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
-       WebURLRequest::RequestContextFont, false, false, ReferrerPolicyDefault},
-      {"http://example.test/cat.empty", "", "foo/bar", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityHigh,
-       WebURLRequest::RequestContextSubresource, true, true,
-       ReferrerPolicyDefault},
-      {"http://example.test/cat.blob", "blabla", "foo/bar", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextSubresource, false, false,
-       ReferrerPolicyDefault},
-      // Media tests
-      {"http://example.test/cat.gif", "image", "image/gif",
-       "(max-width: 600px)", ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
-      {"http://example.test/cat.gif", "image", "image/gif",
-       "(max-width: 400px)", ReferrerPolicyDefault,
-       ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, true,
-       false, ReferrerPolicyDefault},
-      {"http://example.test/cat.gif", "image", "image/gif",
-       "(max-width: 600px)", ReferrerPolicyDefault, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, false, false, ReferrerPolicyDefault},
-      // Referrer Policy
-      {"http://example.test/cat.gif", "image", "image/gif", "",
-       ReferrerPolicyOrigin, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true, ReferrerPolicyOrigin},
-      {"http://example.test/cat.gif", "image", "image/gif", "",
-       ReferrerPolicyOriginWhenCrossOrigin, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true,
-       ReferrerPolicyOriginWhenCrossOrigin},
-      {"http://example.test/cat.gif", "image", "image/gif", "",
-       ReferrerPolicyNever, ResourceLoadPriorityLow,
-       WebURLRequest::RequestContextImage, true, true, ReferrerPolicyNever},
-  };
+struct PreloadTestParams {
+  const char* href;
+  const char* as;
+  const char* type;
+  const char* media;
+  const ReferrerPolicy referrerPolicy;
+  const ResourceLoadPriority priority;
+  const WebURLRequest::RequestContext context;
+  const bool linkLoaderShouldLoadValue;
+  const bool expectingLoad;
+  const ReferrerPolicy expectedReferrerPolicy;
+};
 
-  // Test the cases with a single header
-  for (const auto& testCase : cases) {
-    std::unique_ptr<DummyPageHolder> dummyPageHolder =
-        DummyPageHolder::create(IntSize(500, 500));
-    dummyPageHolder->frame().settings()->setScriptEnabled(true);
-    Persistent<MockLinkLoaderClient> loaderClient =
-        MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
-    LinkLoader* loader = LinkLoader::create(loaderClient.get());
-    KURL hrefURL = KURL(KURL(), testCase.href);
-    URLTestHelpers::registerMockedErrorURLLoad(hrefURL);
-    loader->loadLink(LinkRelAttribute("preload"), CrossOriginAttributeNotSet,
-                     testCase.type, testCase.as, testCase.media,
-                     testCase.referrerPolicy, hrefURL,
-                     dummyPageHolder->document(), NetworkHintsMock());
-    ASSERT_TRUE(dummyPageHolder->document().fetcher());
-    HeapListHashSet<Member<Resource>>* preloads =
-        dummyPageHolder->document().fetcher()->preloads();
-    if (testCase.expectingLoad) {
-      if (!preloads) {
-        fprintf(stderr, "Unexpected result %s %s %s\n", testCase.href,
-                testCase.as, testCase.type);
-      }
-      EXPECT_TRUE(preloads);
-    } else {
-      EXPECT_FALSE(preloads);
-    }
-    if (preloads) {
-      if (testCase.priority == ResourceLoadPriorityUnresolved) {
-        EXPECT_EQ(0u, preloads->size());
-      } else {
-        EXPECT_EQ(1u, preloads->size());
-        if (preloads->size() > 0) {
-          Resource* resource = preloads->begin().get()->get();
-          EXPECT_EQ(testCase.priority, resource->resourceRequest().priority());
-          EXPECT_EQ(testCase.context,
-                    resource->resourceRequest().requestContext());
-          if (testCase.expectedReferrerPolicy != ReferrerPolicyDefault) {
-            EXPECT_EQ(testCase.expectedReferrerPolicy,
-                      resource->resourceRequest().getReferrerPolicy());
-          }
-        }
-      }
-      dummyPageHolder->document().fetcher()->clearPreloads();
-    }
+class LinkLoaderPreloadTest
+    : public ::testing::TestWithParam<PreloadTestParams> {
+ public:
+  ~LinkLoaderPreloadTest() {
     Platform::current()
         ->getURLLoaderMockFactory()
         ->unregisterAllURLsAndClearMemoryCache();
   }
+};
+
+TEST_P(LinkLoaderPreloadTest, Preload) {
+  const auto& testCase = GetParam();
+  std::unique_ptr<DummyPageHolder> dummyPageHolder =
+      DummyPageHolder::create(IntSize(500, 500));
+  ResourceFetcher* fetcher = dummyPageHolder->document().fetcher();
+  ASSERT_TRUE(fetcher);
+  dummyPageHolder->frame().settings()->setScriptEnabled(true);
+  Persistent<MockLinkLoaderClient> loaderClient =
+      MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
+  LinkLoader* loader = LinkLoader::create(loaderClient.get());
+  KURL hrefURL = KURL(KURL(), testCase.href);
+  URLTestHelpers::registerMockedErrorURLLoad(hrefURL);
+  loader->loadLink(LinkRelAttribute("preload"), CrossOriginAttributeNotSet,
+                   testCase.type, testCase.as, testCase.media,
+                   testCase.referrerPolicy, hrefURL,
+                   dummyPageHolder->document(), NetworkHintsMock());
+  if (testCase.expectingLoad &&
+      testCase.priority != ResourceLoadPriorityUnresolved) {
+    ASSERT_EQ(1, fetcher->countPreloads());
+    Resource* resource = loader->linkPreloadedResourceForTesting();
+    ASSERT_NE(resource, nullptr);
+    EXPECT_TRUE(fetcher->containsAsPreloadForTesting(resource));
+    EXPECT_EQ(testCase.priority, resource->resourceRequest().priority());
+    EXPECT_EQ(testCase.context, resource->resourceRequest().requestContext());
+    if (testCase.expectedReferrerPolicy != ReferrerPolicyDefault) {
+      EXPECT_EQ(testCase.expectedReferrerPolicy,
+                resource->resourceRequest().getReferrerPolicy());
+    }
+  } else {
+    ASSERT_EQ(0, fetcher->countPreloads());
+  }
 }
+
+constexpr PreloadTestParams kPreloadTestParams[] = {
+    {"http://example.test/cat.jpg", "image", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityLow, WebURLRequest::RequestContextImage, true, true,
+     ReferrerPolicyDefault},
+    {"http://example.test/cat.js", "script", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityHigh, WebURLRequest::RequestContextScript, true, true,
+     ReferrerPolicyDefault},
+    {"http://example.test/cat.css", "style", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextStyle, true,
+     true, ReferrerPolicyDefault},
+    // TODO(yoav): It doesn't seem like the audio context is ever used. That
+    // should probably be fixed (or we can consolidate audio and video).
+    {"http://example.test/cat.wav", "audio", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true,
+     ReferrerPolicyDefault},
+    {"http://example.test/cat.mp4", "video", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true,
+     ReferrerPolicyDefault},
+    {"http://example.test/cat.vtt", "track", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true,
+     ReferrerPolicyDefault},
+    {"http://example.test/cat.woff", "font", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityHigh, WebURLRequest::RequestContextFont, true, true,
+     ReferrerPolicyDefault},
+    // TODO(yoav): subresource should be *very* low priority (rather than
+    // low).
+    {"http://example.test/cat.empty", "", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityHigh, WebURLRequest::RequestContextSubresource, true,
+     true, ReferrerPolicyDefault},
+    {"http://example.test/cat.blob", "blabla", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false,
+     false, ReferrerPolicyDefault},
+    {"bla://example.test/cat.gif", "image", "", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false,
+     false, ReferrerPolicyDefault},
+    // MIME type tests
+    {"http://example.test/cat.webp", "image", "image/webp", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.svg", "image", "image/svg+xml", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.jxr", "image", "image/jxr", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextImage, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.js", "script", "text/javascript", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityHigh,
+     WebURLRequest::RequestContextScript, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.js", "script", "text/coffeescript", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextScript, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.css", "style", "text/css", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityVeryHigh,
+     WebURLRequest::RequestContextStyle, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.css", "style", "text/sass", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextStyle, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.wav", "audio", "audio/wav", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextVideo, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.wav", "audio", "audio/mp57", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextVideo, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.webm", "video", "video/webm", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextVideo, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.mp199", "video", "video/mp199", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextVideo, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.vtt", "track", "text/vtt", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextTrack, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.vtt", "track", "text/subtitlething", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextTrack, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.woff", "font", "font/woff2", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityHigh,
+     WebURLRequest::RequestContextFont, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.woff", "font", "font/woff84", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextFont, false, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.empty", "", "foo/bar", "", ReferrerPolicyDefault,
+     ResourceLoadPriorityHigh, WebURLRequest::RequestContextSubresource, true,
+     true, ReferrerPolicyDefault},
+    {"http://example.test/cat.blob", "blabla", "foo/bar", "",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextSubresource, false, false,
+     ReferrerPolicyDefault},
+    // Media tests
+    {"http://example.test/cat.gif", "image", "image/gif", "(max-width: 600px)",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true, ReferrerPolicyDefault},
+    {"http://example.test/cat.gif", "image", "image/gif", "(max-width: 400px)",
+     ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
+     WebURLRequest::RequestContextImage, true, false, ReferrerPolicyDefault},
+    {"http://example.test/cat.gif", "image", "image/gif", "(max-width: 600px)",
+     ReferrerPolicyDefault, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, false, false, ReferrerPolicyDefault},
+    // Referrer Policy
+    {"http://example.test/cat.gif", "image", "image/gif", "",
+     ReferrerPolicyOrigin, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true, ReferrerPolicyOrigin},
+    {"http://example.test/cat.gif", "image", "image/gif", "",
+     ReferrerPolicyOriginWhenCrossOrigin, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true,
+     ReferrerPolicyOriginWhenCrossOrigin},
+    {"http://example.test/cat.gif", "image", "image/gif", "",
+     ReferrerPolicyNever, ResourceLoadPriorityLow,
+     WebURLRequest::RequestContextImage, true, true, ReferrerPolicyNever}};
+
+INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadTest,
+                        LinkLoaderPreloadTest,
+                        ::testing::ValuesIn(kPreloadTestParams));
 
 TEST(LinkLoaderTest, Prefetch) {
   struct TestCase {
@@ -376,5 +372,7 @@ TEST(LinkLoaderTest, Preconnect) {
     EXPECT_EQ(testCase.isCrossOrigin, networkHints.isCrossOrigin());
   }
 }
+
+}  // namespace
 
 }  // namespace blink

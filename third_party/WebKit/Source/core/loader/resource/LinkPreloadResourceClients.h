@@ -23,6 +23,7 @@ class LinkPreloadResourceClient
   virtual ~LinkPreloadResourceClient() {}
 
   void triggerEvents(const Resource*);
+  virtual Resource* resource() = 0;
   virtual void clear() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_loader); }
@@ -50,6 +51,9 @@ class LinkPreloadScriptResourceClient
   virtual String debugName() const { return "LinkPreloadScript"; }
   virtual ~LinkPreloadScriptResourceClient() {}
 
+  Resource* resource() override {
+    return ResourceOwner<ScriptResource>::resource();
+  }
   void clear() override { clearResource(); }
 
   void notifyFinished(Resource* resource) override {
@@ -84,6 +88,9 @@ class LinkPreloadStyleResourceClient
   virtual String debugName() const { return "LinkPreloadStyle"; }
   virtual ~LinkPreloadStyleResourceClient() {}
 
+  Resource* resource() override {
+    return ResourceOwner<CSSStyleSheetResource>::resource();
+  }
   void clear() override { clearResource(); }
 
   void setCSSStyleSheet(const String&,
@@ -122,6 +129,9 @@ class LinkPreloadImageResourceClient : public LinkPreloadResourceClient,
   virtual String debugName() const { return "LinkPreloadImage"; }
   virtual ~LinkPreloadImageResourceClient() {}
 
+  Resource* resource() override {
+    return ResourceOwner<ImageResource>::resource();
+  }
   void clear() override { clearResource(); }
 
   void notifyFinished(Resource* resource) override {
@@ -155,6 +165,9 @@ class LinkPreloadFontResourceClient
   virtual String debugName() const { return "LinkPreloadFont"; }
   virtual ~LinkPreloadFontResourceClient() {}
 
+  Resource* resource() override {
+    return ResourceOwner<FontResource>::resource();
+  }
   void clear() override { clearResource(); }
 
   void notifyFinished(Resource* resource) override {
@@ -188,6 +201,9 @@ class LinkPreloadRawResourceClient
   virtual String debugName() const { return "LinkPreloadRaw"; }
   virtual ~LinkPreloadRawResourceClient() {}
 
+  Resource* resource() override {
+    return ResourceOwner<RawResource>::resource();
+  }
   void clear() override { clearResource(); }
 
   void notifyFinished(Resource* resource) override {

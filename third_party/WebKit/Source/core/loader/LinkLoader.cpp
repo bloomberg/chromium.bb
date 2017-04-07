@@ -209,6 +209,11 @@ WTF::Optional<Resource::Type> LinkLoader::getResourceTypeFromAsAttribute(
   return WTF::nullopt;
 }
 
+Resource* LinkLoader::linkPreloadedResourceForTesting() {
+  return m_linkPreloadResourceClient ? m_linkPreloadResourceClient->resource()
+                                     : nullptr;
+}
+
 void LinkLoader::createLinkPreloadResourceClient(Resource* resource) {
   if (!resource)
     return;
