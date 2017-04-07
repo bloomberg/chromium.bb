@@ -140,6 +140,10 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kMainThreadBusyScrollIntervention{
     "MainThreadBusyScrollIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Experimental resource fetch optimizations for workers. See crbug.com/443374
+const base::Feature kOffMainThreadFetch{"OffMainThreadFetch",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Origin Trials for controlling access to feature/API experiments.
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
