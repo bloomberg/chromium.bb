@@ -11572,7 +11572,7 @@ bool testSelectAll(const std::string& html) {
                            WebInputEvent::TimeStampForTesting);
 
   mouseEvent.button = WebMouseEvent::Button::Right;
-  mouseEvent.setPositionInWidget(10, 10);
+  mouseEvent.setPositionInWidget(8, 8);
   mouseEvent.clickCount = 1;
   webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   runPendingTasks();
@@ -11585,9 +11585,9 @@ TEST_F(WebFrameTest, ContextMenuDataSelectAll) {
   EXPECT_TRUE(testSelectAll("<textarea>nonempty</textarea>"));
   EXPECT_FALSE(testSelectAll("<input>"));
   EXPECT_TRUE(testSelectAll("<input value='nonempty'>"));
-  // TODO(amaralp): Empty contenteditable should not have select all enabled.
-  EXPECT_TRUE(testSelectAll("<div contenteditable></div>"));
+  EXPECT_FALSE(testSelectAll("<div contenteditable></div>"));
   EXPECT_TRUE(testSelectAll("<div contenteditable>nonempty</div>"));
+  EXPECT_TRUE(testSelectAll("<div contenteditable>\n</div>"));
 }
 
 TEST_F(WebFrameTest, ContextMenuDataSelectedText) {

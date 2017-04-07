@@ -6,10 +6,10 @@
 test(function() {
     var div = document.getElementById('div');
     div.focus();
-    assert_true(document.queryCommandEnabled('SelectAll'));
+    assert_false(document.queryCommandEnabled('SelectAll'));
 
     div.appendChild(document.createTextNode('x'));
     div.focus();
     assert_true(document.queryCommandEnabled('SelectAll'));
-}, 'SelectAll is always enabled for contenteditable');
+}, 'SelectAll is not enabled if contenteditable is empty');
 </script>

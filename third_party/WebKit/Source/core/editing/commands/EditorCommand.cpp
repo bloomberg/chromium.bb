@@ -2114,13 +2114,11 @@ static bool enabledSelectAll(LocalFrame& frame, Event*, EditorCommandSource) {
       frame.selection().computeVisibleSelectionInDOMTree();
   if (selection.isNone())
     return true;
-  if (TextControlElement* textControl =
-          enclosingTextControl(selection.start())) {
-    if (textControl->innerEditorValue().isEmpty())
+  if (Node* root = highestEditableRoot(selection.start())) {
+    if (!root->hasChildren())
       return false;
     // TODO(amaralp): Return false if already fully selected.
   }
-  // TODO(amaralp): Support contentEditable.
   // TODO(amaralp): Address user-select handling.
   return true;
 }
