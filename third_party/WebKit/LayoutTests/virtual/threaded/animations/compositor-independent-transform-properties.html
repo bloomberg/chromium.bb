@@ -7,6 +7,9 @@
 <script>
 function assertComposited(properties, isComposited) {
   var element = document.createElement('div');
+  // The element must have some painted content in order to be
+  // composited when animated in SPv2.
+  element.innerText = 'x';
   document.getElementById('parent').appendChild(element);
 
   var properties = typeof properties == "string" ? [properties] : properties;

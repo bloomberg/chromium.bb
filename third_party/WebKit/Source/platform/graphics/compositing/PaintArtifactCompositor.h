@@ -49,13 +49,18 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   }
 
   // Updates the layer tree to match the provided paint artifact.
+  //
+  // Populates |compositedElementIds| with the CompositorElementId of all
+  // animations for which we saw a paint chunk and created a layer.
+  //
   // If |storeDebugInfo| is true, stores detailed debugging information in
   // the layers that will be output as part of a call to layersAsJSON
   // (if LayerTreeIncludesDebugInfo is specified).
   void update(
       const PaintArtifact&,
       RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations,
-      bool storeDebugInfo);
+      bool storeDebugInfo,
+      CompositorElementIdSet& compositedElementIds);
 
   // The root layer of the tree managed by this object.
   cc::Layer* rootLayer() const { return m_rootLayer.get(); }

@@ -1354,6 +1354,7 @@ crbug.com/589265 svg/text/text-layout-crash.html [ Failure ]
 crbug.com/589265 virtual/threaded/animations/animated-filter-svg-element.html [ Failure ]
 
 # Some work remains to fully support composited animation and scrolling.
+Bug(none) virtual/threaded/animations/composited-animation-style-update.html [ Failure ]
 crbug.com/702350 transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
 crbug.com/702350 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
 crbug.com/702353 transitions/transition-end-event-destroy-iframe.html [ Timeout ]
@@ -1362,10 +1363,14 @@ crbug.com/702353 virtual/threaded/transitions/extra-transition.html [ Timeout ]
 crbug.com/702365 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
 crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
 crbug.com/702379 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure ]
-crbug.com/692310 virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout ]
-crbug.com/692310 virtual/threaded/animations/zoom-responsive-transform-animation.html [ Timeout ]
-crbug.com/692310 virtual/threaded/transitions/opacity-transition-zindex.html [ Timeout ]
-crbug.com/692310 virtual/threaded/transitions/unprefixed-transform.html [ Timeout ]
+crbug.com/692310 virtual/threaded/animations/3d/replace-filling-transform.html [ Crash ]
+crbug.com/692310 virtual/threaded/animations/change-transform-style-during-animation.html [ Crash ]
+crbug.com/692310 virtual/threaded/animations/fill-mode-transform.html [ Crash ]
+# Eight of the frames in the test below paint no content. In SPv2 we will never
+# composite animations that paint nothing. For now we mark this test as failing,
+# and can explore enhancing animation test infrastructure or other
+# approaches. http://crbug.com/692310#c12
+crbug.com/692310 virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Failure ]
 
 Bug(none) virtual/threaded/animations/3d/change-transform-in-end-event.html [ Failure ]
 Bug(none) virtual/threaded/animations/composited-pseudo-element-animation.html [ Failure ]

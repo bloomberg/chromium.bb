@@ -272,7 +272,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
   void simulateFrame(double time) {
     m_document->animationClock().updateTime(time);
-    m_document->compositorPendingAnimations().update(false);
+    m_document->compositorPendingAnimations().update(
+        Optional<CompositorElementIdSet>(), false);
     m_timeline->serviceAnimations(TimingUpdateForAnimationFrame);
   }
 

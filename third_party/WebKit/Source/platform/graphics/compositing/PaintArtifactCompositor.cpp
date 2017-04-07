@@ -589,7 +589,8 @@ void PaintArtifactCompositor::collectPendingLayers(
 void PaintArtifactCompositor::update(
     const PaintArtifact& paintArtifact,
     RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations,
-    bool storeDebugInfo) {
+    bool storeDebugInfo,
+    CompositorElementIdSet& compositedElementIds) {
 #ifndef NDEBUG
   storeDebugInfo = true;
 #endif
@@ -634,7 +635,12 @@ void PaintArtifactCompositor::update(
         *pendingLayer.propertyTreeState.effect());
 
     layer->set_offset_to_transform_parent(layerOffset);
-    layer->SetElementId(pendingLayer.propertyTreeState.compositorElementId());
+    CompositorElementId elementId =
+        pendingLayer.propertyTreeState.compositorElementId();
+    if (elementId) {
+      layer->SetElementId(elementId);
+      compositedElementIds.insert(elementId);
+    }
 
     m_rootLayer->AddChild(layer);
     layer->set_property_tree_sequence_number(sPropertyTreeSequenceNumber);

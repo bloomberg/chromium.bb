@@ -119,7 +119,13 @@ class PaintArtifactCompositorTestWithPropertyTrees
   }
 
   void update(const PaintArtifact& artifact) {
-    m_paintArtifactCompositor->update(artifact, nullptr, false);
+    CompositorElementIdSet elementIds;
+    update(artifact, elementIds);
+  }
+
+  void update(const PaintArtifact& artifact,
+              CompositorElementIdSet& elementIds) {
+    m_paintArtifactCompositor->update(artifact, nullptr, false, elementIds);
     m_webLayerTreeView->layerTreeHost()->LayoutAndUpdateLayers();
   }
 
@@ -1580,14 +1586,28 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_TRUE(pendingLayer.knownToBeOpaque);
 }
 
-TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
+PassRefPtr<EffectPaintPropertyNode> createSampleEffectNodeWithElementId() {
   CompositorElementId expectedCompositorElementId(2, 0);
-  RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::create(
-          TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
-          FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform,
-          expectedCompositorElementId);
+  float opacity = 2.0 / 255.0;
+  return EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver,
+      CompositingReasonActiveAnimation, expectedCompositorElementId);
+}
 
+PassRefPtr<TransformPaintPropertyNode>
+createSampleTransformNodeWithElementId() {
+  CompositorElementId expectedCompositorElementId(3, 0);
+  return TransformPaintPropertyNode::create(
+      TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
+      FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform,
+      expectedCompositorElementId);
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
+  RefPtr<TransformPaintPropertyNode> transform =
+      createSampleTransformNodeWithElementId();
   TestPaintArtifact artifact;
   artifact
       .chunk(transform, ClipPaintPropertyNode::root(),
@@ -1595,7 +1615,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
       .rectDrawing(FloatRect(100, 100, 200, 100), Color::black);
   update(artifact.build());
 
-  EXPECT_EQ(2, elementIdToTransformNodeIndex(expectedCompositorElementId));
+  EXPECT_EQ(2, elementIdToTransformNodeIndex(transform->compositorElementId()));
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
@@ -1627,14 +1647,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
-  CompositorElementId expectedCompositorElementId(2, 0);
-  float opacity = 2.0 / 255.0;
-  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), ColorFilterNone,
-      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver,
-      CompositingReasonActiveAnimation, expectedCompositorElementId);
-
+  RefPtr<EffectPaintPropertyNode> effect =
+      createSampleEffectNodeWithElementId();
   TestPaintArtifact artifact;
   artifact
       .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
@@ -1642,7 +1656,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
       .rectDrawing(FloatRect(100, 100, 200, 100), Color::black);
   update(artifact.build());
 
-  EXPECT_EQ(2, elementIdToEffectNodeIndex(expectedCompositorElementId));
+  EXPECT_EQ(2, elementIdToEffectNodeIndex(effect->compositorElementId()));
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
@@ -1998,6 +2012,29 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_EQ(gfx::Vector2dF(100.f, 0.f), layer4->offset_to_transform_parent());
   EXPECT_EQ(gfx::Size(150, 150), layer4->bounds());
   EXPECT_EQ(1, layer4->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       UpdatePopulatesCompositedElementIds) {
+  RefPtr<TransformPaintPropertyNode> transform =
+      createSampleTransformNodeWithElementId();
+  RefPtr<EffectPaintPropertyNode> effect =
+      createSampleEffectNodeWithElementId();
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(transform, ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(0, 0, 100, 100), Color::black)
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect.get())
+      .rectDrawing(FloatRect(100, 100, 200, 100), Color::black);
+
+  CompositorElementIdSet compositedElementIds;
+  update(artifact.build(), compositedElementIds);
+
+  EXPECT_EQ(2u, compositedElementIds.size());
+  EXPECT_TRUE(compositedElementIds.contains(transform->compositorElementId()));
+  EXPECT_TRUE(compositedElementIds.contains(effect->compositorElementId()));
 }
 
 }  // namespace blink

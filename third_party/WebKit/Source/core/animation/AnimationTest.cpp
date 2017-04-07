@@ -30,17 +30,19 @@
 
 #include "core/animation/Animation.h"
 
+#include <memory>
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -71,9 +73,11 @@ class AnimationAnimationTest : public ::testing::Test {
     return KeyframeEffect::create(0, nullptr, timing);
   }
 
-  bool simulateFrame(double time) {
+  bool simulateFrame(double time,
+                     Optional<CompositorElementIdSet> compositedElementIds =
+                         Optional<CompositorElementIdSet>()) {
     document->animationClock().updateTime(time);
-    document->compositorPendingAnimations().update(false);
+    document->compositorPendingAnimations().update(compositedElementIds, false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
     return animation->update(TimingUpdateForAnimationFrame);
@@ -780,6 +784,37 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
   EXPECT_EQ(Animation::Pending, animation->playStateInternal());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_TRUE(std::isnan(animation->startTime()));
+}
+
+TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
+
+  Persistent<Element> elementComposited = document->createElement("foo");
+  Persistent<Element> elementNotComposited = document->createElement("bar");
+
+  Optional<CompositorElementIdSet> compositedElementIds =
+      CompositorElementIdSet();
+  CompositorElementId expectedCompositorElementId =
+      createCompositorElementId(DOMNodeIds::idForNode(elementComposited),
+                                CompositorSubElementId::Primary);
+  compositedElementIds->insert(expectedCompositorElementId);
+
+  Timing timing;
+  timing.iterationDuration = 30;
+  timing.playbackRate = 1;
+  KeyframeEffect* keyframeEffectComposited =
+      KeyframeEffect::create(elementComposited.get(), nullptr, timing);
+  Animation* animationComposited = timeline->play(keyframeEffectComposited);
+  KeyframeEffect* keyframeEffectNotComposited =
+      KeyframeEffect::create(elementNotComposited.get(), nullptr, timing);
+  Animation* animationNotComposited =
+      timeline->play(keyframeEffectNotComposited);
+
+  simulateFrame(0, compositedElementIds);
+  EXPECT_TRUE(
+      animationComposited->canStartAnimationOnCompositor(compositedElementIds));
+  EXPECT_FALSE(animationNotComposited->canStartAnimationOnCompositor(
+      compositedElementIds));
 }
 
 }  // namespace blink

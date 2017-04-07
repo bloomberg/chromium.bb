@@ -76,7 +76,8 @@ class AnimationAnimationTimelineTest : public ::testing::Test {
 
   void updateClockAndService(double time) {
     document->animationClock().updateTime(time);
-    document->compositorPendingAnimations().update(false);
+    document->compositorPendingAnimations().update(
+        Optional<CompositorElementIdSet>(), false);
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     timeline->scheduleNextService();
   }

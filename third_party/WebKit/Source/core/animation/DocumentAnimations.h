@@ -33,6 +33,8 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "platform/graphics/CompositorElementId.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -48,7 +50,8 @@ class DocumentAnimations {
   // lifecycle) frame.
   static void updateAnimations(
       Document&,
-      DocumentLifecycle::LifecycleState requiredLifecycleState);
+      DocumentLifecycle::LifecycleState requiredLifecycleState,
+      Optional<CompositorElementIdSet>&);
 
  private:
   DocumentAnimations() {}

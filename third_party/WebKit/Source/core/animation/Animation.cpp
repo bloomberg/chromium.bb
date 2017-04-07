@@ -34,6 +34,7 @@
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
@@ -253,7 +254,10 @@ double Animation::unlimitedCurrentTimeInternal() const {
              : calculateCurrentTime();
 }
 
-bool Animation::preCommit(int compositorGroup, bool startOnCompositor) {
+bool Animation::preCommit(
+    int compositorGroup,
+    const Optional<CompositorElementIdSet>& compositedElementIds,
+    bool startOnCompositor) {
   PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand,
                                    DoNotSetCompositorPending);
 
@@ -291,10 +295,10 @@ bool Animation::preCommit(int compositorGroup, bool startOnCompositor) {
   if (shouldStart) {
     m_compositorGroup = compositorGroup;
     if (startOnCompositor) {
-      if (isCandidateForAnimationOnCompositor())
+      if (isCandidateForAnimationOnCompositor(compositedElementIds))
         createCompositorPlayer();
 
-      if (maybeStartAnimationOnCompositor())
+      if (maybeStartAnimationOnCompositor(compositedElementIds))
         m_compositorState = WTF::wrapUnique(new CompositorState(*this));
       else
         cancelIncompatibleAnimationsOnCompositor();
@@ -722,7 +726,8 @@ void Animation::forceServiceOnNextFrame() {
   m_timeline->wake();
 }
 
-bool Animation::canStartAnimationOnCompositor() const {
+bool Animation::canStartAnimationOnCompositor(
+    const Optional<CompositorElementIdSet>& compositedElementIds) const {
   if (m_isCompositedAnimationDisabledForTesting || effectSuppressed())
     return false;
 
@@ -731,20 +736,39 @@ bool Animation::canStartAnimationOnCompositor() const {
       (timeline() && timeline()->playbackRate() != 1))
     return false;
 
-  return m_timeline && m_content && m_content->isKeyframeEffectReadOnly() &&
-         playing();
+  if (!m_timeline || !m_content || !m_content->isKeyframeEffectReadOnly())
+    return false;
+
+  // If the optional element id set has no value we must be in SPv1 mode in
+  // which case we trust the compositing logic will create a layer if needed.
+  if (compositedElementIds.has_value()) {
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    Element* targetElement =
+        toKeyframeEffectReadOnly(m_content.get())->target();
+    if (!targetElement)
+      return false;
+
+    CompositorElementId targetElementId = createCompositorElementId(
+        DOMNodeIds::idForNode(targetElement), CompositorSubElementId::Primary);
+    if (!compositedElementIds->contains(targetElementId))
+      return false;
+  }
+
+  return playing();
 }
 
-bool Animation::isCandidateForAnimationOnCompositor() const {
-  if (!canStartAnimationOnCompositor())
+bool Animation::isCandidateForAnimationOnCompositor(
+    const Optional<CompositorElementIdSet>& compositedElementIds) const {
+  if (!canStartAnimationOnCompositor(compositedElementIds))
     return false;
 
   return toKeyframeEffectReadOnly(m_content.get())
       ->isCandidateForAnimationOnCompositor(m_playbackRate);
 }
 
-bool Animation::maybeStartAnimationOnCompositor() {
-  if (!canStartAnimationOnCompositor())
+bool Animation::maybeStartAnimationOnCompositor(
+    const Optional<CompositorElementIdSet>& compositedElementIds) {
+  if (!canStartAnimationOnCompositor(compositedElementIds))
     return false;
 
   bool reversed = m_playbackRate < 0;

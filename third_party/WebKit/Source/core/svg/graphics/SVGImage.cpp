@@ -571,8 +571,10 @@ void SVGImage::serviceAnimations(double monotonicAnimationStartTime) {
   // PaintArtifactCompositor analysis of whether animations should be
   // composited.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    Optional<CompositorElementIdSet> compositedElementIds;
     DocumentAnimations::updateAnimations(frameView->layoutView()->document(),
-                                         DocumentLifecycle::LayoutClean);
+                                         DocumentLifecycle::LayoutClean,
+                                         compositedElementIds);
   }
 }
 

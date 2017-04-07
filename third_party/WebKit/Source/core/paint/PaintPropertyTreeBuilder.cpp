@@ -75,6 +75,8 @@ static bool updateContentClip(
 
 static CompositorElementId createDomNodeBasedCompositorElementId(
     const LayoutObject& object) {
+  // TODO(wkorman): Centralize this implementation with similar across
+  // animation, scrolling and compositing logic.
   return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
                                    CompositorSubElementId::Primary);
 }

@@ -47,6 +47,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
@@ -64,8 +65,8 @@ namespace blink {
 
 class AXObjectCache;
 class ComputedStyle;
-class DocumentLifecycle;
 class Cursor;
+class DocumentLifecycle;
 class Element;
 class ElementVisibilityObserver;
 class Frame;
@@ -924,7 +925,8 @@ class CORE_EXPORT FrameView final
 
   // TODO(wangxianzhu): Remove the parameter and use m_paintController for SPv2.
   void notifyPaint(const PaintController&) const;
-  void pushPaintArtifactToCompositor();
+  void pushPaintArtifactToCompositor(
+      CompositorElementIdSet& compositedElementIds);
 
   void reset();
   void init();

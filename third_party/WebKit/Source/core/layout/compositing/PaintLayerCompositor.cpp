@@ -68,6 +68,7 @@
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -227,8 +228,10 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
   updateIfNeeded();
   lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
+  Optional<CompositorElementIdSet> compositedElementIds;
   DocumentAnimations::updateAnimations(m_layoutView.document(),
-                                       DocumentLifecycle::CompositingClean);
+                                       DocumentLifecycle::CompositingClean,
+                                       compositedElementIds);
 
   m_layoutView.frameView()
       ->getScrollableArea()

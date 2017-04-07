@@ -3081,18 +3081,19 @@ void FrameView::updateLifecyclePhasesInternal(
           RuntimeEnabledFeatures::printBrowserEnabled())
         paintTree();
 
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        pushPaintArtifactToCompositor();
+      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        Optional<CompositorElementIdSet> compositedElementIds =
+            CompositorElementIdSet();
+        pushPaintArtifactToCompositor(compositedElementIds.value());
+        DocumentAnimations::updateAnimations(layoutView()->document(),
+                                             DocumentLifecycle::PaintClean,
+                                             compositedElementIds);
+      }
 
       DCHECK(!view.hasPendingSelection());
       DCHECK((m_frame->document()->printing() &&
               lifecycle().state() == DocumentLifecycle::PrePaintClean) ||
              lifecycle().state() == DocumentLifecycle::PaintClean);
-
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        DocumentAnimations::updateAnimations(layoutView()->document(),
-                                             DocumentLifecycle::PaintClean);
-      }
     }
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
@@ -3231,7 +3232,8 @@ void FrameView::paintGraphicsLayerRecursively(GraphicsLayer* graphicsLayer) {
     paintGraphicsLayerRecursively(child);
 }
 
-void FrameView::pushPaintArtifactToCompositor() {
+void FrameView::pushPaintArtifactToCompositor(
+    CompositorElementIdSet& compositedElementIds) {
   TRACE_EVENT0("blink", "FrameView::pushPaintArtifactToCompositor");
 
   DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
@@ -3251,7 +3253,7 @@ void FrameView::pushPaintArtifactToCompositor() {
   m_paintArtifactCompositor->update(
       m_paintController->paintArtifact(),
       m_paintController->paintChunksRasterInvalidationTrackingMap(),
-      m_isStoringCompositedLayerDebugInfo);
+      m_isStoringCompositedLayerDebugInfo, compositedElementIds);
 }
 
 std::unique_ptr<JSONObject> FrameView::compositedLayersAsJSON(

@@ -35,7 +35,9 @@
 #include "core/animation/Animation.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/Timer.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Optional.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -57,14 +59,17 @@ class CORE_EXPORT CompositorPendingAnimations final
   void add(Animation*);
   // Returns whether we are waiting for an animation to start and should
   // service again on the next frame.
-  bool update(bool startOnCompositor = true);
+  bool update(const Optional<CompositorElementIdSet>&,
+              bool startOnCompositor = true);
   void notifyCompositorAnimationStarted(double monotonicAnimationStartTime,
                                         int compositorGroup = 0);
 
   DECLARE_TRACE();
 
  private:
-  void timerFired(TimerBase*) { update(false); }
+  void timerFired(TimerBase*) {
+    update(Optional<CompositorElementIdSet>(), false);
+  }
 
   HeapVector<Member<Animation>> m_pending;
   HeapVector<Member<Animation>> m_waitingForCompositorAnimationStart;

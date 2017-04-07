@@ -175,7 +175,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   play(makeKeyframeEffect(
            makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3))),
        4);
-  document->compositorPendingAnimations().update();
+  document->compositorPendingAnimations().update(
+      Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
   updateTimeline(11);

@@ -54,7 +54,9 @@ void CompositorPendingAnimations::add(Animation* animation) {
   }
 }
 
-bool CompositorPendingAnimations::update(bool startOnCompositor) {
+bool CompositorPendingAnimations::update(
+    const Optional<CompositorElementIdSet>& compositedElementIds,
+    bool startOnCompositor) {
   HeapVector<Member<Animation>> waitingForStartTime;
   bool startedSynchronizedOnCompositor = false;
 
@@ -74,7 +76,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor) {
     // Animations with a start time do not participate in compositor start-time
     // grouping.
     if (animation->preCommit(animation->hasStartTime() ? 1 : compositorGroup,
-                             startOnCompositor)) {
+                             compositedElementIds, startOnCompositor)) {
       if (animation->hasActiveAnimationsOnCompositor() &&
           !hadCompositorAnimation) {
         startedSynchronizedOnCompositor = true;

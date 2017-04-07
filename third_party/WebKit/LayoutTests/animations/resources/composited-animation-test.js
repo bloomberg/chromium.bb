@@ -5,6 +5,7 @@ class CompositedAnimationTestCommon {
     this.composited = composited;
     this.tests = [];
     this.nextInstanceId = 1;
+    this.errorCount = 0;
 
     this.createStyles();
     this.createStaticElements();
@@ -33,9 +34,10 @@ class CompositedAnimationTestCommon {
 
   createStaticElements() {
     this.error = document.createElement('span');
-    this.error.style.color = 'red';
-    // The element must have some painted content in order to be composited.
-    this.error.textContent = 'x';
+    this.error.style = 'color: red; font-family: monospace; font-size: 12px';
+    // The error element must have some painted content in order to be
+    // composited when animated in SPv2.
+    this.error.innerText = '(no errors)';
     document.body.appendChild(this.error);
 
     this.wrapper = document.createElement('div');
@@ -129,16 +131,19 @@ class CompositedAnimationTestCommon {
       test.instances.forEach(instance => {
         var composited = internals.isCompositedAnimation(instance.animation);
         if (composited != this.composited)
-          this.reportError(test, `Animation ${composited ? 'is' : 'is not'} running on the compositor.`);
+          this.reportError(test, `Animation ${composited ? 'is' : 'is not'} running on the compositor [id=${instance.id}].`);
       });
     });
   }
 
   reportError(test, message) {
-    if (!this.error.textContent)
-      this.error.textContent = `${this.composited ? 'Tests:' : 'TestExpectations:'} `;
+    if (this.errorCount == 0)
+      this.error.innerHTML = `${this.composited ? 'Tests:' : 'TestExpectations:'}<br>`;
 
-    this.error.textContent += `${test.name}: ${message} `;
+    if (this.errorCount > 0)
+        this.error.innerHTML += '<br>';
+    this.error.innerHTML += `${test.name}: ${message} `;
+    this.errorCount++;
   }
 
   waitForCompositor() {

@@ -31,6 +31,7 @@
 #ifndef Animation_h
 #define Animation_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -43,9 +44,9 @@
 #include "core/events/EventTarget.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -149,9 +150,12 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void setOutdated();
   bool outdated() { return m_outdated; }
 
-  bool canStartAnimationOnCompositor() const;
-  bool isCandidateForAnimationOnCompositor() const;
-  bool maybeStartAnimationOnCompositor();
+  bool canStartAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& compositedElementIds) const;
+  bool isCandidateForAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& compositedElementIds) const;
+  bool maybeStartAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& compositedElementIds);
   void cancelAnimationOnCompositor();
   void restartAnimationOnCompositor();
   void cancelIncompatibleAnimationsOnCompositor();
@@ -168,7 +172,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   // Returns whether we should continue with the commit for this animation or
   // wait until next commit.
-  bool preCommit(int compositorGroup, bool startOnCompositor);
+  bool preCommit(int compositorGroup,
+                 const Optional<CompositorElementIdSet>&,
+                 bool startOnCompositor);
   void postCommit(double timelineTime);
 
   unsigned sequenceNumber() const { return m_sequenceNumber; }

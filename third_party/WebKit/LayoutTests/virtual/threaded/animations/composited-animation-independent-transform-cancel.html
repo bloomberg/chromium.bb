@@ -17,6 +17,9 @@ var keyframeValueMap = {
    cancelProperty is animated on the element */
 function assertAnimationComposited(compositableProperty, cancelProperty, isStillComposited) {
   var element = document.createElement('div');
+  // The element must have some painted content in order to be
+  // composited when animated in SPv2.
+  element.innerText = 'x';
   document.getElementById('parent').appendChild(element);
 
   var keyframe = {};

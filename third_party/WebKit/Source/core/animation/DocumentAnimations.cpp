@@ -67,10 +67,11 @@ void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document) {
 
 void DocumentAnimations::updateAnimations(
     Document& document,
-    DocumentLifecycle::LifecycleState requiredLifecycleState) {
+    DocumentLifecycle::LifecycleState requiredLifecycleState,
+    Optional<CompositorElementIdSet>& compositedElementIds) {
   DCHECK(document.lifecycle().state() >= requiredLifecycleState);
 
-  if (document.compositorPendingAnimations().update()) {
+  if (document.compositorPendingAnimations().update(compositedElementIds)) {
     DCHECK(document.view());
     document.view()->scheduleAnimation();
   }
