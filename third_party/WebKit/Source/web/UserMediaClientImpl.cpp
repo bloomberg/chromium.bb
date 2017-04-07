@@ -30,13 +30,13 @@
 
 #include "web/UserMediaClientImpl.h"
 
+#include "platform/wtf/RefPtr.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"
 #include "public/web/WebMediaDevicesRequest.h"
 #include "public/web/WebUserMediaClient.h"
 #include "public/web/WebUserMediaRequest.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

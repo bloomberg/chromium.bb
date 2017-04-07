@@ -34,13 +34,13 @@
 #include "core/loader/HistoryItem.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebSerializedScriptValue.h"
-#include "wtf/text/StringHash.h"
 
 namespace blink {
 

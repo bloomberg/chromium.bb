@@ -16,12 +16,12 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace {
 

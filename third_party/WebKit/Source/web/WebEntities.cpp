@@ -30,9 +30,9 @@
 
 #include "web/WebEntities.h"
 
-#include "public/platform/WebString.h"
-#include "wtf/text/StringBuilder.h"
 #include <string.h>
+#include "platform/wtf/text/StringBuilder.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 

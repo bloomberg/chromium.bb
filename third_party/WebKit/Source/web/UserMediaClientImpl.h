@@ -32,7 +32,7 @@
 #define UserMediaClientImpl_h
 
 #include "modules/mediastream/UserMediaClient.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

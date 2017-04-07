@@ -37,13 +37,13 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSharedWorkerClient.h"
 #include "web/WebSharedWorkerReportingProxyImpl.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

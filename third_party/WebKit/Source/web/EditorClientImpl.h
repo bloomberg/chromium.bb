@@ -32,7 +32,7 @@
 #define EditorClientImpl_h
 
 #include "core/page/EditorClient.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

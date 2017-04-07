@@ -34,6 +34,7 @@
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
@@ -43,7 +44,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/WorkerContentSettingsClient.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

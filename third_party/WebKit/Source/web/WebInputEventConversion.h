@@ -31,14 +31,14 @@
 #ifndef WebInputEventConversion_h
 #define WebInputEventConversion_h
 
+#include <vector>
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/wtf/Compiler.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"
 #include "public/platform/WebTouchEvent.h"
 #include "web/WebExport.h"
-#include "wtf/Compiler.h"
-#include <vector>
 
 namespace blink {
 

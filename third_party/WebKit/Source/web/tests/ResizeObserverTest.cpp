@@ -11,13 +11,13 @@
 #include "core/dom/ResizeObserverCallback.h"
 #include "core/dom/ResizeObserverController.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/web/WebHeap.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

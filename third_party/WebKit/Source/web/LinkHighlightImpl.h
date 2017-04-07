@@ -26,17 +26,17 @@
 #ifndef LinkHighlightImpl_h
 #define LinkHighlightImpl_h
 
+#include <memory>
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "web/WebExport.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

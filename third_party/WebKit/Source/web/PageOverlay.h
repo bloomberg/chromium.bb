@@ -29,12 +29,12 @@
 #ifndef PageOverlay_h
 #define PageOverlay_h
 
+#include <memory>
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/wtf/text/WTFString.h"
 #include "web/WebExport.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

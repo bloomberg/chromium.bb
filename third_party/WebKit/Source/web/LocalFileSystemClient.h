@@ -31,9 +31,9 @@
 #ifndef LocalFileSystemClient_h
 #define LocalFileSystemClient_h
 
-#include "modules/filesystem/FileSystemClient.h"
-#include "wtf/Forward.h"
 #include <memory>
+#include "modules/filesystem/FileSystemClient.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

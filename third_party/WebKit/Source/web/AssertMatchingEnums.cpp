@@ -78,6 +78,8 @@
 #include "platform/text/TextDecoration.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/StringImpl.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebContentSecurityPolicy.h"
@@ -134,8 +136,6 @@
 #include "public/web/WebTextDecorationType.h"
 #include "public/web/WebTouchAction.h"
 #include "public/web/WebView.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/StringImpl.h"
 
 namespace blink {
 

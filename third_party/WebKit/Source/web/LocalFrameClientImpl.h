@@ -35,8 +35,8 @@
 #include "core/frame/LocalFrameClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/RefPtr.h"
 
 #include <memory>
 

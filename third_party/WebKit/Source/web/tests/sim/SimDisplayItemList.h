@@ -6,9 +6,9 @@
 #define SimDisplayItemList_h
 
 #include "platform/graphics/paint/PaintRecord.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "web/tests/sim/SimCanvas.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

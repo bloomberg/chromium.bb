@@ -43,9 +43,9 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebInputEvent.h"
 #include "web/WebInputEventConversion.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

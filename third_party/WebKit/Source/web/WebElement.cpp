@@ -37,10 +37,10 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/html/TextControlElement.h"
 #include "platform/graphics/Image.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRect.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
 #include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDateTimeChooserParams.h"
 #include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

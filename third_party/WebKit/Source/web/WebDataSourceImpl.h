@@ -31,15 +31,15 @@
 #ifndef WebDataSourceImpl_h
 #define WebDataSourceImpl_h
 
+#include <memory>
 #include "core/frame/FrameTypes.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Vector.h"
 #include "public/web/WebDataSource.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

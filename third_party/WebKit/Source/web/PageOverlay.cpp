@@ -37,12 +37,12 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayer.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

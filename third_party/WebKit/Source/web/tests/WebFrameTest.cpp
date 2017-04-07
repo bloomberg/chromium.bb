@@ -105,6 +105,9 @@
 #include "platform/weborigin/KURLHash.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/dtoa/utils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCache.h"
 #include "public/platform/WebCachePolicy.h"
@@ -152,9 +155,6 @@
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
-#include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/dtoa/utils.h"
 
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;

@@ -7,9 +7,9 @@
 
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "web/CompositorAnimator.h"
 #include "web/CompositorProxyClientImpl.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

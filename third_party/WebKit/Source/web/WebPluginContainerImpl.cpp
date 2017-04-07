@@ -81,6 +81,7 @@
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -106,7 +107,6 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

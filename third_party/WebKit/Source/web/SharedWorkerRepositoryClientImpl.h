@@ -31,11 +31,11 @@
 #ifndef SharedWorkerRepositoryClientImpl_h
 #define SharedWorkerRepositoryClientImpl_h
 
-#include "core/workers/SharedWorkerRepositoryClient.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/workers/SharedWorkerRepositoryClient.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

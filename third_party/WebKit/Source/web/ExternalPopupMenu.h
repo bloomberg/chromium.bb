@@ -31,14 +31,14 @@
 #ifndef ExternalPopupMenu_h
 #define ExternalPopupMenu_h
 
+#include <memory>
 #include "platform/PopupMenu.h"
 #include "platform/Timer.h"
+#include "platform/wtf/Compiler.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/web/WebExternalPopupMenuClient.h"
 #include "web/WebExport.h"
-#include "wtf/Compiler.h"
-#include <memory>
 
 namespace blink {
 

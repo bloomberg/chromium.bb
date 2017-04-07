@@ -25,6 +25,7 @@
 
 #include "web/SpeechRecognitionClientProxy.h"
 
+#include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/speech/SpeechGrammarList.h"
@@ -34,6 +35,8 @@
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebSpeechGrammar.h"
@@ -41,9 +44,6 @@
 #include "public/web/WebSpeechRecognitionParams.h"
 #include "public/web/WebSpeechRecognitionResult.h"
 #include "public/web/WebSpeechRecognizer.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

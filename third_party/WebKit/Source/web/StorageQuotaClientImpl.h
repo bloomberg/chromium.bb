@@ -32,7 +32,7 @@
 #define StorageQuotaClientImpl_h
 
 #include "modules/quota/StorageQuotaClient.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

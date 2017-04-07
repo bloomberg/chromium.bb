@@ -9,9 +9,9 @@
 #include "core/frame/SuspendableTimer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

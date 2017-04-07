@@ -44,6 +44,9 @@
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLError.h"
@@ -51,9 +54,6 @@
 #include "public/web/WebAssociatedURLLoaderClient.h"
 #include "public/web/WebDataSource.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/HashSet.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

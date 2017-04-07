@@ -12,11 +12,11 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

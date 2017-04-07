@@ -39,14 +39,15 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/KeyboardEventManager.h"
-#include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
@@ -57,7 +58,6 @@
 #include "public/web/WebNode.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

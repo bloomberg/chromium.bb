@@ -35,12 +35,12 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/WebExport.h"
-#include "wtf/Compiler.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

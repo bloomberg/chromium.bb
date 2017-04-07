@@ -33,8 +33,8 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/web/WebTextCheckingCompletion.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

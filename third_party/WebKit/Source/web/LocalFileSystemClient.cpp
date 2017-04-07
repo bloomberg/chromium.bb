@@ -36,10 +36,10 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/ContentSettingCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

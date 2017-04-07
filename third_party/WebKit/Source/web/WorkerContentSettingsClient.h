@@ -31,9 +31,9 @@
 #ifndef WorkerContentSettingsClient_h
 #define WorkerContentSettingsClient_h
 
-#include "core/workers/WorkerClients.h"
-#include "wtf/Forward.h"
 #include <memory>
+#include "core/workers/WorkerClients.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

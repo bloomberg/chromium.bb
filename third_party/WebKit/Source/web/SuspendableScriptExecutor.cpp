@@ -15,10 +15,10 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebScriptExecutionCallback.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

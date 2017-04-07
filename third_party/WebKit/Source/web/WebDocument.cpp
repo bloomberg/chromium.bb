@@ -56,6 +56,7 @@
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebDistillability.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebAXObject.h"
@@ -65,7 +66,6 @@
 #include "public/web/WebFormElement.h"
 #include "v8/include/v8.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

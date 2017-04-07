@@ -7,9 +7,9 @@
 
 #include "core/clipboard/DataObject.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebDragData.h"
 #include "public/web/WebFrameWidget.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

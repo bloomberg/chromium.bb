@@ -11,11 +11,11 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimDisplayItemList.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

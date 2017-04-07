@@ -30,19 +30,19 @@
 
 #include "web/WebPepperSocketImpl.h"
 
+#include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebArrayBuffer.h"
 #include "public/web/WebDocument.h"
 #include "web/WebPepperSocketChannelClientProxy.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

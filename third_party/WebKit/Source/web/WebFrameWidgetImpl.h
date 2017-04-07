@@ -34,6 +34,8 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
@@ -43,8 +45,6 @@
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 

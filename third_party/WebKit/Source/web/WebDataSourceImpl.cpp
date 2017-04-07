@@ -33,12 +33,12 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/loader/SubresourceFilter.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

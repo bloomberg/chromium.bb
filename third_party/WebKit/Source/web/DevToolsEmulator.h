@@ -5,15 +5,15 @@
 #ifndef DevToolsEmulator_h
 #define DevToolsEmulator_h
 
+#include <memory>
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebViewportStyle.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "web/WebExport.h"
-#include "wtf/Forward.h"
-#include "wtf/Optional.h"
-#include <memory>
 
 namespace blink {
 

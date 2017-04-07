@@ -5,10 +5,10 @@
 #ifndef SimNetwork_h
 #define SimNetwork_h
 
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLLoaderTestDelegate.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -40,9 +40,9 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "platform/network/FormDataEncoder.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "public/web/WebFormElement.h"
 #include "public/web/WebInputElement.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

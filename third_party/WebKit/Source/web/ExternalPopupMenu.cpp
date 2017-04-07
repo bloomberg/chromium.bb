@@ -42,6 +42,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebExternalPopupMenu.h"
@@ -50,7 +51,6 @@
 #include "public/web/WebPopupMenuInfo.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

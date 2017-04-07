@@ -31,7 +31,7 @@
 #include "web/WebFileChooserCompletionImpl.h"
 
 #include "platform/FileMetadata.h"
-#include "wtf/DateMath.h"
+#include "platform/wtf/DateMath.h"
 
 namespace blink {
 

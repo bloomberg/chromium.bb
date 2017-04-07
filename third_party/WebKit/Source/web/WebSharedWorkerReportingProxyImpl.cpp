@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/wtf/WTF.h"
 #include "public/platform/WebTraceLocation.h"
 #include "web/WebSharedWorkerImpl.h"
-#include "wtf/WTF.h"
 
 namespace blink {
 

@@ -29,12 +29,12 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameView.h"
 #include "platform/HostWindow.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebTextDirection.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

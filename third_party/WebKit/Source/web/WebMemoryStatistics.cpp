@@ -5,7 +5,7 @@
 #include "public/web/WebMemoryStatistics.h"
 
 #include "platform/heap/Handle.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

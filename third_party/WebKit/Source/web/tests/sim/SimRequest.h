@@ -5,9 +5,9 @@
 #ifndef SimRequest_h
 #define SimRequest_h
 
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

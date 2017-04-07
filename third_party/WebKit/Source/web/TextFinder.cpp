@@ -46,6 +46,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Timer.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebFindOptions.h"
@@ -54,7 +55,6 @@
 #include "web/FindInPageCoordinates.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

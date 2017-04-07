@@ -33,8 +33,8 @@
 #define PrerendererClientImpl_h
 
 #include "core/loader/PrerendererClient.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

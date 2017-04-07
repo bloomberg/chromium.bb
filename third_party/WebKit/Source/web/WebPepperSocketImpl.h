@@ -31,14 +31,14 @@
 #ifndef WebPepperSocketImpl_h
 #define WebPepperSocketImpl_h
 
+#include <memory>
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebPepperSocket.h"
 #include "public/web/WebPepperSocketClient.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

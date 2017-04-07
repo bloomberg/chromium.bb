@@ -32,9 +32,9 @@
 #define WebSettingsImpl_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Compiler.h"
 #include "public/web/WebSettings.h"
 #include "web/WebExport.h"
-#include "wtf/Compiler.h"
 
 namespace blink {
 

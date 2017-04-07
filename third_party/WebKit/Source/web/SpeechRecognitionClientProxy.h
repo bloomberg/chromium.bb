@@ -26,11 +26,11 @@
 #ifndef SpeechRecognitionClientProxy_h
 #define SpeechRecognitionClientProxy_h
 
-#include "modules/speech/SpeechRecognitionClient.h"
-#include "public/web/WebSpeechRecognizerClient.h"
-#include "wtf/Compiler.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "modules/speech/SpeechRecognitionClient.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/text/WTFString.h"
+#include "public/web/WebSpeechRecognizerClient.h"
 
 namespace blink {
 

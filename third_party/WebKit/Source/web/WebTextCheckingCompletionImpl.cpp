@@ -31,10 +31,10 @@
 #include "web/WebTextCheckingCompletionImpl.h"
 
 #include "platform/text/TextCheckerClient.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "web/EditorClientImpl.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

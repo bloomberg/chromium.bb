@@ -32,6 +32,8 @@
 
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
@@ -39,8 +41,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 using testing::_;
 using testing::Mock;

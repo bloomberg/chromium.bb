@@ -20,6 +20,7 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebConsoleMessage.h"
@@ -30,7 +31,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "wtf/Vector.h"
 
 using blink::testing::runPendingTasks;
 using testing::Mock;

@@ -6,8 +6,8 @@
 #define SimCanvas_h
 
 #include "platform/graphics/Color.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

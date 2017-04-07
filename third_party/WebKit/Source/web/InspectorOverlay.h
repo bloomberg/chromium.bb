@@ -29,6 +29,8 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
+#include <v8-inspector.h>
+#include <memory>
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/protocol/Forward.h"
@@ -37,11 +39,9 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebInputEvent.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <v8-inspector.h>
 
 namespace blink {
 

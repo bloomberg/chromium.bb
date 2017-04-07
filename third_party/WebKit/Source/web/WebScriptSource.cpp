@@ -5,7 +5,7 @@
 #include "public/web/WebScriptSource.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

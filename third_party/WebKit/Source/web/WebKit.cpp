@@ -44,15 +44,15 @@
 #include "modules/ModulesInitializer.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/heap/Heap.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/WTF.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "v8/include/v8.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/WTF.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

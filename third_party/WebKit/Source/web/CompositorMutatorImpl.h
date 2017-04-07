@@ -5,12 +5,12 @@
 #ifndef CompositorMutatorImpl_h
 #define CompositorMutatorImpl_h
 
+#include <memory>
 #include "core/animation/CustomCompositorAnimationManager.h"
 #include "platform/graphics/CompositorMutator.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -31,14 +31,14 @@
 #ifndef ServiceWorkerGlobalScopeProxy_h
 #define ServiceWorkerGlobalScopeProxy_h
 
+#include <memory>
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebString.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

@@ -40,10 +40,10 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebOptionElement.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -5,12 +5,12 @@
 #ifndef WebAssociatedURLLoaderImpl_h
 #define WebAssociatedURLLoaderImpl_h
 
+#include <memory>
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/web/WebAssociatedURLLoader.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

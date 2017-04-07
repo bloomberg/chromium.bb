@@ -73,6 +73,10 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayerSource.h"
@@ -101,10 +105,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 #include <memory>
 

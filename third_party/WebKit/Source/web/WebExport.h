@@ -5,7 +5,7 @@
 #ifndef WebExport_h
 #define WebExport_h
 
-#include "wtf/Compiler.h"
+#include "platform/wtf/Compiler.h"
 
 namespace blink {
 

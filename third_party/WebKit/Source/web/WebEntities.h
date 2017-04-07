@@ -31,8 +31,8 @@
 #ifndef WebEntities_h
 #define WebEntities_h
 
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

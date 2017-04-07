@@ -30,9 +30,9 @@
 
 #include "public/web/WebPepperSocket.h"
 
-#include "web/WebPepperSocketImpl.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "web/WebPepperSocketImpl.h"
 
 namespace blink {
 

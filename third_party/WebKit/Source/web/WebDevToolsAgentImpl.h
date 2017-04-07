@@ -37,12 +37,12 @@
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "web/InspectorEmulationAgent.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

@@ -54,6 +54,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
+#include "platform/wtf/AutoReset.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "v8/include/v8.h"
@@ -61,7 +62,6 @@
 #include "web/PageOverlay.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/AutoReset.h"
 
 namespace blink {
 

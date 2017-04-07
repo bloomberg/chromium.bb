@@ -5,7 +5,7 @@
 #ifndef ContextMenuAllowedScope_h
 #define ContextMenuAllowedScope_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

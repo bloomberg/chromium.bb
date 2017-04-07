@@ -69,6 +69,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragData.h"
@@ -107,7 +108,6 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "wtf/PtrUtil.h"
 
 #if OS(MACOSX)
 #include "public/web/mac/WebSubstringUtil.h"

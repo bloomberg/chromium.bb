@@ -5,8 +5,8 @@
 #ifndef OpenedFrameTracker_h
 #define OpenedFrameTracker_h
 
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

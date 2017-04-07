@@ -12,9 +12,9 @@
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "web/CompositorAnimator.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

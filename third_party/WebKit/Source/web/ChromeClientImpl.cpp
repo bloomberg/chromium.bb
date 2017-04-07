@@ -31,6 +31,7 @@
 
 #include "web/ChromeClientImpl.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"
@@ -73,6 +74,12 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringConcatenate.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebInputEvent.h"
@@ -117,13 +124,6 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/Optional.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringConcatenate.h"
-#include <memory>
 
 namespace blink {
 

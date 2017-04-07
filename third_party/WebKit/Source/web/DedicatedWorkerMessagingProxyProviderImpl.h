@@ -32,7 +32,7 @@
 #define DedicatedWorkerMessagingProxyProviderImpl_h
 
 #include "core/workers/DedicatedWorkerMessagingProxyProvider.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

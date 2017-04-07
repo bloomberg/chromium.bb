@@ -13,4 +13,7 @@ include_rules = [
     "+third_party/skia",
     "+ui/gfx/geometry",
     "+web",
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf/",
 ]

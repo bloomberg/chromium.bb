@@ -6,8 +6,8 @@
 #define WebFrameImplBase_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "web/WebExport.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

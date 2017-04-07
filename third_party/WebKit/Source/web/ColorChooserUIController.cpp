@@ -27,12 +27,12 @@
 
 #include "core/html/forms/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebColor.h"
 #include "public/web/WebColorChooser.h"
 #include "public/web/WebColorSuggestion.h"
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
