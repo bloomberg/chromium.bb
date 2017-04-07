@@ -44,6 +44,12 @@ MESSAGE_KEYWORDS = ('open', 'throt', 'close', 'maint')
 # This is the delimiter to separate messages from different updates.
 MESSAGE_DELIMITER = '|'
 
+# Default sleep time (seconds) for waiting for tree status
+DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP = 30
+
+# Default timeout (seconds) for waiting for tree status
+DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
+
 
 class PasswordFileDoesNotExist(Exception):
   """Raised when password file does not exist."""

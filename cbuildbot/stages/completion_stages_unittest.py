@@ -32,6 +32,7 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import results_lib
 from chromite.lib import patch_unittest
+from chromite.lib import timeout_util
 
 
 # pylint: disable=protected-access
@@ -522,6 +523,8 @@ class BaseCommitQueueCompletionStageTest(
                      '_GetSlaveMappingAndCLActions',
                      return_value=(dict(), []))
     self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
+                     return_value=constants.TREE_OPEN)
 
   # pylint: disable=W0221
   def ConstructStage(self, tree_was_open=True):
@@ -811,6 +814,57 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     stage.SendInfraAlertIfNeeded({}, inflight, no_stat, True)
     self.assertEqual(mock_send_alert.call_count, 0)
+
+  def testCQMasterHandleFailureWithOpenTree(self):
+    """Test CQMasterHandleFailure with open tree."""
+    stage = self.ConstructStage()
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     'SendInfraAlertIfNeeded')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_ShouldSubmitPartialPool',
+                     return_value=False)
+    self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
+                     return_value=constants.TREE_OPEN)
+
+    stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
+    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+        mock.ANY, sanity=True, no_stat=set(), changes=self.changes)
+
+  def testCQMasterHandleFailureWithThrottledTree(self):
+    """Test CQMasterHandleFailure with throttled tree."""
+    stage = self.ConstructStage()
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     'SendInfraAlertIfNeeded')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_ShouldSubmitPartialPool',
+                     return_value=False)
+    self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
+                     return_value=constants.TREE_THROTTLED)
+
+    stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
+    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+        mock.ANY, sanity=False, no_stat=set(), changes=self.changes)
+
+  def testCQMasterHandleFailureWithClosedTree(self):
+    """Test CQMasterHandleFailure with cloased tree."""
+    stage = self.ConstructStage()
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     'SendInfraAlertIfNeeded')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_ShouldSubmitPartialPool',
+                     return_value=False)
+    self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
+                     side_effect=timeout_util.TimeoutError())
+
+    stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
+    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+        mock.ANY, sanity=False, no_stat=set(), changes=self.changes)
 
 
 class PublishUprevChangesStageTest(

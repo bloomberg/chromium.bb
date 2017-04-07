@@ -22,6 +22,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import metrics
 from chromite.lib import results_lib
+from chromite.lib import timeout_util
 
 
 def GetBuilderSuccessMap(builder_run, overall_success):
@@ -811,6 +812,22 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                    'attributing failures to the broken tree rather than the '
                    'changes.')
       tot_sanity = False
+
+    if tot_sanity:
+      try:
+        status = tree_status.WaitForTreeStatus(
+            period=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP,
+            timeout=tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT,
+            throttled_ok=True)
+        tot_sanity = (status == constants.TREE_OPEN)
+      except timeout_util.TimeoutError:
+        logging.warning('Timed out waiting for getting tree status in %s(s).',
+                        tree_status.DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT)
+        tot_sanity = False
+
+      if not tot_sanity:
+        logging.info('The tree is not open now, so we are attributing '
+                     'failures to the broken tree rather than the changes.')
 
     if not self_destructed and inflight:
       # The master didn't destruct itself and some slave(s) timed out due to
