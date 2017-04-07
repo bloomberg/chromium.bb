@@ -78,6 +78,7 @@ class CORE_EXPORT CSPDirectiveList
 
   bool allowScriptFromSource(const KURL&,
                              const String& nonce,
+                             const IntegrityMetadataSet& hashes,
                              ParserDisposition,
                              ResourceRequest::RedirectStatus,
                              SecurityViolationReportingPolicy) const;
@@ -242,6 +243,8 @@ class CORE_EXPORT CSPDirectiveList
   bool checkEval(SourceListDirective*) const;
   bool checkDynamic(SourceListDirective*) const;
   bool isMatchingNoncePresent(SourceListDirective*, const String&) const;
+  bool areAllMatchingHashesPresent(SourceListDirective*,
+                                   const IntegrityMetadataSet&) const;
   bool checkHash(SourceListDirective*, const CSPHashValue&) const;
   bool checkHashedAttributes(SourceListDirective*) const;
   bool checkSource(SourceListDirective*,

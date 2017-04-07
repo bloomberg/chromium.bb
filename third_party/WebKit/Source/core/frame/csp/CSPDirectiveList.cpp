@@ -45,6 +45,36 @@ inline bool isASCIIAlphanumericOrHyphen(CharType c) {
   return isASCIIAlphanumeric(c) || c == '-';
 }
 
+ContentSecurityPolicyHashAlgorithm convertHashAlgorithmToCSPHashAlgorithm(
+    HashAlgorithm algorithm) {
+  switch (algorithm) {
+    case HashAlgorithmSha1:
+      // Sha1 is not supported.
+      return ContentSecurityPolicyHashAlgorithmNone;
+    case HashAlgorithmSha256:
+      return ContentSecurityPolicyHashAlgorithmSha256;
+    case HashAlgorithmSha384:
+      return ContentSecurityPolicyHashAlgorithmSha384;
+    case HashAlgorithmSha512:
+      return ContentSecurityPolicyHashAlgorithmSha512;
+  }
+  NOTREACHED();
+  return ContentSecurityPolicyHashAlgorithmNone;
+}
+
+// IntegrityMetadata (from SRI) has base64-encoded digest values, but CSP uses
+// binary format. This converts from the former to the latter.
+bool parseBase64Digest(String base64, DigestValue& hash) {
+  Vector<char> hashVector;
+  // We accept base64url-encoded data here by normalizing it to base64.
+  if (!base64Decode(normalizeToBase64(base64), hashVector))
+    return false;
+  if (hashVector.isEmpty() || hashVector.size() > kMaxDigestSize)
+    return false;
+  hash.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
+  return true;
+}
+
 }  // namespace
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
@@ -176,6 +206,24 @@ bool CSPDirectiveList::checkEval(SourceListDirective* directive) const {
 bool CSPDirectiveList::isMatchingNoncePresent(SourceListDirective* directive,
                                               const String& nonce) const {
   return directive && directive->allowNonce(nonce);
+}
+
+bool CSPDirectiveList::areAllMatchingHashesPresent(
+    SourceListDirective* directive,
+    const IntegrityMetadataSet& hashes) const {
+  if (!directive || hashes.isEmpty())
+    return false;
+  for (const std::pair<WTF::String, HashAlgorithm>& hash : hashes) {
+    // Convert the hash from integrity metadata format to CSP format.
+    CSPHashValue cspHash;
+    cspHash.first = convertHashAlgorithmToCSPHashAlgorithm(hash.second);
+    if (!parseBase64Digest(hash.first, cspHash.second))
+      return false;
+    // All integrity hashes must be listed in the CSP.
+    if (!directive->allowHash(cspHash))
+      return false;
+  }
+  return true;
 }
 
 bool CSPDirectiveList::checkHash(SourceListDirective* directive,
@@ -633,20 +681,23 @@ bool CSPDirectiveList::allowPluginType(
 bool CSPDirectiveList::allowScriptFromSource(
     const KURL& url,
     const String& nonce,
+    const IntegrityMetadataSet& hashes,
     ParserDisposition parserDisposition,
     ResourceRequest::RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+  SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
+  if (isMatchingNoncePresent(directive, nonce))
     return true;
   if (parserDisposition == NotParserInserted && allowDynamic())
     return true;
+  if (areAllMatchingHashesPresent(directive, hashes))
+    return true;
   return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
-                   operativeDirective(m_scriptSrc.get()), url,
+                   directive, url,
                    ContentSecurityPolicy::DirectiveType::ScriptSrc,
                    redirectStatus)
-             : checkSource(operativeDirective(m_scriptSrc.get()), url,
-                           redirectStatus);
+             : checkSource(directive, url, redirectStatus);
 }
 
 bool CSPDirectiveList::allowObjectFromSource(

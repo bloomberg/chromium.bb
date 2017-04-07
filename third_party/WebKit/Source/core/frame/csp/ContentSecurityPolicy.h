@@ -228,6 +228,7 @@ class CORE_EXPORT ContentSecurityPolicy
   bool allowScriptFromSource(
       const KURL&,
       const String& nonce,
+      const IntegrityMetadataSet& hashes,
       ParserDisposition,
       RedirectStatus = RedirectStatus::NoRedirect,
       SecurityViolationReportingPolicy =

@@ -4,6 +4,7 @@
 
 #include "core/frame/csp/CSPDirectiveList.h"
 
+#include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/SourceListDirective.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -165,7 +166,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
         createList(test.list, ContentSecurityPolicyHeaderTypeReport);
     EXPECT_EQ(test.expected,
               directiveList->allowScriptFromSource(
-                  scriptSrc, String(), ParserInserted,
+                  scriptSrc, String(), IntegrityMetadataSet(), ParserInserted,
                   ResourceRequest::RedirectStatus::NoRedirect,
                   SecurityViolationReportingPolicy::SuppressReporting));
 
@@ -174,7 +175,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
         createList(test.list, ContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.expected,
               directiveList->allowScriptFromSource(
-                  scriptSrc, String(), ParserInserted,
+                  scriptSrc, String(), IntegrityMetadataSet(), ParserInserted,
                   ResourceRequest::RedirectStatus::NoRedirect,
                   SecurityViolationReportingPolicy::SuppressReporting));
   }
@@ -222,7 +223,150 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
                    ContentSecurityPolicyHeaderTypeReport);
     EXPECT_EQ(test.expected,
               directiveList->allowScriptFromSource(
-                  resource, String(test.nonce), ParserInserted,
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+
+    // Enforce 'script-src'
+    directiveList = createList(String("script-src ") + test.list,
+                               ContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_EQ(test.expected,
+              directiveList->allowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+
+    // Report-only 'style-src'
+    directiveList = createList(String("style-src ") + test.list,
+                               ContentSecurityPolicyHeaderTypeReport);
+    EXPECT_EQ(test.expected,
+              directiveList->allowStyleFromSource(
+                  resource, String(test.nonce),
+                  ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+
+    // Enforce 'style-src'
+    directiveList = createList(String("style-src ") + test.list,
+                               ContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_EQ(test.expected,
+              directiveList->allowStyleFromSource(
+                  resource, String(test.nonce),
+                  ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+
+    // Report-only 'style-src'
+    directiveList = createList(String("default-src ") + test.list,
+                               ContentSecurityPolicyHeaderTypeReport);
+    EXPECT_EQ(test.expected,
+              directiveList->allowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+    EXPECT_EQ(test.expected,
+              directiveList->allowStyleFromSource(
+                  resource, String(test.nonce),
+                  ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+
+    // Enforce 'style-src'
+    directiveList = createList(String("default-src ") + test.list,
+                               ContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_EQ(test.expected,
+              directiveList->allowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+    EXPECT_EQ(test.expected,
+              directiveList->allowStyleFromSource(
+                  resource, String(test.nonce),
+                  ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+  }
+}
+
+TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
+  struct TestCase {
+    const char* list;
+    const char* url;
+    const char* integrity;
+    bool expected;
+  } cases[] = {
+      // Doesn't affect lists without hashes.
+      {"https://example.com", "https://example.com/file", "sha256-yay", true},
+      {"https://example.com", "https://example.com/file", "sha256-boo", true},
+      {"https://example.com", "https://example.com/file", "", true},
+      {"https://example.com", "https://not.example.com/file", "sha256-yay",
+       false},
+      {"https://example.com", "https://not.example.com/file", "sha256-boo",
+       false},
+      {"https://example.com", "https://not.example.com/file", "", false},
+
+      // Doesn't affect URLs that match the whitelist.
+      {"https://example.com 'sha256-yay'", "https://example.com/file",
+       "sha256-yay", true},
+      {"https://example.com 'sha256-yay'", "https://example.com/file",
+       "sha256-boo", true},
+      {"https://example.com 'sha256-yay'", "https://example.com/file", "",
+       true},
+
+      // Does affect URLs that don't match the whitelist.
+      {"https://example.com 'sha256-yay'", "https://not.example.com/file",
+       "sha256-yay", true},
+      {"https://example.com 'sha256-yay'", "https://not.example.com/file",
+       "sha256-boo", false},
+      {"https://example.com 'sha256-yay'", "https://not.example.com/file", "",
+       false},
+
+      // Both algorithm and digest must match.
+      {"'sha256-yay'", "https://a.com/file", "sha384-yay", false},
+
+      // Sha-1 is not supported, but -384 and -512 are.
+      {"'sha1-yay'", "https://a.com/file", "sha1-yay", false},
+      {"'sha384-yay'", "https://a.com/file", "sha384-yay", true},
+      {"'sha512-yay'", "https://a.com/file", "sha512-yay", true},
+
+      // Unknown (or future) hash algorithms don't work.
+      {"'asdf256-yay'", "https://a.com/file", "asdf256-yay", false},
+
+      // But they also don't interfere.
+      {"'sha256-yay'", "https://a.com/file", "sha256-yay asdf256-boo", true},
+
+      // Additional whitelisted hashes in the CSP don't interfere.
+      {"'sha256-yay' 'sha384-boo'", "https://a.com/file", "sha256-yay", true},
+      {"'sha256-yay' 'sha384-boo'", "https://a.com/file", "sha384-boo", true},
+
+      // All integrity hashes must appear in the CSP (and match).
+      {"'sha256-yay'", "https://a.com/file", "sha256-yay sha384-boo", false},
+      {"'sha384-boo'", "https://a.com/file", "sha256-yay sha384-boo", false},
+      {"'sha256-yay' 'sha384-boo'", "https://a.com/file",
+       "sha256-yay sha384-yay", false},
+      {"'sha256-yay' 'sha384-boo'", "https://a.com/file",
+       "sha256-boo sha384-boo", false},
+      {"'sha256-yay' 'sha384-boo'", "https://a.com/file",
+       "sha256-yay sha384-boo", true},
+
+      // At least one integrity hash must be present.
+      {"'sha256-yay'", "https://a.com/file", "", false},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "List: `" << test.list << "`, URL: `" << test.url
+                 << "`, Integrity: `" << test.integrity << "`");
+    KURL resource = KURL(KURL(), test.url);
+
+    IntegrityMetadataSet integrityMetadata;
+    ASSERT_EQ(SubresourceIntegrity::IntegrityParseValidResult,
+              SubresourceIntegrity::parseIntegrityAttribute(test.integrity,
+                                                            integrityMetadata));
+
+    // Report-only 'script-src'
+    Member<CSPDirectiveList> directiveList =
+        createList(String("script-src ") + test.list,
+                   ContentSecurityPolicyHeaderTypeReport);
+    EXPECT_EQ(test.expected,
+              directiveList->allowScriptFromSource(
+                  resource, String(), integrityMetadata, ParserInserted,
                   ResourceRequest::RedirectStatus::NoRedirect,
                   SecurityViolationReportingPolicy::SuppressReporting));
 
@@ -231,53 +375,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
                                ContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.expected,
               directiveList->allowScriptFromSource(
-                  resource, String(test.nonce), ParserInserted,
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-
-    // Report-only 'style-src'
-    directiveList = createList(String("style-src ") + test.list,
-                               ContentSecurityPolicyHeaderTypeReport);
-    EXPECT_EQ(test.expected,
-              directiveList->allowStyleFromSource(
-                  resource, String(test.nonce),
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-
-    // Enforce 'style-src'
-    directiveList = createList(String("style-src ") + test.list,
-                               ContentSecurityPolicyHeaderTypeEnforce);
-    EXPECT_EQ(test.expected,
-              directiveList->allowStyleFromSource(
-                  resource, String(test.nonce),
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-
-    // Report-only 'style-src'
-    directiveList = createList(String("default-src ") + test.list,
-                               ContentSecurityPolicyHeaderTypeReport);
-    EXPECT_EQ(test.expected,
-              directiveList->allowScriptFromSource(
-                  resource, String(test.nonce), ParserInserted,
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-    EXPECT_EQ(test.expected,
-              directiveList->allowStyleFromSource(
-                  resource, String(test.nonce),
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-
-    // Enforce 'style-src'
-    directiveList = createList(String("default-src ") + test.list,
-                               ContentSecurityPolicyHeaderTypeEnforce);
-    EXPECT_EQ(test.expected,
-              directiveList->allowScriptFromSource(
-                  resource, String(test.nonce), ParserInserted,
-                  ResourceRequest::RedirectStatus::NoRedirect,
-                  SecurityViolationReportingPolicy::SuppressReporting));
-    EXPECT_EQ(test.expected,
-              directiveList->allowStyleFromSource(
-                  resource, String(test.nonce),
+                  resource, String(), integrityMetadata, ParserInserted,
                   ResourceRequest::RedirectStatus::NoRedirect,
                   SecurityViolationReportingPolicy::SuppressReporting));
   }

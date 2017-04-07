@@ -182,8 +182,8 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
           SyntaxError, "The URL '" + urlString + "' is invalid.");
       return;
     }
-    if (!contentSecurityPolicy()->allowScriptFromSource(url, AtomicString(),
-                                                        NotParserInserted)) {
+    if (!contentSecurityPolicy()->allowScriptFromSource(
+            url, AtomicString(), IntegrityMetadataSet(), NotParserInserted)) {
       exceptionState.throwDOMException(
           NetworkError,
           "The script at '" + url.elidedString() + "' failed to load.");

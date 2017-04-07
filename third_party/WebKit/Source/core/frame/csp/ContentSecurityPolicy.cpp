@@ -495,12 +495,14 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
 template <bool (CSPDirectiveList::*allowFromURLWithNonceAndParser)(
     const KURL&,
     const String& nonce,
+    const IntegrityMetadataSet& hashes,
     ParserDisposition parserDisposition,
     RedirectStatus,
     SecurityViolationReportingPolicy) const>
 bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     const KURL& url,
                     const String& nonce,
+                    const IntegrityMetadataSet& hashes,
                     ParserDisposition parserDisposition,
                     RedirectStatus redirectStatus,
                     SecurityViolationReportingPolicy reportingPolicy) {
@@ -521,7 +523,7 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
   bool isAllowed = true;
   for (const auto& policy : policies) {
     isAllowed &= (policy.get()->*allowFromURLWithNonceAndParser)(
-        url, nonce, parserDisposition, redirectStatus, reportingPolicy);
+        url, nonce, hashes, parserDisposition, redirectStatus, reportingPolicy);
   }
   return isAllowed;
 }
@@ -698,6 +700,7 @@ bool ContentSecurityPolicy::allowPluginTypeForDocument(
 bool ContentSecurityPolicy::allowScriptFromSource(
     const KURL& url,
     const String& nonce,
+    const IntegrityMetadataSet& hashes,
     ParserDisposition parserDisposition,
     RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
@@ -709,7 +712,7 @@ bool ContentSecurityPolicy::allowScriptFromSource(
             : UseCounter::ScriptWithCSPBypassingSchemeNotParserInserted);
   }
   return isAllowedByAll<&CSPDirectiveList::allowScriptFromSource>(
-      m_policies, url, nonce, parserDisposition, redirectStatus,
+      m_policies, url, nonce, hashes, parserDisposition, redirectStatus,
       reportingPolicy);
 }
 
@@ -779,8 +782,9 @@ bool ContentSecurityPolicy::allowRequest(
     case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
     case WebURLRequest::RequestContextXSLT:
-      return allowScriptFromSource(url, nonce, parserDisposition,
-                                   redirectStatus, reportingPolicy);
+      return allowScriptFromSource(url, nonce, integrityMetadata,
+                                   parserDisposition, redirectStatus,
+                                   reportingPolicy);
     case WebURLRequest::RequestContextManifest:
       return allowManifestFromSource(url, redirectStatus, reportingPolicy);
     case WebURLRequest::RequestContextServiceWorker:
@@ -901,7 +905,8 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(
             m_policies, url, redirectStatus,
             SecurityViolationReportingPolicy::SuppressReporting) &&
         !isAllowedByAll<&CSPDirectiveList::allowScriptFromSource>(
-            m_policies, url, AtomicString(), NotParserInserted, redirectStatus,
+            m_policies, url, AtomicString(), IntegrityMetadataSet(),
+            NotParserInserted, redirectStatus,
             SecurityViolationReportingPolicy::SuppressReporting)) {
       UseCounter::count(*document,
                         UseCounter::WorkerAllowedByChildBlockedByScript);

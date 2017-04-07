@@ -130,7 +130,7 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
   ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
   csp2->copyStateFrom(csp.get());
   EXPECT_FALSE(csp2->allowScriptFromSource(
-      exampleUrl, String(), ParserInserted,
+      exampleUrl, String(), IntegrityMetadataSet(), ParserInserted,
       ResourceRequest::RedirectStatus::NoRedirect,
       SecurityViolationReportingPolicy::SuppressReporting));
   EXPECT_TRUE(csp2->allowPluginType(
@@ -161,7 +161,7 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom) {
   ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
   csp2->copyPluginTypesFrom(csp.get());
   EXPECT_TRUE(csp2->allowScriptFromSource(
-      exampleUrl, String(), ParserInserted,
+      exampleUrl, String(), IntegrityMetadataSet(), ParserInserted,
       ResourceRequest::RedirectStatus::NoRedirect,
       SecurityViolationReportingPolicy::SuppressReporting));
   EXPECT_TRUE(csp2->allowPluginType(
@@ -662,7 +662,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed, policy->allowScriptFromSource(
-                                resource, String(test.nonce), ParserInserted));
+                                resource, String(test.nonce),
+                                IntegrityMetadataSet(), ParserInserted));
     // If this is expected to generate a violation, we should have sent a
     // report.
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
@@ -672,8 +673,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     policy->bindToExecutionContext(document.get());
     policy->didReceiveHeader(test.policy, ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce),
-                                              ParserInserted));
+    EXPECT_TRUE(policy->allowScriptFromSource(
+        resource, String(test.nonce), IntegrityMetadataSet(), ParserInserted));
     // If this is expected to generate a violation, we should have sent a
     // report, even though we don't deny access in `allowScriptFromSource`:
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
@@ -815,7 +816,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed1, policy->allowScriptFromSource(
-                                 resource, String(test.nonce), ParserInserted));
+                                 resource, String(test.nonce),
+                                 IntegrityMetadataSet(), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report / Enforce
@@ -828,7 +830,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed2, policy->allowScriptFromSource(
-                                 resource, String(test.nonce), ParserInserted));
+                                 resource, String(test.nonce),
+                                 IntegrityMetadataSet(), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Enforce / Enforce
@@ -840,9 +843,10 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->didReceiveHeader(test.policy2,
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed1 && test.allowed2,
-              policy->allowScriptFromSource(resource, String(test.nonce),
-                                            ParserInserted));
+    EXPECT_EQ(
+        test.allowed1 && test.allowed2,
+        policy->allowScriptFromSource(resource, String(test.nonce),
+                                      IntegrityMetadataSet(), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report / Report
@@ -854,8 +858,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->didReceiveHeader(test.policy2,
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce),
-                                              ParserInserted));
+    EXPECT_TRUE(policy->allowScriptFromSource(
+        resource, String(test.nonce), IntegrityMetadataSet(), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
   }
 }
