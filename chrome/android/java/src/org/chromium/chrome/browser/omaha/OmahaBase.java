@@ -477,7 +477,7 @@ public class OmahaBase {
             writer.write(request, 0, request.length());
             StreamUtil.closeQuietly(writer);
             checkServerResponseCode(urlConnection);
-        } catch (IOException e) {
+        } catch (IOException | SecurityException e) {
             throw new RequestFailureException("Failed to write request to server: ", e);
         }
 
