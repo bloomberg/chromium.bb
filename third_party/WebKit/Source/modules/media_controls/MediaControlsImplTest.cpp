@@ -620,7 +620,13 @@ TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
                                      0);
 }
 
-TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
+// TODO(johnme): Fix and re-enable this on Android.
+#if OS(ANDROID)
+#define MAYBE_TimelineMetricsClick DISABLED_TimelineMetricsClick
+#else
+#define MAYBE_TimelineMetricsClick TimelineMetricsClick
+#endif
+TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsClick) {
   double duration = 540;  // 9 minutes
   loadMediaWithDuration(duration);
   ensureSizing();
@@ -652,7 +658,15 @@ TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
   histogramTester().expectTotalCount("Media.Timeline.DragTimeDelta.128_255", 0);
 }
 
-TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
+// TODO(johnme): Fix and re-enable this on Android.
+#if OS(ANDROID)
+#define MAYBE_TimelineMetricsDragFromCurrentPosition \
+  DISABLED_TimelineMetricsDragFromCurrentPosition
+#else
+#define MAYBE_TimelineMetricsDragFromCurrentPosition \
+  TimelineMetricsDragFromCurrentPosition
+#endif
+TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromCurrentPosition) {
   double duration = 540;  // 9 minutes
   loadMediaWithDuration(duration);
   ensureSizing();
@@ -689,7 +703,14 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
                                        40 /* [4m, 8m) */, 1);
 }
 
-TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
+// TODO(johnme): Fix and re-enable this on Android.
+#if OS(ANDROID)
+#define MAYBE_TimelineMetricsDragFromElsewhere \
+  DISABLED_TimelineMetricsDragFromElsewhere
+#else
+#define MAYBE_TimelineMetricsDragFromElsewhere TimelineMetricsDragFromElsewhere
+#endif
+TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragFromElsewhere) {
   double duration = 540;  // 9 minutes
   loadMediaWithDuration(duration);
   ensureSizing();
@@ -726,7 +747,14 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
                                        39 /* [2m, 4m) */, 1);
 }
 
-TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
+// TODO(johnme): Fix and re-enable this on Android.
+#if OS(ANDROID)
+#define MAYBE_TimelineMetricsDragBackAndForth \
+  DISABLED_TimelineMetricsDragBackAndForth
+#else
+#define MAYBE_TimelineMetricsDragBackAndForth TimelineMetricsDragBackAndForth
+#endif
+TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
   double duration = 540;  // 9 minutes
   loadMediaWithDuration(duration);
   ensureSizing();
