@@ -17,6 +17,8 @@ component("display_compositor") {
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "host_shared_bitmap_manager.cc",
+    "host_shared_bitmap_manager.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -73,6 +75,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "buffer_queue_unittest.cc",
+    "host_shared_bitmap_manager_unittest.cc",
   ]
 
   if (!use_aura && !is_mac) {

@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "content/common/host_shared_bitmap_manager.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace display_compositor {
 namespace {
 
 class HostSharedBitmapManagerTest : public testing::Test {
@@ -66,7 +66,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
 
-  client.ChildDeletedSharedBitmap(id);
+  client.DidDeleteSharedBitmap(id);
 
   memset(bitmap->memory(), 0, size_in_bytes);
 
@@ -98,7 +98,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
   EXPECT_TRUE(
       memcmp(bitmap->memory(), shared_bitmap->pixels(), size_in_bytes) == 0);
 
-  client.ChildDeletedSharedBitmap(id);
+  client.DidDeleteSharedBitmap(id);
 }
 
 TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
@@ -158,8 +158,8 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
-  client.ChildDeletedSharedBitmap(id);
+  client.DidDeleteSharedBitmap(id);
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace display_compositor

@@ -48,11 +48,11 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #include "components/display_compositor/gl_helper.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/common/content_switches.h"
@@ -759,7 +759,7 @@ void CompositorImpl::InitializeDisplay(
       task_runner, display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
-      HostSharedBitmapManager::current(),
+      display_compositor::HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
       root_window_->GetBeginFrameSource(), std::move(display_output_surface),
@@ -774,7 +774,7 @@ void CompositorImpl::InitializeDisplay(
           : base::MakeUnique<cc::DirectCompositorFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
                 nullptr, BrowserGpuMemoryBufferManager::current(),
-                HostSharedBitmapManager::current());
+                display_compositor::HostSharedBitmapManager::current());
 
   display_->SetVisible(true);
   display_->Resize(size_);

@@ -15,7 +15,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "content/common/host_shared_bitmap_manager.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -135,8 +135,9 @@ RendererFrameManager::~RendererFrameManager() {}
 void RendererFrameManager::CullUnlockedFrames(size_t saved_frame_limit) {
   if (unlocked_frames_.size() + locked_frames_.size() > 0) {
     float handles_per_frame =
-        HostSharedBitmapManager::current()->AllocatedBitmapCount() * 1.0f /
-        (unlocked_frames_.size() + locked_frames_.size());
+        display_compositor::HostSharedBitmapManager::current()
+            ->AllocatedBitmapCount() *
+        1.0f / (unlocked_frames_.size() + locked_frames_.size());
 
     saved_frame_limit = std::max(
         1,

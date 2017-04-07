@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_HOST_SHARED_BITMAP_MANAGER_H_
-#define CONTENT_COMMON_HOST_SHARED_BITMAP_MANAGER_H_
+#ifndef COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
+#define COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_
 
 #include <stddef.h>
 
@@ -18,8 +18,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "cc/ipc/shared_bitmap_manager.mojom.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "content/common/content_export.h"
+#include "components/display_compositor/display_compositor_export.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace BASE_HASH_NAMESPACE {
 template <>
@@ -30,15 +32,23 @@ struct hash<cc::SharedBitmapId> {
 };
 }  // namespace BASE_HASH_NAMESPACE
 
-namespace content {
+namespace display_compositor {
 class BitmapData;
 class HostSharedBitmapManager;
 
-class CONTENT_EXPORT HostSharedBitmapManagerClient {
+class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManagerClient
+    : NON_EXPORTED_BASE(public cc::mojom::SharedBitmapManager) {
  public:
   explicit HostSharedBitmapManagerClient(HostSharedBitmapManager* manager);
 
-  ~HostSharedBitmapManagerClient();
+  ~HostSharedBitmapManagerClient() override;
+
+  void Bind(cc::mojom::SharedBitmapManagerAssociatedRequest request);
+
+  // cc::mojom::SharedBitmapManager overrides:
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const cc::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const cc::SharedBitmapId& id) override;
 
   void AllocateSharedBitmapForChild(
       base::ProcessHandle process_handle,
@@ -48,10 +58,10 @@ class CONTENT_EXPORT HostSharedBitmapManagerClient {
   void ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
                                   const cc::SharedBitmapId& id);
-  void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
 
  private:
   HostSharedBitmapManager* manager_;
+  mojo::AssociatedBinding<cc::mojom::SharedBitmapManager> binding_;
 
   // Lock must be held around access to owned_bitmaps_.
   base::Lock lock_;
@@ -60,7 +70,7 @@ class CONTENT_EXPORT HostSharedBitmapManagerClient {
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManagerClient);
 };
 
-class CONTENT_EXPORT HostSharedBitmapManager
+class DISPLAY_COMPOSITOR_EXPORT HostSharedBitmapManager
     : public cc::SharedBitmapManager,
       public base::trace_event::MemoryDumpProvider {
  public:
@@ -99,13 +109,13 @@ class CONTENT_EXPORT HostSharedBitmapManager
 
   mutable base::Lock lock_;
 
-  typedef base::hash_map<cc::SharedBitmapId, scoped_refptr<BitmapData> >
+  typedef base::hash_map<cc::SharedBitmapId, scoped_refptr<BitmapData>>
       BitmapMap;
   BitmapMap handle_map_;
 
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManager);
 };
 
-}  // namespace content
+}  // namespace display_compositor
 
-#endif  // CONTENT_COMMON_HOST_SHARED_BITMAP_MANAGER_H_
+#endif  // COMPONENTS_DISPLAY_COMPOSITOR_HOST_SHARED_BITMAP_MANAGER_H_

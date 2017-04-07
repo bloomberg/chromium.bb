@@ -225,6 +225,11 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     return context_->ipc_task_runner();
   }
 
+  const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner_refptr()
+      const {
+    return context_->ipc_task_runner_refptr();
+  }
+
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
@@ -244,6 +249,11 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     base::SingleThreadTaskRunner* ipc_task_runner() const {
       return ipc_task_runner_.get();
     }
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner_refptr()
+        const {
+      return ipc_task_runner_;
+    }
+
     // Dispatches a message on the listener thread.
     void OnDispatchMessage(const Message& message);
 

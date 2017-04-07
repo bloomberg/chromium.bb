@@ -1,0 +1,21 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module cc.mojom;
+
+import "gpu/ipc/common/mailbox.mojom";
+
+// This interface is used when allocating shared bitmap memory to be shared
+// with a display compositor.
+// This interface needs to be associated with the RenderMessageFilter interface
+// to prevent running into message ordering issues (CC trying to access a
+// shared bitmap before the registration message below made it to the display
+// compositor).
+interface SharedBitmapManager {
+  // Informs the display compositor that the child allocated a shared bitmap.
+  DidAllocateSharedBitmap(handle<shared_buffer> buffer, gpu.mojom.Mailbox id);
+
+  // Informs the display compositor that the child deleted a shared bitmap.
+  DidDeleteSharedBitmap(gpu.mojom.Mailbox id);
+};

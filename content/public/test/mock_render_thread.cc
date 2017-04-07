@@ -77,12 +77,8 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     NOTREACHED();
   }
 
-  void AllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
-                             const cc::SharedBitmapId& id) override {
-    NOTREACHED();
-  }
-
-  void DeletedSharedBitmap(const cc::SharedBitmapId& id) override {
+  void GetSharedBitmapManager(
+      cc::mojom::SharedBitmapManagerAssociatedRequest request) override {
     NOTREACHED();
   }
 

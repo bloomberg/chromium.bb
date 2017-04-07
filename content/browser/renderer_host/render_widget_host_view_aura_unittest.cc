@@ -32,6 +32,7 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/display_compositor/gl_helper.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -49,7 +50,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
@@ -2671,7 +2671,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
+  DCHECK_EQ(0u, display_compositor::HostSharedBitmapManager::current()
+                    ->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -2810,8 +2811,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   int handles_per_frame = 5;
   RendererFrameManager::GetInstance()->set_max_handles(handles_per_frame * 2);
 
-  HostSharedBitmapManagerClient bitmap_client(
-      HostSharedBitmapManager::current());
+  display_compositor::HostSharedBitmapManagerClient bitmap_client(
+      display_compositor::HostSharedBitmapManager::current());
 
   for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
     bitmap_client.ChildAllocatedSharedBitmap(
@@ -2844,7 +2845,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
+  DCHECK_EQ(0u, display_compositor::HostSharedBitmapManager::current()
+                    ->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -2916,7 +2918,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   size_t renderer_count = kMaxRendererFrames;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
+  DCHECK_EQ(0u, display_compositor::HostSharedBitmapManager::current()
+                    ->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);

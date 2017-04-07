@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -57,7 +58,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
 #include "content/common/text_input_state.h"
@@ -2104,7 +2104,8 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   DCHECK(!size.IsEmpty());
 
   std::unique_ptr<cc::SharedBitmap> bitmap =
-      HostSharedBitmapManager::current()->GetSharedBitmapFromId(size, id);
+      display_compositor::HostSharedBitmapManager::current()
+          ->GetSharedBitmapFromId(size, id);
   if (!bitmap) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);

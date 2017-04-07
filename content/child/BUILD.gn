@@ -66,8 +66,6 @@ target(link_target_type, "child") {
     "child_process_sandbox_support_impl_shm_linux.cc",
     "child_resource_message_filter.cc",
     "child_resource_message_filter.h",
-    "child_shared_bitmap_manager.cc",
-    "child_shared_bitmap_manager.h",
     "child_thread_impl.cc",
     "child_thread_impl.h",
     "content_child_helpers.cc",

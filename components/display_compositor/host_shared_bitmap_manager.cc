@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/host_shared_bitmap_manager.h"
+#include "components/display_compositor/host_shared_bitmap_manager.h"
 
 #include <stdint.h>
 
@@ -13,12 +13,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
-#include "content/common/view_messages.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace display_compositor {
 
 class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
  public:
@@ -62,12 +63,27 @@ base::LazyInstance<HostSharedBitmapManager>::DestructorAtExit
 
 HostSharedBitmapManagerClient::HostSharedBitmapManagerClient(
     HostSharedBitmapManager* manager)
-    : manager_(manager) {
-}
+    : manager_(manager), binding_(this) {}
 
 HostSharedBitmapManagerClient::~HostSharedBitmapManagerClient() {
   for (const auto& id : owned_bitmaps_)
     manager_->ChildDeletedSharedBitmap(id);
+}
+
+void HostSharedBitmapManagerClient::Bind(
+    cc::mojom::SharedBitmapManagerAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void HostSharedBitmapManagerClient::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const cc::SharedBitmapId& id) {
+  base::SharedMemoryHandle memory_handle;
+  size_t size;
+  MojoResult result = mojo::UnwrapSharedMemoryHandle(
+      std::move(buffer), &memory_handle, &size, NULL);
+  DCHECK_EQ(result, MOJO_RESULT_OK);
+  this->ChildAllocatedSharedBitmap(size, memory_handle, id);
 }
 
 void HostSharedBitmapManagerClient::AllocateSharedBitmapForChild(
@@ -93,7 +109,7 @@ void HostSharedBitmapManagerClient::ChildAllocatedSharedBitmap(
   }
 }
 
-void HostSharedBitmapManagerClient::ChildDeletedSharedBitmap(
+void HostSharedBitmapManagerClient::DidDeleteSharedBitmap(
     const cc::SharedBitmapId& id) {
   manager_->ChildDeletedSharedBitmap(id);
   {
@@ -225,7 +241,7 @@ void HostSharedBitmapManager::AllocateSharedBitmapForChild(
     *shared_memory_handle = base::SharedMemory::NULLHandle();
     return;
   }
- data->memory->Close();
+  data->memory->Close();
 }
 
 void HostSharedBitmapManager::ChildDeletedSharedBitmap(
@@ -245,4 +261,4 @@ void HostSharedBitmapManager::FreeSharedMemoryFromMap(
   handle_map_.erase(id);
 }
 
-}  // namespace content
+}  // namespace display_compositor

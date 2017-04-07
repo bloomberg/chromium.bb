@@ -150,8 +150,6 @@ source_set("common") {
     "generic_shared_memory_id_generator.cc",
     "generic_shared_memory_id_generator.h",
     "gin_java_bridge_messages.h",
-    "host_shared_bitmap_manager.cc",
-    "host_shared_bitmap_manager.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",
     "indexed_db/indexed_db_constants.h",

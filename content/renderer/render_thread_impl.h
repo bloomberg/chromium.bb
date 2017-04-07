@@ -95,6 +95,7 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace ui {
+class ChildSharedBitmapManager;
 class ContextProviderCommandBuffer;
 class Gpu;
 }
@@ -113,7 +114,6 @@ class AudioRendererMixerManager;
 class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
-class ChildSharedBitmapManager;
 class CompositorForwardingMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
@@ -170,8 +170,6 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
   static RenderThreadImpl* current();
   static mojom::RenderMessageFilter* current_render_message_filter();
-  static const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-  current_thread_safe_render_message_filter();
 
   static void SetRenderMessageFilterForTesting(
       mojom::RenderMessageFilter* render_message_filter);
@@ -362,15 +360,13 @@ class CONTENT_EXPORT RenderThreadImpl
     return vc_manager_.get();
   }
 
-  ChildSharedBitmapManager* shared_bitmap_manager() const {
+  ui::ChildSharedBitmapManager* shared_bitmap_manager() const {
     DCHECK(shared_bitmap_manager_);
     return shared_bitmap_manager_.get();
   }
 
   mojom::RenderFrameMessageFilter* render_frame_message_filter();
   mojom::RenderMessageFilter* render_message_filter();
-  const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-  thread_safe_render_message_filter();
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
@@ -643,7 +639,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
-  std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ui::ChildSharedBitmapManager> shared_bitmap_manager_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;
@@ -780,8 +776,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
-  scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>
-      thread_safe_render_message_filter_;
 
   base::CancelableClosure record_purge_suspend_metric_closure_;
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;

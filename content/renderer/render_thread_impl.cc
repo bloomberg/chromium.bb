@@ -56,7 +56,6 @@
 #include "content/child/blob_storage/blob_message_filter.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_resource_message_filter.h"
-#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
@@ -145,6 +144,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/public/cpp/bitmap/child_shared_bitmap_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -555,13 +555,6 @@ mojom::RenderMessageFilter* RenderThreadImpl::current_render_message_filter() {
 }
 
 // static
-const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-RenderThreadImpl::current_thread_safe_render_message_filter() {
-  DCHECK(current());
-  return current()->thread_safe_render_message_filter();
-}
-
-// static
 void RenderThreadImpl::SetRenderMessageFilterForTesting(
     mojom::RenderMessageFilter* render_message_filter) {
   g_render_message_filter_for_testing = render_message_filter;
@@ -635,10 +628,13 @@ void RenderThreadImpl::Init(
       IsRunningInMash() ? ui::mojom::kServiceName : mojom::kBrowserServiceName,
       GetIOTaskRunner());
 
-  channel()->GetThreadSafeRemoteAssociatedInterface(
-      &thread_safe_render_message_filter_);
-  shared_bitmap_manager_.reset(
-      new ChildSharedBitmapManager(thread_safe_render_message_filter_));
+  cc::mojom::SharedBitmapManagerAssociatedPtr shared_bitmap_manager_ptr;
+  render_message_filter()->GetSharedBitmapManager(
+      mojo::MakeRequest(&shared_bitmap_manager_ptr));
+  shared_bitmap_manager_.reset(new ui::ChildSharedBitmapManager(
+      cc::mojom::ThreadSafeSharedBitmapManagerAssociatedPtr::Create(
+          shared_bitmap_manager_ptr.PassInterface(),
+          GetChannel()->ipc_task_runner_refptr())));
 
   InitializeWebKit(resource_task_queue);
 
@@ -2073,11 +2069,6 @@ mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
   if (!render_message_filter_)
     GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);
   return render_message_filter_.get();
-}
-
-const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-RenderThreadImpl::thread_safe_render_message_filter() {
-  return thread_safe_render_message_filter_;
 }
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {

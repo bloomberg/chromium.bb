@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
-#define CONTENT_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_BITMAP_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
+#define SERVICES_UI_PUBLIC_CPP_BITMAP_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
 
 #include <stdint.h>
 
@@ -12,17 +12,18 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "cc/ipc/shared_bitmap_manager.mojom.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "content/common/render_message_filter.mojom.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
-namespace content {
+namespace ui {
 
 class ChildSharedBitmapManager : public cc::SharedBitmapManager {
  public:
   explicit ChildSharedBitmapManager(
-      const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
-          render_message_filter_ptr);
+      const scoped_refptr<
+          cc::mojom::ThreadSafeSharedBitmapManagerAssociatedPtr>&
+          shared_bitmap_manager_ptr);
   ~ChildSharedBitmapManager() override;
 
   // cc::SharedBitmapManager implementation.
@@ -39,12 +40,12 @@ class ChildSharedBitmapManager : public cc::SharedBitmapManager {
   void NotifyAllocatedSharedBitmap(base::SharedMemory* memory,
                                    const cc::SharedBitmapId& id);
 
-  scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>
-      render_message_filter_ptr_;
+  scoped_refptr<cc::mojom::ThreadSafeSharedBitmapManagerAssociatedPtr>
+      shared_bitmap_manager_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildSharedBitmapManager);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_BITMAP_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_

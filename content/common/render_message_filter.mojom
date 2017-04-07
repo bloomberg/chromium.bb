@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "cc/ipc/shared_bitmap_manager.mojom";
 import "content/common/native_types.mojom";
 import "content/public/common/window_container_type.mojom";
 import "gpu/ipc/common/mailbox.mojom";
@@ -94,14 +95,5 @@ interface RenderMessageFilter {
   [Sync] CreateFullscreenWidget(int32 opener_id)
       => (int32 route_id);
 
-  // The 2 following methods belong to a future CC related mojom.
-  // For now they need to be part of this channel associated interface to
-  // prevent running into message ordering issues (CC trying to access a shared
-  // bitmap before the registration message below made it to the browser).
-  //
-  // Informs the browser that the child allocated a shared bitmap.
-  AllocatedSharedBitmap(handle<shared_buffer> buffer, gpu.mojom.Mailbox id);
-
-  // Informs the browser that the child deleted a shared bitmap.
-  DeletedSharedBitmap(gpu.mojom.Mailbox id);
+  GetSharedBitmapManager(associated cc.mojom.SharedBitmapManager& bitmap_manager);
 };

@@ -476,6 +476,7 @@ target(link_target_type, "renderer") {
     "//services/device/public/interfaces:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
+    "//services/ui/public/cpp/bitmap",
     "//services/ui/public/cpp/gpu",
     "//skia",
     "//storage/common",

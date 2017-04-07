@@ -135,7 +135,8 @@ RenderMessageFilter::RenderMessageFilter(
                            arraysize(kFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
-      bitmap_manager_client_(HostSharedBitmapManager::current()),
+      bitmap_manager_client_(
+          display_compositor::HostSharedBitmapManager::current()),
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
@@ -260,6 +261,11 @@ void RenderMessageFilter::CreateFullscreenWidget(
   callback.Run(route_id);
 }
 
+void RenderMessageFilter::GetSharedBitmapManager(
+    cc::mojom::SharedBitmapManagerAssociatedRequest request) {
+  bitmap_manager_client_.Bind(std::move(request));
+}
+
 #if defined(OS_MACOSX)
 
 void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
@@ -289,21 +295,6 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
 }
 
 #endif  // defined(OS_MACOSX)
-
-void RenderMessageFilter::AllocatedSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
-    const cc::SharedBitmapId& id) {
-  base::SharedMemoryHandle memory_handle;
-  size_t size;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(buffer), &memory_handle, &size, NULL);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-  bitmap_manager_client_.ChildAllocatedSharedBitmap(size, memory_handle, id);
-}
-
-void RenderMessageFilter::DeletedSharedBitmap(const cc::SharedBitmapId& id) {
-  bitmap_manager_client_.ChildDeletedSharedBitmap(id);
-}
 
 #if defined(OS_LINUX)
 void RenderMessageFilter::SetThreadPriorityOnFileThread(
