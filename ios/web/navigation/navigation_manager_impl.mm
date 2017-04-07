@@ -192,7 +192,8 @@ void NavigationManagerImpl::AddPendingItem(
   [session_controller_ addPendingItem:url
                              referrer:referrer
                            transition:navigation_type
-                       initiationType:initiation_type];
+                       initiationType:initiation_type
+              userAgentOverrideOption:user_agent_override_option];
 
   // Set the user agent type for web URLs.
   NavigationItem* pending_item = GetPendingItem();

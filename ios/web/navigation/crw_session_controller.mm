@@ -80,6 +80,21 @@ initiationType:(web::NavigationInitiationType)initiationType;
 // |index| in |items| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
 - (BOOL)isRedirectTransitionForItemAtIndex:(size_t)index;
 
+// Should create a new pending item if the new pending item is not a duplicate
+// of the last added or commited item. Returns YES if one of the following rules
+// apply:
+// 1. There is no last added or committed item.
+// 2. The new item has different url from the last added or commited item.
+// 3. Url is the same, but the new item is a form submission resulted from the
+//    last added or committed item.
+// 4. Url is the same, but new item is a reload with different user agent type
+//    resulted from last added or commited item.
+- (BOOL)shouldCreatePendingItemWithURL:(const GURL&)URL
+                            transition:(ui::PageTransition)transition
+               userAgentOverrideOption:
+                   (web::NavigationManager::UserAgentOverrideOption)
+                       userAgentOverrideOption;
+
 @end
 
 @implementation CRWSessionController
@@ -268,9 +283,11 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (void)addPendingItem:(const GURL&)url
-              referrer:(const web::Referrer&)ref
-            transition:(ui::PageTransition)trans
-        initiationType:(web::NavigationInitiationType)initiationType {
+                   referrer:(const web::Referrer&)ref
+                 transition:(ui::PageTransition)trans
+             initiationType:(web::NavigationInitiationType)initiationType
+    userAgentOverrideOption:(web::NavigationManager::UserAgentOverrideOption)
+                                userAgentOverrideOption {
   // Server side redirects are handled by updating existing pending item instead
   // of adding a new item.
   DCHECK((trans & ui::PAGE_TRANSITION_SERVER_REDIRECT) == 0);
@@ -278,35 +295,16 @@ initiationType:(web::NavigationInitiationType)initiationType;
   [self discardTransientItem];
   self.pendingItemIndex = -1;
 
-  // Don't create a new item if it's already the same as the current item,
-  // allowing this routine to be called multiple times in a row without issue.
-  // Note: CRWSessionController currently has the responsibility to distinguish
-  // between new navigations and history stack navigation, hence the inclusion
-  // of specific transiton type logic here, in order to make it reliable with
-  // real-world observed behavior.
-  // TODO(crbug.com/676129): Fix the way changes are detected/reported elsewhere
-  // in the web layer so that this hack can be removed.
-  // Remove the workaround code from -presentSafeBrowsingWarningForResource:.
-  web::NavigationItemImpl* currentItem = self.currentItem;
-  if (currentItem) {
-    BOOL hasSameURL = currentItem->GetURL() == url;
-    BOOL isPendingTransitionFormSubmit =
-        PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT);
-    BOOL isCurrentTransitionFormSubmit = PageTransitionCoreTypeIs(
-        currentItem->GetTransitionType(), ui::PAGE_TRANSITION_FORM_SUBMIT);
-    BOOL shouldCreatePendingItem =
-        !hasSameURL ||
-        (isPendingTransitionFormSubmit && !isCurrentTransitionFormSubmit);
-
-    if (!shouldCreatePendingItem) {
-      // Send the notification anyway, to preserve old behavior. It's unknown
-      // whether anything currently relies on this, but since both this whole
-      // hack and the content facade will both be going away, it's not worth
-      // trying to unwind.
-      if (_navigationManager && _navigationManager->GetFacadeDelegate())
-        _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
-      return;
-    }
+  if (![self shouldCreatePendingItemWithURL:url
+                                 transition:trans
+                    userAgentOverrideOption:userAgentOverrideOption]) {
+    // Send the notification anyway, to preserve old behavior. It's unknown
+    // whether anything currently relies on this, but since both this whole
+    // hack and the content facade will both be going away, it's not worth
+    // trying to unwind.
+    if (_navigationManager && _navigationManager->GetFacadeDelegate())
+      _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
+    return;
   }
 
   _pendingItem = [self itemWithURL:url
@@ -317,6 +315,64 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (_navigationManager && _navigationManager->GetFacadeDelegate())
     _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
   DCHECK_EQ(-1, self.pendingItemIndex);
+}
+
+- (BOOL)shouldCreatePendingItemWithURL:(const GURL&)URL
+                            transition:(ui::PageTransition)transition
+               userAgentOverrideOption:
+                   (web::NavigationManager::UserAgentOverrideOption)
+                       userAgentOverrideOption {
+  // Note: CRWSessionController currently has the responsibility to distinguish
+  // between new navigations and history stack navigation, hence the inclusion
+  // of specific transiton type logic here, in order to make it reliable with
+  // real-world observed behavior.
+  // TODO(crbug.com/676129): Fix the way changes are detected/reported elsewhere
+  // in the web layer so that this hack can be removed.
+  // Remove the workaround code from -presentSafeBrowsingWarningForResource:.
+  web::NavigationItemImpl* currentItem = self.currentItem;
+  if (!currentItem)
+    return YES;
+
+  // User agent override option should always be different from the user agent
+  // type of the pending item, or the last committed item if pending doesn't
+  // exist.
+  DCHECK(userAgentOverrideOption !=
+             web::NavigationManager::UserAgentOverrideOption::DESKTOP ||
+         currentItem->GetUserAgentType() != web::UserAgentType::DESKTOP);
+  DCHECK(userAgentOverrideOption !=
+             web::NavigationManager::UserAgentOverrideOption::MOBILE ||
+         currentItem->GetUserAgentType() != web::UserAgentType::MOBILE);
+
+  BOOL hasSameURL = self.currentItem->GetURL() == URL;
+  if (!hasSameURL) {
+    // Different url indicates that it's not a duplicate item.
+    return YES;
+  }
+
+  BOOL isPendingTransitionFormSubmit =
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_FORM_SUBMIT);
+  BOOL isCurrentTransitionFormSubmit = PageTransitionCoreTypeIs(
+      currentItem->GetTransitionType(), ui::PAGE_TRANSITION_FORM_SUBMIT);
+  if (isPendingTransitionFormSubmit && !isCurrentTransitionFormSubmit) {
+    // |isPendingTransitionFormSubmit| indicates that the new item is a form
+    // submission resulted from the last added or commited item, and
+    // |!isCurrentTransitionFormSubmit| shows that the form submission is not
+    // counted multiple times.
+    return YES;
+  }
+
+  BOOL isPendingTransitionReload =
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
+  BOOL isInheritingUserAgentType =
+      userAgentOverrideOption ==
+      web::NavigationManager::UserAgentOverrideOption::INHERIT;
+  if (isPendingTransitionReload && !isInheritingUserAgentType) {
+    // Overriding user agent type to MOBILE or DESKTOP indicates that the new
+    // new item is a reload with different user agent type.
+    return YES;
+  }
+
+  return NO;
 }
 
 - (void)updatePendingItem:(const GURL&)url {

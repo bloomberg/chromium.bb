@@ -109,10 +109,12 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
                                            navigationItems:std::move(nav_items)
                                     lastCommittedItemIndex:0]);
     [session_controller
-        addPendingItem:GURL(item_url_spec)
-              referrer:Referrer()
-            transition:ui::PAGE_TRANSITION_LINK
-        initiationType:web::NavigationInitiationType::USER_INITIATED];
+                 addPendingItem:GURL(item_url_spec)
+                       referrer:Referrer()
+                     transition:ui::PAGE_TRANSITION_LINK
+                 initiationType:web::NavigationInitiationType::USER_INITIATED
+        userAgentOverrideOption:NavigationManager::UserAgentOverrideOption::
+                                    INHERIT];
     [session_controller commitPendingItem];
 
     return session_controller.autorelease();

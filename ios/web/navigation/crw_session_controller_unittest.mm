@@ -23,6 +23,8 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+using UserAgentOverrideOption = web::NavigationManager::UserAgentOverrideOption;
+
 @interface CRWSessionController (Testing)
 - (const GURL&)URLForItemAtIndex:(size_t)index;
 - (const GURL&)currentURL;
@@ -66,10 +68,11 @@ TEST_F(CRWSessionControllerTest, Init) {
 // Tests session controller state after setting a pending index.
 TEST_F(CRWSessionControllerTest, SetPendingIndex) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
@@ -81,10 +84,11 @@ TEST_F(CRWSessionControllerTest, SetPendingIndex) {
 
 TEST_F(CRWSessionControllerTest, addPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   EXPECT_TRUE([session_controller_ items].empty());
   EXPECT_EQ(
@@ -94,17 +98,19 @@ TEST_F(CRWSessionControllerTest, addPendingItem) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemWithCommittedItems) {
   [session_controller_
-      addPendingItem:GURL("http://www.committed.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.committed.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
   EXPECT_EQ(GURL("http://www.committed.url.com/"),
@@ -117,16 +123,18 @@ TEST_F(CRWSessionControllerTest, addPendingItemWithCommittedItems) {
 // Tests that adding a pending item resets pending item index.
 TEST_F(CRWSessionControllerTest, addPendingItemWithExistingPendingItemIndex) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Set 0 as pending item index.
@@ -137,10 +145,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemWithExistingPendingItemIndex) {
 
   // Add a pending item, which should drop pending navigation index.
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   EXPECT_EQ(GURL("http://www.example.com/1"),
             [session_controller_ pendingItem]->GetURL());
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
@@ -148,15 +157,17 @@ TEST_F(CRWSessionControllerTest, addPendingItemWithExistingPendingItemIndex) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemOverriding) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_
-      addPendingItem:GURL("http://www.another.url.com")
-            referrer:MakeReferrer("http://www.another.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.another.url.com")
+                     referrer:MakeReferrer("http://www.another.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   EXPECT_TRUE([session_controller_ items].empty());
   EXPECT_EQ(
@@ -166,10 +177,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemOverriding) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommit) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
@@ -181,15 +193,17 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommit) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemOverridingAndCommit) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_
-      addPendingItem:GURL("http://www.another.url.com")
-            referrer:MakeReferrer("http://www.another.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.another.url.com")
+                     referrer:MakeReferrer("http://www.another.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
@@ -201,17 +215,19 @@ TEST_F(CRWSessionControllerTest, addPendingItemOverridingAndCommit) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommitMultiple) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   [session_controller_
-      addPendingItem:GURL("http://www.another.url.com")
-            referrer:MakeReferrer("http://www.another.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.another.url.com")
+                     referrer:MakeReferrer("http://www.another.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(2U, [session_controller_ items].size());
@@ -225,10 +241,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommitMultiple) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndDiscard) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ discardNonCommittedItems];
 
   EXPECT_TRUE([session_controller_ items].empty());
@@ -238,10 +255,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndDiscard) {
 // Tests discarding pending item added via |setPendingItemIndex:| call.
 TEST_F(CRWSessionControllerTest, setPendingItemIndexAndDiscard) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   [session_controller_ setPendingItemIndex:0];
@@ -255,17 +273,19 @@ TEST_F(CRWSessionControllerTest, setPendingItemIndexAndDiscard) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndDiscardAndAddAndCommit) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ discardNonCommittedItems];
 
   [session_controller_
-      addPendingItem:GURL("http://www.another.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.another.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
@@ -277,17 +297,19 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndDiscardAndAddAndCommit) {
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommitAndAddAndDiscard) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   [session_controller_
-      addPendingItem:GURL("http://www.another.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.another.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ discardNonCommittedItems];
 
   EXPECT_EQ(1U, [session_controller_ items].size());
@@ -309,10 +331,11 @@ TEST_F(CRWSessionControllerTest,
        commitPendingItemWithoutPendingItemWithCommittedItem) {
   // Setup committed item.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/")
-            referrer:MakeReferrer("http://www.referrer.com/")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/")
+                     referrer:MakeReferrer("http://www.referrer.com/")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Commit pending item when there is no such one
@@ -327,22 +350,25 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
   // Make 3 items.
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/1")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/2")
-            referrer:MakeReferrer("http://www.example.com/c")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:MakeReferrer("http://www.example.com/c")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Go back to the first item.
@@ -350,10 +376,11 @@ TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
 
   // Create and commit a new pending item.
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/2")
-            referrer:MakeReferrer("http://www.example.com/c")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:MakeReferrer("http://www.example.com/c")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // All forward items should go away.
@@ -366,22 +393,25 @@ TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardItems) {
 // Tests committing pending item index from the middle.
 TEST_F(CRWSessionControllerTest, commitPendingItemIndex) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/2")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   ASSERT_EQ(3U, [session_controller_ items].size());
 
@@ -417,10 +447,11 @@ TEST_F(CRWSessionControllerTest,
        DiscardPendingItemWithoutPendingItemWithCommittedItem) {
   // Setup committed item
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Discard noncommitted items when there is no such one
@@ -441,10 +472,11 @@ TEST_F(CRWSessionControllerTest, updatePendingItemWithoutPendingItem) {
 
 TEST_F(CRWSessionControllerTest, updatePendingItemWithPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
 
   EXPECT_EQ(
@@ -455,10 +487,11 @@ TEST_F(CRWSessionControllerTest, updatePendingItemWithPendingItem) {
 TEST_F(CRWSessionControllerTest,
        updatePendingItemWithPendingItemAlreadyCommited) {
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
   [session_controller_ commitPendingItem];
@@ -474,31 +507,35 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest, CopyState) {
   // Add 1 committed and 1 pending item to target controller.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/2")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/2")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/3")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/3")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [other_session_controller commitPendingItem];
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   // Insert and verify the state of target session controller.
   EXPECT_TRUE([session_controller_ canPruneAllButLastCommittedItem]);
@@ -522,16 +559,18 @@ TEST_F(CRWSessionControllerTest, CopyState) {
 TEST_F(CRWSessionControllerTest, CopyStateFromEmptySessionController) {
   // Add 2 committed items to target controller.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Create empty source session controller.
@@ -562,16 +601,18 @@ TEST_F(CRWSessionControllerTest, CopyStateToEmptySessionController) {
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [other_session_controller commitPendingItem];
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   // Attempt to copy |other_session_controller|'s state and verify that
   // |session_controller_| is unchanged.
@@ -590,32 +631,36 @@ TEST_F(CRWSessionControllerTest, CopyStateToEmptySessionController) {
 TEST_F(CRWSessionControllerTest, CopyStateDuringPendingHistoryNavigation) {
   // Add 1 committed and 1 pending item to target controller.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/2")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/2")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [other_session_controller commitPendingItem];
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   // Set the pending item index to the first item.
   [session_controller_ setPendingItemIndex:0];
@@ -639,33 +684,37 @@ TEST_F(CRWSessionControllerTest, CopyStateDuringPendingHistoryNavigation) {
 TEST_F(CRWSessionControllerTest, CopyStateWithTransientItem) {
   // Add 1 committed and 1 pending item to target controller.
   [session_controller_
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   GURL second_url = GURL("http://www.url.com/2");
   [session_controller_
-      addPendingItem:second_url
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:second_url
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ addTransientItemWithURL:second_url];
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/0")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/0")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [other_session_controller commitPendingItem];
   [other_session_controller
-      addPendingItem:GURL("http://www.url.com/1")
-            referrer:web::Referrer()
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com/1")
+                     referrer:web::Referrer()
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
 
   // Attempt to copy |other_session_controller|'s state and verify that
   // |session_controller_| is unchanged.
@@ -750,24 +799,27 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
 TEST_F(CRWSessionControllerTest, PreviousNavigationItem) {
   EXPECT_EQ(session_controller_.get().previousItemIndex, -1);
   [session_controller_
-      addPendingItem:GURL("http://www.url.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(session_controller_.get().previousItemIndex, -1);
   [session_controller_
-      addPendingItem:GURL("http://www.url1.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url1.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(session_controller_.get().previousItemIndex, 0);
   [session_controller_
-      addPendingItem:GURL("http://www.url2.com")
-            referrer:MakeReferrer("http://www.referer.com")
-          transition:ui::PAGE_TRANSITION_TYPED
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.url2.com")
+                     referrer:MakeReferrer("http://www.referer.com")
+                   transition:ui::PAGE_TRANSITION_TYPED
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(session_controller_.get().previousItemIndex, 1);
@@ -913,28 +965,32 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentItem) {
 
 TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/1")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/redirect")
-            referrer:MakeReferrer("http://www.example.com/r")
-          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/redirect")
+                     referrer:MakeReferrer("http://www.example.com/r")
+                   transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/2")
-            referrer:MakeReferrer("http://www.example.com/c")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:MakeReferrer("http://www.example.com/c")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(3, session_controller_.get().lastCommittedItemIndex);
@@ -957,34 +1013,39 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
 // Tests going to items with existing and non-existing indices.
 TEST_F(CRWSessionControllerTest, GoToItemAtIndex) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/1")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/redirect")
-            referrer:MakeReferrer("http://www.example.com/r")
-          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/redirect")
+                     referrer:MakeReferrer("http://www.example.com/r")
+                   transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/2")
-            referrer:MakeReferrer("http://www.example.com/c")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:MakeReferrer("http://www.example.com/c")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/3")
-            referrer:MakeReferrer("http://www.example.com/d")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/3")
+                     referrer:MakeReferrer("http://www.example.com/d")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   EXPECT_EQ(3, session_controller_.get().lastCommittedItemIndex);
   EXPECT_EQ(2, session_controller_.get().previousItemIndex);
@@ -1033,10 +1094,11 @@ TEST_F(CRWSessionControllerTest, VisibleItemWithSingleTransientItem) {
 // item.
 TEST_F(CRWSessionControllerTest, VisibleItemWithCommittedAndTransientItems) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
@@ -1048,10 +1110,11 @@ TEST_F(CRWSessionControllerTest, VisibleItemWithCommittedAndTransientItems) {
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithSingleUserInitiatedPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
   ASSERT_TRUE(visible_item);
   EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
@@ -1062,16 +1125,18 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithCommittedAndUserInitiatedPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
   ASSERT_TRUE(visible_item);
   EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
@@ -1082,10 +1147,11 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithSingleRendererInitiatedPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
   ASSERT_FALSE(visible_item);
 }
@@ -1095,16 +1161,18 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithCommittedAndRendererInitiatedPendingItem) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   web::NavigationItem* visible_item = [session_controller_ visibleItem];
   ASSERT_TRUE(visible_item);
   EXPECT_EQ("http://www.example.com/", visible_item->GetURL().spec());
@@ -1114,16 +1182,18 @@ TEST_F(CRWSessionControllerTest,
 // navigation index.
 TEST_F(CRWSessionControllerTest, VisibleItemWithPendingNavigationIndex) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_LINK
-      initiationType:web::NavigationInitiationType::USER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
 
   [session_controller_ setPendingItemIndex:0];
@@ -1137,16 +1207,18 @@ TEST_F(CRWSessionControllerTest, VisibleItemWithPendingNavigationIndex) {
 // redirects.
 TEST_F(CRWSessionControllerTest, BackwardItemsForAllRedirects) {
   [session_controller_
-      addPendingItem:GURL("http://www.example.com")
-            referrer:MakeReferrer("http://www.example.com/a")
-          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   [session_controller_
-      addPendingItem:GURL("http://www.example.com/0")
-            referrer:MakeReferrer("http://www.example.com/b")
-          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+               initiationType:web::NavigationInitiationType::RENDERER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(0U, [session_controller_ backwardItems].size());
 }

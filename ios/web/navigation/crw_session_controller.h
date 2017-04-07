@@ -9,6 +9,7 @@
 #include <vector>
 
 #import "ios/web/navigation/navigation_item_impl_list.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -77,14 +78,17 @@ struct Referrer;
 // Sets the corresponding BrowserState.
 - (void)setBrowserState:(web::BrowserState*)browserState;
 
-// Add a new item with the given url, referrer, and navigation type, making it
-// the current item. If pending item is the same as current item, this does
-// nothing. |referrer| may be nil if there isn't one. The item starts out as
-// pending, and will be lost unless |-commitPendingItem| is called.
+// Add a new item with the given url, referrer, navigation type and user agent
+// override option, making it the current item. If pending item is the same as
+// current item, this does nothing. |referrer| may be nil if there isn't one.
+// The item starts out as pending, and will be lost unless |-commitPendingItem|
+// is called.
 - (void)addPendingItem:(const GURL&)url
-              referrer:(const web::Referrer&)referrer
-            transition:(ui::PageTransition)type
-        initiationType:(web::NavigationInitiationType)initiationType;
+                   referrer:(const web::Referrer&)referrer
+                 transition:(ui::PageTransition)type
+             initiationType:(web::NavigationInitiationType)initiationType
+    userAgentOverrideOption:(web::NavigationManager::UserAgentOverrideOption)
+                                userAgentOverrideOption;
 
 // Updates the URL of the yet to be committed pending item. Useful for page
 // redirects. Does nothing if there is no pending item.
