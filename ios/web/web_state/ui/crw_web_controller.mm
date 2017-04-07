@@ -4303,14 +4303,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
-  // Invalid URLs should not be loaded.  However, simply doing nothing upon
-  // tapping a link or button is a jarring user experience.  Instead, cancel
-  // the invalid navigation and load about:blank if navigation was requested for
-  // the main frame.
+  // Invalid URLs should not be loaded.
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
   if (!requestURL.is_valid()) {
     decisionHandler(WKNavigationActionPolicyCancel);
-    if (action.targetFrame.mainFrame) {
+    // The HTML5 spec indicates that window.open with an invalid URL should open
+    // about:blank.
+    BOOL isFirstLoadInOpenedWindow =
+        self.webState->HasOpener() &&
+        !self.webState->GetNavigationManager()->GetLastCommittedItem();
+    BOOL isMainFrame = action.targetFrame.mainFrame;
+    if (isFirstLoadInOpenedWindow && isMainFrame) {
       GURL aboutBlankURL(url::kAboutBlankURL);
       web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
       loadParams.referrer = [self currentReferrer];

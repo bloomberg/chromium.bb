@@ -11,8 +11,20 @@ var updateOnLoadText = function(text) {
   document.getElementById('on-load-div').innerHTML = text;
 }
 
+var updateNoOpText = function() {
+  document.getElementById('no-op').innerHTML = 'NoOpText';
+}
+
+var buttonWasTapped = function() {
+  setTimeout(updateNoOpText, 500);
+}
+
 var isOnLoadTextVisible = function() {
   return document.getElementById('on-load-div').innerHTML == 'OnLoadText';
+}
+
+var isNoOpTextVisible = function() {
+  return document.getElementById('no-op').innerHTML == 'NoOpText';
 }
 
 // Updates the url-to-load div with |text|.  This value is later used by the
@@ -30,20 +42,24 @@ var getUrl = function() {
 var locationAssign = function() {
   updateOnLoadText('');
   window.location.assign(getUrl());
+  buttonWasTapped();
 }
 
 var locationReplace = function() {
   updateOnLoadText('');
   window.location.replace(getUrl());
+  buttonWasTapped();
 }
 
 var locationReload = function() {
   updateOnLoadText('');
   window.location.reload();
+  buttonWasTapped();
 }
 
 var setLocationToDOMString = function() {
   updateOnLoadText('');
   window.location = getUrl();
+  buttonWasTapped();
 }
 

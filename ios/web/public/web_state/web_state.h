@@ -62,7 +62,7 @@ class WebState : public base::SupportsUserData {
     web::BrowserState* browser_state;
 
     // Whether the WebState is created as the result of a window.open or by
-    // clicking a link with a blank targer.  Used to determin whether the
+    // clicking a link with a blank target.  Used to determine whether the
     // WebState is allowed to be closed via window.close().
     bool created_with_opener;
   };
