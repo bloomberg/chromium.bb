@@ -14,6 +14,8 @@ import junit.framework.Assert;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarCompactLayout;
+import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 
 
@@ -61,6 +63,16 @@ public class TranslateUtil {
         Assert.assertNotNull(view);
         String actualText = findInfoBarText(view);
         Assert.assertEquals(expectedText, actualText);
+    }
+
+    public static void assertCompactTranslateInfoBar(InfoBar infoBar) {
+        Assert.assertTrue(infoBar.getView() instanceof InfoBarCompactLayout);
+
+        View content = infoBar.getView().findViewById(R.id.translate_infobar_content);
+        Assert.assertNotNull(content);
+
+        View tabLayout = content.findViewById(R.id.translate_infobar_tabs);
+        Assert.assertTrue(tabLayout instanceof TranslateTabLayout);
     }
 
     private static String findInfoBarText(View view) {

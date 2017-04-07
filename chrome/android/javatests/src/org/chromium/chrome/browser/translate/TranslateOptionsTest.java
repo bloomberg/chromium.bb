@@ -10,29 +10,24 @@ import android.test.AndroidTestCase;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.TranslateOptions;
 
-import java.util.ArrayList;
-
 /**
  * Test for TranslateOptions.
  */
 public class TranslateOptionsTest extends AndroidTestCase {
     private static final boolean ALWAYS_TRANSLATE = true;
-    private ArrayList<TranslateOptions.TranslateLanguagePair> mLanguages = null;
+    private static final String[] LANGUAGES = {"English", "Spanish", "French"};
+    private static final String[] CODES = {"en", "es", "fr"};
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mLanguages = new ArrayList<TranslateOptions.TranslateLanguagePair>();
-        mLanguages.add(new TranslateOptions.TranslateLanguagePair("en", "English"));
-        mLanguages.add(new TranslateOptions.TranslateLanguagePair("es", "Spanish"));
-        mLanguages.add(new TranslateOptions.TranslateLanguagePair("fr", "French"));
     }
 
     @SmallTest
     @Feature({"Translate"})
     public void testNoChanges() {
         TranslateOptions options =
-                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
+                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
         assertEquals("English", options.sourceLanguageName());
         assertEquals("Spanish", options.targetLanguageName());
         assertEquals("en", options.sourceLanguageCode());
@@ -47,7 +42,7 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @Feature({"Translate"})
     public void testBasicLanguageChanges() {
         TranslateOptions options =
-                new TranslateOptions("en", "es", mLanguages, !ALWAYS_TRANSLATE, true);
+                TranslateOptions.create("en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, true);
         options.setTargetLanguage("fr");
         options.setSourceLanguage("en");
         assertEquals("English", options.sourceLanguageName());
@@ -68,7 +63,7 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @Feature({"Translate"})
     public void testInvalidLanguageChanges() {
         TranslateOptions options =
-                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
+                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
 
         // Same target language as source
         assertFalse(options.setTargetLanguage("en"));
@@ -91,7 +86,7 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @Feature({"Translate"})
     public void testBasicOptionsChanges() {
         TranslateOptions options =
-                new TranslateOptions("en", "es", mLanguages, !ALWAYS_TRANSLATE, false);
+                TranslateOptions.create("en", "es", LANGUAGES, CODES, !ALWAYS_TRANSLATE, false);
         assertFalse(options.optionsChanged());
         options.toggleNeverTranslateDomainState(true);
         assertTrue(options.neverTranslateDomainState());
@@ -116,7 +111,7 @@ public class TranslateOptionsTest extends AndroidTestCase {
     @Feature({"Translate"})
     public void testInvalidOptionsChanges() {
         TranslateOptions options =
-                new TranslateOptions("en", "es", mLanguages, ALWAYS_TRANSLATE, false);
+                TranslateOptions.create("en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false);
 
         // Never translate language should not work, but never translate domain
         // should

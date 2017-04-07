@@ -104,7 +104,7 @@ void TranslateInfoBarDelegate::Create(
     old_infobar = infobar_manager->infobar_at(i);
     old_delegate = old_infobar->delegate()->AsTranslateInfoBarDelegate();
     if (old_delegate) {
-      if (!replace_existing_infobar)
+      if (!replace_existing_infobar || IsCompactUIEnabled())
         return;
       break;
     }
@@ -143,6 +143,8 @@ void TranslateInfoBarDelegate::Translate() {
 
 void TranslateInfoBarDelegate::RevertTranslation() {
   ui_delegate_.RevertTranslation();
+  if (IsCompactUIEnabled())
+    return;
   infobar()->RemoveSelf();
 }
 

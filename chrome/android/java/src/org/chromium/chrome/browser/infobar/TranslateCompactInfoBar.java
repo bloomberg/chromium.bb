@@ -6,36 +6,34 @@ package org.chromium.chrome.browser.infobar;
 
 import android.support.design.widget.TabLayout;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 
 /**
  * Java version of the compcat translate infobar
  */
-class TranslateCompactInfoBar extends InfoBar {
+class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelectedListener {
+    private final TranslateOptions mOptions;
+
     private long mNativeTranslateInfoBarPtr;
+    private TranslateTabLayout mTabLayout;
 
     @CalledByNative
-    private static InfoBar create() {
-        return new TranslateCompactInfoBar();
+    private static InfoBar create(String sourceLanguageCode, String targetLanguageCode,
+            String[] languages, String[] codes) {
+        return new TranslateCompactInfoBar(
+                sourceLanguageCode, targetLanguageCode, languages, codes);
     }
 
-    TranslateCompactInfoBar() {
+    TranslateCompactInfoBar(String sourceLanguageCode, String targetLanguageCode,
+            String[] languages, String[] codes) {
         super(R.drawable.infobar_translate, null, null);
-    }
-
-    /**
-     * Provide a custom view as infobar content to replace a standard infobar layout.
-     */
-    protected View createCustomContent(ViewGroup parent) {
-        LinearLayout content =
-                (LinearLayout) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_translate_compact_content, parent, false);
-        return content;
+        // TODO(googleo): Set correct values for the last 2.
+        mOptions = TranslateOptions.create(
+                sourceLanguageCode, targetLanguageCode, languages, codes, false, false);
     }
 
     @Override
@@ -44,30 +42,28 @@ class TranslateCompactInfoBar extends InfoBar {
     }
 
     @Override
-    protected void createCompactLayoutContent(InfoBarCompactLayout layout) {
-        // TODO(googleo): Put the real ViewGroup inflation here.
-        TabLayout tabLayout = new TabLayout(layout.getContext());
-        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 3"));
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 4"));
-        tabLayout.addTab(tabLayout.newTab().setText("Tab 5"));
-        layout.addContent(tabLayout, 1.0f);
+    protected void createCompactLayoutContent(InfoBarCompactLayout parent) {
+        LinearLayout content =
+                (LinearLayout) LayoutInflater.from(getContext())
+                        .inflate(R.layout.infobar_translate_compact_content, parent, false);
+
+        mTabLayout = (TranslateTabLayout) content.findViewById(R.id.translate_infobar_tabs);
+        mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
+        mTabLayout.addOnTabSelectedListener(this);
+
+        parent.addContent(content, 1.0f);
     }
 
-    @Override
-    public void createContent(InfoBarLayout layout) {
-        // TODO(googleo): Draw custom view created by createCustomContent when it's ready.
-        // Eg. layout.setCustomView(createCustomContent(layout));
-        layout.setMessage("Compact Translate Infobar Testing...");
-    }
-
-    @Override
-    public void onButtonClicked(boolean isPrimaryButton) {
-        if (mNativeTranslateInfoBarPtr == 0) return;
-
-        // TODO(googleo): Handle the button click on this infobar.
+    @CalledByNative
+    private void onPageTranslated(int errorType) {
+        if (mTabLayout != null) {
+            // Success
+            if (errorType == 0) {
+                mTabLayout.hideProgressBar();
+            } else {
+                mTabLayout.stopProgressBarAndRevertBack();
+            }
+        }
     }
 
     @CalledByNative
@@ -80,6 +76,22 @@ class TranslateCompactInfoBar extends InfoBar {
         mNativeTranslateInfoBarPtr = 0;
         super.onNativeDestroyed();
     }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        if (tab.getPosition() == 0) {
+            onButtonClicked(ActionType.TRANSLATE_SHOW_ORIGINAL);
+        } else {
+            mTabLayout.showProgressBarOnTab(tab.getPosition());
+            onButtonClicked(ActionType.TRANSLATE);
+        }
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {}
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {}
 
     private native void nativeApplyTranslateOptions(long nativeTranslateCompactInfoBar);
 }

@@ -100,6 +100,9 @@
     <!-- Dimensions for compact infobars are a little shorter. -->
     <dimen name="infobar_compact_size">48dp</dimen>
 
+    <!-- Dimensions for compact translate infobar. -->
+    <dimen name="infobar_translate_fade_edge_length">18dp</dimen>
+
     <!-- Contextual search dimensions -->
     <dimen name="contextual_search_peek_promo_height">48dp</dimen>
     <dimen name="contextual_search_peek_promo_padding">12dp</dimen>

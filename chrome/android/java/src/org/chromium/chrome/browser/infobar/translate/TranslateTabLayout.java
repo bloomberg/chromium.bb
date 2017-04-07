@@ -91,13 +91,24 @@ public class TranslateTabLayout extends TabLayout {
         }
         mTabShowingProgressBar = getTabAt(tabPos);
 
-        mTabShowingProgressBar.select();
-
         // TODO(martiw) See if we need to setContentDescription as "Translating" here.
 
         if (tabIsSupported(mTabShowingProgressBar)) {
             ((TranslateTabContent) mTabShowingProgressBar.getCustomView()).showProgressBar();
         }
+    }
+
+    /**
+     * Hide the spinning progress bar in the tabs.
+     */
+    public void hideProgressBar() {
+        if (mTabShowingProgressBar == null) return;
+
+        if (tabIsSupported(mTabShowingProgressBar)) {
+            ((TranslateTabContent) mTabShowingProgressBar.getCustomView()).hideProgressBar();
+        }
+
+        mTabShowingProgressBar = null;
     }
 
     /** Stop the spinning progress bar. */

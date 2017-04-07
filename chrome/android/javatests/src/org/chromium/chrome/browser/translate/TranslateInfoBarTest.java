@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.translate;
 
 import android.support.test.filters.MediumTest;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -31,6 +32,8 @@ import java.util.concurrent.TimeoutException;
 public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TRANSLATE_PAGE = "/chrome/test/data/translate/fr_test.html";
+    private static final String ENABLE_COMPACT_UI_FEATURE = "enable-features=TranslateCompactUI";
+    private static final String DISABLE_COMPACT_UI_FEATURE = "disable-features=TranslateCompactUI";
     private static final String NEVER_TRANSLATE_MESSAGE =
             "Would you like Google Chrome to offer to translate French pages from this"
                     + " site next time?";
@@ -64,11 +67,26 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     /**
+     * Test the new translate compact UI.
+     */
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+    @CommandLineFlags.Add(ENABLE_COMPACT_UI_FEATURE)
+    public void testTranslateCompactInfoBarAppears() throws InterruptedException, TimeoutException {
+        loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
+        mListener.addInfoBarAnimationFinished("InfoBar not opened.");
+        InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
+        TranslateUtil.assertCompactTranslateInfoBar(infoBar);
+    }
+
+    /**
      * Test the translate language panel.
      */
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+    @CommandLineFlags.Add(DISABLE_COMPACT_UI_FEATURE)
     public void testTranslateLanguagePanel() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not opened.");
@@ -84,6 +102,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
+    @CommandLineFlags.Add(DISABLE_COMPACT_UI_FEATURE)
     public void testTranslateNeverPanel() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not opened.");

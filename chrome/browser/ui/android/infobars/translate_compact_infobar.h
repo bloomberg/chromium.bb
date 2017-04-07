@@ -9,12 +9,15 @@
 #include "base/macros.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 
 namespace translate {
 class TranslateInfoBarDelegate;
 }
 
-class TranslateCompactInfoBar : public InfoBarAndroid {
+class TranslateCompactInfoBar
+    : public InfoBarAndroid,
+      public translate::ContentTranslateDriver::Observer {
  public:
   explicit TranslateCompactInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate);
@@ -23,6 +26,11 @@ class TranslateCompactInfoBar : public InfoBarAndroid {
   // JNI methods specific to translate.
   void ApplyTranslateOptions(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
+
+  // ContentTranslateDriver::Observer implementation.
+  void OnPageTranslated(const std::string& original_lang,
+                        const std::string& translated_lang,
+                        translate::TranslateErrors::Type error_type) override;
 
  private:
   // InfoBarAndroid:
@@ -33,6 +41,7 @@ class TranslateCompactInfoBar : public InfoBarAndroid {
       const base::android::JavaRef<jobject>& java_info_bar) override;
 
   translate::TranslateInfoBarDelegate* GetDelegate();
+  translate::ContentTranslateDriver* translate_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateCompactInfoBar);
 };
@@ -40,4 +49,4 @@ class TranslateCompactInfoBar : public InfoBarAndroid {
 // Registers the native methods through JNI.
 bool RegisterTranslateCompactInfoBar(JNIEnv* env);
 
-#endif
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_COMPACT_INFOBAR_H_
