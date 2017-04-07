@@ -1,3 +1,5 @@
+# OWNERS_STATUS = build/OWNERS.status
+
 ben@chromium.org
 brettw@chromium.org
 cpu@chromium.org
