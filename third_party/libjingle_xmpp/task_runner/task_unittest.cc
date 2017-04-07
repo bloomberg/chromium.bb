@@ -97,6 +97,9 @@ class HappyTask : public IdTimeoutTask {
 
 class MyTaskRunner : public TaskRunner {
  public:
+  MyTaskRunner() { ThreadManager::Instance()->WrapCurrentThread(); }
+  ~MyTaskRunner() { ThreadManager::Instance()->UnwrapCurrentThread(); }
+
   virtual void WakeTasks() { RunTasks(); }
   virtual int64_t CurrentTime() { return GetCurrentTime(); }
 
