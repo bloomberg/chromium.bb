@@ -16,6 +16,10 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
+namespace cryptohome {
+class BaseReply;
+}  // namespace cryptohome
+
 namespace chromeos {
 
 // Drives the forced re-enrollment check (for historical reasons called
@@ -86,10 +90,28 @@ class AutoEnrollmentController {
   // Sets |state_| and notifies |progress_callbacks_|.
   void UpdateState(policy::AutoEnrollmentState state);
 
+  // Makes a D-Bus call to cryptohome to remove the firmware management
+  // parameters (FWMP) from TPM. Stops the |safeguard_timer_| and notifies the
+  // |progress_callbacks_| after update is done if the timer is still running.
+  // The notifications have to be sent only after the FWMP is cleared, because
+  // the user might try to switch to devmode. In this case, if block_devmode is
+  // in FWMP and the clear operation didn't finish, the switch would be denied.
+  // Also the safeguard timer has to be active until the FWMP is cleared to
+  // avoid the risk of blocked flow.
+  void StartRemoveFirmwareManagementParameters();
+
+  // Callback for RemoveFirmwareManagementParameters(). If an error is received
+  // here, it is logged only, without changing the flow after that, because
+  // the FWMP is used only for newer devices.
+  void OnFirmwareManagementParametersRemoved(
+      chromeos::DBusMethodCallStatus call_status,
+      bool result,
+      const cryptohome::BaseReply& reply);
+
   // Handles timeout of the safeguard timer and stops waiting for a result.
   void Timeout();
 
-  policy::AutoEnrollmentState state_;
+  policy::AutoEnrollmentState state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
   ProgressCallbackList progress_callbacks_;
 
   std::unique_ptr<policy::AutoEnrollmentClient> client_;
@@ -102,12 +124,15 @@ class AutoEnrollmentController {
   // something goes wrong, the timer will ensure that a decision gets made
   // eventually, which is crucial to not block OOBE forever. See
   // http://crbug.com/433634 for background.
-  base::Timer safeguard_timer_;
+  base::Timer safeguard_timer_{false, false};
 
   // Whether the forced re-enrollment check has to be applied.
   FRERequirement fre_requirement_ = REQUIRED;
 
-  base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_;
+  // TODO(igorcov): Merge the two weak_ptr factories in one.
+  base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_{
+      this};
+  base::WeakPtrFactory<AutoEnrollmentController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentController);
 };

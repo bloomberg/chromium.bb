@@ -29,6 +29,7 @@
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "components/version_info/version_info.h"
@@ -74,6 +75,33 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
   return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL;
+}
+
+// Returns whether block_devmode is set.
+bool GetBlockdevmodeFromPolicy(
+    const enterprise_management::PolicyFetchResponse* policy) {
+  DCHECK(policy);
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(policy->policy_data())) {
+    LOG(ERROR) << "Failed to parse policy data";
+    return false;
+  }
+
+  em::ChromeDeviceSettingsProto payload;
+  if (!payload.ParseFromString(policy_data.policy_value())) {
+    LOG(ERROR) << "Failed to parse policy value";
+    return false;
+  }
+
+  bool block_devmode = false;
+  if (payload.has_system_settings()) {
+    const em::SystemSettingsProto& container = payload.system_settings();
+    if (container.has_block_devmode()) {
+      block_devmode = container.block_devmode();
+    }
+  }
+
+  return block_devmode;
 }
 
 }  // namespace
@@ -397,6 +425,40 @@ void EnrollmentHandlerChromeOS::OnGetTokensResponse(
   StartJoinAdDomain();
 }
 
+void EnrollmentHandlerChromeOS::SetFirmwareManagementParametersData() {
+  DCHECK_EQ(STEP_SET_FWMP_DATA, enrollment_step_);
+
+  // In case of reenrollment, the device has the TPM locked and nothing has to
+  // change in install attributes. No need to update firmware parameters in this
+  // case.
+  if (install_attributes_->IsDeviceLocked()) {
+    SetStep(STEP_LOCK_DEVICE);
+    StartLockDevice();
+    return;
+  }
+
+  install_attributes_->SetBlockDevmodeInTpm(
+      GetBlockdevmodeFromPolicy(policy_.get()),
+      base::Bind(
+          &EnrollmentHandlerChromeOS::OnFirmwareManagementParametersDataSet,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EnrollmentHandlerChromeOS::OnFirmwareManagementParametersDataSet(
+    chromeos::DBusMethodCallStatus call_status,
+    bool result,
+    const cryptohome::BaseReply& reply) {
+  DCHECK_EQ(STEP_SET_FWMP_DATA, enrollment_step_);
+  if (!result) {
+    LOG(ERROR)
+        << "Failed to update firmware management parameters in TPM, error: "
+        << reply.error();
+  }
+
+  SetStep(STEP_LOCK_DEVICE);
+  StartLockDevice();
+}
+
 // GaiaOAuthClient::Delegate
 void EnrollmentHandlerChromeOS::OnRefreshTokenResponse(
     const std::string& access_token,
@@ -427,8 +489,8 @@ void EnrollmentHandlerChromeOS::OnNetworkError(int response_code) {
 void EnrollmentHandlerChromeOS::StartJoinAdDomain() {
   DCHECK_EQ(STEP_AD_DOMAIN_JOIN, enrollment_step_);
   if (device_mode_ != DEVICE_MODE_ENTERPRISE_AD) {
-    SetStep(STEP_LOCK_DEVICE);
-    StartLockDevice();
+    SetStep(STEP_SET_FWMP_DATA);
+    SetFirmwareManagementParametersData();
     return;
   }
   DCHECK(ad_join_delegate_);
@@ -441,8 +503,8 @@ void EnrollmentHandlerChromeOS::OnAdDomainJoined(const std::string& realm) {
   DCHECK_EQ(STEP_AD_DOMAIN_JOIN, enrollment_step_);
   CHECK(!realm.empty());
   realm_ = realm;
-  SetStep(STEP_LOCK_DEVICE);
-  StartLockDevice();
+  SetStep(STEP_SET_FWMP_DATA);
+  SetFirmwareManagementParametersData();
 }
 
 void EnrollmentHandlerChromeOS::StartLockDevice() {

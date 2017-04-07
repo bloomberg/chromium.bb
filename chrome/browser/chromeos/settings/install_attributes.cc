@@ -20,8 +20,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -184,6 +186,24 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
     }
   }
   callback.Run();
+}
+
+void InstallAttributes::SetBlockDevmodeInTpm(
+    bool block_devmode,
+    const CryptohomeClient::ProtobufMethodCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!device_locked_);
+
+  cryptohome::SetFirmwareManagementParametersRequest request;
+  // Set the flags, according to enum FirmwareManagementParametersFlags from
+  // rpc.proto if devmode is blocked.
+  if (block_devmode) {
+    request.set_flags(
+        cryptohome::DEVELOPER_DISABLE_BOOT |
+        cryptohome::DEVELOPER_DISABLE_CASE_CLOSED_DEBUGGING_UNLOCK);
+  }
+
+  cryptohome_client_->SetFirmwareManagementParametersInTpm(request, callback);
 }
 
 void InstallAttributes::LockDevice(policy::DeviceMode device_mode,

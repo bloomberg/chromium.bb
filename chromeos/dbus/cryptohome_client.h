@@ -28,8 +28,10 @@ class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
 class GetKeyDataRequest;
 class MountRequest;
+class RemoveFirmwareManagementParametersRequest;
 class RemoveKeyRequest;
 class SetBootAttributeRequest;
+class SetFirmwareManagementParametersRequest;
 class UpdateKeyRequest;
 
 class Identification;
@@ -577,6 +579,20 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::Identification& cryptohome_id,
       const cryptohome::AuthorizationRequest& auth,
       const VoidDBusMethodCallback& callback) = 0;
+
+  // Asynchronously calls RemoveFirmwareManagementParameters method. |callback|
+  // is called after method call, and with reply protobuf.
+  virtual void RemoveFirmwareManagementParametersFromTpm(
+      const cryptohome::RemoveFirmwareManagementParametersRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls SetFirmwareManagementParameters method. |callback|
+  // is called after method call, and with reply protobuf. |request| contains
+  // the flags to be set. SetFirmwareManagementParameters creates the firmware
+  // management parameters in TPM and sets flags included in the request.
+  virtual void SetFirmwareManagementParametersInTpm(
+      const cryptohome::SetFirmwareManagementParametersRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

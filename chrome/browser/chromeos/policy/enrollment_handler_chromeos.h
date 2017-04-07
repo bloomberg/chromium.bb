@@ -116,12 +116,13 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_ROBOT_AUTH_FETCH = 6,    // Fetching device API auth code.
     STEP_ROBOT_AUTH_REFRESH = 7,  // Fetching device API refresh token.
     STEP_AD_DOMAIN_JOIN = 8,      // Joining Active Directory domain.
-    STEP_LOCK_DEVICE = 9,         // Writing installation-time attributes.
-    STEP_STORE_TOKEN = 10,        // Encrypting and storing DM token.
-    STEP_STORE_ROBOT_AUTH = 11,   // Encrypting & writing robot refresh token.
-    STEP_STORE_POLICY = 12,       // Storing policy and API refresh token. For
+    STEP_SET_FWMP_DATA = 9,       // Setting the firmware management parameters.
+    STEP_LOCK_DEVICE = 10,        // Writing installation-time attributes.
+    STEP_STORE_TOKEN = 11,        // Encrypting and storing DM token.
+    STEP_STORE_ROBOT_AUTH = 12,   // Encrypting & writing robot refresh token.
+    STEP_STORE_POLICY = 13,       // Storing policy and API refresh token. For
                                   // AD, includes policy fetch via authpolicyd.
-    STEP_FINISHED = 13,           // Enrollment process done, no further action.
+    STEP_FINISHED = 14,           // Enrollment process done, no further action.
   };
 
   // Handles the response to a request for server-backed state keys.
@@ -148,6 +149,17 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Handles successful Active Directory domain join.
   void OnAdDomainJoined(const std::string& realm);
+
+  // Updates the firmware management partition from TPM, setting the flags
+  // according to enum FirmwareManagementParametersFlags from rpc.proto if
+  // devmode is blocked.
+  void SetFirmwareManagementParametersData();
+
+  // Invoked after the firmware management partition in TPM is updated.
+  void OnFirmwareManagementParametersDataSet(
+      chromeos::DBusMethodCallStatus call_status,
+      bool result,
+      const cryptohome::BaseReply& reply);
 
   // Calls InstallAttributes::LockDevice() for enterprise enrollment and
   // DeviceSettingsService::SetManagementSettings() for consumer

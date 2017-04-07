@@ -228,6 +228,14 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const VoidDBusMethodCallback& callback));
   MOCK_METHOD1(SetDircryptoMigrationProgressHandler,
                void(const DircryptoMigrationProgessHandler& handler));
+  MOCK_METHOD2(
+      RemoveFirmwareManagementParametersFromTpm,
+      void(const cryptohome::RemoveFirmwareManagementParametersRequest& request,
+           const ProtobufMethodCallback& callback));
+  MOCK_METHOD2(
+      SetFirmwareManagementParametersInTpm,
+      void(const cryptohome::SetFirmwareManagementParametersRequest& request,
+           const ProtobufMethodCallback& callback));
 };
 
 }  // namespace chromeos

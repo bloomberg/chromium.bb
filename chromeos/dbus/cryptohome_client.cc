@@ -889,48 +889,36 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   void GetBootAttribute(const cryptohome::GetBootAttributeRequest& request,
                         const ProtobufMethodCallback& callback) override {
-    const char* method_name = cryptohome::kCryptohomeGetBootAttribute;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
-
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(request);
-
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    CallCryptohomeMethod(cryptohome::kCryptohomeGetBootAttribute, request,
+                         callback);
   }
 
   void SetBootAttribute(const cryptohome::SetBootAttributeRequest& request,
                         const ProtobufMethodCallback& callback) override {
-    const char* method_name = cryptohome::kCryptohomeSetBootAttribute;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
-
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(request);
-
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    CallCryptohomeMethod(cryptohome::kCryptohomeSetBootAttribute, request,
+                         callback);
   }
 
   void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) override {
-    const char* method_name = cryptohome::kCryptohomeFlushAndSignBootAttributes;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+    CallCryptohomeMethod(cryptohome::kCryptohomeFlushAndSignBootAttributes,
+                         request, callback);
+  }
 
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(request);
+  void RemoveFirmwareManagementParametersFromTpm(
+      const cryptohome::RemoveFirmwareManagementParametersRequest& request,
+      const ProtobufMethodCallback& callback) override {
+    CallCryptohomeMethod(
+        cryptohome::kCryptohomeRemoveFirmwareManagementParameters, request,
+        callback);
+  }
 
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+  void SetFirmwareManagementParametersInTpm(
+      const cryptohome::SetFirmwareManagementParametersRequest& request,
+      const ProtobufMethodCallback& callback) override {
+    CallCryptohomeMethod(cryptohome::kCryptohomeSetFirmwareManagementParameters,
+                         request, callback);
   }
 
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
@@ -1244,6 +1232,23 @@ class CryptohomeClientImpl : public CryptohomeClient {
                          bool succeeded) {
     LOG_IF(ERROR, !succeeded) << "Connect to " << interface << " " <<
         signal << " failed.";
+  }
+
+  // Makes an asynchronous D-Bus call, using cryptohome interface. |method_name|
+  // is the name of the method to be called. |request| is the specific request
+  // for the method, including the data required to be sent. |callback| is
+  // invoked when the response is received.
+  void CallCryptohomeMethod(const std::string& method_name,
+                            const google::protobuf::MessageLite& request,
+                            const ProtobufMethodCallback& callback) {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   dbus::ObjectProxy* proxy_;
