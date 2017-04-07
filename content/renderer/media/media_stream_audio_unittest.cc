@@ -460,15 +460,8 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   track()->RemoveSink(&sink);
 }
 
-// https://crbug.com/709231 tracks test failures on Mac10.9 Tests (dbg).
-#if defined(OS_MACOSX)
-#define MAYBE_CallbackOnTrackInitialization \
-  DISABLED_CallbackOnTrackInitialization
-#else
-#define MAYBE_CallbackOnTrackInitialization CallbackOnTrackInitialization
-#endif
 // Tests that a callback is fired when initialization completes on a track.
-TEST_F(MediaStreamAudioTest, MAYBE_CallbackOnTrackInitialization) {
+TEST_F(MediaStreamAudioTest, CallbackOnTrackInitialization) {
   // Create a source, connect it to track, and connect the track to a
   // sink.
   blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
