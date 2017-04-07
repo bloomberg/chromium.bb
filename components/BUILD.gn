@@ -242,7 +242,6 @@ test("components_unittests") {
 
   if (is_android) {
     deps += [
-      "//components/cdm/browser:unit_tests",
       "//components/feature_engagement_tracker:unit_tests",
       "//components/gcm_driver/instance_id:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",

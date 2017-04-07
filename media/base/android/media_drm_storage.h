@@ -68,10 +68,6 @@ class MEDIA_EXPORT MediaDrmStorage {
       LoadPersistentSessionCB load_persistent_session_cb) = 0;
 
   // Removes the persistent session info for |session_id| from the storage.
-  // If the session for |session_id| exists in the storage, it is removed.
-  // Otherwise, this call is a no-op. In both cases, the result will be true.
-  // The result will be false on other unexpected errors, e.g. connection error
-  // to the storage backend.
   virtual void RemovePersistentSession(const std::string& session_id,
                                        ResultCB result_cb) = 0;
 

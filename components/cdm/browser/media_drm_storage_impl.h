@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_CDM_BROWSER_MEDIA_DRM_STORAGE_IMPL_H_
 #define COMPONENTS_CDM_BROWSER_MEDIA_DRM_STORAGE_IMPL_H_
 
-#include "base/threading/thread_checker.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/interfaces/media_drm_storage.mojom.h"
@@ -54,15 +53,12 @@ class MediaDrmStorageImpl final : public media::mojom::MediaDrmStorage,
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
 
  private:
-  base::ThreadChecker thread_checker_;
-
   // Stops observing WebContents and delete |this|.
   void Close();
 
   content::RenderFrameHost* const render_frame_host_ = nullptr;
   PrefService* const pref_service_ = nullptr;
   const url::Origin origin_;
-  const std::string origin_string_;
   bool initialized_ = false;
 
   mojo::Binding<media::mojom::MediaDrmStorage> binding_;
