@@ -181,6 +181,7 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(ScrollBy, cc::InputHandlerScrollResult(cc::ScrollState*));
   MOCK_METHOD1(ScrollEnd, void(cc::ScrollState*));
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
+  MOCK_METHOD0(ScrollingShouldSwitchtoMainThread, bool());
 
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override {
@@ -197,8 +198,6 @@ class MockInputHandler : public cc::InputHandler {
   bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) override {
     return false;
   }
-
-  bool ScrollingShouldSwitchtoMainThread() override { return false; }
 
   void BindToClient(cc::InputHandlerClient* client,
                     bool touchpad_and_wheel_scroll_latching_enabled) override {}
@@ -371,14 +370,17 @@ class InputHandlerProxyTest
     : public testing::Test,
       public testing::WithParamInterface<InputHandlerProxyTestType> {
  public:
-  InputHandlerProxyTest()
+  InputHandlerProxyTest(bool touchpad_and_wheel_scroll_latching_enabled = true)
       : synchronous_root_scroll_(GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER),
         install_synchronous_handler_(
             GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER ||
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
-        expected_disposition_(InputHandlerProxy::DID_HANDLE) {
+        expected_disposition_(InputHandlerProxy::DID_HANDLE),
+        touchpad_and_wheel_scroll_latching_enabled_(
+            touchpad_and_wheel_scroll_latching_enabled) {
     input_handler_.reset(
-        new TestInputHandlerProxy(&mock_input_handler_, &mock_client_, false));
+        new TestInputHandlerProxy(&mock_input_handler_, &mock_client_,
+                                  touchpad_and_wheel_scroll_latching_enabled_));
     scroll_result_did_scroll_.did_scroll = true;
     scroll_result_did_not_scroll_.did_scroll = false;
 
@@ -396,9 +398,7 @@ class InputHandlerProxyTest
     gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   }
 
-  ~InputHandlerProxyTest() {
-    input_handler_.reset();
-  }
+  virtual ~InputHandlerProxyTest() { input_handler_.reset(); }
 
 // This is defined as a macro so the line numbers can be traced back to the
 // correct spot when it fails.
@@ -481,6 +481,14 @@ class InputHandlerProxyTest
   }
 
  protected:
+  void GestureFlingAnimatesTouchpad();
+  void DidReceiveInputEvent_ForFling();
+  void GestureScrollStarted();
+  void GestureFlingPassiveListener();
+  void GestureFlingStartedTouchpad();
+  void GestureFlingStopsAtContentEdge();
+  void GestureFlingTransferResetsTouchpad();
+
   const bool synchronous_root_scroll_;
   const bool install_synchronous_handler_;
   testing::StrictMock<MockInputHandler> mock_input_handler_;
@@ -493,9 +501,17 @@ class InputHandlerProxyTest
   base::HistogramTester histogram_tester_;
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
+  bool touchpad_and_wheel_scroll_latching_enabled_;
 };
 
-class InputHandlerProxyEventQueueTest : public testing::Test {
+class InputHandlerProxyWithoutWheelScrollLatchingTest
+    : public InputHandlerProxyTest {
+ public:
+  InputHandlerProxyWithoutWheelScrollLatchingTest()
+      : InputHandlerProxyTest(false) {}
+};
+
+class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
  public:
   InputHandlerProxyEventQueueTest() : weak_ptr_factory_(this) {
     feature_list_.InitAndEnableFeature(features::kVsyncAlignedInputEvents);
@@ -504,9 +520,10 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   ~InputHandlerProxyEventQueueTest() { input_handler_proxy_.reset(); }
 
   void SetUp() override {
+    bool wheel_scroll_latching_enabled = GetParam();
     event_disposition_recorder_.clear();
     input_handler_proxy_ = base::MakeUnique<TestInputHandlerProxy>(
-        &mock_input_handler_, &mock_client_, false);
+        &mock_input_handler_, &mock_client_, wheel_scroll_latching_enabled);
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
           base::MakeUnique<CompositorThreadEventQueue>();
@@ -627,7 +644,7 @@ TEST_P(InputHandlerProxyTest, MouseWheelBlockingAndPassiveListener) {
   VERIFY_AND_RESET_MOCKS();
 }
 
-TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
+void InputHandlerProxyTest::GestureScrollStarted() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   VERIFY_AND_RESET_MOCKS();
@@ -649,6 +666,8 @@ TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
       .WillOnce(testing::Return(scroll_result_did_not_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(testing::Return(false));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   // Mark the event as handled if scroll happens.
@@ -672,6 +691,12 @@ TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
+  GestureScrollStarted();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest, GestureScrollStarted) {
+  GestureScrollStarted();
 }
 
 TEST_P(InputHandlerProxyTest, GestureScrollOnMainThread) {
@@ -957,14 +982,25 @@ TEST_P(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 }
 
-TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
+void InputHandlerProxyTest::GestureFlingStartedTouchpad() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   VERIFY_AND_RESET_MOCKS();
 
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
 
   gesture_.setType(WebInputEvent::GestureFlingStart);
@@ -974,10 +1010,24 @@ TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
 
   VERIFY_AND_RESET_MOCKS();
 
+  if (touchpad_and_wheel_scroll_latching_enabled_) {
+    // The fling cancellation shouldn't get deferred because velocityX is less
+    // than minimum.
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(1);
+  }
   // Verify that a GestureFlingCancel during an animation cancels it.
   gesture_.setType(WebInputEvent::GestureFlingCancel);
   gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
+  GestureFlingStartedTouchpad();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       GestureFlingStartedTouchpad) {
+  GestureFlingStartedTouchpad();
 }
 
 TEST_P(InputHandlerProxyTest, GestureFlingTouchpadScrollLatchingEnabled) {
@@ -1070,6 +1120,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingTouchpadScrollLatchingEnabled) {
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
       .WillOnce(testing::Return(scroll_result_did_not_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(testing::Return(false));
 
   // When scroll latching is enabled, ScrollEnd gets called when the last
   // ScrollBy did not scroll.
@@ -1133,9 +1185,19 @@ TEST_P(InputHandlerProxyTest, GestureFlingIgnoredTouchpad) {
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
-TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
+void InputHandlerProxyTest::GestureFlingAnimatesTouchpad() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
   VERIFY_AND_RESET_MOCKS();
 
   // On the fling start, we should schedule an animation but not actually start
@@ -1155,7 +1217,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1178,13 +1241,16 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
@@ -1198,10 +1264,20 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kMainThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  } else {
+    EXPECT_CALL(
+        mock_input_handler_,
+        ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
+        .WillOnce(testing::Return(scroll_result_did_not_scroll_));
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+    EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+        .WillOnce(testing::Return(true));
+  }
   // Expected wheel fling animation parameters:
   // *) fling_delta and fling_point should match the original GestureFlingStart
   // event
@@ -1247,10 +1323,27 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
 
   VERIFY_AND_RESET_MOCKS();
 }
+TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
+  GestureFlingAnimatesTouchpad();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       GestureFlingAnimatesTouchpad) {
+  GestureFlingAnimatesTouchpad();
+}
 
-TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
+void InputHandlerProxyTest::GestureFlingPassiveListener() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
   VERIFY_AND_RESET_MOCKS();
 
   // On the fling start, we should schedule an animation but not actually start
@@ -1267,7 +1360,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1291,8 +1385,10 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
@@ -1308,7 +1404,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
   EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(
                                 WheelEventsMatch(expected_wheel)))
       .Times(1);
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(1);
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(1);
 
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
@@ -1319,13 +1416,34 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   gesture_.setType(WebInputEvent::GestureFlingCancel);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  if (touchpad_and_wheel_scroll_latching_enabled_) {
+    // The fling cancellation should be deferred.
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  }
 
   VERIFY_AND_RESET_MOCKS();
 }
+TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
+  GestureFlingPassiveListener();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       GestureFlingPassiveListener) {
+  GestureFlingPassiveListener();
+}
 
-TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
+void InputHandlerProxyTest::GestureFlingTransferResetsTouchpad() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
   VERIFY_AND_RESET_MOCKS();
 
   // Start a gesture fling in the -X direction with zero Y movement.
@@ -1343,7 +1461,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   VERIFY_AND_RESET_MOCKS();
 
@@ -1362,13 +1481,16 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
@@ -1382,11 +1504,19 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-
-  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kMainThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  } else {
+    EXPECT_CALL(
+        mock_input_handler_,
+        ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
+        .WillOnce(testing::Return(scroll_result_did_not_scroll_));
+    EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+        .WillOnce(testing::Return(true));
+  }
 
   // Expected wheel fling animation parameters:
   // *) fling_delta and fling_point should match the original GestureFlingStart
@@ -1410,6 +1540,9 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
                          testing::Eq(10)),
           testing::Field(&WebActiveWheelFlingParameters::cumulativeScroll,
                          testing::Field(&WebSize::width, testing::Gt(0))))));
+  if (touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
@@ -1436,6 +1569,17 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   VERIFY_AND_RESET_MOCKS();
   input_handler_->MainThreadHasStoppedFlinging();
 
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+
   // Start a second gesture fling, this time in the +Y direction with no X.
   fling_delta = WebFloatPoint(0, -1000);
   fling_point = WebPoint(95, 87);
@@ -1449,7 +1593,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -1469,13 +1614,16 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
@@ -1485,10 +1633,19 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kMainThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
+  } else {
+    EXPECT_CALL(
+        mock_input_handler_,
+        ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+        .WillOnce(testing::Return(scroll_result_did_not_scroll_));
+    EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+        .WillOnce(testing::Return(true));
+  }
 
   // We should get parameters from the second fling, nothing from the first
   // fling should "leak".
@@ -1507,10 +1664,21 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
                          testing::Eq(30)),
           testing::Field(&WebActiveWheelFlingParameters::cumulativeScroll,
                          testing::Field(&WebSize::height, testing::Lt(0))))));
+
+  if (touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
+  GestureFlingTransferResetsTouchpad();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       GestureFlingTransferResetsTouchpad) {
+  GestureFlingTransferResetsTouchpad();
 }
 
 TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
@@ -1919,9 +2087,19 @@ TEST_P(InputHandlerProxyTest,
   VERIFY_AND_RESET_MOCKS();
 }
 
-TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
+void InputHandlerProxyTest::GestureFlingStopsAtContentEdge() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  // HandleGestureScrollBegin will set gesture_scroll_on_impl_thread_.
+  gesture_.setType(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
   VERIFY_AND_RESET_MOCKS();
 
   // On the fling start, we should schedule an animation but not actually start
@@ -1932,7 +2110,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   VERIFY_AND_RESET_MOCKS();
@@ -1947,13 +2126,16 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Lt(0))))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
@@ -1969,8 +2151,10 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Lt(0))))
@@ -1982,7 +2166,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
           overscroll.unused_scroll_delta,
           testing::Property(&gfx::Vector2dF::y, testing::Lt(0)),
           testing::_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
@@ -1993,16 +2178,26 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
+  if (!touchpad_and_wheel_scroll_latching_enabled_) {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+        .WillOnce(testing::Return(kImplThreadScrollState));
+  }
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Eq(0))))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
   VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
+  GestureFlingStopsAtContentEdge();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       GestureFlingStopsAtContentEdge) {
+  GestureFlingStopsAtContentEdge();
 }
 
 TEST_P(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
@@ -2943,12 +3138,12 @@ TEST_P(InputHandlerProxyTest, FlingBoostTerminatedDuringScrollSequence) {
 
   VERIFY_AND_RESET_MOCKS();
 }
-
-TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
+void InputHandlerProxyTest::DidReceiveInputEvent_ForFling() {
   testing::StrictMock<MockInputHandlerProxyClientWithDidAnimateForInput>
       mock_client;
   input_handler_.reset(
-      new TestInputHandlerProxy(&mock_input_handler_, &mock_client, false));
+      new TestInputHandlerProxy(&mock_input_handler_, &mock_client,
+                                touchpad_and_wheel_scroll_latching_enabled_));
   if (install_synchronous_handler_) {
     EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
         .Times(1);
@@ -2964,7 +3159,8 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+  if (!touchpad_and_wheel_scroll_latching_enabled_)
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
       input_handler_->HandleInputEvent(gesture_));
   VERIFY_AND_RESET_MOCKS();
@@ -2975,6 +3171,13 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
+  DidReceiveInputEvent_ForFling();
+}
+TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
+       DidReceiveInputEvent_ForFling) {
+  DidReceiveInputEvent_ForFling();
 }
 
 TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
@@ -3254,7 +3457,7 @@ TEST_P(InputHandlerProxyTest, WheelScrollingThreadStatusHistogram) {
   VERIFY_AND_RESET_MOCKS();
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
+TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   base::HistogramTester histogram_tester;
 
   // Handle scroll on compositor.
@@ -3317,7 +3520,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 1);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
+TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   base::HistogramTester histogram_tester;
 
   // Handle scroll on compositor.
@@ -3386,7 +3589,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
   histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 2, 2);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
+TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock =
       base::MakeUnique<base::SimpleTestTickClock>();
@@ -3432,7 +3635,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
                                      1);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
+TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
   // Start scroll in the first frame.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
@@ -3484,7 +3687,7 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
+TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
@@ -3555,7 +3758,7 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, GestureScrollFlingOrder) {
+TEST_P(InputHandlerProxyEventQueueTest, GestureScrollFlingOrder) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
@@ -3604,7 +3807,7 @@ TEST_F(InputHandlerProxyEventQueueTest, GestureScrollFlingOrder) {
       !input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, GestureScrollAfterFling) {
+TEST_P(InputHandlerProxyEventQueueTest, GestureScrollAfterFling) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
@@ -3642,6 +3845,14 @@ TEST_F(InputHandlerProxyEventQueueTest, GestureScrollAfterFling) {
 INSTANTIATE_TEST_CASE_P(AnimateInput,
                         InputHandlerProxyTest,
                         testing::ValuesIn(test_types));
+
+INSTANTIATE_TEST_CASE_P(AnimateInput,
+                        InputHandlerProxyWithoutWheelScrollLatchingTest,
+                        testing::ValuesIn(test_types));
+
+INSTANTIATE_TEST_CASE_P(InputHandlerProxyEventQueueTests,
+                        InputHandlerProxyEventQueueTest,
+                        testing::Bool());
 
 }  // namespace test
 }  // namespace ui
