@@ -7,6 +7,10 @@
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller_private.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface BrowserViewController (Private)
 
 - (WebToolbarController*)toolbarController;

@@ -349,6 +349,7 @@ source_set("ui_internal") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "browser_view_controller_testing.h",
