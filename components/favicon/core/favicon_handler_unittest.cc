@@ -472,6 +472,21 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconInIncognito) {
               ElementsAre(kPageURL, kIconURL16x16));
 }
 
+// Test that the FaviconHandler saves a favicon if the page is bookmarked, even
+// in incognito.
+TEST_F(FaviconHandlerTest, DownloadBookmarkedFaviconInIncognito) {
+  ON_CALL(delegate_, IsOffTheRecord()).WillByDefault(Return(true));
+  ON_CALL(delegate_, IsBookmarked(kPageURL)).WillByDefault(Return(true));
+
+  EXPECT_CALL(favicon_service_, UpdateFaviconMappingsAndFetch(_, _, _, _, _, _))
+      .Times(0);
+
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL16x16, _, _));
+
+  RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
+}
+
 // Test that the icon is redownloaded if the icon cached for the page URL
 // expired.
 TEST_F(FaviconHandlerTest, RedownloadExpiredPageUrlFavicon) {
