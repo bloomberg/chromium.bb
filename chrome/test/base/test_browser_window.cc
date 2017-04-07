@@ -143,6 +143,10 @@ bool TestBrowserWindow::IsToolbarVisible() const {
   return false;
 }
 
+bool TestBrowserWindow::IsToolbarShowing() const {
+  return false;
+}
+
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,

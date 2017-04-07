@@ -322,6 +322,16 @@ NSString* BrowserWindowCocoa::WindowTitle() {
       browser_->GetWindowTitleForCurrentTab(include_app_name));
 }
 
+bool BrowserWindowCocoa::IsToolbarShowing() const {
+  if (!IsFullscreen())
+    return true;
+
+  // TODO(zijiehe): Retrieve the visibility of toolbar from
+  // FullscreenToolbarController. See http://crbug.com/702251 and
+  // http://crbug.com/680809.
+  return true;
+}
+
 void BrowserWindowCocoa::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   [[controller_ bookmarkBarController]

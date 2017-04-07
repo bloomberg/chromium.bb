@@ -187,8 +187,27 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   }
 #endif
 
-  if (window()->IsFullscreen() && command_id == IDC_FULLSCREEN)
-    return true;
+  if (window()->IsFullscreen()) {
+    // In fullscreen, all commands except for IDC_FULLSCREEN and IDC_EXIT should
+    // be delivered to the web page. The intent to implement and ship can be
+    // found in http://crbug.com/680809.
+    const bool is_exit_fullscreen =
+        (command_id == IDC_EXIT || command_id == IDC_FULLSCREEN);
+#if defined(OS_MACOSX)
+    // This behavior is different on Mac OS, which has a unique user-initiated
+    // full-screen mode. According to the discussion in http://crbug.com/702251,
+    // the commands should be reserved for browser-side handling if the browser
+    // window's toolbar is visible.
+    if (window()->IsToolbarShowing()) {
+      if (command_id == IDC_FULLSCREEN)
+        return true;
+    } else {
+      return is_exit_fullscreen;
+    }
+#else
+    return is_exit_fullscreen;
+#endif
+  }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // If this key was registered by the user as a content editing hotkey, then

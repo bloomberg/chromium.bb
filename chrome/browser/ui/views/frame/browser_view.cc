@@ -1191,6 +1191,10 @@ bool BrowserView::IsToolbarVisible() const {
          toolbar_;
 }
 
+bool BrowserView::IsToolbarShowing() const {
+  return IsToolbarVisible();
+}
+
 void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }

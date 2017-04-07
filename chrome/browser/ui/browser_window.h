@@ -220,8 +220,18 @@ class BrowserWindow : public ui::BaseWindow {
   // Returns whether the tab strip is editable (for extensions).
   virtual bool IsTabStripEditable() const = 0;
 
-  // Returns whether the tool bar is visible or not.
+  // Returns whether the toolbar is available or not. It's called "Visible()"
+  // to follow the name convention. But it does not indicate the visibility of
+  // the toolbar, i.e. toolbar may be hidden, and only visible when the mouse
+  // cursor is at a certain place.
+  // TODO(zijiehe): Rename Visible() functions into Available() to match their
+  // original meaning.
   virtual bool IsToolbarVisible() const = 0;
+
+  // Returns whether the toolbar is showing up on the screen.
+  // TODO(zijiehe): Rename this function into IsToolbarVisible() once other
+  // Visible() functions are renamed to Available().
+  virtual bool IsToolbarShowing() const = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;

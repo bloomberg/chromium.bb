@@ -252,7 +252,9 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
  public:
   FullscreenTestBrowserWindow(
       BrowserCommandControllerFullscreenTest* test_browser)
-      : fullscreen_(false), test_browser_(test_browser) {}
+      : fullscreen_(false),
+        toolbar_showing_(false),
+        test_browser_(test_browser) {}
 
   ~FullscreenTestBrowserWindow() override {}
 
@@ -264,6 +266,7 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
     fullscreen_ = true;
   }
   void ExitFullscreen() override { fullscreen_ = false; }
+  bool IsToolbarShowing() const override { return toolbar_showing_; }
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override { return this; }
 
@@ -277,8 +280,11 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
       ExclusiveAccessBubbleType bubble_type) override {}
   void OnExclusiveAccessUserInput() override {}
 
+  void set_toolbar_showing(bool showing) { toolbar_showing_ = showing; }
+
  private:
   bool fullscreen_;
+  bool toolbar_showing_;
   BrowserCommandControllerFullscreenTest* test_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenTestBrowserWindow);
@@ -312,129 +318,115 @@ content::WebContents* FullscreenTestBrowserWindow::GetActiveWebContents() {
 
 TEST_F(BrowserCommandControllerFullscreenTest,
        UpdateCommandsForFullscreenMode) {
-  // Defaults for a tabbed browser.
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPEN_CURRENT_URL));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_AS_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_TOOLBAR));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_LOCATION));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_SEARCH));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_MENU_BAR));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_NEXT_PANE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
+  struct {
+    int command_id;
+    // Whether the command is enabled in tab mode.
+    bool enabled_in_tab;
+    // Whether the keyboard shortcut is reserved in tab mode.
+    bool reserved_in_tab;
+    // Whether the command is enabled in fullscreen mode.
+    bool enabled_in_fullscreen;
+    // Whether the keyboard shortcut is reserved in fullscreen mode.
+    bool reserved_in_fullscreen;
+  } commands[] = {
+    // 1. Most commands are disabled in fullscreen.
+    // 2. In fullscreen, only the exit fullscreen commands are reserved. All
+    // other shortcuts should be delivered to the web page. See
+    // http://crbug.com/680809.
+
+    //         Command ID        |      tab mode      |      fullscreen     |
+    //                           | enabled | reserved | enabled  | reserved |
+    { IDC_OPEN_CURRENT_URL,        true,     false,     false,     false    },
+    { IDC_FOCUS_TOOLBAR,           true,     false,     false,     false    },
+    { IDC_FOCUS_LOCATION,          true,     false,     false,     false    },
+    { IDC_FOCUS_SEARCH,            true,     false,     false,     false    },
+    { IDC_FOCUS_MENU_BAR,          true,     false,     false,     false    },
+    { IDC_FOCUS_NEXT_PANE,         true,     false,     false,     false    },
+    { IDC_FOCUS_PREVIOUS_PANE,     true,     false,     false,     false    },
+    { IDC_FOCUS_BOOKMARKS,         true,     false,     false,     false    },
+    { IDC_DEVELOPER_MENU,          true,     false,     false,     false    },
 #if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
+    { IDC_FEEDBACK,                true,     false,     false,     false    },
 #endif
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_VIEW_PASSWORDS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+    { IDC_OPTIONS,                 true,     false,     false,     false    },
+    { IDC_IMPORT_SETTINGS,         true,     false,     false,     false    },
+    { IDC_EDIT_SEARCH_ENGINES,     true,     false,     false,     false    },
+    { IDC_VIEW_PASSWORDS,          true,     false,     false,     false    },
+    { IDC_ABOUT,                   true,     false,     false,     false    },
+    { IDC_SHOW_APP_MENU,           true,     false,     false,     false    },
+    { IDC_FULLSCREEN,              true,     false,     true,      true     },
+    { IDC_CLOSE_TAB,               true,     true,      true,      false    },
+    { IDC_CLOSE_WINDOW,            true,     true,      true,      false    },
+    { IDC_NEW_INCOGNITO_WINDOW,    true,     true,      true,      false    },
+    { IDC_NEW_TAB,                 true,     true,      true,      false    },
+    { IDC_NEW_WINDOW,              true,     true,      true,      false    },
+    { IDC_SELECT_NEXT_TAB,         true,     true,      true,      false    },
+    { IDC_SELECT_PREVIOUS_TAB,     true,     true,      true,      false    },
+    { IDC_EXIT,                    true,     true,      true,      true     },
+    { IDC_SHOW_AS_TAB,             false,    false,     false,     false    },
+  };
+  const content::NativeWebKeyboardEvent key_event(
+      blink::WebInputEvent::TypeFirst, 0, 0);
+  // Defaults for a tabbed browser.
+  for (size_t i = 0; i < arraysize(commands); i++) {
+    SCOPED_TRACE(commands[i].command_id);
+    EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
+              commands[i].enabled_in_tab);
+    EXPECT_EQ(browser()->command_controller()->IsReservedCommandOrKey(
+                  commands[i].command_id, key_event),
+              commands[i].reserved_in_tab);
+  }
 
   // Simulate going fullscreen.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser()->window()->IsFullscreen());
   browser()->command_controller()->FullscreenStateChanged();
 
-  // Most commands are disabled in fullscreen.
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPEN_CURRENT_URL));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_AS_TAB));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_TOOLBAR));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_LOCATION));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_SEARCH));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_MENU_BAR));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_NEXT_PANE));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
-#if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
-#endif
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_VIEW_PASSWORDS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+  // By default, in fullscreen mode, the toolbar should be hidden; and all
+  // platforms behave similarly.
+  EXPECT_FALSE(window()->IsToolbarShowing());
+  for (size_t i = 0; i < arraysize(commands); i++) {
+    SCOPED_TRACE(commands[i].command_id);
+    EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
+              commands[i].enabled_in_fullscreen);
+    EXPECT_EQ(browser()->command_controller()->IsReservedCommandOrKey(
+                  commands[i].command_id, key_event),
+              commands[i].reserved_in_fullscreen);
+  }
 
+#if defined(OS_MACOSX)
+  // When the toolbar is showing, commands should be reserved as if the content
+  // were in a tab; IDC_FULLSCREEN should also be reserved.
+  static_cast<FullscreenTestBrowserWindow*>(window())->set_toolbar_showing(
+      true);
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_CLOSE_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_CLOSE_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_INCOGNITO_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_SELECT_NEXT_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_SELECT_PREVIOUS_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_EXIT,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+      IDC_FULLSCREEN, key_event));
+  for (size_t i = 0; i < arraysize(commands); i++) {
+    if (commands[i].command_id != IDC_FULLSCREEN) {
+      SCOPED_TRACE(commands[i].command_id);
+      EXPECT_EQ(browser()->command_controller()->IsReservedCommandOrKey(
+                    commands[i].command_id, key_event),
+                commands[i].reserved_in_tab);
+    }
+  }
+  // Return to default state.
+  static_cast<FullscreenTestBrowserWindow*>(window())->set_toolbar_showing(
+      false);
+#endif
 
   // Exit fullscreen.
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser()->window()->IsFullscreen());
   browser()->command_controller()->FullscreenStateChanged();
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPEN_CURRENT_URL));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_AS_TAB));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_TOOLBAR));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_LOCATION));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_SEARCH));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_MENU_BAR));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_NEXT_PANE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
-#if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
-#endif
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_VIEW_PASSWORDS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_CLOSE_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_CLOSE_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_INCOGNITO_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_NEW_WINDOW,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_SELECT_NEXT_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_SELECT_PREVIOUS_TAB,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
-  EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_EXIT,
-      content::NativeWebKeyboardEvent(blink::WebInputEvent::TypeFirst, 0, 0)));
+  for (size_t i = 0; i < arraysize(commands); i++) {
+    SCOPED_TRACE(commands[i].command_id);
+    EXPECT_EQ(chrome::IsCommandEnabled(browser(), commands[i].command_id),
+              commands[i].enabled_in_tab);
+    EXPECT_EQ(browser()->command_controller()->IsReservedCommandOrKey(
+                  commands[i].command_id, key_event),
+              commands[i].reserved_in_tab);
+  }
 
   // Guest Profiles disallow some options.
   TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
