@@ -175,6 +175,9 @@ TEST_F(ComponentUpdaterPingManagerTest, PingManagerTest) {
           "download_time_ms=\"9870\"/></app>"))
       << interceptor->GetRequestsAsString();
   interceptor->Reset();
+
+  interceptor_factory.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that sending the ping fails when the component requires encryption but
