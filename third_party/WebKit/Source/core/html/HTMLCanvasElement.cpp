@@ -1246,7 +1246,6 @@ void HTMLCanvasElement::willDrawImageTo2DContext(CanvasImageSource* source) {
         createAcceleratedImageBufferSurface(opacityMode, &msaaSampleCount);
     if (surface) {
       buffer()->setSurface(std::move(surface));
-      setNeedsCompositingUpdate();
     }
   }
 }
