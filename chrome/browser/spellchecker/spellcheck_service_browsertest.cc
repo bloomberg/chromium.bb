@@ -236,17 +236,12 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 }
 
-// Flaky on Windows, see https://crbug.com/611029.
-#if defined(OS_WIN)
-#define MAYBE_StartWithoutLanguages DISABLED_StartWithoutLanguages
-#else
-#define MAYBE_StartWithoutLanguages StartWithoutLanguages
-#endif
 // Starting without spellcheck languages should send the 'disable spellcheck'
 // message to the renderer. Consequently adding spellchecking languages should
 // enable spellcheck.
+// Flaky, see https://crbug.com/600153
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
-                       MAYBE_StartWithoutLanguages) {
+                       DISABLED_StartWithoutLanguages) {
   InitSpellcheck(true, "", "");
   EXPECT_FALSE(GetFirstEnableSpellcheckMessageParam());
 
