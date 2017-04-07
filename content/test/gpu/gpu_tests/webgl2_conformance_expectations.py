@@ -44,6 +44,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
+    # Temporary suppression; will be removed after bug fix.
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+              bug=701060)
+
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
@@ -202,6 +206,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Mac only.
+
+    # Fails on all GPU types.
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
+              ['mac'], bug=709351)
 
     self.Fail('conformance2/rendering/' +
         'framebuffer-completeness-unaffected.html',
@@ -694,8 +702,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=618447)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['linux', 'nvidia'], bug=672380)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
+        ['linux', 'nvidia'], bug=709351)
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r11f_g11f_b10f-rgb-half_float.html',
+        ['linux', 'nvidia'], bug=694359)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb16f-rgb-half_float.html',
         ['linux', 'nvidia'], bug=694359)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',

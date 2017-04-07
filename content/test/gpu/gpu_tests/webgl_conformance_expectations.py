@@ -101,6 +101,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
 
+    # Temporary suppression; will be removed after bug fix.
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+              bug=701060)
+
     # Passthrough command decoder
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['passthrough'], bug=679696)
@@ -234,6 +238,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID
+
+    # Win / AMD / Passthrough command decoder / D3D11
+    self.Flaky('conformance/textures/misc/copytexsubimage2d-subrects.html',
+        ['win', 'amd', 'passthrough', 'd3d11'], bug=685232)
 
     # Win failures
     # Note that the following test seems to pass, but it may still be flaky.
