@@ -977,6 +977,76 @@ window.Audit = (function () {
                           '${actual} ' + passDetail,
                           '${actual} ' + failDetail);
     }
+
+    /**
+     * Check if |expected| property is truly owned by |actual| object.
+     *
+     * @example
+     *   should(BaseAudioContext.prototype,
+     *          'BaseAudioContext.prototype').haveOwnProperty('createGain');
+     *
+     * @result
+     *   "PASS   BaseAudioContext.prototype has an own property of
+     *       'createGain'."
+     */
+    haveOwnProperty () {
+      this._processArguments(arguments);
+
+      return this._assert(
+          this._actual.hasOwnProperty(this._expected),
+          '${actual} has an own property of "${expected}".',
+          '${actual} does not own the property of "${expected}".');
+    }
+
+
+    /**
+     * Check if |expected| property is not owned by |actual| object.
+     *
+     * @example
+     *   should(BaseAudioContext.prototype,
+     *          'BaseAudioContext.prototype')
+     *       .notHaveOwnProperty('startRendering');
+     *
+     * @result
+     *   "PASS   BaseAudioContext.prototype does not have an own property of
+     *       'startRendering'."
+     */
+    notHaveOwnProperty () {
+      this._processArguments(arguments);
+
+      return this._assert(
+          !this._actual.hasOwnProperty(this._expected),
+          '${actual} does not have an own property of "${expected}".',
+          '${actual} has an own the property of "${expected}".')
+    }
+
+
+    /**
+     * Check if an object is inherited from a class. This looks up the entire
+     * prototype chain of a given object and tries to find a match.
+     *
+     * @example
+     *   should(sourceNode, 'A buffer source node')
+     *       .inheritFrom('AudioScheduledSourceNode');
+     *
+     * @result
+     *   "PASS   A buffer source node inherits from 'AudioScheduledSourceNode'."
+     */
+    inheritFrom () {
+      this._processArguments(arguments);
+
+      let prototypes = [];
+      let currentPrototype = Object.getPrototypeOf(this._actual);
+      while (currentPrototype) {
+        prototypes.push(currentPrototype.constructor.name);
+        currentPrototype = Object.getPrototypeOf(currentPrototype);
+      }
+
+      return this._assert(
+          prototypes.includes(this._expected),
+          '${actual} inherits from "${expected}".',
+          '${actual} does not inherit from "${expected}".');
+    }
   }
 
 

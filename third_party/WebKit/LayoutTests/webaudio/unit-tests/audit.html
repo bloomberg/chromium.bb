@@ -36,6 +36,18 @@
         should(should(1).beEqualTo(1), 'should(1).beEqualTo(1)').beTrue();
         should(true, 'The message is').message('truthful!', 'false!');
 
+        should(BaseAudioContext.prototype, 'BaseAudioContext.prototype')
+            .haveOwnProperty('createGain');
+        should(BaseAudioContext.prototype, 'BaseAudioContext.prototype')
+            .notHaveOwnProperty('startRendering');
+
+        let ac = new AudioContext();
+        let sourceNode = new AudioBufferSourceNode(ac);
+        should(sourceNode, 'An AudioBufferSourceNode')
+            .inheritFrom('AudioScheduledSourceNode');
+        should(sourceNode, 'An AudioBufferSourceNode')
+            .inheritFrom('AudioNode');
+
         let oac = new OfflineAudioContext(1, 128, 44100);
         Promise.all([
             should(oac.startRendering(), 'Start OAC rendering').beResolved(),

@@ -36,22 +36,17 @@
 
             // AudioScheduledSourceNode must have these properties.
             for (p in expectedProperties) {
-              should(
-                  AudioScheduledSourceNode.prototype.hasOwnProperty(
-                      expectedProperties[p]),
-                  'AudioScheduledSourceNode.' + expectedProperties[p])
-                  .beTrue();
+              should(AudioScheduledSourceNode.prototype,
+                     'AudioScheduledSourceNode.prototype')
+                  .haveOwnProperty(expectedProperties[p]);
             }
 
             // ConstantSource and Oscillator must not
             var nodes = ['ConstantSourceNode', 'OscillatorNode'];
             for (n in nodes) {
               for (p in expectedProperties) {
-                should(
-                    window[nodes[n]].prototype.hasOwnProperty(
-                        expectedProperties[p]),
-                    nodes[n] + '.' + expectedProperties[p])
-                    .beFalse();
+                should(window[nodes[n]].prototype, nodes[n] + '.prototype')
+                    .notHaveOwnProperty(expectedProperties[p]);
               }
             }
 
@@ -59,18 +54,15 @@
             // have the others.
             for (p in expectedProperties) {
               if (expectedProperties[p] !== 'start') {
-                should(
-                    AudioBufferSourceNode.prototype.hasOwnProperty(
-                        expectedProperties[p]),
-                    'AudioBufferSourceNode.' + expectedProperties[p])
-                    .beFalse();
+                should(AudioBufferSourceNode.prototype,
+                       'AudioBufferSourceNode.prototype')
+                    .notHaveOwnProperty(expectedProperties[p]);
               }
             }
 
-            should(
-                AudioBufferSourceNode.prototype.hasOwnProperty('start'),
-                'AudioBufferSourceNode.start')
-                .beTrue();
+            should(AudioBufferSourceNode.prototype,
+                   'AudioBufferSourceNode.prototype')
+                .haveOwnProperty('start');
 
             task.done();
           });

@@ -36,10 +36,14 @@ PASS   1 is less than or equal to 1.
 PASS   1 is equal to 1. 
 PASS   should(1).beEqualTo(1) is true. 
 PASS   The message is truthful! 
+PASS   BaseAudioContext.prototype has an own property of "createGain". 
+PASS   BaseAudioContext.prototype does not have an own property of "startRendering". 
+PASS   An AudioBufferSourceNode inherits from "AudioScheduledSourceNode". 
+PASS   An AudioBufferSourceNode inherits from "AudioNode". 
 PASS   Decoding audio data with no argument rejected correctly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. 
 PASS   Suspending OAC with no argument rejected correctly with TypeError. 
 PASS   Start OAC rendering resolved correctly. 
-PASS < [basic] All assertions passed. (total 22 assertions) 
+PASS < [basic] All assertions passed. (total 26 assertions) 
 PASS > [load-file-in-should] Test Audit.loadFileFromUrl() within |should| assertion. 
 PASS   Loading file within should().beResolved() resolved correctly. 
 PASS < [load-file-in-should] All assertions passed. (total 1 assertions) 
