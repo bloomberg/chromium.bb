@@ -37,6 +37,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLTemplateElement.h"
@@ -82,13 +83,6 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result,
       m_formatter.appendStartMarkup(result, node, namespaces);
       break;
   }
-}
-
-static bool elementCannotHaveEndTag(const Node& node) {
-  if (!node.isHTMLElement())
-    return false;
-
-  return !toHTMLElement(node).shouldSerializeEndTag();
 }
 
 void MarkupAccumulator::appendEndMarkup(StringBuilder& result,

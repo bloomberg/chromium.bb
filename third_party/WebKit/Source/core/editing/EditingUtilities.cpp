@@ -1834,6 +1834,13 @@ bool lineBreakExistsAtPosition(const Position& position) {
   return offset < textNode->length() && textNode->data()[offset] == '\n';
 }
 
+bool elementCannotHaveEndTag(const Node& node) {
+  if (!node.isHTMLElement())
+    return false;
+
+  return !toHTMLElement(node).shouldSerializeEndTag();
+}
+
 // Modifies selections that have an end point at the edge of a table
 // that contains the other endpoint so that they don't confuse
 // code that iterates over selected paragraphs.
