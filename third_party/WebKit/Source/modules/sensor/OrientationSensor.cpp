@@ -84,13 +84,11 @@ void OrientationSensor::populateMatrixInternal(Matrix* targetMatrix,
         "Target buffer must have at least 16 elements.");
     return;
   }
-  if (!isActivated()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "The sensor must be in 'connected' state.");
+  if (!canReturnReadings()) {
+    exceptionState.throwDOMException(NotReadableError,
+                                     "Sensor data is not available.");
     return;
   }
-  if (!canReturnReadings())
-    return;
 
   double x = readingValueUnchecked(0);
   double y = readingValueUnchecked(1);

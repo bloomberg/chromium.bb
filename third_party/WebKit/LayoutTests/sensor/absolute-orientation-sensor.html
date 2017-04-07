@@ -45,8 +45,8 @@ sensor_test(sensor => {
   // Throws with insufficient buffer space.
   assert_throws({ name: 'TypeError' }, () => sensorObject.populateMatrix(new Float32Array(15)));
 
-  // Throws at wrong sensor state.
-  assert_throws({ name: 'InvalidStateError' }, () => sensorObject.populateMatrix(new Float32Array(16)));
+  // Throws if no orientation data available.
+  assert_throws({ name: 'NotReadableError' }, () => sensorObject.populateMatrix(new Float32Array(16)));
 
   sensorObject.start();
 
