@@ -11,6 +11,8 @@
 
 #include <math.h>
 #include <stdlib.h>
+
+#include "av1/encoder/cost.h"
 #include "av1/encoder/palette.h"
 
 static float calc_dist(const float *p1, const float *p2, int dim) {
@@ -162,6 +164,89 @@ int av1_count_colors(const uint8_t *src, int stride, int rows, int cols) {
   }
 
   return n;
+}
+
+#if CONFIG_PALETTE_DELTA_ENCODING
+int av1_get_palette_delta_bits_y(const PALETTE_MODE_INFO *const pmi,
+                                 int bit_depth, int *min_bits) {
+  const int n = pmi->palette_size[0];
+  int max_d = 0, i;
+  *min_bits = bit_depth - 3;
+  for (i = 1; i < n; ++i) {
+    const int delta = pmi->palette_colors[i] - pmi->palette_colors[i - 1];
+    assert(delta > 0);
+    if (delta > max_d) max_d = delta;
+  }
+  return AOMMAX(av1_ceil_log2(max_d), *min_bits);
+}
+
+int av1_get_palette_delta_bits_u(const PALETTE_MODE_INFO *const pmi,
+                                 int bit_depth, int *min_bits) {
+  const int n = pmi->palette_size[1];
+  int max_d = 0, i;
+  *min_bits = bit_depth - 3;
+  for (i = 1; i < n; ++i) {
+    const int delta = pmi->palette_colors[PALETTE_MAX_SIZE + i] -
+                      pmi->palette_colors[PALETTE_MAX_SIZE + i - 1];
+    assert(delta >= 0);
+    if (delta > max_d) max_d = delta;
+  }
+  return AOMMAX(av1_ceil_log2(max_d + 1), *min_bits);
+}
+
+int av1_get_palette_delta_bits_v(const PALETTE_MODE_INFO *const pmi,
+                                 int bit_depth, int *zero_count,
+                                 int *min_bits) {
+  const int n = pmi->palette_size[1];
+  const int max_val = 1 << bit_depth;
+  int max_d = 0, i;
+  *min_bits = bit_depth - 4;
+  *zero_count = 0;
+  for (i = 1; i < n; ++i) {
+    const int delta = pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] -
+                      pmi->palette_colors[2 * PALETTE_MAX_SIZE + i - 1];
+    const int v = abs(delta);
+    const int d = AOMMIN(v, max_val - v);
+    if (d > max_d) max_d = d;
+    if (d == 0) ++(*zero_count);
+  }
+  return AOMMAX(av1_ceil_log2(max_d + 1), *min_bits);
+}
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
+
+int av1_palette_color_cost_y(const PALETTE_MODE_INFO *const pmi,
+                             int bit_depth) {
+  const int n = pmi->palette_size[0];
+#if CONFIG_PALETTE_DELTA_ENCODING
+  int min_bits = 0;
+  const int bits = av1_get_palette_delta_bits_y(pmi, bit_depth, &min_bits);
+  return av1_cost_bit(128, 0) * (2 + bit_depth + bits * (n - 1));
+#else
+  return bit_depth * n * av1_cost_bit(128, 0);
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
+}
+
+int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
+                              int bit_depth) {
+  const int n = pmi->palette_size[1];
+#if CONFIG_PALETTE_DELTA_ENCODING
+  int cost = 0;
+  // U channel palette color cost.
+  int min_bits_u = 0;
+  const int bits_u = av1_get_palette_delta_bits_u(pmi, bit_depth, &min_bits_u);
+  cost += av1_cost_bit(128, 0) * (2 + bit_depth + bits_u * (n - 1));
+  // V channel palette color cost.
+  int zero_count = 0, min_bits_v = 0;
+  const int bits_v =
+      av1_get_palette_delta_bits_v(pmi, bit_depth, &zero_count, &min_bits_v);
+  const int bits_using_delta =
+      2 + bit_depth + (bits_v + 1) * (n - 1) - zero_count;
+  const int bits_using_raw = bit_depth * n;
+  cost += av1_cost_bit(128, 0) * (1 + AOMMIN(bits_using_delta, bits_using_raw));
+  return cost;
+#else
+  return 2 * bit_depth * n * av1_cost_bit(128, 0);
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
 }
 
 #if CONFIG_HIGHBITDEPTH

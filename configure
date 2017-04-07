@@ -285,6 +285,7 @@ EXPERIMENT_LIST="
     bitstream_debug
     alt_intra
     palette
+    palette_delta_encoding
     daala_ec
     rawbits
     ec_smallmul
