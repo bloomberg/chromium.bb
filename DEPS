@@ -721,6 +721,16 @@ hooks = [
     ],
   },
   {
+    'name': 'checkstyle',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-android-tools/checkstyle',
+               '-l', 'third_party/checkstyle'
+    ],
+  },
+  {
     'name': 'apk-patch-size-estimator',
     'pattern': '.',
     'action': ['python',
