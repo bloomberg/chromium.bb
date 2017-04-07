@@ -8,10 +8,12 @@ import static org.junit.Assert.assertEquals;
 
 import android.os.Bundle;
 
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.robolectric.annotation.Config;
+
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests for {@link PendingInvalidation}.
@@ -40,6 +42,19 @@ public class PendingInvalidationTest {
 
     @Test
     public void testParseToAndFromProtocolBuffer() {
+        PendingInvalidation invalidation =
+                new PendingInvalidation(sObjecId, sObjectSource, sVersion, sPayload);
+        PendingInvalidation parsedInvalidation =
+                PendingInvalidation.decodeToPendingInvalidation(invalidation.encodeToString());
+        assertEquals(sObjecId, parsedInvalidation.mObjectId);
+        assertEquals(sObjectSource, parsedInvalidation.mObjectSource);
+        assertEquals(sVersion, parsedInvalidation.mVersion);
+        assertEquals(sPayload, parsedInvalidation.mPayload);
+        assertEquals(invalidation, parsedInvalidation);
+    }
+
+    @Test
+    public void testParseToAndFromProtocolBufferThroughBundle() {
         PendingInvalidation invalidation =
                 new PendingInvalidation(sObjecId, sObjectSource, sVersion, sPayload);
         Bundle bundle = PendingInvalidation.decodeToBundle(invalidation.encodeToString());

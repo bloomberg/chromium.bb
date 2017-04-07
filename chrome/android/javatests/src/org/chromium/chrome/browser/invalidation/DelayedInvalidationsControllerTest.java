@@ -189,4 +189,70 @@ public class DelayedInvalidationsControllerTest {
         Assert.assertEquals(1, mController.mBundles.size());
         Assert.assertEquals(allInvalidations, new PendingInvalidation(mController.mBundles.get(0)));
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
+    public void testSameObjectInvalidationsGetCombined() throws InterruptedException {
+        // First make sure there are no pending invalidations.
+        mController.clearPendingInvalidations(mContext);
+        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        Assert.assertFalse(mController.mInvalidated);
+
+        // Create invalidations with the same id/src, but different versions and payloads.
+        PendingInvalidation lowerVersionInv =
+                new PendingInvalidation(OBJECT_ID, OBJECT_SRC, VERSION, PAYLOAD);
+        PendingInvalidation higherVersionInv =
+                new PendingInvalidation(OBJECT_ID, OBJECT_SRC, VERSION_2, PAYLOAD_2);
+
+        // Can't invalidate while Chrome is in the background.
+        setApplicationState(ActivityState.STOPPED);
+        Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
+
+        // Add multiple pending invalidations.
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, lowerVersionInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, higherVersionInv);
+
+        // Make sure there are pending invalidations.
+        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.mInvalidated);
+
+        // As Invalidation for all ids has been received, it will supersede all other invalidations.
+        Assert.assertEquals(1, mController.mBundles.size());
+        Assert.assertEquals(higherVersionInv, new PendingInvalidation(mController.mBundles.get(0)));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
+    public void testSameObjectLowerVersionInvalidationGetsDiscarded() throws InterruptedException {
+        // First make sure there are no pending invalidations.
+        mController.clearPendingInvalidations(mContext);
+        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        Assert.assertFalse(mController.mInvalidated);
+
+        // Create invalidations with the same id/src, but different versions and payloads.
+        PendingInvalidation lowerVersionInv =
+                new PendingInvalidation(OBJECT_ID, OBJECT_SRC, VERSION, PAYLOAD);
+        PendingInvalidation higherVersionInv =
+                new PendingInvalidation(OBJECT_ID, OBJECT_SRC, VERSION_2, PAYLOAD_2);
+
+        // Can't invalidate while Chrome is in the background.
+        setApplicationState(ActivityState.STOPPED);
+        Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
+
+        // Add multiple pending invalidations.
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, higherVersionInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, lowerVersionInv);
+
+        // Make sure there are pending invalidations.
+        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.mInvalidated);
+
+        // As Invalidation for all ids has been received, it will supersede all other invalidations.
+        Assert.assertEquals(1, mController.mBundles.size());
+        Assert.assertEquals(higherVersionInv, new PendingInvalidation(mController.mBundles.get(0)));
+    }
 }
