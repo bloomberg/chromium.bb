@@ -126,6 +126,32 @@ bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType) {
       ToLowerASCIIOrEmpty(mimeType));
 }
 
+bool MIMETypeRegistry::isLegacySupportedJavaScriptLanguage(
+    const String& language) {
+  // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only
+  // javascript1.1 - javascript1.3.
+  // Mozilla 1.8 and WinIE 7 both accept javascript and livescript.
+  // WinIE 7 accepts ecmascript and jscript, but Mozilla 1.8 doesn't.
+  // Neither Mozilla 1.8 nor WinIE 7 accept leading or trailing whitespace.
+  // We want to accept all the values that either of these browsers accept, but
+  // not other values.
+
+  // FIXME: This function is not HTML5 compliant. These belong in the MIME
+  // registry as "text/javascript<version>" entries.
+  return equalIgnoringASCIICase(language, "javascript") ||
+         equalIgnoringASCIICase(language, "javascript1.0") ||
+         equalIgnoringASCIICase(language, "javascript1.1") ||
+         equalIgnoringASCIICase(language, "javascript1.2") ||
+         equalIgnoringASCIICase(language, "javascript1.3") ||
+         equalIgnoringASCIICase(language, "javascript1.4") ||
+         equalIgnoringASCIICase(language, "javascript1.5") ||
+         equalIgnoringASCIICase(language, "javascript1.6") ||
+         equalIgnoringASCIICase(language, "javascript1.7") ||
+         equalIgnoringASCIICase(language, "livescript") ||
+         equalIgnoringASCIICase(language, "ecmascript") ||
+         equalIgnoringASCIICase(language, "jscript");
+}
+
 bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType) {
   return mime_util::IsSupportedNonImageMimeType(ToLowerASCIIOrEmpty(mimeType));
 }

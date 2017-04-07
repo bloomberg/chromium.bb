@@ -69,6 +69,8 @@ class PLATFORM_EXPORT MIMETypeRegistry {
   // resource.
   static bool isSupportedJavaScriptMIMEType(const String& mimeType);
 
+  static bool isLegacySupportedJavaScriptLanguage(const String& language);
+
   // Checks to see if a non-image mime type is suitable for being loaded as a
   // document in a frame. Includes supported JavaScript MIME types.
   static bool isSupportedNonImageMIMEType(const String& mimeType);
