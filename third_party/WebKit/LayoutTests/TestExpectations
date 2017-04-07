@@ -6,7 +6,6 @@ Bug(intentional) harness-tests/timeout.html [ Timeout ]
 # lines related to CSS tests (crbug.com/706118).
 crbug.com/706118 external/wpt/css/CSS2 [ Skip ]
 crbug.com/706118 external/wpt/css/css-align-3 [ Skip ]
-crbug.com/706118 external/wpt/css/css-display-3 [ Skip ]
 crbug.com/706118 external/wpt/css/css-flexbox-1 [ Skip ]
 crbug.com/706118 external/wpt/css/css-grid-1 [ Skip ]
 crbug.com/706118 external/wpt/css/css-scoping-1 [ Skip ]
@@ -2621,15 +2620,16 @@ crbug.com/684874 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-duri
 
 # ====== Begin of display: contents tests ======
 
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-001.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-002.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-inline.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-none.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-table-001-inline.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-002.html [ Failure ]
-#crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-003.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-001.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-002.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-inline.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-none.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-table-001-inline.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-002.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-003.html [ Failure ]
+crbug.com/657748 external/wpt/css/css-display-3/display-contents-computed-style.html [ Failure ]
 
 # ====== End of display: contents tests ======
 
