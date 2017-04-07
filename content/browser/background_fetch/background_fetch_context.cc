@@ -44,12 +44,16 @@ BackgroundFetchContext::BackgroundFetchContext(
       event_dispatcher_(base::MakeUnique<BackgroundFetchEventDispatcher>(
           std::move(service_worker_context))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  request_context_ =
-      make_scoped_refptr(storage_partition->GetURLRequestContext());
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void BackgroundFetchContext::InitializeOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  request_context_getter_ = request_context_getter;
 }
 
 void BackgroundFetchContext::Shutdown() {
@@ -146,12 +150,12 @@ void BackgroundFetchContext::CreateController(
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, data_manager_.get(), browser_context_,
-          request_context_,
+          request_context_getter_,
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
 
   // TODO(peter): We should actually be able to use Background Fetch in layout
   // tests. That requires a download manager and a request context.
-  if (request_context_) {
+  if (request_context_getter_) {
     // Start fetching the |initial_requests| immediately. At some point in the
     // future we may want a more elaborate scheduling mechanism here.
     controller->Start(std::move(initial_requests));

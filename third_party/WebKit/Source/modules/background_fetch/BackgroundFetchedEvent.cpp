@@ -31,7 +31,6 @@ BackgroundFetchedEvent::BackgroundFetchedEvent(
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchEvent(type, initializer, observer),
-      m_fetches(initializer.fetches()),
       m_registration(registration) {
   m_fetches.reserveInitialCapacity(fetches.size());
   for (const WebBackgroundFetchSettledFetch& fetch : fetches) {

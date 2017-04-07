@@ -128,6 +128,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     context_ = new BackgroundFetchContext(
         browser_context(), storage_partition,
         make_scoped_refptr(embedded_worker_test_helper()->context_wrapper()));
+    context_->InitializeOnIOThread(
+        make_scoped_refptr(storage_partition->GetURLRequestContext()));
+
     service_ = base::MakeUnique<BackgroundFetchServiceImpl>(
         0 /* render_process_id */, context_);
   }
@@ -369,7 +372,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     EXPECT_EQ(fetches[i].response.status_code, 0);
     EXPECT_TRUE(fetches[i].response.status_text.empty());
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::WebServiceWorkerResponseTypeOpaque);
+              blink::WebServiceWorkerResponseTypeDefault);
     EXPECT_TRUE(fetches[i].response.headers.empty());
     EXPECT_EQ(fetches[i].response.error,
               blink::WebServiceWorkerResponseErrorUnknown);

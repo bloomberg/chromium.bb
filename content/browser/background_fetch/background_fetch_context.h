@@ -51,6 +51,11 @@ class CONTENT_EXPORT BackgroundFetchContext
                          StoragePartitionImpl* storage_partition,
                          scoped_refptr<ServiceWorkerContextWrapper> context);
 
+  // Finishes initializing the Background Fetch context on the IO thread by
+  // setting the |request_context_getter|.
+  void InitializeOnIOThread(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
 
@@ -120,7 +125,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   std::unique_ptr<BackgroundFetchEventDispatcher> event_dispatcher_;

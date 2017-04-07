@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 namespace content {
 
@@ -208,7 +209,8 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     settled_fetch.response.url_list = request->GetURLChain();
     // TODO: settled_fetch.response.status_code
     // TODO: settled_fetch.response.status_text
-    // TODO: settled_fetch.response.response_type
+    settled_fetch.response.response_type =
+        blink::WebServiceWorkerResponseTypeDefault;
     // TODO: settled_fetch.response.headers
 
     if (request->GetFileSize() > 0) {
