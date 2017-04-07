@@ -118,18 +118,6 @@ void MediaStreamAudioTrack::Stop() {
 }
 
 void MediaStreamAudioTrack::OnSetFormat(const media::AudioParameters& params) {
-  base::OnceCallback<void()> temp_callback;
-  // Call the callback if present, but don't hold a lock while doing so.
-  {
-    base::AutoLock guard(format_set_guard_);
-    format_is_set_ = true;
-    if (!format_set_callback_.is_null()) {
-      temp_callback = std::move(format_set_callback_);
-    }
-  }
-  if (!temp_callback.is_null()) {
-    std::move(temp_callback).Run();
-  }
   deliverer_.OnSetFormat(params);
 }
 
@@ -153,14 +141,10 @@ void MediaStreamAudioTrack::OnData(const media::AudioBus& audio_bus,
   }
 }
 
-bool MediaStreamAudioTrack::format_is_set() {
-  base::AutoLock guard(format_set_guard_);
-  return format_is_set_;
-}
-
 void MediaStreamAudioTrack::getSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
-  DCHECK(format_is_set());
+  // TODO(hta): Extract the real value.
+  settings.deviceId = blink::WebString("audio device ID");
 }
 
 }  // namespace content

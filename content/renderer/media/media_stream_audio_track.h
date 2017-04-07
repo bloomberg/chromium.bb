@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/atomicops.h"
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -73,11 +72,6 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
   // method to provide safe down-casting to their type.
   virtual void* GetClassIdentifier() const;
 
-  void SetFormatConfiguredCallback(base::OnceCallback<void()> callback) {
-    base::AutoLock guard(format_set_guard_);
-    format_set_callback_ = std::move(callback);
-  }
-
  private:
   friend class MediaStreamAudioSource;
   friend class MediaStreamAudioDeliverer<MediaStreamAudioTrack>;
@@ -101,8 +95,6 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
   void getSettings(blink::WebMediaStreamTrack::Settings& settings) override;
 
  private:
-  bool format_is_set();
-
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
   base::ThreadChecker thread_checker_;
@@ -118,11 +110,6 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
 
   // Buffer used to deliver silent audio data while this track is disabled.
   std::unique_ptr<media::AudioBus> silent_bus_;
-
-  // True if the track knows its configuration (OnSetFormat has been called).
-  bool format_is_set_ = false;
-  base::OnceCallback<void()> format_set_callback_;
-  base::Lock format_set_guard_;
 
   // Provides weak pointers that are valid until Stop() is called.
   base::WeakPtrFactory<MediaStreamAudioTrack> weak_factory_;
