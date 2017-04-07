@@ -8,6 +8,8 @@ blink_modules_sources("document_metadata") {
   sources = [
     "CopylessPasteExtractor.cpp",
     "CopylessPasteExtractor.h",
+    "CopylessPasteServer.cpp",
+    "CopylessPasteServer.h",
   ]
 
   deps = []

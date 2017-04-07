@@ -21,6 +21,7 @@
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
+#include "modules/document_metadata/CopylessPasteServer.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/installation/InstallationServiceImpl.h"
@@ -83,6 +84,10 @@ void ModulesInitializer::initialize() {
 
   // Mojo Interfaces registered with LocalFrame
   LocalFrame::registerInitializationCallback([](LocalFrame* frame) {
+    if (frame && frame->isMainFrame()) {
+      frame->interfaceRegistry()->addInterface(WTF::bind(
+          &CopylessPasteServer::bindMojoRequest, wrapWeakPersistent(frame)));
+    }
     frame->interfaceRegistry()->addInterface(
         WTF::bind(&InstallationServiceImpl::create, wrapWeakPersistent(frame)));
     // TODO(dominickn): This interface should be document-scoped rather than

@@ -34,3 +34,8 @@ struct WebPage {
   string title;
   array<Entity> entities;
 };
+
+// Null page denotes no results.
+interface CopylessPaste {
+  GetEntities() => (WebPage? page);
+};
