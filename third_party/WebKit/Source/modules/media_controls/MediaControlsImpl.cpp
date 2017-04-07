@@ -866,6 +866,10 @@ void MediaControlsImpl::onPlay() {
   startHideMediaControlsTimer();
 }
 
+void MediaControlsImpl::onPlaying() {
+  m_timeline->onPlaying();
+}
+
 void MediaControlsImpl::onPause() {
   updatePlayState();
   m_timeline->setPosition(mediaElement().currentTime());

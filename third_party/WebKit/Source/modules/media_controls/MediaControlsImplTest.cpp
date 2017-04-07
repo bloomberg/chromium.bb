@@ -8,6 +8,7 @@
 #include <memory>
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/ClientRect.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
@@ -16,6 +17,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControlElementTypes.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
@@ -23,6 +25,8 @@
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/WebMouseEvent.h"
+#include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
@@ -31,6 +35,16 @@
 namespace blink {
 
 namespace {
+
+class MockChromeClient : public EmptyChromeClient {
+ public:
+  // EmptyChromeClient overrides:
+  WebScreenInfo screenInfo() const override {
+    WebScreenInfo screenInfo;
+    screenInfo.orientationType = WebScreenOrientationLandscapePrimary;
+    return screenInfo;
+  }
+};
 
 class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
@@ -147,13 +161,15 @@ enum DownloadActionMetrics {
 class MediaControlsImplTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), nullptr,
+    Page::PageClients clients;
+    fillWithEmptyClients(clients);
+    clients.chromeClient = new MockChromeClient();
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients,
                                            StubLocalFrameClient::create());
-    Document& document = this->document();
 
-    document.write("<video>");
+    document().write("<video>");
     HTMLVideoElement& video =
-        toHTMLVideoElement(*document.querySelector("video"));
+        toHTMLVideoElement(*document().querySelector("video"));
     m_mediaControls = static_cast<MediaControlsImpl*>(video.mediaControls());
 
     // If scripts are not enabled, controls will always be shown.
@@ -197,11 +213,49 @@ class MediaControlsImplTest : public ::testing::Test {
     simulateLoadedMetadata();
   }
 
+  void setReady() {
+    mediaControls().mediaElement().setReadyState(
+        HTMLMediaElement::kHaveEnoughData);
+  }
+
+  void mouseDownAt(WebFloatPoint pos);
+  void mouseMoveTo(WebFloatPoint pos);
+  void mouseUpAt(WebFloatPoint pos);
+
  private:
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   Persistent<MediaControlsImpl> m_mediaControls;
   HistogramTester m_histogramTester;
 };
+
+void MediaControlsImplTest::mouseDownAt(WebFloatPoint pos) {
+  WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown, pos /* client pos */,
+                               pos /* screen pos */,
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseDownEvent.setFrameScale(1);
+  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+}
+
+void MediaControlsImplTest::mouseMoveTo(WebFloatPoint pos) {
+  WebMouseEvent mouseMoveEvent(WebInputEvent::MouseMove, pos /* client pos */,
+                               pos /* screen pos */,
+                               WebPointerProperties::Button::Left, 1,
+                               WebInputEvent::Modifiers::LeftButtonDown,
+                               WebInputEvent::TimeStampForTesting);
+  mouseMoveEvent.setFrameScale(1);
+  document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent, {});
+}
+
+void MediaControlsImplTest::mouseUpAt(WebFloatPoint pos) {
+  WebMouseEvent mouseUpEvent(
+      WebMouseEvent::MouseUp, pos /* client pos */, pos /* screen pos */,
+      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
+      WebInputEvent::TimeStampForTesting);
+  mouseUpEvent.setFrameScale(1);
+  document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
+}
 
 TEST_F(MediaControlsImplTest, HideAndShow) {
   mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
@@ -481,11 +535,6 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
 TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   ensureSizing();
 
-  MediaControlTimelineElement* timeline =
-      static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(
-          mediaControls(), "-webkit-media-controls-timeline"));
-  ASSERT_NE(nullptr, timeline);
-
   // Tests the case where the real length of the video, |exactDuration|, gets
   // rounded up slightly to |roundedUpDuration| when setting the timeline's
   // |max| attribute (crbug.com/695065).
@@ -496,6 +545,7 @@ TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   // Simulate a click slightly past the end of the track of the timeline's
   // underlying <input type="range">. This would set the |value| to the |max|
   // attribute, which can be slightly rounded relative to the duration.
+  MediaControlTimelineElement* timeline = mediaControls().timelineElement();
   timeline->setValueAsNumber(roundedUpDuration, ASSERT_NO_EXCEPTION);
   ASSERT_EQ(roundedUpDuration, timeline->valueAsNumber());
   EXPECT_EQ(0.0, mediaControls().mediaElement().currentTime());
@@ -506,53 +556,213 @@ TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
 TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
   ensureSizing();
 
-  MediaControlTimelineElement* timeline =
-      static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(
-          mediaControls(), "-webkit-media-controls-timeline"));
-  ASSERT_NE(nullptr, timeline);
   MediaControlCurrentTimeDisplayElement* currentTimeDisplay =
       static_cast<MediaControlCurrentTimeDisplayElement*>(
           getElementByShadowPseudoId(
               mediaControls(), "-webkit-media-controls-current-time-display"));
-  ASSERT_NE(nullptr, currentTimeDisplay);
 
   double duration = 600;
   loadMediaWithDuration(duration);
 
   // Simulate seeking the underlying range to 50%. Current time display should
   // update synchronously (rather than waiting for media to finish seeking).
-  timeline->setValueAsNumber(duration / 2, ASSERT_NO_EXCEPTION);
-  timeline->dispatchInputEvent();
+  mediaControls().timelineElement()->setValueAsNumber(duration / 2,
+                                                      ASSERT_NO_EXCEPTION);
+  mediaControls().timelineElement()->dispatchInputEvent();
   EXPECT_EQ(duration / 2, currentTimeDisplay->currentValue());
 }
 
 TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
   ensureSizing();
 
-  MediaControlVolumeSliderElement* volumeSlider =
-      static_cast<MediaControlVolumeSliderElement*>(getElementByShadowPseudoId(
-          mediaControls(), "-webkit-media-controls-volume-slider"));
-  ASSERT_NE(nullptr, volumeSlider);
-
-  HTMLElement* element = volumeSlider;
+  Element* volumeSlider = mediaControls().volumeSliderElement();
 
   MockLayoutObject layoutObject;
   LayoutObject* prevLayoutObject = volumeSlider->layoutObject();
   volumeSlider->setLayoutObject(&layoutObject);
 
   Event* event = Event::create(EventTypeNames::input);
-  element->defaultEventHandler(event);
+  volumeSlider->defaultEventHandler(event);
   EXPECT_EQ(1, layoutObject.fullPaintInvalidationCallCount());
 
   event = Event::create(EventTypeNames::input);
-  element->defaultEventHandler(event);
+  volumeSlider->defaultEventHandler(event);
   EXPECT_EQ(2, layoutObject.fullPaintInvalidationCallCount());
 
   event = Event::create(EventTypeNames::input);
-  element->defaultEventHandler(event);
+  volumeSlider->defaultEventHandler(event);
   EXPECT_EQ(3, layoutObject.fullPaintInvalidationCallCount());
 
   volumeSlider->setLayoutObject(prevLayoutObject);
+}
+
+TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+  setReady();
+  ensureSizing();
+  testing::runPendingTasks();
+
+  MediaControlTimelineElement* timeline = mediaControls().timelineElement();
+  ASSERT_TRUE(isElementVisible(*timeline));
+  ASSERT_LT(0, timeline->getBoundingClientRect()->width());
+
+  mediaControls().mediaElement().play();
+  testing::runPendingTasks();
+
+  histogramTester().expectUniqueSample(
+      "Media.Timeline.Width.InlineLandscape",
+      timeline->getBoundingClientRect()->width(), 1);
+  histogramTester().expectTotalCount("Media.Timeline.Width.InlinePortrait", 0);
+  histogramTester().expectTotalCount("Media.Timeline.Width.FullscreenLandscape",
+                                     0);
+  histogramTester().expectTotalCount("Media.Timeline.Width.FullscreenPortrait",
+                                     0);
+}
+
+TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
+  double duration = 540;  // 9 minutes
+  loadMediaWithDuration(duration);
+  ensureSizing();
+  testing::runPendingTasks();
+
+  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
+  ClientRect* timelineRect =
+      mediaControls().timelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
+
+  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+
+  WebFloatPoint trackCenter(timelineRect->left() + timelineRect->width() / 2,
+                            timelineRect->top() + timelineRect->height() / 2);
+  mouseDownAt(trackCenter);
+  mouseUpAt(trackCenter);
+  testing::runPendingTasks();
+
+  EXPECT_LE(0.49 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_GE(0.51 * duration, mediaControls().mediaElement().currentTime());
+
+  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
+                                       0 /* SeekType::kClick */, 1);
+  histogramTester().expectTotalCount(
+      "Media.Timeline.DragGestureDuration.128_255", 0);
+  histogramTester().expectTotalCount("Media.Timeline.DragPercent.128_255", 0);
+  histogramTester().expectTotalCount(
+      "Media.Timeline.DragSumAbsTimeDelta.128_255", 0);
+  histogramTester().expectTotalCount("Media.Timeline.DragTimeDelta.128_255", 0);
+}
+
+TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
+  double duration = 540;  // 9 minutes
+  loadMediaWithDuration(duration);
+  ensureSizing();
+  testing::runPendingTasks();
+
+  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
+  ClientRect* timelineRect =
+      mediaControls().timelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
+
+  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+
+  float y = timelineRect->top() + timelineRect->height() / 2;
+  WebFloatPoint thumb(timelineRect->left(), y);
+  WebFloatPoint trackTwoThirds(
+      timelineRect->left() + timelineRect->width() * 2 / 3, y);
+  mouseDownAt(thumb);
+  mouseMoveTo(trackTwoThirds);
+  mouseUpAt(trackTwoThirds);
+
+  EXPECT_LE(0.66 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_GE(0.68 * duration, mediaControls().mediaElement().currentTime());
+
+  histogramTester().expectUniqueSample(
+      "Media.Timeline.SeekType.128_255",
+      1 /* SeekType::kDragFromCurrentPosition */, 1);
+  histogramTester().expectTotalCount(
+      "Media.Timeline.DragGestureDuration.128_255", 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                       47 /* [60.0%, 70.0%) */, 1);
+  histogramTester().expectUniqueSample(
+      "Media.Timeline.DragSumAbsTimeDelta.128_255", 16 /* [4m, 8m) */, 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
+                                       40 /* [4m, 8m) */, 1);
+}
+
+TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
+  double duration = 540;  // 9 minutes
+  loadMediaWithDuration(duration);
+  ensureSizing();
+  testing::runPendingTasks();
+
+  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
+  ClientRect* timelineRect =
+      mediaControls().timelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
+
+  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+
+  float y = timelineRect->top() + timelineRect->height() / 2;
+  WebFloatPoint trackOneThird(
+      timelineRect->left() + timelineRect->width() * 1 / 3, y);
+  WebFloatPoint trackTwoThirds(
+      timelineRect->left() + timelineRect->width() * 2 / 3, y);
+  mouseDownAt(trackOneThird);
+  mouseMoveTo(trackTwoThirds);
+  mouseUpAt(trackTwoThirds);
+
+  EXPECT_LE(0.66 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_GE(0.68 * duration, mediaControls().mediaElement().currentTime());
+
+  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
+                                       2 /* SeekType::kDragFromElsewhere */, 1);
+  histogramTester().expectTotalCount(
+      "Media.Timeline.DragGestureDuration.128_255", 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                       42 /* [30.0%, 35.0%) */, 1);
+  histogramTester().expectUniqueSample(
+      "Media.Timeline.DragSumAbsTimeDelta.128_255", 15 /* [2m, 4m) */, 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
+                                       39 /* [2m, 4m) */, 1);
+}
+
+TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
+  double duration = 540;  // 9 minutes
+  loadMediaWithDuration(duration);
+  ensureSizing();
+  testing::runPendingTasks();
+
+  ASSERT_TRUE(isElementVisible(*mediaControls().timelineElement()));
+  ClientRect* timelineRect =
+      mediaControls().timelineElement()->getBoundingClientRect();
+  ASSERT_LT(0, timelineRect->width());
+
+  EXPECT_EQ(0, mediaControls().mediaElement().currentTime());
+
+  float y = timelineRect->top() + timelineRect->height() / 2;
+  WebFloatPoint trackTwoThirds(
+      timelineRect->left() + timelineRect->width() * 2 / 3, y);
+  WebFloatPoint trackEnd(timelineRect->left() + timelineRect->width(), y);
+  WebFloatPoint trackOneThird(
+      timelineRect->left() + timelineRect->width() * 1 / 3, y);
+  mouseDownAt(trackTwoThirds);
+  mouseMoveTo(trackEnd);
+  mouseMoveTo(trackOneThird);
+  mouseUpAt(trackOneThird);
+
+  EXPECT_LE(0.32 * duration, mediaControls().mediaElement().currentTime());
+  EXPECT_GE(0.34 * duration, mediaControls().mediaElement().currentTime());
+
+  histogramTester().expectUniqueSample("Media.Timeline.SeekType.128_255",
+                                       2 /* SeekType::kDragFromElsewhere */, 1);
+  histogramTester().expectTotalCount(
+      "Media.Timeline.DragGestureDuration.128_255", 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragPercent.128_255",
+                                       8 /* (-35.0%, -30.0%] */, 1);
+  histogramTester().expectUniqueSample(
+      "Media.Timeline.DragSumAbsTimeDelta.128_255", 17 /* [8m, 15m) */, 1);
+  histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
+                                       9 /* (-4m, -2m] */, 1);
 }
 
 }  // namespace blink

@@ -19,6 +19,7 @@ namespace blink {
 
 class PLATFORM_EXPORT CustomCountHistogram {
  public:
+  // Min values should be >=1 as emitted 0s still go into the underflow bucket.
   CustomCountHistogram(const char* name,
                        base::HistogramBase::Sample min,
                        base::HistogramBase::Sample max,
@@ -38,6 +39,7 @@ class PLATFORM_EXPORT BooleanHistogram : public CustomCountHistogram {
 
 class PLATFORM_EXPORT EnumerationHistogram : public CustomCountHistogram {
  public:
+  // |boundaryValue| must be strictly greater than samples passed to |count|.
   EnumerationHistogram(const char* name,
                        base::HistogramBase::Sample boundaryValue);
 };

@@ -341,6 +341,7 @@ void SliderContainerElement::handleTouchEvent(TouchEvent* event) {
     return;
 
   if (event->type() == EventTypeNames::touchend) {
+    // TODO: Also do this for touchcancel?
     input->dispatchFormControlChangeEvent();
     event->setDefaultHandled();
     m_slidingDirection = NoMove;

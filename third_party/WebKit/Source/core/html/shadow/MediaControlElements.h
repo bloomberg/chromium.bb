@@ -31,6 +31,7 @@
 #define MediaControlElements_h
 
 #include "core/html/shadow/MediaControlElementTypes.h"
+#include "core/html/shadow/MediaControlTimelineMetrics.h"
 #include "public/platform/WebLocalizedString.h"
 
 namespace blink {
@@ -279,11 +280,19 @@ class CORE_EXPORT MediaControlTimelineElement final
   void setPosition(double);
   void setDuration(double);
 
+  void onPlaying();
+
  private:
   explicit MediaControlTimelineElement(MediaControls&);
 
   void defaultEventHandler(Event*) override;
   bool keepEventInNode(Event*) override;
+
+  // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
+  // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
+  int timelineWidth();
+
+  MediaControlTimelineMetrics m_metrics;
 };
 
 // ----------------------------

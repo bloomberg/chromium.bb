@@ -25,6 +25,7 @@ void MediaControlsMediaEventListener::attach() {
   mediaElement().addEventListener(EventTypeNames::focusin, this, false);
   mediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
   mediaElement().addEventListener(EventTypeNames::play, this, false);
+  mediaElement().addEventListener(EventTypeNames::playing, this, false);
   mediaElement().addEventListener(EventTypeNames::pause, this, false);
   mediaElement().addEventListener(EventTypeNames::durationchange, this, false);
   mediaElement().addEventListener(EventTypeNames::error, this, false);
@@ -86,6 +87,10 @@ void MediaControlsMediaEventListener::handleEvent(
   }
   if (event->type() == EventTypeNames::play) {
     m_mediaControls->onPlay();
+    return;
+  }
+  if (event->type() == EventTypeNames::playing) {
+    m_mediaControls->onPlaying();
     return;
   }
   if (event->type() == EventTypeNames::pause) {

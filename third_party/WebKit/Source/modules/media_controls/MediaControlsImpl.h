@@ -118,6 +118,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void onTimeUpdate() override;
   void onDurationChange() override;
   void onPlay() override;
+  void onPlaying() override;
   void onPause() override;
   void onTextTracksAddedOrRemoved() override;
   void onTextTracksChanged() override;

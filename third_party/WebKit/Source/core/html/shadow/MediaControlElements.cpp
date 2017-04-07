@@ -35,6 +35,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -47,9 +48,12 @@
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
 #include "core/html/media/MediaControls.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/api/LayoutSliderItem.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
@@ -57,6 +61,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "public/platform/UserMetricsAction.h"
+#include "public/platform/WebScreenInfo.h"
 
 namespace blink {
 
@@ -95,6 +100,10 @@ bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject) {
 
   // Some events are only captured during a slider drag.
   LayoutSliderItem slider = LayoutSliderItem(toLayoutSlider(layoutObject));
+  // TODO(crbug.com/695459#c1): LayoutSliderItem::inDragMode is incorrectly
+  // false for drags that start from the track instead of the thumb.
+  // Use SliderThumbElement::m_inDragMode and
+  // SliderContainerElement::m_touchStarted instead.
   if (!slider.isNull() && !slider.inDragMode())
     return false;
 
@@ -791,16 +800,38 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event) {
   if (!isConnected() || !document().isActive())
     return;
 
-  if (event->type() == EventTypeNames::mousedown) {
-    Platform::current()->recordAction(
-        UserMetricsAction("Media.Controls.ScrubbingBegin"));
+  // TODO(crbug.com/706504): These should listen for pointerdown/up.
+  if (event->type() == EventTypeNames::mousedown)
     mediaControls().beginScrubbing();
+  if (event->type() == EventTypeNames::mouseup)
+    mediaControls().endScrubbing();
+
+  // Only respond to main button of primary pointer(s).
+  if (event->isPointerEvent() && toPointerEvent(event)->isPrimary() &&
+      toPointerEvent(event)->button() ==
+          static_cast<short>(WebPointerProperties::Button::Left)) {
+    if (event->type() == EventTypeNames::pointerdown) {
+      Platform::current()->recordAction(
+          UserMetricsAction("Media.Controls.ScrubbingBegin"));
+      mediaControls().beginScrubbing();
+      Element* thumb = userAgentShadowRoot()->getElementById(
+          ShadowElementNames::sliderThumb());
+      bool startedFromThumb = thumb && thumb == event->target()->toNode();
+      m_metrics.startGesture(startedFromThumb);
+    }
+    if (event->type() == EventTypeNames::pointerup) {
+      Platform::current()->recordAction(
+          UserMetricsAction("Media.Controls.ScrubbingEnd"));
+      mediaControls().endScrubbing();
+      m_metrics.recordEndGesture(timelineWidth(), mediaElement().duration());
+    }
   }
 
-  if (event->type() == EventTypeNames::mouseup) {
-    Platform::current()->recordAction(
-        UserMetricsAction("Media.Controls.ScrubbingEnd"));
-    mediaControls().endScrubbing();
+  if (event->type() == EventTypeNames::keydown) {
+    m_metrics.startKey();
+  }
+  if (event->type() == EventTypeNames::keyup && event->isKeyboardEvent()) {
+    m_metrics.recordEndKey(timelineWidth(), toKeyboardEvent(event)->keyCode());
   }
 
   MediaControlInputElement::defaultEventHandler(event);
@@ -816,6 +847,8 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event) {
   // this happens and scrubber is dragged near the max, seek to duration.
   if (time > duration)
     time = duration;
+
+  m_metrics.onInput(mediaElement().currentTime(), time);
 
   // FIXME: This will need to take the timeline offset into consideration
   // once that concept is supported, see https://crbug.com/312699
@@ -845,8 +878,22 @@ void MediaControlTimelineElement::setDuration(double duration) {
     layoutObject->setShouldDoFullPaintInvalidation();
 }
 
+void MediaControlTimelineElement::onPlaying() {
+  Frame* frame = document().frame();
+  if (!frame)
+    return;
+  m_metrics.recordPlaying(frame->chromeClient().screenInfo().orientationType,
+                          mediaElement().isFullscreen(), timelineWidth());
+}
+
 bool MediaControlTimelineElement::keepEventInNode(Event* event) {
   return isUserInteractionEventForSlider(event, layoutObject());
+}
+
+int MediaControlTimelineElement::timelineWidth() {
+  if (LayoutBoxModelObject* box = layoutBoxModelObject())
+    return box->offsetWidth().round();
+  return 0;
 }
 
 // ----------------------------

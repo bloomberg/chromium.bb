@@ -85,6 +85,7 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual void onTimeUpdate() = 0;
   virtual void onDurationChange() = 0;
   virtual void onPlay() = 0;
+  virtual void onPlaying() = 0;
   virtual void onPause() = 0;
   virtual void onTextTracksAddedOrRemoved() = 0;
   virtual void onTextTracksChanged() = 0;

@@ -68,7 +68,7 @@ class SliderThumbElement final : public HTMLDivElement {
   Node* focusDelegate() override;
   void startDragging();
 
-  bool m_inDragMode;
+  bool m_inDragMode;  // Mouse only. Touch is handled by SliderContainerElement.
 };
 
 inline Element* SliderThumbElement::cloneElementWithoutAttributesAndChildren() {
