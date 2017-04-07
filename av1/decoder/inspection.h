@@ -58,6 +58,8 @@ struct insp_frame_data {
   int base_qindex;
   int mi_rows;
   int mi_cols;
+  int tile_mi_rows;
+  int tile_mi_cols;
   int16_t y_dequant[MAX_SEGMENTS][2];
   int16_t uv_dequant[MAX_SEGMENTS][2];
 #if CONFIG_CDEF
