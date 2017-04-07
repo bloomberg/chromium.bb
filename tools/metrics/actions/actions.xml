@@ -9919,6 +9919,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileMenuReportAnIssue">
+  <owner>rohitrao@chromium.org</owner>
+  <description>User pressed 'Report an Issue' in the app menu.</description>
+</action>
+
 <action name="MobileMenuRequestDesktopSite">
   <owner>aurimas@chromium.org</owner>
   <description>
