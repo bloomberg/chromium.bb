@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "components/cryptauth/connection.h"
 
@@ -17,6 +19,14 @@ namespace {
 const int kCooldownTimeSecs = 7;
 
 }  // namespace
+
+// static
+BluetoothThrottlerImpl* BluetoothThrottlerImpl::GetInstance() {
+  return base::Singleton<BluetoothThrottlerImpl>::get();
+}
+
+BluetoothThrottlerImpl::BluetoothThrottlerImpl()
+    : BluetoothThrottlerImpl(base::MakeUnique<base::DefaultTickClock>()) {}
 
 BluetoothThrottlerImpl::BluetoothThrottlerImpl(
     std::unique_ptr<base::TickClock> clock)

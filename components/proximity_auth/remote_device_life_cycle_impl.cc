@@ -48,8 +48,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
       proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
-      bluetooth_throttler_(new cryptauth::BluetoothThrottlerImpl(
-          base::WrapUnique(new base::DefaultTickClock()))),
+      bluetooth_throttler_(cryptauth::BluetoothThrottlerImpl::GetInstance()),
       weak_ptr_factory_(this) {}
 
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
@@ -87,7 +86,7 @@ RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
     return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
         remote_device_, kBLESmartLockServiceUUID,
         BluetoothLowEnergyConnectionFinder::FinderStrategy::FIND_PAIRED_DEVICE,
-        nullptr, bluetooth_throttler_.get(), 3);
+        nullptr, bluetooth_throttler_, 3);
   } else {
     return base::MakeUnique<BluetoothConnectionFinder>(
         remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),

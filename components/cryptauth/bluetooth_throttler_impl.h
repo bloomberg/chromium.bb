@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection_observer.h"
@@ -28,9 +29,7 @@ class Connection;
 class BluetoothThrottlerImpl : public BluetoothThrottler,
                                public ConnectionObserver {
  public:
-  // Creates a throttler for connections to a remote device, using the |clock|
-  // as a time source.
-  explicit BluetoothThrottlerImpl(std::unique_ptr<base::TickClock> clock);
+  static BluetoothThrottlerImpl* GetInstance();
   ~BluetoothThrottlerImpl() override;
 
   // BluetoothThrottler:
@@ -38,11 +37,19 @@ class BluetoothThrottlerImpl : public BluetoothThrottler,
   void OnConnection(Connection* connection) override;
 
  protected:
+  // Creates a throttler for connections to a remote device, using the |clock|
+  // as a time source.
+  explicit BluetoothThrottlerImpl(std::unique_ptr<base::TickClock> clock);
+
   // Returns the duration to wait, after disconnecting, before reattempting a
   // connection to the remote device. Exposed for testing.
   base::TimeDelta GetCooldownTimeDelta() const;
 
  private:
+  friend struct base::DefaultSingletonTraits<BluetoothThrottlerImpl>;
+
+  BluetoothThrottlerImpl();
+
   // ConnectionObserver:
   void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,

@@ -1049,16 +1049,11 @@ EasyUnlockPrivateSetAutoPairingResultFunction::Run() {
 }
 
 EasyUnlockPrivateFindSetupConnectionFunction::
-    EasyUnlockPrivateFindSetupConnectionFunction()
-    : bluetooth_throttler_(new cryptauth::BluetoothThrottlerImpl(
-          base::MakeUnique<base::DefaultTickClock>())) {}
+    EasyUnlockPrivateFindSetupConnectionFunction() {}
 
 EasyUnlockPrivateFindSetupConnectionFunction::
     ~EasyUnlockPrivateFindSetupConnectionFunction() {
-  // |connection_finder_| has a raw pointer to |bluetooth_throttler_|, so it
-  // should be destroyed first.
   connection_finder_.reset();
-  bluetooth_throttler_.reset();
 }
 
 void EasyUnlockPrivateFindSetupConnectionFunction::
@@ -1092,7 +1087,7 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
       new proximity_auth::BluetoothLowEnergyConnectionFinder(
           cryptauth::RemoteDevice(), params->setup_service_uuid,
           proximity_auth::BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
-          nullptr, bluetooth_throttler_.get(), 3));
+          nullptr, cryptauth::BluetoothThrottlerImpl::GetInstance(), 3));
 
   connection_finder_->Find(base::Bind(
       &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));

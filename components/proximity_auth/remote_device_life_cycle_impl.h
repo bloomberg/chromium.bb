@@ -111,7 +111,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // Rate limits Bluetooth connections to the same device. Used to in the
   // created cryptauth::ConnectionFinder.
-  std::unique_ptr<cryptauth::BluetoothThrottler> bluetooth_throttler_;
+  cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

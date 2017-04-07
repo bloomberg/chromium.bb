@@ -28,7 +28,6 @@ class BrowserContext;
 }
 
 namespace cryptauth {
-class BluetoothThrottler;
 class Connection;
 class ExternalDeviceInfo;
 class SecureMessageDelegate;
@@ -485,9 +484,6 @@ class EasyUnlockPrivateFindSetupConnectionFunction
   // The BLE connection finder instance.
   std::unique_ptr<proximity_auth::BluetoothLowEnergyConnectionFinder>
       connection_finder_;
-
-  // The connection throttler passed to the BLE connection finder.
-  std::unique_ptr<cryptauth::BluetoothThrottler> bluetooth_throttler_;
 
   // Used for timing out when waiting for the connection finder to return.
   std::unique_ptr<base::Timer> timer_;
