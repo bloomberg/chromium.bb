@@ -1919,50 +1919,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       binhost_test=True,
   )
 
-  # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
-  # TODO(davidjames): Update daisy_spring to build images again.
-  site_config.AddGroup(
-      'mixed-a-pre-cq',
-      # daisy_spring w/kernel 3.8.
-      site_config['daisy_spring-compile-only-pre-cq'],
-      # lumpy w/kernel 3.8.
-      site_config['lumpy-compile-only-pre-cq'],
-  )
-
-  site_config.AddGroup(
-      'mixed-b-pre-cq',
-      # samus w/kernel 3.14.
-      site_config['samus-compile-only-pre-cq'],
-  )
-
-  site_config.AddGroup(
-      'mixed-c-pre-cq',
-      # brillo
-      site_config['whirlwind-compile-only-pre-cq'],
-  )
-
-  site_config.AddGroup(
-      'external-mixed-pre-cq',
-      site_config['x86-generic-no-vmtest-pre-cq'],
-      site_config['amd64-generic-no-vmtest-pre-cq'],
-  )
-
-  site_config.AddGroup(
-      'kernel-3_14-a-pre-cq',
-      site_config['x86-generic-no-vmtest-pre-cq'],
-      site_config['arm-generic-no-vmtest-pre-cq']
-  )
-
-  site_config.AddGroup(
-      'kernel-3_14-b-pre-cq',
-      site_config['whirlwind-no-vmtest-pre-cq'],
-  )
-
-  site_config.AddGroup(
-      'kernel-3_14-c-pre-cq',
-      site_config['veyron_pinky-no-vmtest-pre-cq'],
-  )
-
   # Wifi specific PreCQ.
   site_config.AddTemplate(
       'wificell_pre_cq',

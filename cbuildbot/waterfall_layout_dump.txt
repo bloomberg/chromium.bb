@@ -417,9 +417,6 @@ expresso-no-vmtest-pre-cq (gce_beefy)
 expresso-payloads (gce_beefy)
 expresso-pre-cq (baremetal)
 expresso-unittest-stress (gce_beefy)
-[external-mixed-pre-cq] (gce_beefy)
-  amd64-generic-no-vmtest-pre-cq
-  x86-generic-no-vmtest-pre-cq
 falco-compile-only-pre-cq (gce_beefy)
 falco-no-vmtest-pre-cq (gce_beefy)
 falco-payloads (gce_beefy)
@@ -520,13 +517,6 @@ kefka-no-vmtest-pre-cq (gce_beefy)
 kefka-payloads (gce_beefy)
 kefka-pre-cq (baremetal)
 kefka-unittest-stress (gce_beefy)
-[kernel-3_14-a-pre-cq] (gce_beefy)
-  arm-generic-no-vmtest-pre-cq
-  x86-generic-no-vmtest-pre-cq
-[kernel-3_14-b-pre-cq] (gce_beefy)
-  whirlwind-no-vmtest-pre-cq
-[kernel-3_14-c-pre-cq] (gce_beefy)
-  veyron_pinky-no-vmtest-pre-cq
 kevin-compile-only-pre-cq (gce_beefy)
 kevin-no-vmtest-pre-cq (gce_beefy)
 kevin-payloads (gce_beefy)
@@ -604,13 +594,6 @@ mccloud-no-vmtest-pre-cq (gce_beefy)
 mccloud-payloads (gce_beefy)
 mccloud-pre-cq (baremetal)
 mccloud-unittest-stress (gce_beefy)
-[mixed-a-pre-cq] (gce_beefy)
-  daisy_spring-compile-only-pre-cq
-  lumpy-compile-only-pre-cq
-[mixed-b-pre-cq] (gce_beefy)
-  samus-compile-only-pre-cq
-[mixed-c-pre-cq] (gce_beefy)
-  whirlwind-compile-only-pre-cq
 [mixed-wificell-pre-cq] (baremetal)
   daisy-wificell-pre-cq
   veyron_jerry-wificell-pre-cq
