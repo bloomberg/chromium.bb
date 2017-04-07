@@ -302,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, QueuedDumps) {
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
 // Non-deterministic races under TSan. crbug.com/529678
-#if defined(THREAD_SANITIZER)
+// Flaky on Linux. crbug.com/709524
+#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump
