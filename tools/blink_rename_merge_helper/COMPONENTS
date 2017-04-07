@@ -1,4 +1,6 @@
 {
-  "pylib": "a34eaa708cf66b15725973c3d1c52d58e011cd36",
-  "test-win32": "b34eaa708cf66b15725973c3d1c52d58e011cd36"
+  "pylib": "2af6a38142b87bc78f57f65030de579820406c4b",
+  "bin-win32": "9ad5d617cc0f709a9d03835db20b038e16a620c5",
+  "bin-darwin": "be347b71b679958e1983fb230e05f3460f82cf5a",
+  "bin-linux*": "278ad33e61b43948af8d1040b5bd9a1c9f7b9f4a"
 }

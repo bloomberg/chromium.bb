@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 """Tool to help developers rebase branches across the Blink rename."""
 
+import argparse
 import json
 import os
 import subprocess
@@ -78,13 +79,16 @@ class Bootstrapper(object):
 
   Performs update checks and stages any required binaries."""
 
-  def __init__(self, depot_tools):
+  def __init__(self, depot_tools, components_path_override):
     """Bootstrapper constructor.
 
     Args:
       depot_tools: a wrapper for invoking depot_tools.
+      components_path_override: If set, used as the path for the COMPONENTS file
+          rather than using the copy in the Google Storage bucket.
     """
     self.__depot_tools = depot_tools
+    self.__components_path_override = components_path_override
     self.__tmpdir = None
 
   def __enter__(self):
@@ -114,14 +118,21 @@ class Bootstrapper(object):
     """Fetches info about the latest components from google storage.
 
     The return value should be a dict of component names to SHA1 hashes."""
-    hashes_path = os.path.join(self.__tmpdir, 'COMPONENTS')
-    self.__depot_tools.call_gsutil(
-        'cp', 'gs://chromium-blink-rename/COMPONENTS', hashes_path)
-    with open(hashes_path) as f:
+    components_path = self.__components_path_override
+    if not components_path:
+      components_path = os.path.join(self.__tmpdir, 'COMPONENTS')
+      self.__depot_tools.call_gsutil(
+          'cp', 'gs://chromium-blink-rename/COMPONENTS', components_path)
+    with open(components_path) as f:
       return json.loads(f.read())
 
 
 def main():
+  # Intentionally suppress help. These are internal testing flags.
+  parser = argparse.ArgumentParser(add_help=False)
+  parser.add_argument('--components-file')
+  args, remaining_argv = parser.parse_known_args()
+
   script_dir = os.path.dirname(os.path.realpath(__file__))
   os.chdir(script_dir)
 
@@ -132,13 +143,16 @@ def main():
     return 1
 
   print 'Checking for updates...'
-  with Bootstrapper(depot_tools) as bootstrapper:
+  with Bootstrapper(depot_tools, args.components_file) as bootstrapper:
     bootstrapper.update()
 
   # Import stage 2 and launch it.
   tool_pylib = os.path.abspath(os.path.join(script_dir, 'staging/pylib'))
   sys.path.insert(0, tool_pylib)
   from blink_rename_merge_helper import driver
+  # Note: for compatibility with older versions of run.py, set sys.argv to the
+  # unconsumed args.
+  sys.argv = sys.argv[:1] + remaining_argv
   driver.run()
 
 
