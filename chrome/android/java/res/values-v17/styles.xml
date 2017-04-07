@@ -419,6 +419,15 @@
         <item name="windowActionBar">false</item>
     </style>
 
+    <style name="SigninAlertDialogTheme" parent="AlertDialogTheme">
+        <item name="buttonBarButtonStyle">@style/SigninDialogButtonStyle</item>
+        <item name="android:textColorPrimary">@color/default_text_color</item>
+    </style>
+
+    <style name="SigninDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/light_active_color</item>
+    </style>
+
     <!-- Bookmarks -->
     <style name="BookmarkTitleBarButton">
         <item name="android:layout_width">wrap_content</item>

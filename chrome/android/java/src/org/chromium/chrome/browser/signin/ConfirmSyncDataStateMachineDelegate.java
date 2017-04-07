@@ -60,7 +60,7 @@ public class ConfirmSyncDataStateMachineDelegate {
      */
     public void showFetchManagementPolicyProgressDialog(final ProgressDialogListener listener) {
         dismissAllDialogs();
-        mProgressDialog = new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+        mProgressDialog = new AlertDialog.Builder(mContext, R.style.SigninAlertDialogTheme)
                                   .setView(R.layout.signin_progress_bar_dialog)
                                   .setNegativeButton(R.string.cancel,
                                           new DialogInterface.OnClickListener() {
@@ -87,7 +87,7 @@ public class ConfirmSyncDataStateMachineDelegate {
     public void showFetchManagementPolicyTimeoutDialog(final TimeoutDialogListener listener) {
         dismissAllDialogs();
         mTimeoutAlertDialog =
-                new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(mContext, R.style.SigninAlertDialogTheme)
                         .setTitle(R.string.sign_in_timeout_title)
                         .setMessage(R.string.sign_in_timeout_message)
                         .setNegativeButton(R.string.cancel,
