@@ -57,7 +57,7 @@ Polymer({
    * @private
    */
   getConnectActionText_: function(connected) {
-    return this.i18n(connected ? 'bluetoothDisconnect' : 'bluetoothPair');
+    return this.i18n(connected ? 'bluetoothDisconnect' : 'bluetoothConnect');
   },
 
   /**

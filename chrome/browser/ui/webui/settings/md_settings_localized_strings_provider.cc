@@ -361,6 +361,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothDeviceListPaired", IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED},
       {"bluetoothDeviceListUnpaired",
        IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_UNPAIRED},
+      {"bluetoothConnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT},
       {"bluetoothDisconnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT},
       {"bluetoothDismiss", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR},
       {"bluetoothToggleA11yLabel",
