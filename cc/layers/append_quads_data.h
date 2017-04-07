@@ -6,11 +6,19 @@
 #define CC_LAYERS_APPEND_QUADS_DATA_H_
 
 #include <stdint.h>
+#include <vector>
+
+#include "cc/cc_export.h"
+#include "cc/surfaces/surface_id.h"
 
 namespace cc {
 
 // Set by the layer appending quads.
-struct AppendQuadsData {
+class CC_EXPORT AppendQuadsData {
+ public:
+  AppendQuadsData();
+  ~AppendQuadsData();
+
   int64_t num_incomplete_tiles = 0;
   int64_t num_missing_tiles = 0;
   int64_t visible_layer_area = 0;
@@ -22,6 +30,8 @@ struct AppendQuadsData {
   int64_t checkerboarded_no_recording_content_area = 0;
   // This is the area within interest rect.
   int64_t checkerboarded_needs_raster_content_area = 0;
+  // This is the set of surface IDs embedded in SurfaceDrawQuads.
+  std::vector<SurfaceId> embedded_surfaces;
 };
 
 }  // namespace cc

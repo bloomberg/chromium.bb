@@ -71,30 +71,41 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
       LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
-CompositorFrame MakeCompositorFrame() {
+CompositorFrame MakeCompositorFrame(std::vector<SurfaceId> embedded_surfaces,
+                                    std::vector<SurfaceId> referenced_surfaces,
+                                    TransferableResourceArray resource_list) {
   CompositorFrame compositor_frame;
   compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
-  return compositor_frame;
-}
-
-CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> referenced_surfaces) {
-  CompositorFrame compositor_frame;
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
-  compositor_frame.metadata.referenced_surfaces =
-      std::move(referenced_surfaces);
-  return compositor_frame;
-}
-
-CompositorFrame MakeCompositorFrameWithResources(
-    std::vector<SurfaceId> referenced_surfaces,
-    TransferableResourceArray resource_list) {
-  CompositorFrame compositor_frame;
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
+  compositor_frame.metadata.embedded_surfaces = std::move(embedded_surfaces);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   compositor_frame.resource_list = std::move(resource_list);
   return compositor_frame;
+}
+
+CompositorFrame MakeCompositorFrame() {
+  return MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
+                             TransferableResourceArray());
+}
+
+CompositorFrame MakeCompositorFrame(std::vector<SurfaceId> embedded_surfaces) {
+  return MakeCompositorFrame(embedded_surfaces, embedded_surfaces,
+                             TransferableResourceArray());
+}
+
+CompositorFrame MakeCompositorFrame(
+    std::vector<SurfaceId> embedded_surfaces,
+    std::vector<SurfaceId> referenced_surfaces) {
+  return MakeCompositorFrame(std::move(embedded_surfaces),
+                             std::move(referenced_surfaces),
+                             TransferableResourceArray());
+}
+
+CompositorFrame MakeCompositorFrameWithResources(
+    std::vector<SurfaceId> embedded_surfaces,
+    TransferableResourceArray resource_list) {
+  return MakeCompositorFrame(embedded_surfaces, embedded_surfaces,
+                             std::move(resource_list));
 }
 
 TransferableResource MakeResource(ResourceId id,
@@ -1192,6 +1203,43 @@ TEST_F(CompositorFrameSinkSupportTest, GarbageCollectionOnDeadline) {
   }
   begin_frame_source()->TestOnBeginFrame(args);
   EXPECT_FALSE(dependency_tracker().has_deadline());
+}
+
+// This test verifies that a CompositorFrame will only blocked on embedded
+// surfaces but not on other retained surface IDs in the CompositorFrame.
+TEST_F(CompositorFrameSinkSupportTest, OnlyBlockOnEmbeddedSurfaces) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+
+  display_support().SubmitCompositorFrame(
+      display_id.local_surface_id(),
+      MakeCompositorFrame({parent_id1}, {parent_id1, parent_id2}));
+
+  EXPECT_TRUE(display_surface()->HasPendingFrame());
+  EXPECT_FALSE(display_surface()->HasActiveFrame());
+  EXPECT_TRUE(dependency_tracker().has_deadline());
+
+  // Verify that the display CompositorFrame will only block on |parent_id1| but
+  // not |parent_id2|.
+  EXPECT_THAT(display_surface()->blocking_surfaces(),
+              UnorderedElementsAre(parent_id1));
+  // Verify that the display CompositorFrame holds refernces to both
+  // |parent_id1| and |parent_id2|.
+  EXPECT_THAT(GetChildReferences(display_id),
+              UnorderedElementsAre(parent_id1, parent_id2));
+
+  // Submitting a CompositorFrame with |parent_id1| should unblock the display
+  // CompositorFrame.
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeCompositorFrame());
+
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+  EXPECT_THAT(display_surface()->blocking_surfaces(), IsEmpty());
+  EXPECT_THAT(GetChildReferences(display_id),
+              UnorderedElementsAre(parent_id1, parent_id2));
 }
 
 }  // namespace test

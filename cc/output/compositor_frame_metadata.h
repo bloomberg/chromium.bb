@@ -77,7 +77,16 @@ class CC_EXPORT CompositorFrameMetadata {
   std::vector<ui::LatencyInfo> latency_info;
 
   // This is the set of Surfaces that are referenced by this frame.
+  // Note: this includes occluded and clipped surfaces and surfaces that may
+  // be accessed by this CompositorFrame in the future.
+  // TODO(fsamuel): In the future, a generalized frame eviction system will
+  // determine which surfaces to retain and which to evict. It will likely
+  // be unnecessary for the embedder to explicitly specify which surfaces to
+  // retain. Thus, this field will likely go away.
   std::vector<SurfaceId> referenced_surfaces;
+
+  // This is the set of SurfaceIds embedded in DrawQuads.
+  std::vector<SurfaceId> embedded_surfaces;
 
   // This indicates whether this CompositorFrame can be activated before
   // dependencies have been resolved.

@@ -51,6 +51,7 @@ class DictionaryValue;
 
 namespace cc {
 
+class AppendQuadsData;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class MutatorHost;
@@ -60,7 +61,6 @@ class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
 
-struct AppendQuadsData;
 
 enum DrawMode {
   DRAW_MODE_NONE,

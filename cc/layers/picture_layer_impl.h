@@ -23,7 +23,7 @@
 
 namespace cc {
 
-struct AppendQuadsData;
+class AppendQuadsData;
 class MicroBenchmarkImpl;
 class Tile;
 

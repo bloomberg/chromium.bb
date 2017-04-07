@@ -9,7 +9,10 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::UnorderedElementsAre;
 
 namespace cc {
 namespace {
@@ -168,6 +171,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
+  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id));
 
   const QuadList& quads = render_pass->quad_list;
   ASSERT_EQ(1u, quads.size());
@@ -236,6 +240,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
+  EXPECT_THAT(data.embedded_surfaces,
+              UnorderedElementsAre(surface_id1, surface_id2));
 
   ASSERT_EQ(2u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =
@@ -286,6 +292,7 @@ TEST(SurfaceLayerImplTest,
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
+  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =

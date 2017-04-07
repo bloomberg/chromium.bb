@@ -30,6 +30,7 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
+#include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/layers/viewport.h"
@@ -92,6 +93,12 @@ using media::VideoFrame;
 
 namespace cc {
 namespace {
+
+SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
+  return SurfaceId(
+      frame_sink_id,
+      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
+}
 
 struct TestFrameData : public LayerTreeHostImpl::FrameData {
   TestFrameData() {
@@ -3479,6 +3486,43 @@ TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
   SetupMouseMoveAtWithDeviceScale(2.f);
+}
+
+// This test verifies that only SurfaceLayers in the viewport are included
+// in CompositorFrameMetadata's |embedded_surfaces|.
+TEST_F(LayerTreeHostImplTest, EmbeddedSurfacesInMetadata) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
+
+  std::vector<SurfaceId> children = {MakeSurfaceId(FrameSinkId(1, 1), 1),
+                                     MakeSurfaceId(FrameSinkId(2, 2), 2),
+                                     MakeSurfaceId(FrameSinkId(3, 3), 3)};
+  for (size_t i = 0; i < children.size(); ++i) {
+    std::unique_ptr<SurfaceLayerImpl> child =
+        SurfaceLayerImpl::Create(host_impl_->active_tree(), i + 6);
+    child->SetPosition(gfx::PointF(25.f * i, 0.f));
+    child->SetBounds(gfx::Size(1, 1));
+    child->SetDrawsContent(true);
+    child->SetPrimarySurfaceInfo(
+        SurfaceInfo(children[i], 1.f /* device_scale_factor */,
+                    gfx::Size(10, 10) /* size_in_pixels */));
+    root->test_properties()->AddChild(std::move(child));
+  }
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  DrawFrame();
+
+  FakeCompositorFrameSink* fake_compositor_frame_sink =
+      static_cast<FakeCompositorFrameSink*>(
+          host_impl_->compositor_frame_sink());
+  const CompositorFrameMetadata& metadata =
+      fake_compositor_frame_sink->last_sent_frame()->metadata;
+  EXPECT_THAT(metadata.embedded_surfaces,
+              testing::UnorderedElementsAre(children[0], children[1]));
+  EXPECT_THAT(
+      metadata.referenced_surfaces,
+      testing::UnorderedElementsAre(children[0], children[1], children[2]));
 }
 
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {

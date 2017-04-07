@@ -36,6 +36,7 @@
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "cc/surfaces/local_surface_id.h"
+#include "cc/surfaces/surface_id.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
@@ -222,6 +223,7 @@ class CC_EXPORT LayerTreeHostImpl
     ~FrameData();
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
+    std::vector<SurfaceId> embedded_surfaces;
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     RenderPassList render_passes;

@@ -24,13 +24,12 @@
 
 namespace cc {
 
+class AppendQuadsData;
 class DamageTracker;
 class FilterOperations;
 class Occlusion;
 class LayerImpl;
 class LayerTreeImpl;
-
-struct AppendQuadsData;
 
 class CC_EXPORT RenderSurfaceImpl {
  public:

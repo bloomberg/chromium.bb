@@ -8,6 +8,7 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/layers/append_quads_data.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -65,19 +66,22 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
   auto* primary = CreateSurfaceDrawQuad(
-      render_pass, SurfaceDrawQuadType::PRIMARY, primary_surface_info_);
+      render_pass, SurfaceDrawQuadType::PRIMARY, primary_surface_info_,
+      &append_quads_data->embedded_surfaces);
   // Emitting a fallback SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
   if (primary && fallback_surface_info_.id() != primary_surface_info_.id()) {
     primary->fallback_quad = CreateSurfaceDrawQuad(
-        render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_);
+        render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
+        &append_quads_data->embedded_surfaces);
   }
 }
 
 SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
-    const SurfaceInfo& surface_info) {
+    const SurfaceInfo& surface_info,
+    std::vector<SurfaceId>* embedded_surfaces) {
   if (!surface_info.is_valid())
     return nullptr;
 
@@ -117,6 +121,8 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_info.id(), surface_draw_quad_type, nullptr);
+  embedded_surfaces->push_back(surface_info.id());
+
   return surface_draw_quad;
 }
 
