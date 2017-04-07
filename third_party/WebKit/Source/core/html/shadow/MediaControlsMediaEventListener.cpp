@@ -7,6 +7,7 @@
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/MediaControls.h"
+#include "core/html/shadow/MediaControlElements.h"
 #include "core/html/track/TextTrackList.h"
 
 namespace blink {
@@ -43,6 +44,12 @@ void MediaControlsMediaEventListener::attach() {
   textTracks->addEventListener(EventTypeNames::addtrack, this, false);
   textTracks->addEventListener(EventTypeNames::change, this, false);
   textTracks->addEventListener(EventTypeNames::removetrack, this, false);
+
+  // Keypress events.
+  if (m_mediaControls->panelElement()) {
+    m_mediaControls->panelElement()->addEventListener(EventTypeNames::keypress,
+                                                      this, false);
+  }
 }
 
 void MediaControlsMediaEventListener::detach() {
@@ -55,6 +62,11 @@ void MediaControlsMediaEventListener::detach() {
   textTracks->removeEventListener(EventTypeNames::addtrack, this, false);
   textTracks->removeEventListener(EventTypeNames::change, this, false);
   textTracks->removeEventListener(EventTypeNames::removetrack, this, false);
+
+  if (m_mediaControls->panelElement()) {
+    m_mediaControls->panelElement()->removeEventListener(
+        EventTypeNames::keypress, this, false);
+  }
 }
 
 bool MediaControlsMediaEventListener::operator==(
@@ -124,6 +136,13 @@ void MediaControlsMediaEventListener::handleEvent(
   }
   if (event->type() == EventTypeNames::change) {
     m_mediaControls->onTextTracksChanged();
+    return;
+  }
+
+  // Keypress events.
+  if (event->type() == EventTypeNames::keypress) {
+    if (event->currentTarget() == m_mediaControls->panelElement())
+      m_mediaControls->onPanelKeypress();
     return;
   }
 

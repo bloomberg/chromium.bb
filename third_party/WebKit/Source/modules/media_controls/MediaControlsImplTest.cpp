@@ -24,6 +24,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebScreenInfo.h"
@@ -160,7 +161,9 @@ enum DownloadActionMetrics {
 
 class MediaControlsImplTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() { initializePage(); }
+
+  void initializePage() {
     Page::PageClients clients;
     fillWithEmptyClients(clients);
     clients.chromeClient = new MockChromeClient();
@@ -176,7 +179,7 @@ class MediaControlsImplTest : public ::testing::Test {
     m_pageHolder->frame().settings()->setScriptEnabled(true);
   }
 
-  void simulateRouteAvailabe() {
+  void simulateRouteAvailable() {
     m_mediaControls->mediaElement().remoteRouteAvailabilityChanged(
         WebRemotePlaybackAvailability::DeviceAvailable);
   }
@@ -321,7 +324,7 @@ TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
 
   ASSERT_FALSE(isElementVisible(*castButton));
 
-  simulateRouteAvailabe();
+  simulateRouteAvailable();
   ASSERT_TRUE(isElementVisible(*castButton));
 }
 
@@ -335,7 +338,7 @@ TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
   ASSERT_NE(nullptr, castButton);
 
   ASSERT_FALSE(isElementVisible(*castButton));
-  simulateRouteAvailabe();
+  simulateRouteAvailable();
   ASSERT_TRUE(isElementVisible(*castButton));
 
   mediaControls().mediaElement().setBooleanAttribute(
@@ -352,7 +355,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
       mediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, castOverlayButton);
 
-  simulateRouteAvailabe();
+  simulateRouteAvailable();
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 }
 
@@ -362,7 +365,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
   ASSERT_NE(nullptr, castOverlayButton);
 
   ASSERT_FALSE(isElementVisible(*castOverlayButton));
-  simulateRouteAvailabe();
+  simulateRouteAvailable();
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 
   mediaControls().mediaElement().setBooleanAttribute(
@@ -380,7 +383,7 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
   ASSERT_NE(nullptr, castOverlayButton);
 
   EXPECT_FALSE(isElementVisible(*castOverlayButton));
-  simulateRouteAvailabe();
+  simulateRouteAvailable();
   EXPECT_TRUE(isElementVisible(*castOverlayButton));
 
   document().settings()->setMediaControlsEnabled(false);
@@ -791,6 +794,48 @@ TEST_F(MediaControlsImplTest, MAYBE_TimelineMetricsDragBackAndForth) {
       "Media.Timeline.DragSumAbsTimeDelta.128_255", 17 /* [8m, 15m) */, 1);
   histogramTester().expectUniqueSample("Media.Timeline.DragTimeDelta.128_255",
                                        9 /* (-4m, -2m] */, 1);
+}
+
+TEST_F(MediaControlsImplTest, ControlsRemainVisibleDuringKeyboardInteraction) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      m_platform;
+
+  // DocumentParserTiming has DCHECKS to make sure time > 0.0.
+  m_platform->advanceClockSeconds(1);
+
+  // Need to reinitialize page since we changed the platform.
+  initializePage();
+  ensureSizing();
+
+  Element* panel = mediaControls().panelElement();
+
+  mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr,
+                                                     true);
+  mediaControls().mediaElement().setSrc("http://example.com");
+  mediaControls().mediaElement().play();
+
+  // Controls start out visible.
+  EXPECT_TRUE(isElementVisible(*panel));
+
+  // Tabbing between controls prevents controls from hiding.
+  m_platform->runForPeriodSeconds(2);
+  mediaControls().dispatchEvent(Event::create("focusin"));
+  m_platform->runForPeriodSeconds(2);
+  EXPECT_TRUE(isElementVisible(*panel));
+
+  // Seeking on the timeline or volume bar prevents controls from hiding.
+  mediaControls().dispatchEvent(Event::create("input"));
+  m_platform->runForPeriodSeconds(2);
+  EXPECT_TRUE(isElementVisible(*panel));
+
+  // Pressing a key prevents controls from hiding.
+  mediaControls().panelElement()->dispatchEvent(Event::create("keypress"));
+  m_platform->runForPeriodSeconds(2);
+  EXPECT_TRUE(isElementVisible(*panel));
+
+  // Once user interaction stops, controls can hide.
+  m_platform->runForPeriodSeconds(2);
+  EXPECT_FALSE(isElementVisible(*panel));
 }
 
 }  // namespace blink

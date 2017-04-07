@@ -93,6 +93,7 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual void onLoadedMetadata() = 0;
   virtual void onEnteredFullscreen() = 0;
   virtual void onExitedFullscreen() = 0;
+  virtual void onPanelKeypress() = 0;
   virtual void beginScrubbing() = 0;
   virtual void endScrubbing() = 0;
   virtual void updateCurrentTimeDisplay() = 0;

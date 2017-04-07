@@ -126,6 +126,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void onLoadedMetadata() override;
   void onEnteredFullscreen() override;
   void onExitedFullscreen() override;
+  void onPanelKeypress() override;
   Document& ownerDocument() { return document(); }
 
   DECLARE_VIRTUAL_TRACE();

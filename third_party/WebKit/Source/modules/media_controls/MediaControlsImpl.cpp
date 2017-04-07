@@ -765,6 +765,13 @@ void MediaControlsImpl::defaultEventHandler(Event* event) {
       startHideMediaControlsTimer();
     return;
   }
+
+  // If the user is interacting with the controls via the keyboard, don't hide
+  // the controls. This will fire when the user tabs between controls (focusin)
+  // or when they seek either the timeline or volume sliders (input).
+  if (event->type() == EventTypeNames::focusin ||
+      event->type() == EventTypeNames::input)
+    resetHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::hideMediaControlsTimerFired(TimerBase*) {
@@ -910,6 +917,13 @@ void MediaControlsImpl::onExitedFullscreen() {
   m_fullscreenButton->setIsFullscreen(false);
   stopHideMediaControlsTimer();
   startHideMediaControlsTimer();
+}
+
+void MediaControlsImpl::onPanelKeypress() {
+  // If the user is interacting with the controls via the keyboard, don't hide
+  // the controls. This is called when the user mutes/unmutes, turns CC on/off,
+  // etc.
+  resetHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::notifyElementSizeChanged(ClientRect* newSize) {
