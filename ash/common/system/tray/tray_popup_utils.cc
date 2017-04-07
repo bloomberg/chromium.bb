@@ -11,6 +11,7 @@
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/size_range_layout.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
@@ -18,6 +19,7 @@
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -432,6 +434,22 @@ bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
          !Shell::Get()->session_controller()->IsInSecondaryLoginScreen();
+}
+
+void TrayPopupUtils::InitializeAsCheckableRow(HoverHighlightView* container,
+                                              bool checked) {
+  gfx::ImageSkia check_mark =
+      CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
+  container->AddRightIcon(check_mark, check_mark.width());
+  UpdateCheckMarkVisibility(container, checked);
+}
+
+void TrayPopupUtils::UpdateCheckMarkVisibility(HoverHighlightView* container,
+                                               bool visible) {
+  container->SetRightViewVisible(visible);
+  container->SetAccessiblityState(
+      visible ? HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX
+              : HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
 }
 
 }  // namespace ash

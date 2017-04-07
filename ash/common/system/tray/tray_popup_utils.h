@@ -32,6 +32,7 @@ class ToggleButton;
 }  // namespace views
 
 namespace ash {
+class HoverHighlightView;
 
 // Factory/utility functions used by the system menu.
 class TrayPopupUtils {
@@ -202,6 +203,15 @@ class TrayPopupUtils {
   // i.e., the user is logged in, not on the lock screen, and not in a secondary
   // account flow.
   static bool CanOpenWebUISettings(LoginStatus status);
+
+  // Initializes a row in the system menu as checkable and update the check mark
+  // status of this row.
+  static void InitializeAsCheckableRow(HoverHighlightView* container,
+                                       bool checked);
+
+  // Updates the visibility and a11y state of the checkable row |container|.
+  static void UpdateCheckMarkVisibility(HoverHighlightView* container,
+                                        bool visible);
 
  private:
   // Returns the effective ink drop insets for |host| according to the

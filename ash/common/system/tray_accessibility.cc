@@ -25,7 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -92,20 +91,6 @@ uint32_t GetAccessibilityState() {
 
 LoginStatus GetCurrentLoginStatus() {
   return Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
-}
-
-void UpdateCheckMark(HoverHighlightView* container, bool checked) {
-  if (checked) {
-    gfx::ImageSkia check_mark =
-        CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
-    container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightViewVisible(true);
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-  } else {
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-  }
 }
 
 }  // namespace
@@ -316,7 +301,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
   HoverHighlightView* container = new HoverHighlightView(this);
   gfx::ImageSkia image = CreateVectorIcon(icon, kMenuIconColor);
   container->AddIconAndLabel(image, text);
-  UpdateCheckMark(container, checked);
+  TrayPopupUtils::InitializeAsCheckableRow(container, checked);
   scroll_content()->AddChildView(container);
   return container;
 }
@@ -326,9 +311,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItemWithoutIcon(
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);
   container->AddLabelRow(text);
-
-  UpdateCheckMark(container, checked);
-
+  TrayPopupUtils::InitializeAsCheckableRow(container, checked);
   scroll_content()->AddChildView(container);
   return container;
 }

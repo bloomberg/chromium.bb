@@ -9,6 +9,7 @@
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -51,22 +52,16 @@ void CommonPaletteTool::OnEnable() {
   PaletteTool::OnEnable();
   start_time_ = base::TimeTicks::Now();
 
-  if (highlight_view_) {
-    highlight_view_->SetRightViewVisible(true);
-    highlight_view_->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-  }
+  if (highlight_view_)
+    TrayPopupUtils::UpdateCheckMarkVisibility(highlight_view_, true);
 }
 
 void CommonPaletteTool::OnDisable() {
   PaletteTool::OnDisable();
   AddHistogramTimes(GetToolId(), base::TimeTicks::Now() - start_time_);
 
-  if (highlight_view_) {
-    highlight_view_->SetRightViewVisible(false);
-    highlight_view_->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-  }
+  if (highlight_view_)
+    TrayPopupUtils::UpdateCheckMarkVisibility(highlight_view_, false);
 }
 
 void CommonPaletteTool::OnViewClicked(views::View* sender) {
@@ -85,23 +80,13 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   gfx::ImageSkia icon =
       CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, gfx::kChromeIconGrey);
-  gfx::ImageSkia check =
-      CreateVectorIcon(kCheckCircleIcon, kMenuIconSize, gfx::kGoogleGreen700);
 
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));
   highlight_view_->AddIconAndLabel(icon, name);
-  highlight_view_->AddRightIcon(check, kMenuIconSize);
   highlight_view_->set_custom_height(kMenuButtonSize);
 
-  if (enabled()) {
-    highlight_view_->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-  } else {
-    highlight_view_->SetRightViewVisible(false);
-    highlight_view_->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-  }
+  TrayPopupUtils::InitializeAsCheckableRow(highlight_view_, enabled());
 
   return highlight_view_;
 }

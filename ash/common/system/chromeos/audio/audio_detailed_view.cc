@@ -110,17 +110,7 @@ HoverHighlightView* AudioDetailedView::AddScrollListItem(
   HoverHighlightView* container = new HoverHighlightView(this);
 
   container->AddLabelRow(text);
-  if (checked) {
-    gfx::ImageSkia check_mark =
-        gfx::CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
-    container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightViewVisible(true);
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-  } else {
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-  }
+  TrayPopupUtils::InitializeAsCheckableRow(container, checked);
 
   scroll_content()->AddChildView(container);
   return container;
