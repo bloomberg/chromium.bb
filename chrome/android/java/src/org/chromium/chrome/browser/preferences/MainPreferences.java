@@ -182,7 +182,6 @@ public class MainPreferences extends PreferenceFragment
     private void setupSignInPref() {
         mSignInPreference = (SignInPreference) findPreference(PREF_SIGN_IN);
         mSignInPreference.registerForUpdates();
-        mSignInPreference.setEnabled(true);
     }
 
     private void clearSignInPref() {
