@@ -923,7 +923,6 @@ int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
 #endif
 
-/* Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
 #if CONFIG_ALT_INTRA
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -DC_PRED,   2,            /* 0 = DC_NODE */
