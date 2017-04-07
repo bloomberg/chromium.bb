@@ -689,6 +689,17 @@ class ShelfViewTest : public AshTestBase {
     test::ShellTestApi().SetShelfDelegate(base::WrapUnique(shelf_delegate_));
   }
 
+  // Returns the center coordinates for a button. Helper function for an event
+  // generator.
+  gfx::Point GetButtonCenter(ShelfID button_id) {
+    return GetButtonCenter(
+        test_api_->GetButton(model_->ItemIndexByID(button_id)));
+  }
+
+  gfx::Point GetButtonCenter(ShelfButton* button) {
+    return button->GetBoundsInScreen().CenterPoint();
+  }
+
   ShelfModel* model_;
   ShelfView* shelf_view_;
   int browser_index_;
@@ -1830,6 +1841,67 @@ TEST_F(ShelfViewTest,
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
+}
+
+TEST_F(ShelfViewTest, TestHideOverflow) {
+  // Use an event generator instead of SimulateClick because the overflow bubble
+  // is a PointerWatcher and gets the events directly.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  // Add one app (which is on the main shelf) and then add buttons until
+  // overflow. Add two more apps (which are on the overflow shelf).
+  ShelfID first_app_id = AddAppShortcut();
+  AddButtonsUntilOverflow();
+  ShelfID overflow_app_id1 = AddAppShortcut();
+  ShelfID overflow_app_id2 = AddAppShortcut();
+
+  // Verify that by clicking anywhere outside the shelf and overflow bubble, the
+  // overflow bubble will close if it were open.
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  test_api_->ShowOverflowBubble();
+
+  // Make sure the point we chose is not on the shelf or its overflow bubble.
+  ASSERT_FALSE(test_api_->shelf_view()->GetBoundsInScreen().Contains(
+      generator.current_location()));
+  ASSERT_FALSE(
+      test_api_->overflow_bubble()->shelf_view()->GetBoundsInScreen().Contains(
+          generator.current_location()));
+  generator.ClickLeftButton();
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+
+  // Verify that by clicking a app which is on the main shelf while the overflow
+  // bubble is opened, the overflow bubble will close.
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  test_api_->ShowOverflowBubble();
+  generator.set_current_location(GetButtonCenter(first_app_id));
+  generator.ClickLeftButton();
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+
+  // Verify that by clicking a app which is on the overflow shelf, the overflow
+  // bubble will close.
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  test_api_->ShowOverflowBubble();
+  ShelfViewTestAPI test_api_for_overflow(
+      test_api_->overflow_bubble()->shelf_view());
+  ShelfButton* button_on_overflow_shelf =
+      test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id2));
+  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator.ClickLeftButton();
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+
+  // Verify dragging apps on the overflow shelf does not close the overflow
+  // bubble.
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  test_api_->ShowOverflowBubble();
+  ShelfViewTestAPI test_api_for_overflow1(
+      test_api_->overflow_bubble()->shelf_view());
+  ShelfButton* button_on_overflow_shelf1 =
+      test_api_for_overflow1.GetButton(model_->ItemIndexByID(overflow_app_id1));
+  ShelfButton* button_on_overflow_shelf2 =
+      test_api_for_overflow1.GetButton(model_->ItemIndexByID(overflow_app_id2));
+  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf1));
+  generator.DragMouseTo(GetButtonCenter(button_on_overflow_shelf2));
+  EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
