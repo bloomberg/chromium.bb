@@ -903,9 +903,20 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
                   (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
+      finder = input_api.owners_finder(missing_files,
+                                       input_api.change.RepositoryRoot(),
+                                       owner_email,
+                                       fopen=file, os_path=input_api.os_path,
+                                       email_postfix='', disable_color=True)
+      owners_with_comments = []
+      def RecordComments(text):
+        owners_with_comments.append(finder.print_indent() + text)
+      finder.writeln = RecordComments
+      for owner in suggested_owners:
+        finder.print_comments(owner)
       output_list.append(output_fn('Suggested OWNERS: ' +
           '(Use "git-cl owners" to interactively select owners.)\n    %s' %
-          ('\n    '.join(suggested_owners or []))))
+          ('\n    '.join(owners_with_comments))))
     return output_list
 
   if input_api.is_committing and not reviewers:

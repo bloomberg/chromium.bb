@@ -23,6 +23,7 @@ sys.path.insert(0, _ROOT)
 from testing_support.super_mox import mox, SuperMoxTestBase
 
 import owners
+import owners_finder
 import subprocess2 as subprocess
 import presubmit_support as presubmit
 import rietveld
@@ -163,8 +164,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'auth', 'cPickle', 'cpplint', 'cStringIO',
       'contextlib', 'canned_check_filter', 'fix_encoding', 'fnmatch',
       'gclient_utils', 'glob', 'inspect', 'json', 'load_files', 'logging',
-      'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
-      'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
+      'marshal', 'normpath', 'optparse', 'os', 'owners', 'owners_finder',
+      'pickle', 'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
       'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
@@ -996,6 +997,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'os_path',
         'os_stat',
         'owners_db',
+        'owners_finder',
         'pickle',
         'platform',
         'python_executable',
@@ -2250,6 +2252,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change.author_email = 'john@example.com'
     change.R = ','.join(manually_specified_reviewers)
     change.TBR = ''
+    change.RepositoryRoot = lambda: None
     affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
     input_api = self.MockInputApi(change, False)
     if gerrit_response:
@@ -2260,6 +2263,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
     fake_db = self.mox.CreateMock(owners.Database)
     fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
+
+    fake_finder = self.mox.CreateMock(owners_finder.OwnersFinder)
+    fake_finder.print_indent = lambda: ''
+    # pylint: disable=unnecessary-lambda
+    fake_finder.print_comments = lambda owner: fake_finder.writeln(owner)
+    input_api.owners_finder = lambda *args, **kwargs: fake_finder
     input_api.is_committing = is_committing
     input_api.tbr = tbr
     input_api.dry_run = dry_run

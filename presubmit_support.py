@@ -45,6 +45,7 @@ import fix_encoding
 import gclient_utils
 import gerrit_util
 import owners
+import owners_finder
 import presubmit_canned_checks
 import rietveld
 import scm
@@ -423,6 +424,7 @@ class InputApi(object):
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
                                      fopen=file, os_path=self.os_path)
+    self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
     self.Command = CommandData
 
