@@ -80,6 +80,15 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     return promise;
   }
 
+  if (!appController->supplementable()->isMainFrame()) {
+    DOMException* exception =
+        DOMException::create(InvalidStateError,
+                             "getInstalledRelatedApps() is only supported in "
+                             "top-level browsing contexts.");
+    resolver->reject(exception);
+    return promise;
+  }
+
   appController->getInstalledRelatedApps(
       WTF::wrapUnique(
           new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
