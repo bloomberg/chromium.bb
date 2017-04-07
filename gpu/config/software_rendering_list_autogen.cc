@@ -15,10 +15,10 @@
 
 namespace gpu {
 
-const char kSoftwareRenderingListVersion[] = "13.1";
+const char kSoftwareRenderingListVersion[] = "13.2";
 
-const size_t kSoftwareRenderingListEntryCount = 83;
-const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
+const size_t kSoftwareRenderingListEntryCount = 82;
+const GpuControlList::Entry kSoftwareRenderingListEntries[82] = {
     {
         1,  // id
         "ATI Radeon X1900 is not compatible with WebGL on the Mac",
@@ -2046,32 +2046,6 @@ const GpuControlList::Entry kSoftwareRenderingListEntries[83] = {
         },
         arraysize(kExceptionsForEntry134),  // exceptions count
         kExceptionsForEntry134,             // exceptions
-    },
-    {
-        135,  // id
-        "ES3 MSAA not fully trusted on some Qualcomm 4xx, also disable WebGL2",
-        arraysize(kFeatureListForEntry135),  // features size
-        kFeatureListForEntry135,             // features
-        0,                                   // DisabledExtensions size
-        nullptr,                             // DisabledExtensions
-        arraysize(kCrBugsForEntry135),       // CrBugs size
-        kCrBugsForEntry135,                  // CrBugs
-        {
-            GpuControlList::kOsAndroid,  // os_type
-            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "6.0",
-             nullptr},                              // os_version
-            0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
-            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
-            nullptr,                                // driver info
-            &kGLStringsForEntry135,                 // GL strings
-            nullptr,                                // machine model info
-            nullptr,                                // more conditions
-        },
-        0,        // exceptions count
-        nullptr,  // exceptions
     },
     {
         136,  // id

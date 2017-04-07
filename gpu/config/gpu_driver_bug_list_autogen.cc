@@ -15,10 +15,10 @@
 
 namespace gpu {
 
-const char kGpuDriverBugListVersion[] = "10.1";
+const char kGpuDriverBugListVersion[] = "10.2";
 
-const size_t kGpuDriverBugListEntryCount = 172;
-const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
+const size_t kGpuDriverBugListEntryCount = 171;
+const GpuControlList::Entry kGpuDriverBugListEntries[171] = {
     {
         1,  // id
         "Imagination driver doesn't like uploading lots of buffer data "
@@ -827,33 +827,6 @@ const GpuControlList::Entry kGpuDriverBugListEntries[172] = {
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
             &kGLStringsForEntry51,                  // GL strings
-            nullptr,                                // machine model info
-            nullptr,                                // more conditions
-        },
-        0,        // exceptions count
-        nullptr,  // exceptions
-    },
-    {
-        52,  // id
-        "ES3 MSAA was observed problematic on some Adreno 4xx (see "
-        "crbug.com/471200#c9)",
-        arraysize(kFeatureListForEntry52),  // features size
-        kFeatureListForEntry52,             // features
-        0,                                  // DisabledExtensions size
-        nullptr,                            // DisabledExtensions
-        arraysize(kCrBugsForEntry52),       // CrBugs size
-        kCrBugsForEntry52,                  // CrBugs
-        {
-            GpuControlList::kOsAndroid,  // os_type
-            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "6.0",
-             nullptr},                              // os_version
-            0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
-            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
-            nullptr,                                // driver info
-            &kGLStringsForEntry52,                  // GL strings
             nullptr,                                // machine model info
             nullptr,                                // more conditions
         },

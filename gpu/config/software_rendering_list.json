@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.1",
+  "version": "13.2",
   "entries": [
     {
       "id": 1,
@@ -1411,22 +1411,6 @@
       ],
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 135,
-      "description": "ES3 MSAA not fully trusted on some Qualcomm 4xx, also disable WebGL2",
-      "cr_bugs": [471200],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "gl_renderer": "Adreno \\(TM\\) 4.*",
-      "features": [
-        "webgl2"
       ]
     },
     {

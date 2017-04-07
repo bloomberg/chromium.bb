@@ -1679,18 +1679,6 @@ const GpuControlList::GLStrings kGLStringsForEntry134Exception1 = {
     nullptr, ".*Gallium.*llvmpipe.*", nullptr, nullptr,
 };
 
-const int kFeatureListForEntry135[1] = {
-    GPU_FEATURE_TYPE_WEBGL2,
-};
-
-const uint32_t kCrBugsForEntry135[1] = {
-    471200,
-};
-
-const GpuControlList::GLStrings kGLStringsForEntry135 = {
-    nullptr, "Adreno \\(TM\\) 4.*", nullptr, nullptr,
-};
-
 const int kFeatureListForEntry136[1] = {
     GPU_FEATURE_TYPE_GPU_RASTERIZATION,
 };

@@ -355,18 +355,6 @@ const GpuControlList::GLStrings kGLStringsForEntry51 = {
     nullptr, "ANGLE.*", nullptr, nullptr,
 };
 
-const int kFeatureListForEntry52[1] = {
-    DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE,
-};
-
-const uint32_t kCrBugsForEntry52[4] = {
-    449116, 471200, 612474, 682075,
-};
-
-const GpuControlList::GLStrings kGLStringsForEntry52 = {
-    nullptr, "Adreno \\(TM\\) 4.*", nullptr, nullptr,
-};
-
 const int kFeatureListForEntry54[1] = {
     CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE,
 };
@@ -2053,8 +2041,8 @@ const int kFeatureListForEntry214[2] = {
     FORCE_UPDATE_SCISSOR_STATE_WHEN_BINDING_FBO0,
 };
 
-const uint32_t kCrBugsForEntry214[4] = {
-    670607, 696627, 698197, 707839,
+const uint32_t kCrBugsForEntry214[5] = {
+    670607, 682075, 696627, 698197, 707839,
 };
 
 const GpuControlList::GLStrings kGLStringsForEntry214 = {
