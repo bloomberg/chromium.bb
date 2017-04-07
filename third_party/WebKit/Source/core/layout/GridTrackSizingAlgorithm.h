@@ -84,8 +84,8 @@ class GridTrackSizingAlgorithm final {
   void setup(GridTrackSizingDirection,
              size_t numTracks,
              SizingOperation,
-             LayoutUnit availableSpace,
-             LayoutUnit freeSpace);
+             Optional<LayoutUnit> availableSpace,
+             Optional<LayoutUnit> freeSpace);
   void run();
   void reset();
 
@@ -100,7 +100,8 @@ class GridTrackSizingAlgorithm final {
   Vector<GridTrack>& tracks(GridTrackSizingDirection);
   const Vector<GridTrack>& tracks(GridTrackSizingDirection) const;
 
-  LayoutUnit& freeSpace(GridTrackSizingDirection);
+  Optional<LayoutUnit> freeSpace(GridTrackSizingDirection);
+  void setFreeSpace(GridTrackSizingDirection, Optional<LayoutUnit>);
 
 #if DCHECK_IS_ON()
   bool tracksAreWiderThanMinTrackBreadth() const;
@@ -164,7 +165,7 @@ class GridTrackSizingAlgorithm final {
   // method at thise level.
   void initializeTrackSizes();
   void resolveIntrinsicTrackSizes();
-  void stretchFlexibleTracks(LayoutUnit freeSpace);
+  void stretchFlexibleTracks(Optional<LayoutUnit> freeSpace);
 
   // State machine.
   void advanceNextState();
@@ -172,10 +173,10 @@ class GridTrackSizingAlgorithm final {
 
   // Data.
   bool m_needsSetup{true};
-  LayoutUnit m_availableSpace;
+  Optional<LayoutUnit> m_availableSpace;
 
-  LayoutUnit m_freeSpaceColumns;
-  LayoutUnit m_freeSpaceRows;
+  Optional<LayoutUnit> m_freeSpaceColumns;
+  Optional<LayoutUnit> m_freeSpaceRows;
 
   // We need to keep both alive in order to properly size grids with orthogonal
   // writing modes.
@@ -231,10 +232,12 @@ class GridTrackSizingAlgorithmStrategy {
   LayoutUnit maxContentForChild(LayoutBox&) const;
   LayoutUnit minSizeForChild(LayoutBox&) const;
 
-  virtual void maximizeTracks(Vector<GridTrack>&, LayoutUnit& freeSpace) = 0;
-  virtual double findUsedFlexFraction(Vector<size_t>& flexibleSizedTracksIndex,
-                                      GridTrackSizingDirection,
-                                      LayoutUnit initialFreeSpace) const = 0;
+  virtual void maximizeTracks(Vector<GridTrack>&,
+                              Optional<LayoutUnit>& freeSpace) = 0;
+  virtual double findUsedFlexFraction(
+      Vector<size_t>& flexibleSizedTracksIndex,
+      GridTrackSizingDirection,
+      Optional<LayoutUnit> initialFreeSpace) const = 0;
   virtual bool recomputeUsedFlexFractionIfNeeded(
       Vector<size_t>& flexibleSizedTracksIndex,
       double& flexFraction,

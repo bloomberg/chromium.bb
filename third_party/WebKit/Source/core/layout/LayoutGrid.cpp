@@ -284,8 +284,8 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
     // Once grid's indefinite height is resolved, we can compute the
     // available free space for Content Alignment.
     if (!cachedHasDefiniteLogicalHeight()) {
-      m_trackSizingAlgorithm.freeSpace(ForRows) =
-          logicalHeight() - trackBasedLogicalHeight;
+      m_trackSizingAlgorithm.setFreeSpace(
+          ForRows, logicalHeight() - trackBasedLogicalHeight);
     }
 
     // TODO (lajava): We need to compute baselines after step 2 so
@@ -436,7 +436,7 @@ void LayoutGrid::computeTrackSizesForIndefiniteSize(
     LayoutUnit& minIntrinsicSize,
     LayoutUnit& maxIntrinsicSize) const {
   algo.setup(direction, numTracks(direction, grid), IntrinsicSizeComputation,
-             LayoutUnit(), LayoutUnit());
+             WTF::nullopt, WTF::nullopt);
   algo.run();
 
   minIntrinsicSize = algo.minContentSize();
@@ -1046,8 +1046,8 @@ static const StyleContentAlignmentData& contentAlignmentNormalBehavior() {
 
 void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(
     GridTrackSizingDirection direction) {
-  LayoutUnit& availableSpace = m_trackSizingAlgorithm.freeSpace(direction);
-  if (availableSpace <= 0 ||
+  Optional<LayoutUnit> freeSpace = m_trackSizingAlgorithm.freeSpace(direction);
+  if (!freeSpace || freeSpace.value() <= 0 ||
       (direction == ForColumns &&
        styleRef().resolvedJustifyContentDistribution(
            contentAlignmentNormalBehavior()) != ContentDistributionStretch) ||
@@ -1071,14 +1071,13 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(
   if (numberOfAutoSizedTracks < 1)
     return;
 
-  LayoutUnit sizeToIncrease = availableSpace / numberOfAutoSizedTracks;
+  LayoutUnit sizeToIncrease = freeSpace.value() / numberOfAutoSizedTracks;
   for (const auto& trackIndex : autoSizedTracksIndex) {
     GridTrack* track = allTracks.data() + trackIndex;
     LayoutUnit baseSize = track->baseSize() + sizeToIncrease;
     track->setBaseSize(baseSize);
   }
-
-  availableSpace = LayoutUnit();
+  m_trackSizingAlgorithm.setFreeSpace(direction, LayoutUnit());
 }
 
 void LayoutGrid::layoutGridItems() {
@@ -1345,7 +1344,8 @@ void LayoutGrid::populateGridPositionsForDirection(
   size_t numberOfLines = numberOfTracks + 1;
   size_t lastLine = numberOfLines - 1;
   ContentAlignmentData offset = computeContentPositionAndDistributionOffset(
-      direction, m_trackSizingAlgorithm.freeSpace(direction), numberOfTracks);
+      direction, m_trackSizingAlgorithm.freeSpace(direction).value(),
+      numberOfTracks);
   auto& positions = isRowAxis ? m_columnPositions : m_rowPositions;
   positions.resize(numberOfLines);
   auto borderAndPadding =

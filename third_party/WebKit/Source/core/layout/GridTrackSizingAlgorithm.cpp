@@ -88,10 +88,11 @@ class IndefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
   void layoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool overrideSizeHasChanged) const override;
-  void maximizeTracks(Vector<GridTrack>&, LayoutUnit& freeSpace) override;
+  void maximizeTracks(Vector<GridTrack>&,
+                      Optional<LayoutUnit>& freeSpace) override;
   double findUsedFlexFraction(Vector<size_t>& flexibleSizedTracksIndex,
                               GridTrackSizingDirection,
-                              LayoutUnit freeSpace) const override;
+                              Optional<LayoutUnit> freeSpace) const override;
   bool recomputeUsedFlexFractionIfNeeded(
       Vector<size_t>& flexibleSizedTracksIndex,
       double& flexFraction,
@@ -111,10 +112,11 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
   void layoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool overrideSizeHasChanged) const override;
-  void maximizeTracks(Vector<GridTrack>&, LayoutUnit& freeSpace) override;
+  void maximizeTracks(Vector<GridTrack>&,
+                      Optional<LayoutUnit>& freeSpace) override;
   double findUsedFlexFraction(Vector<size_t>& flexibleSizedTracksIndex,
                               GridTrackSizingDirection,
-                              LayoutUnit freeSpace) const override;
+                              Optional<LayoutUnit> freeSpace) const override;
   bool recomputeUsedFlexFractionIfNeeded(
       Vector<size_t>& flexibleSizedTracksIndex,
       double& flexFraction,
@@ -446,7 +448,7 @@ void DefiniteSizeStrategy::layoutGridItemForMinSizeComputation(
 }
 
 void DefiniteSizeStrategy::maximizeTracks(Vector<GridTrack>& tracks,
-                                          LayoutUnit& freeSpace) {
+                                          Optional<LayoutUnit>& freeSpace) {
   size_t tracksSize = tracks.size();
   Vector<GridTrack*> tracksForDistribution(tracksSize);
   for (size_t i = 0; i < tracksSize; ++i) {
@@ -455,7 +457,8 @@ void DefiniteSizeStrategy::maximizeTracks(Vector<GridTrack>& tracks,
         tracksForDistribution[i]->baseSize());
   }
 
-  distributeSpaceToTracks(tracksForDistribution, freeSpace);
+  DCHECK(freeSpace);
+  distributeSpaceToTracks(tracksForDistribution, freeSpace.value());
 
   for (auto* track : tracksForDistribution)
     track->setBaseSize(track->plannedSize());
@@ -464,10 +467,11 @@ void DefiniteSizeStrategy::maximizeTracks(Vector<GridTrack>& tracks,
 double DefiniteSizeStrategy::findUsedFlexFraction(
     Vector<size_t>& flexibleSizedTracksIndex,
     GridTrackSizingDirection direction,
-    LayoutUnit freeSpace) const {
+    Optional<LayoutUnit> freeSpace) const {
   GridSpan allTracksSpan = GridSpan::translatedDefiniteGridSpan(
       0, m_algorithm.tracks(direction).size());
-  return findFrUnitSize(allTracksSpan, freeSpace);
+  DCHECK(freeSpace);
+  return findFrUnitSize(allTracksSpan, freeSpace.value());
 }
 
 LayoutUnit IndefiniteSizeStrategy::minLogicalWidthForChild(
@@ -494,7 +498,7 @@ void IndefiniteSizeStrategy::layoutGridItemForMinSizeComputation(
 }
 
 void IndefiniteSizeStrategy::maximizeTracks(Vector<GridTrack>& tracks,
-                                            LayoutUnit&) {
+                                            Optional<LayoutUnit>&) {
   for (auto& track : tracks)
     track.setBaseSize(track.growthLimit());
 }
@@ -507,7 +511,7 @@ static inline double normalizedFlexFraction(const GridTrack& track,
 double IndefiniteSizeStrategy::findUsedFlexFraction(
     Vector<size_t>& flexibleSizedTracksIndex,
     GridTrackSizingDirection direction,
-    LayoutUnit freeSpace) const {
+    Optional<LayoutUnit>) const {
   auto allTracks = m_algorithm.tracks(direction);
 
   double flexFraction = 0;
@@ -580,7 +584,7 @@ bool IndefiniteSizeStrategy::recomputeUsedFlexFractionIfNeeded(
   return true;
 }
 
-LayoutUnit& GridTrackSizingAlgorithm::freeSpace(
+Optional<LayoutUnit> GridTrackSizingAlgorithm::freeSpace(
     GridTrackSizingDirection direction) {
   return direction == ForRows ? m_freeSpaceRows : m_freeSpaceColumns;
 }
@@ -593,6 +597,14 @@ Vector<GridTrack>& GridTrackSizingAlgorithm::tracks(
 const Vector<GridTrack>& GridTrackSizingAlgorithm::tracks(
     GridTrackSizingDirection direction) const {
   return direction == ForColumns ? m_columns : m_rows;
+}
+
+void GridTrackSizingAlgorithm::setFreeSpace(GridTrackSizingDirection direction,
+                                            Optional<LayoutUnit> freeSpace) {
+  if (direction == ForColumns)
+    m_freeSpaceColumns = freeSpace;
+  else
+    m_freeSpaceRows = freeSpace;
 }
 
 GridTrackSize GridTrackSizingAlgorithm::rawGridTrackSize(
@@ -701,7 +713,7 @@ LayoutUnit GridTrackSizingAlgorithm::initialBaseSize(
 
   const Length& trackLength = gridLength.length();
   if (trackLength.isSpecified())
-    return valueForLength(trackLength, m_availableSpace.clampNegativeToZero());
+    return valueForLength(trackLength, m_availableSpace.value_or(LayoutUnit()));
 
   DCHECK(trackLength.isMinContent() || trackLength.isAuto() ||
          trackLength.isMaxContent());
@@ -717,7 +729,7 @@ LayoutUnit GridTrackSizingAlgorithm::initialGrowthLimit(
 
   const Length& trackLength = gridLength.length();
   if (trackLength.isSpecified())
-    return valueForLength(trackLength, m_availableSpace.clampNegativeToZero());
+    return valueForLength(trackLength, m_availableSpace.value_or(LayoutUnit()));
 
   DCHECK(trackLength.isMinContent() || trackLength.isAuto() ||
          trackLength.isMaxContent());
@@ -728,7 +740,7 @@ void GridTrackSizingAlgorithm::initializeTrackSizes() {
   DCHECK(m_contentSizedTracksIndex.isEmpty());
   DCHECK(m_flexibleSizedTracksIndex.isEmpty());
   Vector<GridTrack>& trackList = tracks(m_direction);
-  bool hasDefiniteFreeSpace = m_sizingOperation == TrackSizing;
+  bool hasDefiniteFreeSpace = !!m_availableSpace;
   size_t numTracks = trackList.size();
   for (size_t i = 0; i < numTracks; ++i) {
     GridTrackSize trackSize = gridTrackSize(m_direction, i);
@@ -741,7 +753,7 @@ void GridTrackSizingAlgorithm::initializeTrackSizes() {
       GridLength gridLength = trackSize.fitContentTrackBreadth();
       if (!gridLength.hasPercentage() || hasDefiniteFreeSpace) {
         track.setGrowthLimitCap(valueForLength(
-            gridLength.length(), m_availableSpace.clampNegativeToZero()));
+            gridLength.length(), m_availableSpace.value_or(LayoutUnit())));
       }
     }
 
@@ -779,7 +791,7 @@ void GridTrackSizingAlgorithm::sizeTrackToFitNonSpanningItem(
       growthLimit =
           std::min(growthLimit,
                    valueForLength(trackSize.fitContentTrackBreadth().length(),
-                                  m_availableSpace));
+                                  m_availableSpace.value_or(LayoutUnit())));
     }
     track.setGrowthLimit(std::max(track.growthLimit(), growthLimit));
   }
@@ -1296,7 +1308,8 @@ void GridTrackSizingAlgorithm::computeFlexSizedTracksGrowth(
   }
 }
 
-void GridTrackSizingAlgorithm::stretchFlexibleTracks(LayoutUnit freeSpace) {
+void GridTrackSizingAlgorithm::stretchFlexibleTracks(
+    Optional<LayoutUnit> freeSpace) {
   double flexFraction = m_strategy->findUsedFlexFraction(
       m_flexibleSizedTracksIndex, m_direction, freeSpace);
 
@@ -1318,7 +1331,10 @@ void GridTrackSizingAlgorithm::stretchFlexibleTracks(LayoutUnit freeSpace) {
     if (LayoutUnit increment = increments[i++])
       track.setBaseSize(track.baseSize() + increment);
   }
-  this->freeSpace(m_direction) -= totalGrowth;
+  if (this->freeSpace(m_direction)) {
+    setFreeSpace(m_direction,
+                 this->freeSpace(m_direction).value() - totalGrowth);
+  }
   m_maxContentSize += totalGrowth;
 }
 
@@ -1357,26 +1373,26 @@ bool GridTrackSizingAlgorithm::isValidTransition() const {
 void GridTrackSizingAlgorithm::setup(GridTrackSizingDirection direction,
                                      size_t numTracks,
                                      SizingOperation sizingOperation,
-                                     LayoutUnit availableSpace,
-                                     LayoutUnit freeSpace) {
+                                     Optional<LayoutUnit> availableSpace,
+                                     Optional<LayoutUnit> freeSpace) {
   DCHECK(m_needsSetup);
+  DCHECK_EQ(!!availableSpace, !!freeSpace);
   m_direction = direction;
-  m_availableSpace = availableSpace;
+  m_availableSpace = availableSpace
+                         ? availableSpace.value().clampNegativeToZero()
+                         : availableSpace;
 
   m_sizingOperation = sizingOperation;
-  switch (m_sizingOperation) {
-    case IntrinsicSizeComputation:
-      m_strategy = WTF::makeUnique<IndefiniteSizeStrategy>(*this);
-      break;
-    case TrackSizing:
-      m_strategy = WTF::makeUnique<DefiniteSizeStrategy>(*this);
-      break;
-  }
+
+  if (availableSpace)
+    m_strategy = WTF::makeUnique<DefiniteSizeStrategy>(*this);
+  else
+    m_strategy = WTF::makeUnique<IndefiniteSizeStrategy>(*this);
 
   m_contentSizedTracksIndex.shrink(0);
   m_flexibleSizedTracksIndex.shrink(0);
 
-  this->freeSpace(direction) = freeSpace;
+  setFreeSpace(direction, freeSpace);
   tracks(direction).resize(numTracks);
 
   m_needsSetup = false;
@@ -1387,7 +1403,7 @@ void GridTrackSizingAlgorithm::run() {
   StateMachine stateMachine(*this);
 
   // Step 1.
-  LayoutUnit initialFreeSpace = freeSpace(m_direction);
+  Optional<LayoutUnit> initialFreeSpace = freeSpace(m_direction);
   initializeTrackSizes();
 
   // Step 2.
@@ -1399,13 +1415,19 @@ void GridTrackSizingAlgorithm::run() {
   // up to this moment (before maximization) to calculate the grid container
   // intrinsic sizes.
   computeGridContainerIntrinsicSizes();
-  freeSpace(m_direction) -= m_minContentSize;
 
-  if (m_sizingOperation == TrackSizing && freeSpace(m_direction) <= 0)
-    return;
+  if (freeSpace(m_direction)) {
+    LayoutUnit updatedFreeSpace =
+        freeSpace(m_direction).value() - m_minContentSize;
+    setFreeSpace(m_direction, updatedFreeSpace);
+    if (updatedFreeSpace <= 0)
+      return;
+  }
 
   // Step 3.
-  m_strategy->maximizeTracks(tracks(m_direction), freeSpace(m_direction));
+  m_strategy->maximizeTracks(tracks(m_direction), m_direction == ForColumns
+                                                      ? m_freeSpaceColumns
+                                                      : m_freeSpaceRows);
 
   if (m_flexibleSizedTracksIndex.isEmpty())
     return;
