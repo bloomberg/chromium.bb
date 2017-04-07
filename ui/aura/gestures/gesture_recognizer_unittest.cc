@@ -4690,5 +4690,65 @@ TEST_F(GestureRecognizerTest, GestureEventTwoWindowsActive) {
   EXPECT_FALSE(queued_delegate->tap_down());
 }
 
+// Test for crbug/698843. Checks whether the events are routed to the correct
+// consumer in the event of TransferEventsTo() function call.
+TEST_F(GestureRecognizerTest, TransferEventsToRoutesAckCorrectly) {
+  std::unique_ptr<QueueTouchEventDelegate> delegate_1(
+      new QueueTouchEventDelegate(host()->dispatcher()));
+  TimedEvents tes;
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+
+  std::unique_ptr<aura::Window> window_1(CreateTestWindowWithDelegate(
+      delegate_1.get(), -1234, bounds, root_window()));
+
+  delegate_1->set_window(window_1.get());
+
+  delegate_1->Reset();
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(512, 512), tes.Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
+  DispatchEventUsingWindowDispatcher(&press);
+
+  // Create a new consumer and Touch event delegate.
+  std::unique_ptr<QueueTouchEventDelegate> delegate_2(
+      new QueueTouchEventDelegate(host()->dispatcher()));
+  std::unique_ptr<aura::Window> window_2(CreateTestWindowWithDelegate(
+      delegate_2.get(), -2345, bounds, root_window()));
+  delegate_2->set_window(window_2.get());
+
+  // Transfer event sequence from previous window to the new window.
+  ui::GestureRecognizer::Get()->TransferEventsTo(
+      window_1.get(), window_2.get(),
+      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+
+  delegate_1->Reset();
+  delegate_1->ReceivedAck();
+
+  // ACK for events that were dispatched before the transfer should go to the
+  // original consumer. See crbug/698843 for more details.
+  EXPECT_2_EVENTS(delegate_1->events(), ui::ET_GESTURE_BEGIN,
+                  ui::ET_GESTURE_TAP_DOWN);
+
+  delegate_1->Reset();
+
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED, gfx::Point(550, 512), tes.LeapForward(50),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
+  DispatchEventUsingWindowDispatcher(&release);
+
+  // Events dispatched after the transfer should go to the new window.
+  EXPECT_0_EVENTS(delegate_1->events());
+
+  delegate_2->ReceivedAck();
+
+  // The event sequence transfer should mean that the new window receives the
+  // gesture sequence state.
+  EXPECT_3_EVENTS(delegate_2->events(), ui::ET_GESTURE_SHOW_PRESS,
+                  ui::ET_GESTURE_TAP, ui::ET_GESTURE_END);
+
+  EXPECT_TRUE(delegate_2->tap());
+}
+
 }  // namespace test
 }  // namespace aura

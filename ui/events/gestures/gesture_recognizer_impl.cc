@@ -244,6 +244,8 @@ GestureProviderAura* GestureRecognizerImpl::GetGestureProviderForConsumer(
 
 void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
                                          GestureConsumer* target) {
+  event_to_gesture_provider_[event.unique_event_id()] =
+      GetGestureProviderForConsumer(target);
   if (event.type() == ui::ET_TOUCH_RELEASED ||
       event.type() == ui::ET_TOUCH_CANCELLED) {
     touch_id_target_.erase(event.pointer_details().id);
@@ -280,8 +282,18 @@ GestureRecognizer::Gestures GestureRecognizerImpl::AckTouchEvent(
     uint32_t unique_event_id,
     ui::EventResult result,
     GestureConsumer* consumer) {
-  GestureProviderAura* gesture_provider =
-      GetGestureProviderForConsumer(consumer);
+  GestureProviderAura* gesture_provider = nullptr;
+
+  // Check if we have already processed this event before dispatch and have a
+  // consumer associated with it.
+  auto event_to_gesture_provider_iterator =
+      event_to_gesture_provider_.find(unique_event_id);
+  if (event_to_gesture_provider_iterator != event_to_gesture_provider_.end()) {
+    gesture_provider = event_to_gesture_provider_iterator->second;
+    event_to_gesture_provider_.erase(event_to_gesture_provider_iterator);
+  } else {
+    gesture_provider = GetGestureProviderForConsumer(consumer);
+  }
   gesture_provider->OnTouchEventAck(unique_event_id, result != ER_UNHANDLED);
   return gesture_provider->GetAndResetPendingGestures();
 }

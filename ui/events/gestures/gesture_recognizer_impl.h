@@ -88,6 +88,12 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   std::map<GestureConsumer*, std::unique_ptr<GestureProviderAura>>
       consumer_gesture_provider_;
 
+  // Maps an event via its |unique_event_id| to the corresponding gesture
+  // provider. This avoids any invalid reference while routing ACKs for events
+  // that may arise post |TransferEventsTo()| function call.
+  // See http://crbug.com/698843 for more info.
+  std::map<uint32_t, GestureProviderAura*> event_to_gesture_provider_;
+
   // |touch_id_target_| maps a touch-id to its target window.
   // touch-ids are removed from |touch_id_target_| on
   // ET_TOUCH_RELEASE and ET_TOUCH_CANCEL.
