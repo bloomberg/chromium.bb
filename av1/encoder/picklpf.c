@@ -42,7 +42,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION
+#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level, 1,
                         partial_frame);
 #else

@@ -3547,7 +3547,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 // when Parallel deblocking is enabled, deblocking should not
 // be interleaved with decoding. Instead, deblocking should be done
 // after the entire frame is decoded.
-#if !CONFIG_VAR_TX && !CONFIG_PARALLEL_DEBLOCKING
+#if !CONFIG_VAR_TX && !CONFIG_PARALLEL_DEBLOCKING && !CONFIG_CB4X4
     // Loopfilter one tile row.
     if (cm->lf.filter_level && !cm->skip_loop_filter) {
       LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
@@ -3578,7 +3578,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_frameworker_broadcast(pbi->cur_buf, mi_row << cm->mib_size_log2);
   }
 
-#if CONFIG_VAR_TX
+#if CONFIG_VAR_TX || CONFIG_CB4X4
   // Loopfilter the whole frame.
   av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                         cm->lf.filter_level, 0, 0);
@@ -4946,11 +4946,11 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   cm->coef_probs_update_idx = 0;
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
-  if (pbi->max_threads > 1
+  if (pbi->max_threads > 1 && !CONFIG_CB4X4 &&
 #if CONFIG_EXT_TILE
-      && pbi->dec_tile_col < 0  // Decoding all columns
+      pbi->dec_tile_col < 0 &&  // Decoding all columns
 #endif                          // CONFIG_EXT_TILE
-      && cm->tile_cols > 1) {
+      cm->tile_cols > 1) {
     // Multi-threaded tile decoder
     *p_data_end = decode_tiles_mt(pbi, data + first_partition_size, data_end);
     if (!xd->corrupted) {

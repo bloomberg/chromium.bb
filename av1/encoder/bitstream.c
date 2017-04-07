@@ -2322,7 +2322,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     assert(*tok < tok_end);
 #endif
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-
 #if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                                xd->plane[plane].subsampling_x,
@@ -2331,7 +2330,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         continue;
       }
 #endif
-
 #if CONFIG_VAR_TX
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
