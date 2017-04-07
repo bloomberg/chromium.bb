@@ -56,6 +56,11 @@ class BodyStreamBuffer::LoaderClient final
     m_client->didFetchDataLoadedStream();
   }
 
+  void didFetchDataLoadedCustomFormat() override {
+    m_buffer->endLoading();
+    m_client->didFetchDataLoadedCustomFormat();
+  }
+
   void didFetchDataLoadFailed() override {
     m_buffer->endLoading();
     m_client->didFetchDataLoadFailed();

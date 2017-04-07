@@ -35,17 +35,19 @@ class MODULES_EXPORT FetchDataLoader
 
     // The method corresponding to createLoaderAs... is called on success.
     virtual void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
     virtual void didFetchDataLoadedArrayBuffer(DOMArrayBuffer*) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
-    virtual void didFetchDataLoadedString(const String&) {
-      ASSERT_NOT_REACHED();
-    }
+    virtual void didFetchDataLoadedString(const String&) { NOTREACHED(); }
     // This is called after all data are read from |handle| and written
     // to |outStream|, and |outStream| is closed or aborted.
-    virtual void didFetchDataLoadedStream() { ASSERT_NOT_REACHED(); }
+    virtual void didFetchDataLoadedStream() { NOTREACHED(); }
+
+    // This function is called when a "custom" FetchDataLoader (none of the
+    // ones listed above) finishes loading.
+    virtual void didFetchDataLoadedCustomFormat() { NOTREACHED(); }
 
     virtual void didFetchDataLoadFailed() = 0;
 
@@ -55,8 +57,7 @@ class MODULES_EXPORT FetchDataLoader
   static FetchDataLoader* createLoaderAsBlobHandle(const String& mimeType);
   static FetchDataLoader* createLoaderAsArrayBuffer();
   static FetchDataLoader* createLoaderAsString();
-  static FetchDataLoader* createLoaderAsStream(Stream* outStream);
-
+  static FetchDataLoader* createLoaderAsStream(Stream*);
   virtual ~FetchDataLoader() {}
 
   // |consumer| must not have a client when called.
