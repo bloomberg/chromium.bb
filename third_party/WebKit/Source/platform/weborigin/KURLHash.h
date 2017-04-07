@@ -27,9 +27,9 @@
 #define KURLHash_h
 
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

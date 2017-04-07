@@ -4,8 +4,8 @@
 
 #include "platform/weborigin/Suborigin.h"
 
+#include "platform/wtf/dtoa/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/dtoa/utils.h"
 
 namespace blink {
 

@@ -28,21 +28,21 @@
 
 #include "platform/weborigin/SecurityOrigin.h"
 
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/URLSecurityOriginMap.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
-#include "wtf/HexNumber.h"
-#include "wtf/NotFound.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include <memory>
 
 namespace blink {
 

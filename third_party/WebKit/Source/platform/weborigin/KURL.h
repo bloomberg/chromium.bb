@@ -27,14 +27,14 @@
 #ifndef KURL_h
 #define KURL_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/text/WTFString.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace WTF {
 class TextEncoding;

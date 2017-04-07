@@ -27,17 +27,17 @@
 
 #include "platform/weborigin/KURL.h"
 
-#include "platform/weborigin/KnownPorts.h"
-#include "url/url_util.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/StringStatics.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/TextEncoding.h"
 #include <algorithm>
+#include "platform/weborigin/KnownPorts.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/StringStatics.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/TextEncoding.h"
+#include "url/url_util.h"
 #ifndef NDEBUG
 #include <stdio.h>
 #endif

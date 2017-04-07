@@ -26,11 +26,11 @@
 
 #include "platform/weborigin/SchemeRegistry.h"
 
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "url/url_util.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

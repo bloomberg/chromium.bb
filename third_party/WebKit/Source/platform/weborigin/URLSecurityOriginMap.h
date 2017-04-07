@@ -31,8 +31,8 @@
 #ifndef URLSecurityOriginMap_h
 #define URLSecurityOriginMap_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

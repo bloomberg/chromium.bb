@@ -29,13 +29,13 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/Suborigin.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

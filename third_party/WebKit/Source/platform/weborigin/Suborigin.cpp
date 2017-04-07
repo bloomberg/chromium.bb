@@ -4,8 +4,8 @@
 
 #include "platform/weborigin/Suborigin.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/text/ParsingUtilities.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/ParsingUtilities.h"
 
 namespace blink {
 

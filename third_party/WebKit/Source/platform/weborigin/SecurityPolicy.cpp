@@ -28,17 +28,17 @@
 
 #include "platform/weborigin/SecurityPolicy.h"
 
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
-#include "wtf/text/StringHash.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

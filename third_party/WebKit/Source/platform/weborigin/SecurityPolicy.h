@@ -32,8 +32,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

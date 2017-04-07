@@ -28,8 +28,8 @@
 
 #include "net/base/port_util.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

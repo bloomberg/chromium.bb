@@ -35,10 +35,10 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

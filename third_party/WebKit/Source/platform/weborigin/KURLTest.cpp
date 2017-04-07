@@ -33,11 +33,11 @@
 
 #include "platform/weborigin/KURL.h"
 
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_util.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
