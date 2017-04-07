@@ -36,7 +36,7 @@ float decibelsToLinear(float decibels) {
 }
 
 float linearToDecibels(float linear) {
-  DCHECK_GE(linear, 0);
+  ASSERT(linear >= 0);
 
   return 20 * log10f(linear);
 }
@@ -47,7 +47,7 @@ double discreteTimeConstantForSampleRate(double timeConstant,
 }
 
 size_t timeToSampleFrame(double time, double sampleRate) {
-  DCHECK_GE(time, 0);
+  ASSERT(time >= 0);
   double frame = round(time * sampleRate);
 
   // Just return the largest possible size_t value if necessary.

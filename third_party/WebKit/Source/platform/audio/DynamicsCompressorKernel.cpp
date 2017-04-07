@@ -216,7 +216,7 @@ void DynamicsCompressorKernel::process(
     float releaseZone2,
     float releaseZone3,
     float releaseZone4) {
-  DCHECK_EQ(m_preDelayBuffers.size(), numberOfChannels);
+  ASSERT(m_preDelayBuffers.size() == numberOfChannels);
 
   float sampleRate = this->sampleRate();
 

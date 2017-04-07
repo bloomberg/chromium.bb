@@ -52,7 +52,7 @@ HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate) {
 
   RefPtr<HRTFDatabaseLoader> loader = getLoaderMap().at(sampleRate);
   if (loader) {
-    DCHECK_EQ(sampleRate, loader->databaseSampleRate());
+    ASSERT(sampleRate == loader->databaseSampleRate());
     return loader.release();
   }
 

@@ -45,8 +45,7 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(double maxDelayTime, float sampleRate)
       m_maxDelayTime(maxDelayTime),
       m_writeIndex(0),
       m_firstTime(true) {
-  DCHECK_GT(maxDelayTime, 0.0);
-  DCHECK(!std::isnan(maxDelayTime));
+  ASSERT(maxDelayTime > 0.0 && !std::isnan(maxDelayTime));
   if (maxDelayTime <= 0.0 || std::isnan(maxDelayTime))
     return;
 
@@ -92,8 +91,7 @@ void AudioDelayDSPKernel::process(const float* source,
   if (!bufferLength)
     return;
 
-  DCHECK(source);
-  DCHECK(destination);
+  ASSERT(source && destination);
   if (!source || !destination)
     return;
 

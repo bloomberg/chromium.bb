@@ -44,7 +44,7 @@ void ReverbInputBuffer::write(const float* sourceP, size_t numberOfFrames) {
          sizeof(float) * numberOfFrames);
 
   m_writeIndex += numberOfFrames;
-  DCHECK_LE(m_writeIndex, bufferLength);
+  ASSERT(m_writeIndex <= bufferLength);
 
   if (m_writeIndex >= bufferLength)
     m_writeIndex = 0;

@@ -65,7 +65,7 @@ void IIRFilter::process(const float* sourceP,
 
   // Sanity check to see if the feedback coefficients have been scaled
   // appropriately. It must be EXACTLY 1!
-  DCHECK_EQ(feedback[0], 1);
+  ASSERT(feedback[0] == 1);
 
   int feedbackLength = m_feedback->size();
   int feedforwardLength = m_feedforward->size();

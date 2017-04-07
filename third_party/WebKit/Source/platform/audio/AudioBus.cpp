@@ -49,7 +49,7 @@ const unsigned MaxBusChannels = 32;
 PassRefPtr<AudioBus> AudioBus::create(unsigned numberOfChannels,
                                       size_t length,
                                       bool allocate) {
-  DCHECK_LE(numberOfChannels, MaxBusChannels);
+  ASSERT(numberOfChannels <= MaxBusChannels);
   if (numberOfChannels > MaxBusChannels)
     return nullptr;
 
@@ -81,7 +81,7 @@ void AudioBus::setChannelMemory(unsigned channelIndex,
 }
 
 void AudioBus::resizeSmaller(size_t newLength) {
-  DCHECK_LE(newLength, m_length);
+  ASSERT(newLength <= m_length);
   if (newLength <= m_length)
     m_length = newLength;
 
@@ -479,7 +479,7 @@ void AudioBus::copyWithGainFrom(const AudioBus& sourceBus,
   }
 
   unsigned numberOfChannels = this->numberOfChannels();
-  DCHECK_LE(numberOfChannels, MaxBusChannels);
+  ASSERT(numberOfChannels <= MaxBusChannels);
   if (numberOfChannels > MaxBusChannels)
     return;
 
@@ -615,8 +615,7 @@ PassRefPtr<AudioBus> AudioBus::createBySampleRateConverting(
     bool mixToMono,
     double newSampleRate) {
   // sourceBus's sample-rate must be known.
-  DCHECK(sourceBus);
-  DCHECK(sourceBus->sampleRate());
+  ASSERT(sourceBus && sourceBus->sampleRate());
   if (!sourceBus || !sourceBus->sampleRate())
     return nullptr;
 

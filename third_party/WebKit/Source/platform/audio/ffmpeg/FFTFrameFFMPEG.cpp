@@ -42,9 +42,11 @@ extern "C" {
 
 namespace blink {
 
+#if DCHECK_IS_ON()
 // Max FFT size for FFMPEG.  WebAudio currently only uses FFTs up to size 15
 // (2^15 points).
 const int kMaxFFTPow2Size = 16;
+#endif
 
 // Normal constructor: allocates for a given fftSize.
 FFTFrame::FFTFrame(unsigned fftSize)
@@ -56,7 +58,7 @@ FFTFrame::FFTFrame(unsigned fftSize)
       m_inverseContext(nullptr),
       m_complexData(fftSize) {
   // We only allow power of two.
-  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
+  ASSERT(1UL << m_log2FFTSize == m_FFTSize);
 
   m_forwardContext = contextForSize(fftSize, DFT_R2C);
   m_inverseContext = contextForSize(fftSize, IDFT_C2R);
@@ -155,7 +157,7 @@ RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans) {
   // by sharing the FFTFrames on a per-thread basis.
   DCHECK(fftSize);
   int pow2size = static_cast<int>(log2(fftSize));
-  DCHECK_LT(pow2size, kMaxFFTPow2Size);
+  ASSERT(pow2size < kMaxFFTPow2Size);
 
   RDFTContext* context = av_rdft_init(pow2size, (RDFTransformType)trans);
   return context;

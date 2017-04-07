@@ -74,7 +74,7 @@ class ChannelProvider final : public AudioSourceProvider {
       return;
 
     // Copy the channel data from what we received from m_multiChannelProvider.
-    DCHECK_LE(m_currentChannel, m_numberOfChannels);
+    ASSERT(m_currentChannel <= m_numberOfChannels);
     if (m_currentChannel < m_numberOfChannels) {
       memcpy(bus->channel(0)->mutableData(),
              m_multiChannelBus->channel(m_currentChannel)->data(),

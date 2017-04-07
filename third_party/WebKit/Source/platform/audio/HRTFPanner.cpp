@@ -210,7 +210,7 @@ void HRTFPanner::pan(double desiredAzimuth,
 
   // This algorithm currently requires that we process in power-of-two size
   // chunks at least AudioUtilities::kRenderQuantumFrames.
-  DCHECK_EQ(1UL << static_cast<int>(log2(framesToProcess)), framesToProcess);
+  ASSERT(1UL << static_cast<int>(log2(framesToProcess)) == framesToProcess);
   DCHECK_GE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
 
   const unsigned framesPerSegment = AudioUtilities::kRenderQuantumFrames;
@@ -240,10 +240,10 @@ void HRTFPanner::pan(double desiredAzimuth,
       return;
     }
 
-    DCHECK_LT(frameDelayL1 / sampleRate(), MaxDelayTimeSeconds);
-    DCHECK_LT(frameDelayR1 / sampleRate(), MaxDelayTimeSeconds);
-    DCHECK_LT(frameDelayL2 / sampleRate(), MaxDelayTimeSeconds);
-    DCHECK_LT(frameDelayR2 / sampleRate(), MaxDelayTimeSeconds);
+    ASSERT(frameDelayL1 / sampleRate() < MaxDelayTimeSeconds &&
+           frameDelayR1 / sampleRate() < MaxDelayTimeSeconds);
+    ASSERT(frameDelayL2 / sampleRate() < MaxDelayTimeSeconds &&
+           frameDelayR2 / sampleRate() < MaxDelayTimeSeconds);
 
     // Crossfade inter-aural delays based on transitions.
     double frameDelayL =

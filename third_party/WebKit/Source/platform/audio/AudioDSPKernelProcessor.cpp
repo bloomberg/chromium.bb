@@ -67,8 +67,7 @@ void AudioDSPKernelProcessor::uninitialize() {
 void AudioDSPKernelProcessor::process(const AudioBus* source,
                                       AudioBus* destination,
                                       size_t framesToProcess) {
-  DCHECK(source);
-  DCHECK(destination);
+  ASSERT(source && destination);
   if (!source || !destination)
     return;
 

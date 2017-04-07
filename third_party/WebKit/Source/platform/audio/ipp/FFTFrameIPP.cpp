@@ -47,8 +47,8 @@ FFTFrame::FFTFrame(unsigned fftSize)
       m_imagData(fftSize / 2),
       m_complexData(fftSize) {
   // We only allow power of two.
-  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
-  DCHECK_LE(m_log2FFTSize, maximumFFTPower2Size);
+  ASSERT(1UL << m_log2FFTSize == m_FFTSize);
+  ASSERT(m_log2FFTSize <= maximumFFTPower2Size);
 
   ippsDFTInitAlloc_R_32f(&m_DFTSpec, m_FFTSize, IPP_FFT_NODIV_BY_ANY,
                          ippAlgHintFast);

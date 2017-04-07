@@ -53,8 +53,8 @@ static float extractAverageGroupDelay(AudioChannel* channel,
     return 0;
 
   // Check for power-of-2.
-  DCHECK_EQ(1UL << static_cast<unsigned>(log2(analysisFFTSize)),
-            analysisFFTSize);
+  ASSERT(1UL << static_cast<unsigned>(log2(analysisFFTSize)) ==
+         analysisFFTSize);
 
   FFTFrame estimationFrame(analysisFFTSize);
   estimationFrame.doFFT(impulseP);
@@ -83,7 +83,7 @@ HRTFKernel::HRTFKernel(AudioChannel* channel, size_t fftSize, float sampleRate)
   // Quick fade-out (apply window) at truncation point
   unsigned numberOfFadeOutFrames = static_cast<unsigned>(
       sampleRate / 4410);  // 10 sample-frames @44.1KHz sample-rate
-  DCHECK_LT(numberOfFadeOutFrames, truncatedResponseLength);
+  ASSERT(numberOfFadeOutFrames < truncatedResponseLength);
   if (numberOfFadeOutFrames < truncatedResponseLength) {
     for (unsigned i = truncatedResponseLength - numberOfFadeOutFrames;
          i < truncatedResponseLength; ++i) {
@@ -116,18 +116,16 @@ std::unique_ptr<HRTFKernel> HRTFKernel::createInterpolatedKernel(
     HRTFKernel* kernel1,
     HRTFKernel* kernel2,
     float x) {
-  DCHECK(kernel1);
-  DCHECK(kernel2);
+  ASSERT(kernel1 && kernel2);
   if (!kernel1 || !kernel2)
     return nullptr;
 
-  DCHECK_GE(x, 0.0);
-  DCHECK_LT(x, 1.0);
+  ASSERT(x >= 0.0 && x < 1.0);
   x = clampTo(x, 0.0f, 1.0f);
 
   float sampleRate1 = kernel1->sampleRate();
   float sampleRate2 = kernel2->sampleRate();
-  DCHECK_EQ(sampleRate1, sampleRate2);
+  ASSERT(sampleRate1 == sampleRate2);
   if (sampleRate1 != sampleRate2)
     return nullptr;
 

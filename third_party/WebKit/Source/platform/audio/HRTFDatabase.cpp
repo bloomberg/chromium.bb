@@ -76,7 +76,7 @@ HRTFDatabase::HRTFDatabase(float sampleRate)
             static_cast<float>(jj) / static_cast<float>(InterpolationFactor);
         m_elevations[i + jj] = HRTFElevation::createByInterpolatingSlices(
             m_elevations[i].get(), m_elevations[j].get(), x, sampleRate);
-        DCHECK(m_elevations[i + jj].get());
+        ASSERT(m_elevations[i + jj].get());
       }
     }
   }
