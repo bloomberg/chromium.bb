@@ -596,7 +596,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
   AXObjectCacheImpl& axObjectCache() const {
-    ASSERT(m_axObjectCache);
+    DCHECK(m_axObjectCache);
     return *m_axObjectCache;
   }
 

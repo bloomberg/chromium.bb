@@ -364,13 +364,13 @@ void AXTable::clearChildren() {
 }
 
 void AXTable::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (!isAXTable()) {
     AXLayoutObject::addChildren();
     return;
   }
 
-  ASSERT(!m_haveChildren);
+  DCHECK(!m_haveChildren);
 
   m_haveChildren = true;
   if (!m_layoutObject || !m_layoutObject->isTable())

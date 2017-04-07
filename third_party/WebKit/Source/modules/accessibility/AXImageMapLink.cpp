@@ -58,7 +58,7 @@ HTMLMapElement* AXImageMapLink::mapElement() const {
 }
 
 AXObject* AXImageMapLink::computeParent() const {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (m_parent)
     return m_parent;
 

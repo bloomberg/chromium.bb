@@ -39,7 +39,7 @@ AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
     : AXMockObject(axObjectCache), m_element(element) {}
 
 AXMenuListOption::~AXMenuListOption() {
-  ASSERT(!m_element);
+  DCHECK(!m_element);
 }
 
 void AXMenuListOption::detach() {
@@ -117,12 +117,12 @@ void AXMenuListOption::getRelativeBounds(
   AXObject* parent = parentObject();
   if (!parent)
     return;
-  ASSERT(parent->isMenuListPopup());
+  DCHECK(parent->isMenuListPopup());
 
   AXObject* grandparent = parent->parentObject();
   if (!grandparent)
     return;
-  ASSERT(grandparent->isMenuList());
+  DCHECK(grandparent->isMenuList());
   grandparent->getRelativeBounds(outContainer, outBoundsInContainer,
                                  outContainerTransform);
 }
@@ -136,7 +136,7 @@ String AXMenuListOption::textAlternative(bool recursive,
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (nameSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   if (!getNode())
     return String();

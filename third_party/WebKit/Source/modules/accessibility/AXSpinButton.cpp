@@ -38,7 +38,7 @@ AXSpinButton::AXSpinButton(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache), m_spinButtonElement(nullptr) {}
 
 AXSpinButton::~AXSpinButton() {
-  ASSERT(!m_spinButtonElement);
+  DCHECK(!m_spinButtonElement);
 }
 
 DEFINE_TRACE(AXSpinButton) {
@@ -68,7 +68,7 @@ AccessibilityRole AXSpinButton::roleValue() const {
 }
 
 void AXSpinButton::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   m_haveChildren = true;
 
   AXSpinButtonPart* incrementor =
@@ -85,7 +85,7 @@ void AXSpinButton::addChildren() {
 }
 
 void AXSpinButton::step(int amount) {
-  ASSERT(m_spinButtonElement);
+  DCHECK(m_spinButtonElement);
   if (!m_spinButtonElement)
     return;
 

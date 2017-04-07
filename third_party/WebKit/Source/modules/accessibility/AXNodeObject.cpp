@@ -227,7 +227,7 @@ AXNodeObject* AXNodeObject::create(Node* node,
 }
 
 AXNodeObject::~AXNodeObject() {
-  ASSERT(!m_node);
+  DCHECK(!m_node);
 }
 
 void AXNodeObject::alterSliderValue(bool increase) {
@@ -268,7 +268,7 @@ bool AXNodeObject::computeAccessibilityIsIgnored(
 #if DCHECK_IS_ON()
   // Double-check that an AXObject is never accessed before
   // it's been initialized.
-  ASSERT(m_initialized);
+  DCHECK(m_initialized);
 #endif
 
   // If this element is within a parent that cannot have children, it should not
@@ -904,7 +904,7 @@ AccessibilityRole AXNodeObject::remapAriaRoleDueToParent(
 
 void AXNodeObject::init() {
 #if DCHECK_IS_ON()
-  ASSERT(!m_initialized);
+  DCHECK(!m_initialized);
   m_initialized = true;
 #endif
   m_role = determineAccessibilityRole();
@@ -1876,7 +1876,7 @@ String AXNodeObject::textAlternative(bool recursive,
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (nameSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   bool foundTextAlternative = false;
 
@@ -2163,7 +2163,7 @@ static Node* getParentNodeForComputeParent(Node* node) {
 }
 
 AXObject* AXNodeObject::computeParent() const {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (Node* parentNode = getParentNodeForComputeParent(getNode()))
     return axObjectCache().getOrCreate(parentNode);
 
@@ -2201,11 +2201,11 @@ AXObject* AXNodeObject::rawNextSibling() const {
 }
 
 void AXNodeObject::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.
-  ASSERT(!m_haveChildren);
+  DCHECK(!m_haveChildren);
 
   if (!m_node)
     return;
@@ -2254,7 +2254,7 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index) {
     for (size_t i = 0; i < length; ++i)
       m_children.insert(index + i, children[i]);
   } else {
-    ASSERT(child->parentObject() == this);
+    DCHECK(child->parentObject() == this);
     m_children.insert(index, child);
   }
 }
@@ -2571,7 +2571,7 @@ String AXNodeObject::nativeTextAlternative(
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (nameSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   String textAlternative;
   AXRelatedObjectVector localRelatedObjects;
@@ -2907,7 +2907,7 @@ String AXNodeObject::nativeTextAlternative(
       nameSources->back().type = nameFrom;
       nameSources->back().nativeSource = AXTextFromNativeHTMLTitleElement;
     }
-    ASSERT(getNode()->isContainerNode());
+    DCHECK(getNode()->isContainerNode());
     Element* title = ElementTraversal::firstChild(
         toContainerNode(*(getNode())), HasTagName(SVGNames::titleTag));
 
@@ -3054,7 +3054,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   // If descriptionSources is non-null, relatedObjects is used in filling it in,
   // so it must be non-null as well.
   if (descriptionSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   if (!getNode())
     return String();

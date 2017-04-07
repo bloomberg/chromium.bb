@@ -61,7 +61,7 @@ bool AXMenuListPopup::computeAccessibilityIsIgnored(
 
 AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(
     HTMLElement* element) const {
-  ASSERT(element);
+  DCHECK(element);
   if (!isHTMLOptionElement(*element))
     return 0;
 
@@ -93,7 +93,7 @@ bool AXMenuListPopup::press() {
 }
 
 void AXMenuListPopup::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (!m_parent)
     return;
 

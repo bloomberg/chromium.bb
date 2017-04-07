@@ -364,7 +364,7 @@ AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
 }
 
 AXObject::~AXObject() {
-  ASSERT(isDetached());
+  DCHECK(isDetached());
   --s_numberOfLiveAXObjects;
 }
 
@@ -1672,7 +1672,7 @@ bool AXObject::isARIAInput(AccessibilityRole ariaRole) {
 }
 
 AccessibilityRole AXObject::ariaRoleToWebCoreRole(const String& value) {
-  ASSERT(!value.isEmpty());
+  DCHECK(!value.isEmpty());
 
   static const ARIARoleMap* roleMap = createARIARoleMap();
 

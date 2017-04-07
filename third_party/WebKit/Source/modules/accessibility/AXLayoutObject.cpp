@@ -168,7 +168,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject) {
     prev = cur;
     if (cur->isLayoutInline()) {
       cur = toLayoutInline(cur)->inlineElementContinuation();
-      ASSERT(cur || !toLayoutInline(prev)->continuation());
+      DCHECK(cur || !toLayoutInline(prev)->continuation());
     } else {
       cur = toLayoutBlockFlow(cur)->inlineElementContinuation();
     }
@@ -183,7 +183,7 @@ static inline bool lastChildHasContinuation(LayoutObject* layoutObject) {
 }
 
 static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   if (layoutObject->isLayoutInline() && !layoutObject->isAtomicInlineLevel())
     return toLayoutInline(layoutObject)->continuation();
   if (layoutObject->isLayoutBlockFlow())
@@ -206,7 +206,7 @@ AXLayoutObject* AXLayoutObject::create(LayoutObject* layoutObject,
 }
 
 AXLayoutObject::~AXLayoutObject() {
-  ASSERT(isDetached());
+  DCHECK(isDetached());
 }
 
 LayoutBoxModelObject* AXLayoutObject::getLayoutBoxModelObject() const {
@@ -395,7 +395,7 @@ bool AXLayoutObject::isLoaded() const {
 }
 
 bool AXLayoutObject::isOffScreen() const {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
   IntRect contentRect =
       pixelSnappedIntRect(m_layoutObject->absoluteVisualRect());
   FrameView* view = m_layoutObject->frame()->view();
@@ -405,7 +405,7 @@ bool AXLayoutObject::isOffScreen() const {
 }
 
 bool AXLayoutObject::isReadOnly() const {
-  ASSERT(m_layoutObject);
+  DCHECK(m_layoutObject);
 
   if (isWebArea()) {
     Document& document = m_layoutObject->document();
@@ -506,7 +506,7 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(
 bool AXLayoutObject::computeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
 #if DCHECK_IS_ON()
-  ASSERT(m_initialized);
+  DCHECK(m_initialized);
 #endif
 
   if (!m_layoutObject)
@@ -1449,7 +1449,7 @@ AXObject* AXLayoutObject::elementAccessibilityHitTest(
 //
 
 AXObject* AXLayoutObject::computeParent() const {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (!m_layoutObject)
     return 0;
 
@@ -1579,11 +1579,11 @@ AXObject* AXLayoutObject::rawNextSibling() const {
 }
 
 void AXLayoutObject::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.
-  ASSERT(!m_haveChildren);
+  DCHECK(!m_haveChildren);
 
   m_haveChildren = true;
 
@@ -1743,7 +1743,7 @@ AXObject::AXRange AXLayoutObject::selection() const {
   TextAffinity endAffinity = visibleEnd.affinity();
 
   Node* anchorNode = start.anchorNode();
-  ASSERT(anchorNode);
+  DCHECK(anchorNode);
 
   AXLayoutObject* anchorObject = nullptr;
   // Find the closest node that has a corresponding AXObject.
@@ -1761,7 +1761,7 @@ AXObject::AXRange AXLayoutObject::selection() const {
   }
 
   Node* focusNode = end.anchorNode();
-  ASSERT(focusNode);
+  DCHECK(focusNode);
 
   AXLayoutObject* focusObject = nullptr;
   while (focusNode) {
@@ -1779,9 +1779,9 @@ AXObject::AXRange AXLayoutObject::selection() const {
     return AXRange();
 
   int anchorOffset = anchorObject->indexForVisiblePosition(visibleStart);
-  ASSERT(anchorOffset >= 0);
+  DCHECK(anchorOffset >= 0);
   int focusOffset = focusObject->indexForVisiblePosition(visibleEnd);
-  ASSERT(focusOffset >= 0);
+  DCHECK(focusOffset >= 0);
   return AXRange(anchorObject, anchorOffset, startAffinity, focusObject,
                  focusOffset, endAffinity);
 }
@@ -1817,9 +1817,9 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const {
   }
 
   int start = indexForVisiblePosition(selection.visibleStart());
-  ASSERT(start >= 0);
+  DCHECK(start >= 0);
   int end = indexForVisiblePosition(selection.visibleEnd());
-  ASSERT(end >= 0);
+  DCHECK(end >= 0);
 
   return AXRange(start, end);
 }
@@ -1849,7 +1849,7 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const {
       layout->frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
   TextControlElement* textControl =
       toLayoutTextControl(layout)->textControlElement();
-  ASSERT(textControl);
+  DCHECK(textControl);
   int start = textControl->selectionStart();
   int end = textControl->selectionEnd();
 
@@ -2459,7 +2459,7 @@ void AXLayoutObject::addImageMapChildren() {
     if (obj) {
       AXImageMapLink* areaObject = toAXImageMapLink(obj);
       areaObject->setParent(this);
-      ASSERT(areaObject->axObjectID() != 0);
+      DCHECK(areaObject->axObjectID() != 0);
       if (!areaObject->accessibilityIsIgnored())
         m_children.push_back(areaObject);
       else
@@ -2475,7 +2475,7 @@ void AXLayoutObject::addCanvasChildren() {
   // If it's a canvas, it won't have laid out children, but it might have
   // accessible fallback content.  Clear m_haveChildren because
   // AXNodeObject::addChildren will expect it to be false.
-  ASSERT(!m_children.size());
+  DCHECK(!m_children.size());
   m_haveChildren = false;
   AXNodeObject::addChildren();
 }

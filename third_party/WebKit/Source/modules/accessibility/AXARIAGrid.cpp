@@ -75,8 +75,8 @@ bool AXARIAGrid::addTableRowChild(AXObject* child,
 }
 
 void AXARIAGrid::addChildren() {
-  ASSERT(!isDetached());
-  ASSERT(!m_haveChildren);
+  DCHECK(!isDetached());
+  DCHECK(!m_haveChildren);
 
   if (!isAXTable()) {
     AXLayoutObject::addChildren();

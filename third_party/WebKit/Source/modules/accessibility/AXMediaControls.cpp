@@ -48,7 +48,7 @@ AccessibilityMediaControl::AccessibilityMediaControl(
 
 AXObject* AccessibilityMediaControl::create(LayoutObject* layoutObject,
                                             AXObjectCacheImpl& axObjectCache) {
-  ASSERT(layoutObject->node());
+  DCHECK(layoutObject->node());
 
   switch (mediaControlElementType(layoutObject->node())) {
     case MediaSlider:

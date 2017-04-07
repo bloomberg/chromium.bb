@@ -53,7 +53,7 @@ void AXSVGRoot::setParent(AXObject* parent) {
 }
 
 AXObject* AXSVGRoot::computeParent() const {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   // If a parent was set because this is a remote SVG resource, use that
   // but otherwise, we should rely on the standard layout tree for the parent.
   if (m_parent)

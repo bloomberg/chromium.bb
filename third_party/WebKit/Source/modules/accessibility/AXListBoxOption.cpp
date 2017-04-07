@@ -138,7 +138,7 @@ String AXListBoxOption::textAlternative(bool recursive,
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (nameSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   if (!getNode())
     return String();

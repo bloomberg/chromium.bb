@@ -80,8 +80,8 @@ AccessibilityOrientation AXSlider::orientation() const {
 }
 
 void AXSlider::addChildren() {
-  ASSERT(!isDetached());
-  ASSERT(!m_haveChildren);
+  DCHECK(!isDetached());
+  DCHECK(!m_haveChildren);
 
   m_haveChildren = true;
 
@@ -101,7 +101,7 @@ void AXSlider::addChildren() {
 
 AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const {
   if (m_children.size()) {
-    ASSERT(m_children.size() == 1);
+    DCHECK(m_children.size() == 1);
     if (m_children[0]->getBoundsInFrameCoordinates().contains(point))
       return m_children[0].get();
   }

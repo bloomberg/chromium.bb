@@ -121,8 +121,8 @@ bool AXTableColumn::computeAccessibilityIsIgnored(
 }
 
 void AXTableColumn::addChildren() {
-  ASSERT(!isDetached());
-  ASSERT(!m_haveChildren);
+  DCHECK(!isDetached());
+  DCHECK(!m_haveChildren);
 
   m_haveChildren = true;
   if (!m_parent || !m_parent->isAXTable())

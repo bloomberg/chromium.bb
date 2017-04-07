@@ -100,7 +100,7 @@ void AXInlineTextBox::textCharacterOffsets(Vector<int>& offsets) const {
   unsigned len = m_inlineTextBox->len();
   Vector<float> widths;
   m_inlineTextBox->characterWidths(widths);
-  ASSERT(widths.size() == len);
+  DCHECK(widths.size() == len);
   offsets.resize(len);
 
   float widthSoFar = 0;
@@ -132,7 +132,7 @@ String AXInlineTextBox::name(AXNameFrom& nameFrom,
 }
 
 AXObject* AXInlineTextBox::computeParent() const {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   if (!m_inlineTextBox || !m_axObjectCache)
     return 0;
 

@@ -67,7 +67,7 @@ void AXMenuList::clearChildren() {
   // There's no reason to clear our AXMenuListPopup child. If we get a
   // call to clearChildren, it's because the options might have changed,
   // so call it on our popup.
-  ASSERT(m_children.size() == 1);
+  DCHECK(m_children.size() == 1);
   m_children[0]->clearChildren();
   m_childrenDirty = false;
 }
@@ -77,7 +77,7 @@ bool AXMenuList::nameFromContents() const {
 }
 
 void AXMenuList::addChildren() {
-  ASSERT(!isDetached());
+  DCHECK(!isDetached());
   m_haveChildren = true;
 
   AXObjectCacheImpl& cache = axObjectCache();
@@ -123,8 +123,8 @@ bool AXMenuList::canSetFocusAttribute() const {
 void AXMenuList::didUpdateActiveOption(int optionIndex) {
   const auto& childObjects = children();
   if (!childObjects.isEmpty()) {
-    ASSERT(childObjects.size() == 1);
-    ASSERT(childObjects[0]->isMenuListPopup());
+    DCHECK(childObjects.size() == 1);
+    DCHECK(childObjects[0]->isMenuListPopup());
 
     if (childObjects[0]->isMenuListPopup()) {
       if (AXMenuListPopup* popup = toAXMenuListPopup(childObjects[0].get()))
