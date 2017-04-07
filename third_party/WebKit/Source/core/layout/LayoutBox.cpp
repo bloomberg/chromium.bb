@@ -4761,6 +4761,7 @@ bool LayoutBox::avoidsFloats() const {
   // crbug.com/460704: This should be merged with createsNewFormattingContext().
   return shouldBeConsideredAsReplaced() || hasOverflowClip() || isHR() ||
          isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated() ||
+         style()->getColumnSpan() == ColumnSpanAll ||
          style()->containsPaint() || style()->containsLayout() ||
          style()->display() == EDisplay::kFlowRoot;
 }

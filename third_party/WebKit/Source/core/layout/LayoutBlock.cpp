@@ -559,7 +559,8 @@ bool LayoutBlock::createsNewFormattingContext() const {
          hasOverflowClip() || isFlexItemIncludingDeprecated() ||
          style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() ||
          isTableCaption() || isFieldset() || isWritingModeRoot() ||
-         isDocumentElement() || isColumnSpanAll() || isGridItem() ||
+         isDocumentElement() || isGridItem() ||
+         style()->getColumnSpan() == ColumnSpanAll ||
          style()->containsPaint() || style()->containsLayout() ||
          isSVGForeignObject() || style()->display() == EDisplay::kFlowRoot;
 }
