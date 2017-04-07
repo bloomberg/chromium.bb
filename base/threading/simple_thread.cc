@@ -18,25 +18,17 @@ SimpleThread::SimpleThread(const std::string& name_prefix,
                            const Options& options)
     : name_prefix_(name_prefix),
       options_(options),
-      id_event_(WaitableEvent::ResetPolicy::MANUAL,
-                WaitableEvent::InitialState::NOT_SIGNALED) {}
+      event_(WaitableEvent::ResetPolicy::MANUAL,
+             WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 SimpleThread::~SimpleThread() {
-#if DCHECK_IS_ON()
-  DCHECK(has_been_started_) << "SimpleThread was never started.";
-  DCHECK(!options_.joinable || has_been_joined_)
+  DCHECK(HasBeenStarted()) << "SimpleThread was never started.";
+  DCHECK(!options_.joinable || HasBeenJoined())
       << "Joinable SimpleThread destroyed without being Join()ed.";
-#endif
 }
 
 void SimpleThread::Start() {
-#if DCHECK_IS_ON()
-  DCHECK(!has_been_started_) << "Tried to Start a thread multiple times.";
-
-  // Set |has_been_started_| before creating the thread as no member access is
-  // allowed after.
-  has_been_started_ = true;
-#endif
+  DCHECK(!HasBeenStarted()) << "Tried to Start a thread multiple times.";
   bool success =
       options_.joinable
           ? PlatformThread::CreateWithPriority(options_.stack_size, this,
@@ -44,38 +36,34 @@ void SimpleThread::Start() {
           : PlatformThread::CreateNonJoinableWithPriority(
                 options_.stack_size, this, options_.priority);
   DCHECK(success);
-
-  // No member access after creating the thread, |this| can be deleted at any
-  // point after invoking Run() on non-joinable threads.
+  ThreadRestrictions::ScopedAllowWait allow_wait;
+  event_.Wait();  // Wait for the thread to complete initialization.
 }
 
 void SimpleThread::Join() {
-#if DCHECK_IS_ON()
   DCHECK(options_.joinable) << "A non-joinable thread can't be joined.";
-  DCHECK(has_been_started_) << "Tried to Join a never-started thread.";
-  DCHECK(!has_been_joined_) << "Tried to Join a thread multiple times.";
-#endif
+  DCHECK(HasBeenStarted()) << "Tried to Join a never-started thread.";
+  DCHECK(!HasBeenJoined()) << "Tried to Join a thread multiple times.";
   PlatformThread::Join(thread_);
   thread_ = PlatformThreadHandle();
-#if DCHECK_IS_ON()
-  has_been_joined_ = true;
-#endif
+  joined_ = true;
 }
 
-PlatformThreadId SimpleThread::GetTid() const {
-  id_event_.Wait();
-  return tid_;
+bool SimpleThread::HasBeenStarted() {
+  ThreadRestrictions::ScopedAllowWait allow_wait;
+  return event_.IsSignaled();
 }
 
 void SimpleThread::ThreadMain() {
   tid_ = PlatformThread::CurrentId();
-  id_event_.Signal();
-
   // Construct our full name of the form "name_prefix_/TID".
   std::string name(name_prefix_);
   name.push_back('/');
   name.append(IntToString(tid_));
   PlatformThread::SetName(name);
+
+  // We've initialized our new thread, signal that we're done to Start().
+  event_.Signal();
 
   Run();
 }

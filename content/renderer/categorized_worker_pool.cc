@@ -257,11 +257,6 @@ CategorizedWorkerPool::CreateSequencedTaskRunner() {
   return new CategorizedWorkerPoolSequencedTaskRunner(this);
 }
 
-base::PlatformThreadId CategorizedWorkerPool::GetBackgroundWorkerThreadId()
-    const {
-  return threads_.back()->GetTid();
-}
-
 CategorizedWorkerPool::~CategorizedWorkerPool() {}
 
 cc::NamespaceToken CategorizedWorkerPool::GenerateNamespaceToken() {

@@ -281,6 +281,12 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
       this, "wasapi_render_thread",
       base::SimpleThread::Options(base::ThreadPriority::REALTIME_AUDIO)));
   render_thread_->Start();
+  if (!render_thread_->HasBeenStarted()) {
+    LOG(ERROR) << "Failed to start WASAPI render thread.";
+    StopThread();
+    callback->OnError(this);
+    return;
+  }
 
   // Start streaming data between the endpoint buffer and the audio engine.
   HRESULT hr = audio_client_->Start();
@@ -633,9 +639,11 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
 
 void WASAPIAudioOutputStream::StopThread() {
   if (render_thread_) {
-    // Wait until the thread completes and perform cleanup.
-    SetEvent(stop_render_event_.Get());
-    render_thread_->Join();
+    if (render_thread_->HasBeenStarted()) {
+      // Wait until the thread completes and perform cleanup.
+      SetEvent(stop_render_event_.Get());
+      render_thread_->Join();
+    }
 
     render_thread_.reset();
 

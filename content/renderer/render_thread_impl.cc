@@ -891,7 +891,7 @@ void RenderThreadImpl::Init(
 #if defined(OS_LINUX)
   ChildProcess::current()->SetIOThreadPriority(base::ThreadPriority::DISPLAY);
   ChildThreadImpl::current()->SetThreadPriority(
-      categorized_worker_pool_->GetBackgroundWorkerThreadId(),
+      categorized_worker_pool_->background_worker_thread_id(),
       base::ThreadPriority::BACKGROUND);
 #endif
 
