@@ -1343,7 +1343,7 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_WARPED_MOTION
 #define LEAST_SQUARES_ORDER 2
 
-#define LS_MV_MAX 512  // max mv in 1/8-pel
+#define LS_MV_MAX 256  // max mv in 1/8-pel
 #define LS_STEP 2
 
 #define LS_SUM(a) ((a)*4 + LS_STEP * 2)
