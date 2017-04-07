@@ -63,9 +63,17 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
       GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
                                   base::Unretained(this)));
 
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
   expected_metadata.http_response_code = net::HTTP_OK;
+  expected_metadata.http_response_headers = headers.get();
   EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
                                         expected_metadata));
 
@@ -80,14 +88,6 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   test_url_fetcher->SetResponseString(kURLResponseData);
   test_url_fetcher->set_response_code(net::HTTP_OK);
-
-  std::string raw_header =
-      "HTTP/1.1 200 OK\n"
-      "Content-type: image/png\n\n";
-  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(raw_header));
-
   test_url_fetcher->set_response_headers(headers);
 
   // Call the URLFetcher delegate to continue the test.
@@ -99,10 +99,18 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FromCache) {
       GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
                                   base::Unretained(this)));
 
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
   expected_metadata.http_response_code = net::HTTP_OK;
   expected_metadata.from_http_cache = true;
+  expected_metadata.http_response_headers = headers.get();
   EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
                                         expected_metadata));
 
@@ -114,14 +122,6 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FromCache) {
   test_url_fetcher->SetResponseString(kURLResponseData);
   test_url_fetcher->set_response_code(net::HTTP_OK);
   test_url_fetcher->set_was_cached(true);
-
-  std::string raw_header =
-      "HTTP/1.1 200 OK\n"
-      "Content-type: image/png\n\n";
-  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(raw_header));
-
   test_url_fetcher->set_response_headers(headers);
 
   // Call the URLFetcher delegate to continue the test.
@@ -133,9 +133,17 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
       GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
                                   base::Unretained(this)));
 
+  std::string raw_header =
+      "HTTP/1.1 404 Not Found\n"
+      "Content-type: image/png\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
   expected_metadata.http_response_code = net::HTTP_NOT_FOUND;
+  expected_metadata.http_response_headers = headers.get();
   // For 404, expect an empty result even though correct image data is sent.
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
@@ -145,14 +153,6 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   test_url_fetcher->SetResponseString(kURLResponseData);
-
-  std::string raw_header =
-      "HTTP/1.1 404 Not Found\n"
-      "Content-type: image/png\n\n";
-  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(raw_header));
-
   test_url_fetcher->set_response_headers(headers);
 
   // Call the URLFetcher delegate to continue the test.

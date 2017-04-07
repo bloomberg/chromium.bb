@@ -89,6 +89,7 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   RequestMetadata metadata;
   if (success && source->GetResponseHeaders()) {
+    metadata.http_response_headers = source->GetResponseHeaders();
     source->GetResponseHeaders()->GetMimeType(&metadata.mime_type);
     metadata.http_response_code = source->GetResponseHeaders()->response_code();
     success &= (metadata.http_response_code == net::HTTP_OK);

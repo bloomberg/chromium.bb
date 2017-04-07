@@ -4,6 +4,8 @@
 
 #include "components/image_fetcher/core/request_metadata.h"
 
+#include "base/memory/ref_counted.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace image_fetcher {
