@@ -40,6 +40,7 @@ cr.define('downloads', function() {
     },
 
     hostAttributes: {
+      // TODO(dbeam): this should use a class instead.
       loading: true,
     },
 
@@ -51,6 +52,10 @@ cr.define('downloads', function() {
     observers: [
       'itemsChanged_(items_.*)',
     ],
+
+    attached: function() {
+      document.documentElement.classList.remove('loading');
+    },
 
     /** @private {!PromiseResolver} */
     loaded_: new PromiseResolver,
