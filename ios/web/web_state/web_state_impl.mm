@@ -57,6 +57,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
 std::unique_ptr<WebState> WebState::CreateWithStorageSession(
     const CreateParams& params,
     CRWSessionStorage* session_storage) {
+  DCHECK(session_storage);
   std::unique_ptr<WebStateImpl> web_state(
       new WebStateImpl(params, session_storage));
 
