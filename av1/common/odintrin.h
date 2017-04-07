@@ -51,8 +51,6 @@ extern "C" {
 #define OD_LOG_BSIZE0 (2)
 /*There are 5 block sizes total (4x4, 8x8, 16x16, 32x32 and 64x64).*/
 #define OD_NBSIZES (5)
-/*The maximum length of the side of a block.*/
-#define OD_BSIZE_MAX MAX_SB_SIZE
 
 /*There are 4 transform sizes total in AV1 (4x4, 8x8, 16x16 and 32x32).*/
 #define OD_TXSIZES TX_SIZES

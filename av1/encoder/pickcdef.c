@@ -232,18 +232,37 @@ uint64_t compute_dering_dist(uint16_t *dst, int dstride, uint16_t *src,
       bx = dlist[bi].bx;
       if (pli == 0) {
         sum += dist_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                              &src[bi << (2 * 3)], 8, coeff_shift);
+                              &src[bi << (3 + 3)], 8, coeff_shift);
       } else {
         sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
-                             &src[bi << (2 * 3)], 8);
+                             &src[bi << (3 + 3)], 8);
       }
     }
+  } else if (bsize == BLOCK_4X8) {
+    for (bi = 0; bi < dering_count; bi++) {
+      by = dlist[bi].by;
+      bx = dlist[bi].bx;
+      sum += mse_4x4_16bit(&dst[(by << 3) * dstride + (bx << 2)], dstride,
+                           &src[bi << (3 + 2)], 4);
+      sum += mse_4x4_16bit(&dst[((by << 3) + 4) * dstride + (bx << 2)], dstride,
+                           &src[(bi << (3 + 2)) + 4 * 4], 4);
+    }
+  } else if (bsize == BLOCK_8X4) {
+    for (bi = 0; bi < dering_count; bi++) {
+      by = dlist[bi].by;
+      bx = dlist[bi].bx;
+      sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 3)], dstride,
+                           &src[bi << (2 + 3)], 8);
+      sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 3) + 4], dstride,
+                           &src[(bi << (2 + 3)) + 4], 8);
+    }
   } else {
+    assert(bsize == BLOCK_4X4);
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       sum += mse_4x4_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
-                           &src[bi << (2 * 2)], 4);
+                           &src[bi << (2 + 2)], 4);
     }
   }
   return sum >> 2 * coeff_shift;
@@ -262,7 +281,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int bsize[3];
   int mi_wide_l2[3];
   int mi_high_l2[3];
-  int dec[3];
+  int xdec[3];
+  int ydec[3];
   int pli;
   int dering_count;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
@@ -315,8 +335,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         32, sizeof(*src) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
     ref_coeff[pli] = aom_memalign(
         32, sizeof(*ref_coeff) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
-    dec[pli] = xd->plane[pli].subsampling_x;
-    bsize[pli] = dec[pli] ? BLOCK_4X4 : BLOCK_8X8;
+    xdec[pli] = xd->plane[pli].subsampling_x;
+    ydec[pli] = xd->plane[pli].subsampling_y;
+    bsize[pli] = ydec[pli] ? (xdec[pli] ? BLOCK_4X4 : BLOCK_8X4)
+                           : (xdec[pli] ? BLOCK_4X8 : BLOCK_8X8);
     stride[pli] = cm->mi_cols << MI_SIZE_LOG2;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
@@ -384,8 +406,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                          (sbc * MAX_MIB_SIZE << mi_wide_l2[pli]) - xoff,
                          stride[pli], ysize, xsize);
           od_dering(clpf_strength ? NULL : (uint8_t *)in, OD_FILT_BSTRIDE,
-                    tmp_dst, in, dec[pli], dir, &dirinit, var, pli, dlist,
-                    dering_count, threshold,
+                    tmp_dst, in, xdec[pli], ydec[pli], dir, &dirinit, var, pli,
+                    dlist, dering_count, threshold,
                     clpf_strength + (clpf_strength == 3), clpf_damping,
                     coeff_shift, clpf_strength != 0, 1);
           curr_mse = compute_dering_dist(

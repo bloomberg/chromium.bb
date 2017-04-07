@@ -176,7 +176,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int nhsb, nvsb;
   uint16_t src[OD_DERING_INBUF_SIZE];
   uint16_t *linebuf[3];
-  uint16_t colbuf[3][(OD_BSIZE_MAX + 2 * OD_FILT_VBORDER) * OD_FILT_HBORDER];
+  uint16_t colbuf[3][(MAX_SB_SIZE + 2 * OD_FILT_VBORDER) * OD_FILT_HBORDER];
   dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
   unsigned char *row_dering, *prev_row_dering, *curr_row_dering;
   int dering_count;
@@ -185,7 +185,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int stride;
   int mi_wide_l2[3];
   int mi_high_l2[3];
-  int dec[3];
+  int xdec[3];
+  int ydec[3];
   int pli;
   int dering_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
@@ -201,11 +202,10 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   prev_row_dering = row_dering + 1;
   curr_row_dering = prev_row_dering + nhsb + 2;
   for (pli = 0; pli < nplanes; pli++) {
-    dec[pli] = xd->plane[pli].subsampling_x;
+    xdec[pli] = xd->plane[pli].subsampling_x;
+    ydec[pli] = xd->plane[pli].subsampling_y;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
-    // TODO(stemidts/jmvalin): We should use subsampling_y below but can't
-    // until we've properly fixed 4:2:2
-    mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
+    mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
   }
   stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * OD_FILT_HBORDER;
   for (pli = 0; pli < nplanes; pli++) {
@@ -277,7 +277,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
       curr_row_dering[sbc] = 1;
       for (pli = 0; pli < nplanes; pli++) {
-        uint16_t dst[OD_BSIZE_MAX * OD_BSIZE_MAX];
+        uint16_t dst[MAX_SB_SIZE * MAX_SB_SIZE];
         int coffset;
         int rend, cend;
         int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
@@ -409,8 +409,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 (sbc * MAX_MIB_SIZE << mi_wide_l2[pli])],
               xd->plane[pli].dst.stride, dst,
               &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-              dec[pli], dir, NULL, var, pli, dlist, dering_count, level,
-              clpf_strength, clpf_damping, coeff_shift, 0, 1);
+              xdec[pli], ydec[pli], dir, NULL, var, pli, dlist, dering_count,
+              level, clpf_strength, clpf_damping, coeff_shift, 0, 1);
         } else {
 #endif
           od_dering(&xd->plane[pli]
@@ -419,8 +419,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                   (sbc * MAX_MIB_SIZE << mi_wide_l2[pli])],
                     xd->plane[pli].dst.stride, dst,
                     &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-                    dec[pli], dir, NULL, var, pli, dlist, dering_count, level,
-                    clpf_strength, clpf_damping, coeff_shift, 0, 0);
+                    xdec[pli], ydec[pli], dir, NULL, var, pli, dlist,
+                    dering_count, level, clpf_strength, clpf_damping,
+                    coeff_shift, 0, 0);
 
 #if CONFIG_AOM_HIGHBITDEPTH
         }
