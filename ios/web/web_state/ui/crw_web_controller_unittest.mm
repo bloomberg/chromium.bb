@@ -579,14 +579,6 @@ TEST_F(CRWWebStateSecurityStateTest, LoadHttpPage) {
 // Real WKWebView is required for CRWWebControllerInvalidUrlTest.
 typedef web::WebTestWithWebState CRWWebControllerInvalidUrlTest;
 
-// Tests that web controller navigates to about:blank if invalid URL is loaded.
-TEST_F(CRWWebControllerInvalidUrlTest, LoadInvalidURL) {
-  GURL url(kInvalidURL);
-  ASSERT_FALSE(url.is_valid());
-  LoadHtml(@"<html><body></body></html>", url);
-  EXPECT_EQ(GURL(url::kAboutBlankURL), web_state()->GetLastCommittedURL());
-}
-
 // Tests that web controller does not navigate to about:blank if iframe src
 // has invalid url. Web controller loads about:blank if page navigates to
 // invalid url, but should do nothing if navigation is performed in iframe. This
