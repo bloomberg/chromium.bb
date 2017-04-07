@@ -405,21 +405,23 @@ void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
 
 void SearchTabHelper::OnLogMostVisitedImpression(
     int position,
-    ntp_tiles::TileSource tile_source) {
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->LogMostVisitedImpression(position, tile_source);
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogMostVisitedImpression(position, tile_source, tile_type);
 #endif
 }
 
 void SearchTabHelper::OnLogMostVisitedNavigation(
     int position,
-    ntp_tiles::TileSource tile_source) {
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->LogMostVisitedNavigation(position, tile_source);
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogMostVisitedNavigation(position, tile_source, tile_type);
 #endif
 }
 

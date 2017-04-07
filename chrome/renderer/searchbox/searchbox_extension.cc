@@ -23,6 +23,7 @@
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_visual_type.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -994,18 +995,23 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
   if (!render_frame)
     return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
+  if (args.Length() < 3 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+      !args[2]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
   DVLOG(1) << render_frame << " LogMostVisitedImpression";
 
-  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST)) {
-    ntp_tiles::TileSource tile_source =
+  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      args[2]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    auto tile_source =
         static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
+    auto tile_type =
+        static_cast<ntp_tiles::TileVisualType>(args[2]->Uint32Value());
     SearchBox::Get(render_frame)
-        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_source);
+        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_source,
+                                   tile_type);
   }
 }
 
@@ -1024,11 +1030,15 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
 
   DVLOG(1) << render_frame << " LogMostVisitedNavigation";
 
-  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST)) {
-    ntp_tiles::TileSource tile_source =
+  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      args[2]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    auto tile_source =
         static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
+    auto tile_type =
+        static_cast<ntp_tiles::TileVisualType>(args[2]->Uint32Value());
     SearchBox::Get(render_frame)
-        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_source);
+        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_source,
+                                   tile_type);
   }
 }
 

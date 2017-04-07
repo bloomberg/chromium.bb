@@ -15,6 +15,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_visual_type.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -62,12 +63,14 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(
         int position,
-        ntp_tiles::TileSource tile_source) = 0;
+        ntp_tiles::TileSource tile_source,
+        ntp_tiles::TileVisualType tile_type) = 0;
 
     // Called to log a navigation from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedNavigation(
         int position,
-        ntp_tiles::TileSource tile_source) = 0;
+        ntp_tiles::TileSource tile_source,
+        ntp_tiles::TileVisualType tile_type) = 0;
 
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
@@ -183,10 +186,12 @@ class SearchIPCRouter : public content::WebContentsObserver,
                 base::TimeDelta time) override;
   void LogMostVisitedImpression(int page_seq_no,
                                 int position,
-                                ntp_tiles::TileSource tile_source) override;
+                                ntp_tiles::TileSource tile_source,
+                                ntp_tiles::TileVisualType tile_type) override;
   void LogMostVisitedNavigation(int page_seq_no,
                                 int position,
-                                ntp_tiles::TileSource tile_source) override;
+                                ntp_tiles::TileSource tile_source,
+                                ntp_tiles::TileVisualType tile_type) override;
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
   void ChromeIdentityCheck(int page_seq_no,

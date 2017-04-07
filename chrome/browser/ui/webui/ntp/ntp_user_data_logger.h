@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_visual_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -41,11 +42,13 @@ class NTPUserDataLogger
 
   // Logs an impression on one of the NTP tiles by a given source.
   void LogMostVisitedImpression(int position,
-                                ntp_tiles::TileSource tile_source);
+                                ntp_tiles::TileSource tile_source,
+                                ntp_tiles::TileVisualType tile_type);
 
   // Logs a navigation on one of the NTP tiles by a given source.
   void LogMostVisitedNavigation(int position,
-                                ntp_tiles::TileSource tile_source);
+                                ntp_tiles::TileSource tile_source,
+                                ntp_tiles::TileVisualType tile_type);
 
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
@@ -85,6 +88,10 @@ class NTPUserDataLogger
   // Stores the tile source for each impression. Entries are only valid if the
   // corresponding entry in |impression_was_logged_| is true.
   std::vector<ntp_tiles::TileSource> impression_tile_source_;
+
+  // Stores the tile type for each impression. Entries are only valid if the
+  // corresponding entry in |impression_was_logged_| is true.
+  std::vector<ntp_tiles::TileVisualType> impression_tile_type_;
 
   // The time we received the NTP_ALL_TILES_RECEIVED event.
   base::TimeDelta tiles_received_time_;

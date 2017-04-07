@@ -23,19 +23,22 @@ enum TileVisualType {
   ICON_COLOR = 2,
   // The item displays a default gray box in place of an icon.
   ICON_DEFAULT = 3,
-  // The number of different tile types that get recorded. Entries below this
-  // are not recorded in UMA.
-  NUM_RECORDED_TILE_TYPES,
-
   // Deleted: THUMBNAIL_LOCAL = 4
   // Deleted: THUMBNAIL_SERVER = 5
   // Deleted: THUMBNAIL_DEFAULT = 6
-
   // The item displays a thumbnail of the page. Used on desktop.
-  THUMBNAIL,
+  THUMBNAIL = 7,
+  // The item wants to display a thumbnail of the page, but it failed to load.
+  // Used on desktop.
+  THUMBNAIL_FAILED = 8,
+  // The maximum tile type value that gets recorded in UMA.
+  LAST_RECORDED_TILE_TYPE = THUMBNAIL_FAILED,
+
   // The tile type has not been determined yet. Used on iOS, until we can detect
   // when all tiles have loaded.
   UNKNOWN_TILE_TYPE,
+
+  TILE_TYPE_MAX = UNKNOWN_TILE_TYPE
 };
 
 }  // namespace ntp_tiles

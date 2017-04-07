@@ -98,19 +98,21 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 
 void NTPUserDataLogger::LogMostVisitedImpression(
     int position,
-    ntp_tiles::TileSource tile_source) {
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
   if ((position >= kNumMostVisited) || impression_was_logged_[position]) {
     return;
   }
   impression_was_logged_[position] = true;
   impression_tile_source_[position] = tile_source;
+  impression_tile_type_[position] = tile_type;
 }
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
     int position,
-    ntp_tiles::TileSource tile_source) {
-  ntp_tiles::metrics::RecordTileClick(position, tile_source,
-                                      ntp_tiles::TileVisualType::THUMBNAIL);
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
+  ntp_tiles::metrics::RecordTileClick(position, tile_source, tile_type);
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
@@ -120,6 +122,7 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       impression_tile_source_(kNumMostVisited),
+      impression_tile_type_(kNumMostVisited),
       has_emitted_(false),
       during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
   // We record metrics about session data here because when this class typically
@@ -168,8 +171,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     }
     // No URL passed since we're not interested in favicon-related Rappor
     // metrics.
-    tiles.emplace_back(impression_tile_source_[i],
-                       ntp_tiles::TileVisualType::THUMBNAIL, GURL());
+    tiles.emplace_back(impression_tile_source_[i], impression_tile_type_[i],
+                       GURL());
   }
 
   // Not interested in Rappor metrics.
