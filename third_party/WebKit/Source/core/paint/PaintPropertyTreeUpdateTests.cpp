@@ -146,7 +146,6 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
       "<style>body { margin: 0; }</style>"
       "<div id='forceScroll' style='height: 8888px;'></div>");
   document().view()->updateAllLifecyclePhases();
-
   FrameView* parent = document().view();
   EXPECT_TRUE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
   FrameView* child = childDocument().view();

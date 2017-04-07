@@ -182,10 +182,6 @@ class PLATFORM_EXPORT DisplayItem {
     kEndTransform,
     kBeginClipPath,
     kEndClipPath,
-
-    kSubsequence,
-    kEndSubsequence,
-
     kUninitializedType,
     kTypeLast = kUninitializedType
   };
@@ -314,9 +310,7 @@ class PLATFORM_EXPORT DisplayItem {
 
   DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
-  static bool isCacheableType(Type type) {
-    return isDrawingType(type) || type == kSubsequence;
-  }
+  static bool isCacheableType(Type type) { return isDrawingType(type); }
   bool isCacheable() const {
     return !skippedCache() && isCacheableType(m_type);
   }

@@ -7,7 +7,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SubsequenceDisplayItem.h"
 
 namespace blink {
 
@@ -20,26 +19,27 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
     return;
 
   m_beginSubsequenceIndex = m_paintController.newDisplayItemList().size();
-  m_paintController.createAndAppend<BeginSubsequenceDisplayItem>(m_client);
+
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+  m_paintController.beginSubsequence(m_client);
+#endif
 }
 
 SubsequenceRecorder::~SubsequenceRecorder() {
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+  m_paintController.endSubsequence();
+#endif
+
   if (m_paintController.displayItemConstructionIsDisabled())
     return;
 
-  if (m_paintController.lastDisplayItemIsNoopBegin()) {
-    ASSERT(m_beginSubsequenceIndex ==
-           m_paintController.newDisplayItemList().size() - 1);
-    // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
-    // Don't remove cacheable no-op pairs because we need to match them later
-    // with CachedSubsequences.
-    if (m_paintController.newDisplayItemList().last().skippedCache()) {
-      m_paintController.removeLastDisplayItem();
-      return;
-    }
-  }
+  // Skip empty subsequences.
+  if (m_paintController.newDisplayItemList().size() == m_beginSubsequenceIndex)
+    return;
 
-  m_paintController.createAndAppend<EndSubsequenceDisplayItem>(m_client);
+  m_paintController.addCachedSubsequence(
+      m_client, m_beginSubsequenceIndex,
+      m_paintController.newDisplayItemList().size() - 1);
 }
 
 }  // namespace blink

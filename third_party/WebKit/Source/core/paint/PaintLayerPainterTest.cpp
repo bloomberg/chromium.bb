@@ -69,50 +69,29 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       "</div>");
   document().view()->updateAllLifecyclePhases();
 
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutObject& container1 =
       *document().getElementById("container1")->layoutObject();
-  PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
   LayoutObject& content1 =
       *document().getElementById("content1")->layoutObject();
   LayoutObject& container2 =
       *document().getElementById("container2")->layoutObject();
-  PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
   LayoutObject& content2 =
       *document().getElementById("content2")->layoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 13,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   } else {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   }
 
   toHTMLElement(content1.node())
@@ -122,40 +101,24 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   document().view()->updateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(paintWithoutCommit());
 
-  EXPECT_EQ(6, numCachedNewItems());
+  EXPECT_EQ(4, numCachedNewItems());
 
   commit();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 13,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   } else {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   }
 }
 
@@ -169,40 +132,25 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
       "50px'></div>");
   document().view()->updateAllLifecyclePhases();
 
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutObject& svg = *document().getElementById("svg")->layoutObject();
-  PaintLayer& svgLayer = *toLayoutBoxModelObject(svg).layer();
   LayoutObject& rect = *document().getElementById("rect")->layoutObject();
   LayoutObject& div = *document().getElementById("div")->layoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // SPv2 slips the clip box (see BoxClipper).
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 8,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(rect, foregroundType),
-        TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(rect, foregroundType));
   } else {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 10,
+        rootPaintController().getDisplayItemList(), 6,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
         TestDisplayItem(svg, DisplayItem::kClipLayerForeground),
         TestDisplayItem(svg, DisplayItem::kBeginTransform),
         TestDisplayItem(rect, foregroundType),
         TestDisplayItem(svg, DisplayItem::kEndTransform),
         TestDisplayItem(svg, DisplayItem::clipTypeToEndClipType(
-                                 DisplayItem::kClipLayerForeground)),
-        TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+                                 DisplayItem::kClipLayerForeground)));
   }
 
   // Change the color of the div. This should not invalidate the subsequence
@@ -217,39 +165,28 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
   // Reuse of SVG and document background. 2 fewer with SPv2 enabled because
   // clip display items don't appear in SPv2 display lists.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    EXPECT_EQ(4, numCachedNewItems());
+    EXPECT_EQ(2, numCachedNewItems());
   else
-    EXPECT_EQ(8, numCachedNewItems());
+    EXPECT_EQ(6, numCachedNewItems());
 
   commit();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 9,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(rect, foregroundType),
-        TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(div, backgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(rect, foregroundType),
+                        TestDisplayItem(div, backgroundType));
   } else {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 11,
+        rootPaintController().getDisplayItemList(), 7,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
         TestDisplayItem(svg, DisplayItem::kClipLayerForeground),
         TestDisplayItem(svg, DisplayItem::kBeginTransform),
         TestDisplayItem(rect, foregroundType),
         TestDisplayItem(svg, DisplayItem::kEndTransform),
         TestDisplayItem(svg, DisplayItem::clipTypeToEndClipType(
                                  DisplayItem::kClipLayerForeground)),
-        TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(div, backgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(layoutView(),
                         DisplayItem::clipTypeToEndClipType(
                             DisplayItem::kClipFrameToVisibleContentRect)));
@@ -282,24 +219,18 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
       "</div>");
   rootPaintController().invalidateAll();
 
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutObject& container1 =
       *document().getElementById("container1")->layoutObject();
-  PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
   LayoutObject& content1 =
       *document().getElementById("content1")->layoutObject();
   LayoutObject& container2 =
       *document().getElementById("container2")->layoutObject();
-  PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
   LayoutObject& content2a =
       *document().getElementById("content2a")->layoutObject();
   LayoutObject& content2b =
       *document().getElementById("content2b")->layoutObject();
   LayoutObject& container3 =
       *document().getElementById("container3")->layoutObject();
-  PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
   LayoutObject& content3 =
       *document().getElementById("content3")->layoutObject();
 
@@ -311,23 +242,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // Container2 is partly (including its stacking chidren) in the interest rect;
   // Content2b is out of the interest rect and output nothing;
   // Container3 is partly in the interest rect.
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 15,
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container1, backgroundType),
-      TestDisplayItem(content1, backgroundType),
-      TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container2, backgroundType),
-      TestDisplayItem(content2a, backgroundType),
-      TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container3Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container3, backgroundType),
-      TestDisplayItem(content3, backgroundType),
-      TestDisplayItem(container3Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 7,
+                      TestDisplayItem(layoutView(), documentBackgroundType),
+                      TestDisplayItem(container1, backgroundType),
+                      TestDisplayItem(content1, backgroundType),
+                      TestDisplayItem(container2, backgroundType),
+                      TestDisplayItem(content2a, backgroundType),
+                      TestDisplayItem(container3, backgroundType),
+                      TestDisplayItem(content3, backgroundType));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   IntRect newInterestRect(0, 100, 300, 1000);
@@ -339,26 +261,17 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // Content2b is out of the interest rect and outputs nothing;
   // Container3 becomes out of the interest rect and outputs empty subsequence
   // pair.
-  EXPECT_EQ(7, numCachedNewItems());
+  EXPECT_EQ(5, numCachedNewItems());
 
   commit();
 
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 14,
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container1, backgroundType),
-      TestDisplayItem(content1, backgroundType),
-      TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container2, backgroundType),
-      TestDisplayItem(content2a, backgroundType),
-      TestDisplayItem(content2b, backgroundType),
-      TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container3Layer, DisplayItem::kSubsequence),
-      TestDisplayItem(container3Layer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 6,
+                      TestDisplayItem(layoutView(), documentBackgroundType),
+                      TestDisplayItem(container1, backgroundType),
+                      TestDisplayItem(content1, backgroundType),
+                      TestDisplayItem(container2, backgroundType),
+                      TestDisplayItem(content2a, backgroundType),
+                      TestDisplayItem(content2b, backgroundType));
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -379,50 +292,29 @@ TEST_P(PaintLayerPainterTest,
   IntRect interestRect(0, 0, 50, 300);
   paint(&interestRect);
 
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutObject& container1 =
       *document().getElementById("container1")->layoutObject();
-  PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
   LayoutObject& content1 =
       *document().getElementById("content1")->layoutObject();
   LayoutObject& container2 =
       *document().getElementById("container2")->layoutObject();
-  PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
   LayoutObject& content2 =
       *document().getElementById("content2")->layoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 13,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   } else {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   }
 
   toHTMLElement(content1.node())
@@ -432,40 +324,24 @@ TEST_P(PaintLayerPainterTest,
   document().view()->updateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(paintWithoutCommit(&interestRect));
 
-  EXPECT_EQ(6, numCachedNewItems());
+  EXPECT_EQ(4, numCachedNewItems());
 
   commit();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 13,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   } else {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 5,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(container1, backgroundType),
+                        TestDisplayItem(content1, backgroundType),
+                        TestDisplayItem(container2, backgroundType),
+                        TestDisplayItem(content2, backgroundType));
   }
 }
 

@@ -36,12 +36,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
       *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 4,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(textInlineBox, foregroundType));
   } else {
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
                         TestDisplayItem(layoutView(), documentBackgroundType),
@@ -53,14 +50,12 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 5,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
+        rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
         TestDisplayItem(
             document().frame()->selection().caretDisplayItemClientForTesting(),
-            DisplayItem::kCaret),  // New!
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+            DisplayItem::kCaret));  // New!
   } else {
     EXPECT_DISPLAY_LIST(
         rootPaintController().getDisplayItemList(), 3,
@@ -83,12 +78,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   InlineTextBox& firstTextBox = *text.firstTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 4,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(firstTextBox, foregroundType),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(firstTextBox, foregroundType));
   } else {
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
                         TestDisplayItem(layoutView(), documentBackgroundType),
@@ -103,13 +95,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 5,
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(newFirstTextBox, foregroundType),
-        TestDisplayItem(secondTextBox, foregroundType),
-        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
+                        TestDisplayItem(layoutView(), documentBackgroundType),
+                        TestDisplayItem(newFirstTextBox, foregroundType),
+                        TestDisplayItem(secondTextBox, foregroundType));
   } else {
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
                         TestDisplayItem(layoutView(), documentBackgroundType),
@@ -126,21 +115,13 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
       "  <div style='width: 100px; height: 100px; background-color: "
       "blue'></div>"
       "</div>");
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
   LayoutObject& subDiv = *div.firstChild();
   LayoutObject& subDiv2 = *subDiv.nextSibling();
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 7,
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(subDiv, backgroundType),
-      TestDisplayItem(subDiv2, backgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
+                      TestDisplayItem(layoutView(), documentBackgroundType),
+                      TestDisplayItem(subDiv, backgroundType),
+                      TestDisplayItem(subDiv2, backgroundType));
 
   // Verify that the background does not scroll.
   const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
@@ -168,20 +149,12 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
       "  <div style='width: 100px; height: 100px; background-color: "
       "blue'></div>"
       "</div>");
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
   LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
   LayoutObject& subDiv = *div.firstChild();
 
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 6,
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(subDiv, backgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
+                      TestDisplayItem(layoutView(), documentBackgroundType),
+                      TestDisplayItem(subDiv, backgroundType));
 }
 
 }  // namespace blink

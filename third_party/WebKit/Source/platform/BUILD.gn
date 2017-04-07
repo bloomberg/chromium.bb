@@ -1050,7 +1050,6 @@ component("platform") {
     "graphics/paint/ScrollDisplayItem.h",
     "graphics/paint/ScrollPaintPropertyNode.cpp",
     "graphics/paint/ScrollPaintPropertyNode.h",
-    "graphics/paint/SubsequenceDisplayItem.h",
     "graphics/paint/SubsequenceRecorder.cpp",
     "graphics/paint/SubsequenceRecorder.h",
     "graphics/paint/Transform3DDisplayItem.cpp",

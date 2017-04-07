@@ -122,9 +122,6 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
   LayoutObject& cell1 = *getLayoutObjectByElementId("cell1");
   LayoutObject& cell2 = *getLayoutObjectByElementId("cell2");
   LayoutObject& row = *getLayoutObjectByElementId("row");
-  PaintLayer& htmlLayer =
-      *toLayoutBoxModelObject(document().documentElement()->layoutObject())
-           ->layer();
 
   rootPaintController().invalidateAll();
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -133,14 +130,12 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 7,
+      rootPaintController().getDisplayItemList(), 5,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
       TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(row, DisplayItem::kEndCompositing),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+      TestDisplayItem(row, DisplayItem::kEndCompositing));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
@@ -148,10 +143,8 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 3,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+      rootPaintController().getDisplayItemList(), 1,
+      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
@@ -159,14 +152,12 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 7,
+      rootPaintController().getDisplayItemList(), 5,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
       TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(row, DisplayItem::kEndCompositing),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
+      TestDisplayItem(row, DisplayItem::kEndCompositing));
 }
 
 TEST_F(TablePainterTest, CollapsedBorderAndOverflow) {

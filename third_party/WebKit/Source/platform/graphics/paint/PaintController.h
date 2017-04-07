@@ -109,8 +109,11 @@ class PLATFORM_EXPORT PaintController {
   // true. Otherwise returns false.
   bool useCachedSubsequenceIfPossible(const DisplayItemClient&);
 
+  void addCachedSubsequence(const DisplayItemClient&,
+                            unsigned start,
+                            unsigned end);
+
   // True if the last display item is a begin that doesn't draw content.
-  bool lastDisplayItemIsNoopBegin() const;
   void removeLastDisplayItem();
   const DisplayItem* lastDisplayItem(unsigned offset);
 
@@ -194,6 +197,17 @@ class PLATFORM_EXPORT PaintController {
     return m_paintChunksRasterInvalidationTrackingMap.get();
   }
 
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+  void beginShouldKeepAlive(const DisplayItemClient&);
+
+  void beginSubsequence(const DisplayItemClient& client) {
+    m_currentSubsequenceClients.push_back(&client);
+    beginShouldKeepAlive(client);
+  }
+
+  void endSubsequence() { m_currentSubsequenceClients.pop_back(); }
+#endif
+
  protected:
   PaintController()
       : m_newDisplayItemList(0),
@@ -204,14 +218,14 @@ class PLATFORM_EXPORT PaintController {
         m_imagePainted(false),
         m_skippingCacheCount(0),
         m_numCachedNewItems(0),
-        m_currentCachedSubsequenceBeginIndexInNewList(kNotFound)
+        m_currentCachedSubsequenceBeginIndexInNewList(kNotFound),
 #ifndef NDEBUG
-        ,
         m_numSequentialMatches(0),
         m_numOutOfOrderMatches(0),
-        m_numIndexedItems(0)
+        m_numIndexedItems(0),
 #endif
-  {
+        m_underInvalidationCheckingBegin(0),
+        m_underInvalidationCheckingEnd(0) {
     resetCurrentListIndices();
     setTracksRasterInvalidations(
         RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled());
@@ -220,6 +234,8 @@ class PLATFORM_EXPORT PaintController {
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
+
+  bool lastDisplayItemIsNoopBegin() const;
 
   void ensureNewDisplayItemListInitialCapacity() {
     if (m_newDisplayItemList.isEmpty()) {
@@ -252,7 +268,7 @@ class PLATFORM_EXPORT PaintController {
 
   size_t findCachedItem(const DisplayItem::Id&);
   size_t findOutOfOrderCachedItemForward(const DisplayItem::Id&);
-  void copyCachedSubsequence(size_t&);
+  void copyCachedSubsequence(size_t beginIndex, size_t endIndex);
 
   // Resets the indices (e.g. m_nextItemToMatch) of
   // m_currentPaintArtifact.getDisplayItemList() to their initial values. This
@@ -273,11 +289,29 @@ class PLATFORM_EXPORT PaintController {
   void showUnderInvalidationError(const char* reason,
                                   const DisplayItem& newItem,
                                   const DisplayItem* oldItem) const;
+
+  void showSequenceUnderInvalidationError(const char* reason,
+                                          const DisplayItemClient&,
+                                          int start,
+                                          int end);
+
   void checkUnderInvalidation();
   bool isCheckingUnderInvalidation() const {
     return m_underInvalidationCheckingEnd - m_underInvalidationCheckingBegin >
            0;
   }
+
+  struct SubsequenceMarkers {
+    SubsequenceMarkers() : start(0), end(0) {}
+    SubsequenceMarkers(size_t startArg, size_t endArg)
+        : start(startArg), end(endArg) {}
+    // The start and end index within m_currentPaintArtifact of this
+    // subsequence.
+    size_t start;
+    size_t end;
+  };
+
+  SubsequenceMarkers* getSubsequenceMarkers(const DisplayItemClient&);
 
   // The last complete paint artifact.
   // In SPv2, this includes paint chunks as well as display items.
@@ -378,6 +412,14 @@ class PLATFORM_EXPORT PaintController {
   // A stack recording subsequence clients that are currently painting.
   Vector<const DisplayItemClient*> m_currentSubsequenceClients;
 #endif
+
+  typedef HashMap<const DisplayItemClient*, SubsequenceMarkers>
+      CachedSubsequenceMap;
+  CachedSubsequenceMap m_currentCachedSubsequences;
+  CachedSubsequenceMap m_newCachedSubsequences;
+
+  FRIEND_TEST_ALL_PREFIXES(PaintControllerTest, CachedSubsequenceSwapOrder);
+  FRIEND_TEST_ALL_PREFIXES(PaintControllerTest, CachedNestedSubsequenceUpdate);
 };
 
 }  // namespace blink

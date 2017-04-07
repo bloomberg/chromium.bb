@@ -36,20 +36,13 @@ TEST(PaintChunkTest, IdNotMatches) {
   PaintChunkProperties properties;
   FakeDisplayItemClient client1;
   client1.updateCacheGeneration();
-  DisplayItem::Id id1a(client1, DisplayItem::kDrawingFirst);
-  DisplayItem::Id id1b(client1, DisplayItem::kSubsequence);
-  EXPECT_FALSE(PaintChunk(0, 1, &id1a, properties)
-                   .matches(PaintChunk(0, 1, &id1b, properties)));
-  EXPECT_FALSE(PaintChunk(0, 1, &id1b, properties)
-                   .matches(PaintChunk(0, 1, &id1a, properties)));
+  DisplayItem::Id id1(client1, DisplayItem::kDrawingFirst);
 
   FakeDisplayItemClient client2;
   client2.updateCacheGeneration();
   DisplayItem::Id id2(client2, DisplayItem::kDrawingFirst);
-  EXPECT_FALSE(PaintChunk(0, 1, &id1a, properties)
-                   .matches(PaintChunk(0, 1, &id2, properties)));
   EXPECT_FALSE(PaintChunk(0, 1, &id2, properties)
-                   .matches(PaintChunk(0, 1, &id1a, properties)));
+                   .matches(PaintChunk(0, 1, &id1, properties)));
 }
 
 TEST(PaintChunkTest, IdNotMatchesNull) {

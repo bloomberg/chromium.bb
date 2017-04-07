@@ -8,7 +8,6 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/paint/SubsequenceDisplayItem.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,24 +61,14 @@ TEST_F(DisplayItemListTest, AppendVisualRect_BlockContainingDrawing) {
   // represent the union of all drawing display item visual rects between the
   // pair. We should consider revising Blink's display item list in some form
   // so as to only store visual rects for drawing display items.
-
-  IntRect subsequenceBounds(5, 6, 7, 8);
-  m_list.allocateAndConstruct<BeginSubsequenceDisplayItem>(m_client);
-  m_list.appendVisualRect(subsequenceBounds);
-
   IntRect drawingBounds(5, 6, 1, 1);
   m_list.allocateAndConstruct<DrawingDisplayItem>(
       m_client, DisplayItem::Type::kDocumentBackground,
       createRectRecord(drawingBounds), true);
   m_list.appendVisualRect(drawingBounds);
 
-  m_list.allocateAndConstruct<EndSubsequenceDisplayItem>(m_client);
-  m_list.appendVisualRect(subsequenceBounds);
-
-  EXPECT_EQ(static_cast<size_t>(3), m_list.size());
-  EXPECT_RECT_EQ(subsequenceBounds, m_list.visualRect(0));
-  EXPECT_RECT_EQ(drawingBounds, m_list.visualRect(1));
-  EXPECT_RECT_EQ(subsequenceBounds, m_list.visualRect(2));
+  EXPECT_EQ(static_cast<size_t>(1), m_list.size());
+  EXPECT_RECT_EQ(drawingBounds, m_list.visualRect(0));
 }
 }  // namespace
 }  // namespace blink

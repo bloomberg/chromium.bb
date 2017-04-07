@@ -110,6 +110,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 
 Bug(none) compositing/3d-cube.html [ Failure ]
 Bug(none) compositing/absolute-inside-out-of-view-fixed.html [ Failure ]
+Bug(none) compositing/always-composite-fixed-position-when-descendants-composite.html [ Failure ]
 Bug(none) compositing/animation/hidden-composited.html [ Failure ]
 Bug(none) compositing/backface-visibility/backface-visibility-image.html [ Failure ]
 Bug(none) compositing/backface-visibility/backface-visibility-webgl.html [ Failure ]
@@ -1365,6 +1366,11 @@ crbug.com/692310 virtual/threaded/animations/sample-on-last-keyframe.html [ Time
 crbug.com/692310 virtual/threaded/animations/zoom-responsive-transform-animation.html [ Timeout ]
 crbug.com/692310 virtual/threaded/transitions/opacity-transition-zindex.html [ Timeout ]
 crbug.com/692310 virtual/threaded/transitions/unprefixed-transform.html [ Timeout ]
+
+Bug(none) virtual/threaded/animations/3d/change-transform-in-end-event.html [ Failure ]
+Bug(none) virtual/threaded/animations/composited-pseudo-element-animation.html [ Failure ]
+Bug(none) virtual/threaded/animations/css-composite-animation-affects-use-elements.html [ Failure ]
+Bug(none) virtual/threaded/transitions/transition-end-event-rendering.html [ Failure ]
 
 # Compositor Worker logic has not yet been fully ported to SPv2.
 crbug.com/686897 virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]

@@ -99,22 +99,28 @@ bool PaintController::useCachedSubsequenceIfPossible(
     return false;
   }
 
-  size_t cachedItem =
-      findCachedItem(DisplayItem::Id(client, DisplayItem::kSubsequence));
-  if (cachedItem == kNotFound) {
-    NOTREACHED();
+  SubsequenceMarkers* markers = getSubsequenceMarkers(client);
+  if (!markers) {
     return false;
   }
 
   // |cachedItem| will point to the first item after the subsequence or end of
   // the current list.
   ensureNewDisplayItemListInitialCapacity();
-  copyCachedSubsequence(cachedItem);
 
-  m_nextItemToMatch = cachedItem;
-  // Items before |cachedItem| have been copied so we don't need to index them.
-  if (cachedItem > m_nextItemToIndex)
-    m_nextItemToIndex = cachedItem;
+  size_t sizeBeforeCopy = m_newDisplayItemList.size();
+  copyCachedSubsequence(markers->start, markers->end);
+
+  if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+    addCachedSubsequence(client, sizeBeforeCopy,
+                         m_newDisplayItemList.size() - 1);
+  }
+
+  m_nextItemToMatch = markers->end + 1;
+  // Items before |m_nextItemToMatch| have been copied so we don't need to index
+  // them.
+  if (m_nextItemToMatch > m_nextItemToIndex)
+    m_nextItemToIndex = m_nextItemToMatch;
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
     // Return false to let the painter actually paint. We will check if the new
@@ -123,6 +129,40 @@ bool PaintController::useCachedSubsequenceIfPossible(
   }
 
   return true;
+}
+
+PaintController::SubsequenceMarkers* PaintController::getSubsequenceMarkers(
+    const DisplayItemClient& client) {
+  auto result = m_currentCachedSubsequences.find(&client);
+  if (result == m_currentCachedSubsequences.end())
+    return nullptr;
+  return &result->value;
+}
+
+void PaintController::addCachedSubsequence(const DisplayItemClient& client,
+                                           unsigned start,
+                                           unsigned end) {
+  DCHECK(start <= end);
+  DCHECK(end < m_newDisplayItemList.size());
+  if (isCheckingUnderInvalidation()) {
+    SubsequenceMarkers* markers = getSubsequenceMarkers(client);
+    if (!markers) {
+      showSequenceUnderInvalidationError(
+          "under-invalidation : unexpected subsequence", client, start, end);
+      DCHECK(false);
+    }
+    if (markers->end - markers->start != end - start) {
+      showSequenceUnderInvalidationError(
+          "under-invalidation: new subsequence wrong length", client, start,
+          end);
+      DCHECK(false);
+    }
+  }
+
+  DCHECK(m_newCachedSubsequences.find(&client) ==
+         m_newCachedSubsequences.end());
+
+  m_newCachedSubsequences.insert(&client, SubsequenceMarkers(start, end));
 }
 
 bool PaintController::lastDisplayItemIsNoopBegin() const {
@@ -170,31 +210,29 @@ const DisplayItem* PaintController::lastDisplayItem(unsigned offset) {
   return nullptr;
 }
 
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+void PaintController::beginShouldKeepAlive(const DisplayItemClient& client) {
+  if (!isSkippingCache()) {
+    // Mark the client shouldKeepAlive under this PaintController.
+    // The status will end after the new display items are committed.
+    client.beginShouldKeepAlive(this);
+
+    if (!m_currentSubsequenceClients.isEmpty()) {
+      // Mark the client shouldKeepAlive under the current subsequence.
+      // The status will end when the subsequence owner is invalidated or
+      // deleted.
+      client.beginShouldKeepAlive(m_currentSubsequenceClients.back());
+    }
+  }
+}
+#endif
+
 void PaintController::processNewItem(DisplayItem& displayItem) {
   DCHECK(!m_constructionDisabled);
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  if (!isSkippingCache()) {
-    if (displayItem.isCacheable()) {
-      // Mark the client shouldKeepAlive under this PaintController.
-      // The status will end after the new display items are committed.
-      displayItem.client().beginShouldKeepAlive(this);
-
-      if (!m_currentSubsequenceClients.isEmpty()) {
-        // Mark the client shouldKeepAlive under the current subsequence.
-        // The status will end when the subsequence owner is invalidated or
-        // deleted.
-        displayItem.client().beginShouldKeepAlive(
-            m_currentSubsequenceClients.back());
-      }
-    }
-
-    if (displayItem.getType() == DisplayItem::kSubsequence) {
-      m_currentSubsequenceClients.push_back(&displayItem.client());
-    } else if (displayItem.getType() == DisplayItem::kEndSubsequence) {
-      CHECK(m_currentSubsequenceClients.back() == &displayItem.client());
-      m_currentSubsequenceClients.pop_back();
-    }
+  if (displayItem.isCacheable()) {
+    beginShouldKeepAlive(displayItem.client());
   }
 #endif
 
@@ -217,7 +255,6 @@ void PaintController::processNewItem(DisplayItem& displayItem) {
     const auto& beginDisplayItem =
         m_newDisplayItemList[m_newDisplayItemList.size() - 2];
     if (beginDisplayItem.isBegin() &&
-        beginDisplayItem.getType() != DisplayItem::kSubsequence &&
         !beginDisplayItem.drawsContent())
       DCHECK(!displayItem.isEndAndPairedWith(beginDisplayItem.getType()));
   }
@@ -393,32 +430,29 @@ size_t PaintController::findOutOfOrderCachedItemForward(
   return kNotFound;
 }
 
-// Copies a cached subsequence from current list to the new list. On return,
-// |cachedItemIndex| points to the item after the EndSubsequence item of the
-// subsequence. When paintUnderInvaldiationCheckingEnabled() we'll not actually
+// Copies a cached subsequence from current list to the new list.
+// When paintUnderInvaldiationCheckingEnabled() we'll not actually
 // copy the subsequence, but mark the begin and end of the subsequence for
 // under-invalidation checking.
-void PaintController::copyCachedSubsequence(size_t& cachedItemIndex) {
+void PaintController::copyCachedSubsequence(size_t beginIndex,
+                                            size_t endIndex) {
   AutoReset<size_t> subsequenceBeginIndex(
       &m_currentCachedSubsequenceBeginIndexInNewList,
       m_newDisplayItemList.size());
   DisplayItem* cachedItem =
-      &m_currentPaintArtifact.getDisplayItemList()[cachedItemIndex];
-  DCHECK(cachedItem->getType() == DisplayItem::kSubsequence);
+      &m_currentPaintArtifact.getDisplayItemList()[beginIndex];
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
     DCHECK(!isCheckingUnderInvalidation());
-    m_underInvalidationCheckingBegin = cachedItemIndex;
+    m_underInvalidationCheckingBegin = beginIndex;
     m_underInvalidationMessagePrefix =
         "(In cached subsequence of " + cachedItem->client().debugName() + ")";
   }
 
-  DisplayItem::Id endSubsequenceId(cachedItem->client(),
-                                   DisplayItem::kEndSubsequence);
   Vector<PaintChunk>::const_iterator cachedChunk;
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     cachedChunk =
-        m_currentPaintArtifact.findChunkByDisplayItemIndex(cachedItemIndex);
+        m_currentPaintArtifact.findChunkByDisplayItemIndex(beginIndex);
     DCHECK(cachedChunk != m_currentPaintArtifact.paintChunks().end());
     updateCurrentPaintChunkProperties(
         cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
@@ -427,40 +461,32 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex) {
     cachedChunk = m_currentPaintArtifact.paintChunks().begin();
   }
 
-  while (true) {
+  for (size_t currentIndex = beginIndex; currentIndex <= endIndex;
+       ++currentIndex) {
+    cachedItem = &m_currentPaintArtifact.getDisplayItemList()[currentIndex];
     DCHECK(cachedItem->hasValidClient());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     CHECK(cachedItem->client().isAlive());
 #endif
     ++m_numCachedNewItems;
-    bool metEndSubsequence = cachedItem->getId() == endSubsequenceId;
     if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          cachedItemIndex == cachedChunk->endIndex) {
+          currentIndex == cachedChunk->endIndex) {
         ++cachedChunk;
         DCHECK(cachedChunk != m_currentPaintArtifact.paintChunks().end());
         updateCurrentPaintChunkProperties(
             cachedChunk->id ? &*cachedChunk->id : nullptr,
             cachedChunk->properties);
       }
-      processNewItem(moveItemFromCurrentListToNewList(cachedItemIndex));
+      processNewItem(moveItemFromCurrentListToNewList(currentIndex));
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         DCHECK((!m_newPaintChunks.lastChunk().id && !cachedChunk->id) ||
                m_newPaintChunks.lastChunk().matches(*cachedChunk));
     }
-
-    ++cachedItemIndex;
-    if (metEndSubsequence)
-      break;
-
-    // We should always be able to find the EndSubsequence display item.
-    DCHECK(cachedItemIndex <
-           m_currentPaintArtifact.getDisplayItemList().size());
-    cachedItem = &m_currentPaintArtifact.getDisplayItemList()[cachedItemIndex];
   }
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-    m_underInvalidationCheckingEnd = cachedItemIndex;
+    m_underInvalidationCheckingEnd = endIndex + 1;
     DCHECK(isCheckingUnderInvalidation());
   }
 }
@@ -492,7 +518,6 @@ void PaintController::commitNewDisplayItems(
                "num_non_cached_new_items",
                (int)m_newDisplayItemList.size() - m_numCachedNewItems);
   m_numCachedNewItems = 0;
-
   // These data structures are used during painting only.
   DCHECK(!isSkippingCache());
 #if DCHECK_IS_ON()
@@ -507,6 +532,16 @@ void PaintController::commitNewDisplayItems(
 
   m_currentCacheGeneration =
       DisplayItemClient::CacheGenerationOrInvalidationReason::next();
+
+  m_newCachedSubsequences.swap(m_currentCachedSubsequences);
+  m_newCachedSubsequences.clear();
+  for (auto& item : m_currentCachedSubsequences) {
+    item.key->setDisplayItemsCached(m_currentCacheGeneration);
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    DisplayItemClient::endShouldKeepAliveAllClients(item.key);
+#endif
+  }
+
   Vector<const DisplayItemClient*> skippedCacheClients;
   for (const auto& item : m_newDisplayItemList) {
     // No reason to continue the analysis once we have a veto.
@@ -566,7 +601,6 @@ void PaintController::commitNewDisplayItems(
   m_newDisplayItemList = DisplayItemList(0);
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  CHECK(m_currentSubsequenceClients.isEmpty());
   DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
 
@@ -783,6 +817,21 @@ void PaintController::showUnderInvalidationError(
 
   showDebugData();
 #endif  // NDEBUG
+}
+
+void PaintController::showSequenceUnderInvalidationError(
+    const char* reason,
+    const DisplayItemClient& client,
+    int start,
+    int end) {
+  LOG(ERROR) << m_underInvalidationMessagePrefix << " " << reason;
+  LOG(ERROR) << "Subsequence client: " << client.debugName();
+#ifndef NDEBUG
+//  showDebugData();
+#else
+  LOG(ERROR) << "Run debug build to get more details.";
+#endif
+  LOG(ERROR) << "See http://crbug.com/619103.";
 }
 
 void PaintController::checkUnderInvalidation() {

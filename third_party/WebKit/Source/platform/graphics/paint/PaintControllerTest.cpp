@@ -1083,21 +1083,27 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   }
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 12,
-      TestDisplayItem(container1, DisplayItem::kSubsequence),
-      TestDisplayItem(container1, backgroundDrawingType),
-      TestDisplayItem(content1, backgroundDrawingType),
-      TestDisplayItem(content1, foregroundDrawingType),
-      TestDisplayItem(container1, foregroundDrawingType),
-      TestDisplayItem(container1, DisplayItem::kEndSubsequence),
+  EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
+                      TestDisplayItem(container1, backgroundDrawingType),
+                      TestDisplayItem(content1, backgroundDrawingType),
+                      TestDisplayItem(content1, foregroundDrawingType),
+                      TestDisplayItem(container1, foregroundDrawingType),
 
-      TestDisplayItem(container2, DisplayItem::kSubsequence),
-      TestDisplayItem(container2, backgroundDrawingType),
-      TestDisplayItem(content2, backgroundDrawingType),
-      TestDisplayItem(content2, foregroundDrawingType),
-      TestDisplayItem(container2, foregroundDrawingType),
-      TestDisplayItem(container2, DisplayItem::kEndSubsequence));
+                      TestDisplayItem(container2, backgroundDrawingType),
+                      TestDisplayItem(content2, backgroundDrawingType),
+                      TestDisplayItem(content2, foregroundDrawingType),
+                      TestDisplayItem(container2, foregroundDrawingType));
+
+  PaintController::SubsequenceMarkers* markers =
+      getPaintController().getSubsequenceMarkers(container1);
+  CHECK(markers);
+  EXPECT_EQ(0u, markers->start);
+  EXPECT_EQ(3u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(container2);
+  CHECK(markers);
+  EXPECT_EQ(4u, markers->start);
+  EXPECT_EQ(7u, markers->end);
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, getPaintController().paintChunks().size());
@@ -1160,30 +1166,34 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
         context, container1));
   }
 
-  EXPECT_EQ(12, numCachedNewItems());
+  EXPECT_EQ(8, numCachedNewItems());
 #ifndef NDEBUG
-  EXPECT_EQ(1, numSequentialMatches());
-  EXPECT_EQ(1, numOutOfOrderMatches());
-  EXPECT_EQ(5, numIndexedItems());
+  EXPECT_EQ(0, numSequentialMatches());
+  EXPECT_EQ(0, numOutOfOrderMatches());
+  EXPECT_EQ(0, numIndexedItems());
 #endif
 
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 12,
-      TestDisplayItem(container2, DisplayItem::kSubsequence),
-      TestDisplayItem(container2, backgroundDrawingType),
-      TestDisplayItem(content2, backgroundDrawingType),
-      TestDisplayItem(content2, foregroundDrawingType),
-      TestDisplayItem(container2, foregroundDrawingType),
-      TestDisplayItem(container2, DisplayItem::kEndSubsequence),
+  EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
+                      TestDisplayItem(container2, backgroundDrawingType),
+                      TestDisplayItem(content2, backgroundDrawingType),
+                      TestDisplayItem(content2, foregroundDrawingType),
+                      TestDisplayItem(container2, foregroundDrawingType),
+                      TestDisplayItem(container1, backgroundDrawingType),
+                      TestDisplayItem(content1, backgroundDrawingType),
+                      TestDisplayItem(content1, foregroundDrawingType),
+                      TestDisplayItem(container1, foregroundDrawingType));
 
-      TestDisplayItem(container1, DisplayItem::kSubsequence),
-      TestDisplayItem(container1, backgroundDrawingType),
-      TestDisplayItem(content1, backgroundDrawingType),
-      TestDisplayItem(content1, foregroundDrawingType),
-      TestDisplayItem(container1, foregroundDrawingType),
-      TestDisplayItem(container1, DisplayItem::kEndSubsequence));
+  markers = getPaintController().getSubsequenceMarkers(container2);
+  CHECK(markers);
+  EXPECT_EQ(0u, markers->start);
+  EXPECT_EQ(3u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(container1);
+  CHECK(markers);
+  EXPECT_EQ(4u, markers->start);
+  EXPECT_EQ(7u, markers->end);
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   DisplayItemClient::endShouldKeepAliveAllClients();
@@ -1426,23 +1436,34 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   }
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 14,
-      TestDisplayItem(container1, DisplayItem::kSubsequence),
-      TestDisplayItem(container1, backgroundDrawingType),
-      TestDisplayItem(content1, DisplayItem::kSubsequence),
-      TestDisplayItem(content1, backgroundDrawingType),
-      TestDisplayItem(content1, foregroundDrawingType),
-      TestDisplayItem(content1, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container1, foregroundDrawingType),
-      TestDisplayItem(container1, DisplayItem::kEndSubsequence),
+  EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
+                      TestDisplayItem(container1, backgroundDrawingType),
+                      TestDisplayItem(content1, backgroundDrawingType),
+                      TestDisplayItem(content1, foregroundDrawingType),
+                      TestDisplayItem(container1, foregroundDrawingType),
+                      TestDisplayItem(container2, backgroundDrawingType),
+                      TestDisplayItem(content2, backgroundDrawingType));
 
-      TestDisplayItem(container2, DisplayItem::kSubsequence),
-      TestDisplayItem(container2, backgroundDrawingType),
-      TestDisplayItem(content2, DisplayItem::kSubsequence),
-      TestDisplayItem(content2, backgroundDrawingType),
-      TestDisplayItem(content2, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container2, DisplayItem::kEndSubsequence));
+  PaintController::SubsequenceMarkers* markers =
+      getPaintController().getSubsequenceMarkers(container1);
+  CHECK(markers);
+  EXPECT_EQ(0u, markers->start);
+  EXPECT_EQ(3u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(content1);
+  CHECK(markers);
+  EXPECT_EQ(1u, markers->start);
+  EXPECT_EQ(2u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(container2);
+  CHECK(markers);
+  EXPECT_EQ(4u, markers->start);
+  EXPECT_EQ(5u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(content2);
+  CHECK(markers);
+  EXPECT_EQ(5u, markers->start);
+  EXPECT_EQ(5u, markers->end);
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_EQ(5u, getPaintController().paintChunks().size());
@@ -1526,28 +1547,35 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
              FloatRect(100, 100, 100, 100));
   }
 
-  EXPECT_EQ(4, numCachedNewItems());
+  EXPECT_EQ(2, numCachedNewItems());
 #ifndef NDEBUG
-  EXPECT_EQ(1, numSequentialMatches());
+  EXPECT_EQ(0, numSequentialMatches());
   EXPECT_EQ(0, numOutOfOrderMatches());
-  EXPECT_EQ(2, numIndexedItems());
+  EXPECT_EQ(0, numIndexedItems());
 #endif
 
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 10,
-      TestDisplayItem(content2, DisplayItem::kSubsequence),
-      TestDisplayItem(content2, foregroundDrawingType),
-      TestDisplayItem(content2, DisplayItem::kEndSubsequence),
+  EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
+                      TestDisplayItem(content2, foregroundDrawingType),
+                      TestDisplayItem(content1, backgroundDrawingType),
+                      TestDisplayItem(content1, foregroundDrawingType),
+                      TestDisplayItem(container1, foregroundDrawingType));
 
-      TestDisplayItem(container1, DisplayItem::kSubsequence),
-      TestDisplayItem(content1, DisplayItem::kSubsequence),
-      TestDisplayItem(content1, backgroundDrawingType),
-      TestDisplayItem(content1, foregroundDrawingType),
-      TestDisplayItem(content1, DisplayItem::kEndSubsequence),
-      TestDisplayItem(container1, foregroundDrawingType),
-      TestDisplayItem(container1, DisplayItem::kEndSubsequence));
+  markers = getPaintController().getSubsequenceMarkers(content2);
+  CHECK(markers);
+  EXPECT_EQ(0u, markers->start);
+  EXPECT_EQ(0u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(container1);
+  CHECK(markers);
+  EXPECT_EQ(1u, markers->start);
+  EXPECT_EQ(3u, markers->end);
+
+  markers = getPaintController().getSubsequenceMarkers(content1);
+  CHECK(markers);
+  EXPECT_EQ(1u, markers->start);
+  EXPECT_EQ(2u, markers->end);
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_EQ(3u, getPaintController().paintChunks().size());
@@ -2241,7 +2269,7 @@ class PaintControllerUnderInvalidationTest
                FloatRect(100, 100, 300, 300));
     }
     getPaintController().commitNewDisplayItems();
-    EXPECT_EQ(3u,
+    EXPECT_EQ(1u,
               getPaintController().paintArtifact().getDisplayItemList().size());
 
     {
@@ -2253,7 +2281,7 @@ class PaintControllerUnderInvalidationTest
                FloatRect(100, 100, 300, 300));
     }
     getPaintController().commitNewDisplayItems();
-    EXPECT_EQ(3u,
+    EXPECT_EQ(1u,
               getPaintController().paintArtifact().getDisplayItemList().size());
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
@@ -2291,14 +2319,16 @@ TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawingInSubsequence) {
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawingInSubsequence) {
   EXPECT_DEATH(testMoreDrawingInSubsequence(),
-               "\"\\(In cached subsequence of first\\)\" under-invalidation: "
-               "display item changed");
+               "Check failed: false. Can't find cached display item");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence) {
+  // We allow invalidated display item clients as long as they would produce the
+  // same display items. The cases of changed display items are tested by other
+  // test cases.
   EXPECT_DEATH(testLessDrawingInSubsequence(),
                "\"\\(In cached subsequence of first\\)\" under-invalidation: "
-               "display item changed");
+               "new subsequence wrong length");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence) {
