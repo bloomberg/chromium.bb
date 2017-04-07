@@ -4400,7 +4400,7 @@ static void write_render_size(const AV1_COMMON *cm,
   }
 }
 
-#if CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
   // This scaling and frame superres are probably incompatible
@@ -4417,31 +4417,31 @@ static void write_superres_scale(const AV1_COMMON *const cm,
         SUPERRES_SCALE_BITS);
   }
 }
-#endif  // CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
 
 static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb) {
-#if CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES
   // If SUPERRES scaling is happening, write the full resolution instead of the
   // downscaled resolution. The decoder will reduce this resolution itself.
   if (cm->superres_scale_numerator != SUPERRES_SCALE_DENOMINATOR) {
     aom_wb_write_literal(wb, cm->superres_width - 1, 16);
     aom_wb_write_literal(wb, cm->superres_height - 1, 16);
   } else {
-#endif  // CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
     aom_wb_write_literal(wb, cm->width - 1, 16);
     aom_wb_write_literal(wb, cm->height - 1, 16);
-#if CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES
   }
-#endif  // CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
 
   // TODO(afergs): Also write something different to render_size?
   //               When superres scales, they'll be almost guaranteed to be
   //               different on the other side.
   write_render_size(cm, wb);
-#if CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES
   write_superres_scale(cm, wb);
-#endif  // CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
 }
 
 static void write_frame_size_with_refs(AV1_COMP *cpi,
@@ -4584,10 +4584,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   }
 #endif
 
-#if CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#if CONFIG_FRAME_SUPERRES
   // TODO(afergs): Remove - this is just to stop superres from breaking
   cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
-#endif  // CONFIG_LOOP_RESTORATION && CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
 
   if (cm->frame_type == KEY_FRAME) {
     write_sync_code(wb);
