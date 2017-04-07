@@ -432,6 +432,8 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
       d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
       swap_chain_.Receive());
 
+  bool yuy2_swapchain = true;
+
   if (FAILED(hr)) {
     // This should not be hit in production but is a simple fallback for
     // testing on systems without YUY2 swapchain support.
@@ -443,6 +445,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
         d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.Receive());
     CHECK(SUCCEEDED(hr));
+    yuy2_swapchain = false;
   } else {
     // This is a sensible default colorspace for most videos.
     // TODO(jbauman): Use correct colorspace.
@@ -452,6 +455,8 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
         DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
     CHECK(SUCCEEDED(hr));
   }
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
+                        yuy2_swapchain);
   out_view_.Reset();
 }
 
