@@ -48,6 +48,22 @@ class DummyTickClock : public base::TickClock {
   base::TimeTicks now_;
 };
 
+class PipelineTestRendererFactory {
+ public:
+  virtual ~PipelineTestRendererFactory() {}
+  // Creates and returns a Renderer.
+  virtual std::unique_ptr<Renderer> CreateRenderer(
+      ScopedVector<VideoDecoder> prepend_video_decoders =
+          ScopedVector<VideoDecoder>(),
+      ScopedVector<AudioDecoder> prepend_audio_decoders =
+          ScopedVector<AudioDecoder>()) = 0;
+};
+
+enum PipelineType {
+  Media,          // Test the general media pipeline.
+  MediaRemoting,  // Test Media Remoting pipeline.
+};
+
 // Integration tests for Pipeline. Real demuxers, real decoders, and
 // base renderer implementations are used to verify pipeline functionality. The
 // renderers used in these tests rely heavily on the AudioRendererBase &
@@ -129,30 +145,11 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
+  std::unique_ptr<Renderer> CreateRenderer(
+      ScopedVector<VideoDecoder> prepend_video_decoders,
+      ScopedVector<AudioDecoder> prepend_audio_decoders);
+
  protected:
-  base::MessageLoop message_loop_;
-  base::MD5Context md5_context_;
-  bool hashing_enabled_;
-  bool clockless_playback_;
-
-  // TaskScheduler is used only for FFmpegDemuxer.
-  std::unique_ptr<base::test::ScopedTaskScheduler> task_scheduler_;
-  std::unique_ptr<Demuxer> demuxer_;
-  std::unique_ptr<DataSource> data_source_;
-  std::unique_ptr<PipelineImpl> pipeline_;
-  scoped_refptr<NullAudioSink> audio_sink_;
-  scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
-  std::unique_ptr<NullVideoSink> video_sink_;
-  bool ended_;
-  PipelineStatus pipeline_status_;
-  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
-  VideoPixelFormat last_video_frame_format_;
-  ColorSpace last_video_frame_color_space_;
-  DummyTickClock dummy_clock_;
-  PipelineMetadata metadata_;
-  scoped_refptr<VideoFrame> last_frame_;
-  base::TimeDelta current_duration_;
-
   PipelineStatus StartInternal(
       std::unique_ptr<DataSource> data_source,
       CdmContext* cdm_context,
@@ -183,19 +180,19 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Creates Demuxer and sets |demuxer_|.
   void CreateDemuxer(std::unique_ptr<DataSource> data_source);
 
-  // Creates and returns a Renderer.
-  virtual std::unique_ptr<Renderer> CreateRenderer(
-      ScopedVector<VideoDecoder> prepend_video_decoders =
-          ScopedVector<VideoDecoder>(),
-      ScopedVector<AudioDecoder> prepend_audio_decoders =
-          ScopedVector<AudioDecoder>());
-
   void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
 
   void CheckDuration();
 
   // Return the media start time from |demuxer_|.
   base::TimeDelta GetStartTime();
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  // Proxy all control and data flows through a media remoting RPC pipeline, to
+  // test that an end-to-end media remoting pipeline works the same as a normal,
+  // local pipeline.
+  void SetUpRemotingPipeline();
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   MOCK_METHOD1(DecryptorAttached, void(bool));
   // Pipeline::Client overrides.
@@ -211,6 +208,33 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
+
+  base::MessageLoop message_loop_;
+  base::MD5Context md5_context_;
+  bool hashing_enabled_;
+  bool clockless_playback_;
+
+  // TaskScheduler is used only for FFmpegDemuxer.
+  std::unique_ptr<base::test::ScopedTaskScheduler> task_scheduler_;
+  std::unique_ptr<Demuxer> demuxer_;
+  std::unique_ptr<DataSource> data_source_;
+  std::unique_ptr<PipelineImpl> pipeline_;
+  scoped_refptr<NullAudioSink> audio_sink_;
+  scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
+  std::unique_ptr<NullVideoSink> video_sink_;
+  bool ended_;
+  PipelineStatus pipeline_status_;
+  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
+  VideoPixelFormat last_video_frame_format_;
+  ColorSpace last_video_frame_color_space_;
+  DummyTickClock dummy_clock_;
+  PipelineMetadata metadata_;
+  scoped_refptr<VideoFrame> last_frame_;
+  base::TimeDelta current_duration_;
+  std::unique_ptr<PipelineTestRendererFactory> renderer_factory_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PipelineIntegrationTestBase);
 };
 
 }  // namespace media

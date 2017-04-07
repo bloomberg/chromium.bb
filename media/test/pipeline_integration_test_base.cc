@@ -30,6 +30,10 @@
 #include "media/filters/vpx_video_decoder.h"
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "media/remoting/end2end_test_renderer.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
+
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
@@ -44,6 +48,61 @@ namespace media {
 const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
+namespace {
+
+class RendererFactoryImpl final : public PipelineTestRendererFactory {
+ public:
+  explicit RendererFactoryImpl(PipelineIntegrationTestBase* integration_test)
+      : integration_test_(integration_test) {}
+  ~RendererFactoryImpl() override {}
+
+  // PipelineTestRendererFactory implementation.
+  std::unique_ptr<Renderer> CreateRenderer(
+      ScopedVector<VideoDecoder> prepend_video_decoders =
+          ScopedVector<VideoDecoder>(),
+      ScopedVector<AudioDecoder> prepend_audio_decoders =
+          ScopedVector<AudioDecoder>()) override {
+    return integration_test_->CreateRenderer(std::move(prepend_video_decoders),
+                                             std::move(prepend_audio_decoders));
+  }
+
+ private:
+  PipelineIntegrationTestBase* integration_test_;
+
+  DISALLOW_COPY_AND_ASSIGN(RendererFactoryImpl);
+};
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+class RemotingTestRendererFactory final : public PipelineTestRendererFactory {
+ public:
+  explicit RemotingTestRendererFactory(
+      std::unique_ptr<PipelineTestRendererFactory> renderer_factory)
+      : default_renderer_factory_(std::move(renderer_factory)) {}
+  ~RemotingTestRendererFactory() override {}
+
+  // PipelineTestRendererFactory implementation.
+  std::unique_ptr<Renderer> CreateRenderer(
+      ScopedVector<VideoDecoder> prepend_video_decoders =
+          ScopedVector<VideoDecoder>(),
+      ScopedVector<AudioDecoder> prepend_audio_decoders =
+          ScopedVector<AudioDecoder>()) override {
+    std::unique_ptr<Renderer> renderer_impl =
+        default_renderer_factory_->CreateRenderer(
+            std::move(prepend_video_decoders),
+            std::move(prepend_audio_decoders));
+    return base::MakeUnique<remoting::End2EndTestRenderer>(
+        std::move(renderer_impl));
+  }
+
+ private:
+  std::unique_ptr<PipelineTestRendererFactory> default_renderer_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemotingTestRendererFactory);
+};
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
+
+}  // namespace
+
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
@@ -52,7 +111,8 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
       last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED),
-      current_duration_(kInfiniteDuration) {
+      current_duration_(kInfiniteDuration),
+      renderer_factory_(new RendererFactoryImpl(this)) {
   ResetVideoHash();
   EXPECT_CALL(*this, OnVideoAverageKeyframeDistanceUpdate()).Times(AnyNumber());
 }
@@ -179,10 +239,12 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
 
   pipeline_->Start(
-      demuxer_.get(), CreateRenderer(std::move(prepend_video_decoders),
-                                     std::move(prepend_audio_decoders)),
-      this, base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                       base::Unretained(this)));
+      demuxer_.get(),
+      renderer_factory_->CreateRenderer(std::move(prepend_video_decoders),
+                                        std::move(prepend_audio_decoders)),
+      this,
+      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   return pipeline_status_;
 }
@@ -260,7 +322,7 @@ bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
 
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
-  pipeline_->Resume(CreateRenderer(), seek_time,
+  pipeline_->Resume(renderer_factory_->CreateRenderer(), seek_time,
                     base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                base::Unretained(this), seek_time));
   base::RunLoop().Run();
@@ -452,5 +514,13 @@ base::TimeTicks DummyTickClock::NowTicks() {
   now_ += base::TimeDelta::FromSeconds(60);
   return now_;
 }
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+void PipelineIntegrationTestBase::SetUpRemotingPipeline() {
+  std::unique_ptr<PipelineTestRendererFactory> factory =
+      std::move(renderer_factory_);
+  renderer_factory_.reset(new RemotingTestRendererFactory(std::move(factory)));
+}
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
 }  // namespace media
