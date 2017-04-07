@@ -6,19 +6,17 @@
 #define MEDIA_BASE_HDR_METADATA_H_
 
 #include "media/base/media_export.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace media {
 
 // SMPTE ST 2086 mastering metadata.
 struct MEDIA_EXPORT MasteringMetadata {
-  float primary_r_chromaticity_x = 0;
-  float primary_r_chromaticity_y = 0;
-  float primary_g_chromaticity_x = 0;
-  float primary_g_chromaticity_y = 0;
-  float primary_b_chromaticity_x = 0;
-  float primary_b_chromaticity_y = 0;
-  float white_point_chromaticity_x = 0;
-  float white_point_chromaticity_y = 0;
+  using Chromaticity = gfx::PointF;
+  Chromaticity primary_r;
+  Chromaticity primary_g;
+  Chromaticity primary_b;
+  Chromaticity white_point;
   float luminance_max = 0;
   float luminance_min = 0;
 
@@ -26,14 +24,8 @@ struct MEDIA_EXPORT MasteringMetadata {
   MasteringMetadata(const MasteringMetadata& rhs);
 
   bool operator==(const MasteringMetadata& rhs) const {
-    return ((primary_r_chromaticity_x == rhs.primary_r_chromaticity_x) &&
-            (primary_r_chromaticity_y == rhs.primary_r_chromaticity_y) &&
-            (primary_g_chromaticity_x == rhs.primary_g_chromaticity_x) &&
-            (primary_g_chromaticity_y == rhs.primary_g_chromaticity_y) &&
-            (primary_b_chromaticity_x == rhs.primary_b_chromaticity_x) &&
-            (primary_b_chromaticity_y == rhs.primary_b_chromaticity_y) &&
-            (white_point_chromaticity_x == rhs.white_point_chromaticity_x) &&
-            (white_point_chromaticity_y == rhs.white_point_chromaticity_y) &&
+    return ((primary_r == rhs.primary_r) && (primary_g == rhs.primary_g) &&
+            (primary_b == rhs.primary_b) && (white_point == rhs.white_point) &&
             (luminance_max == rhs.luminance_max) &&
             (luminance_min == rhs.luminance_min));
   }
@@ -44,17 +36,19 @@ struct MEDIA_EXPORT HDRMetadata {
   MasteringMetadata mastering_metadata;
   // Max content light level (CLL), i.e. maximum brightness level present in the
   // stream), in nits.
-  unsigned max_cll = 0;
+  unsigned max_content_light_level = 0;
   // Max frame-average light level (FALL), i.e. maximum average brightness of
   // the brightest frame in the stream), in nits.
-  unsigned max_fall = 0;
+  unsigned max_frame_average_light_level = 0;
 
   HDRMetadata();
   HDRMetadata(const HDRMetadata& rhs);
 
   bool operator==(const HDRMetadata& rhs) const {
-    return ((max_cll == rhs.max_cll) && (max_fall == rhs.max_fall) &&
-            (mastering_metadata == rhs.mastering_metadata));
+    return (
+        (max_content_light_level == rhs.max_content_light_level) &&
+        (max_frame_average_light_level == rhs.max_frame_average_light_level) &&
+        (mastering_metadata == rhs.mastering_metadata));
   }
 };
 

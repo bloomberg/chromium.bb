@@ -13,29 +13,17 @@ namespace mojo {
 template <>
 struct StructTraits<media::mojom::MasteringMetadataDataView,
                     media::MasteringMetadata> {
-  static float primary_r_chromaticity_x(const media::MasteringMetadata& input) {
-    return input.primary_r_chromaticity_x;
+  static gfx::PointF primary_r(const media::MasteringMetadata& input) {
+    return input.primary_r;
   }
-  static float primary_r_chromaticity_y(const media::MasteringMetadata& input) {
-    return input.primary_r_chromaticity_y;
+  static gfx::PointF primary_g(const media::MasteringMetadata& input) {
+    return input.primary_g;
   }
-  static float primary_g_chromaticity_x(const media::MasteringMetadata& input) {
-    return input.primary_g_chromaticity_x;
+  static gfx::PointF primary_b(const media::MasteringMetadata& input) {
+    return input.primary_b;
   }
-  static float primary_g_chromaticity_y(const media::MasteringMetadata& input) {
-    return input.primary_g_chromaticity_y;
-  }
-  static float primary_b_chromaticity_x(const media::MasteringMetadata& input) {
-    return input.primary_b_chromaticity_x;
-  }
-  static float primary_b_chromaticity_y(const media::MasteringMetadata& input) {
-    return input.primary_b_chromaticity_y;
-  }
-  static float white_point_chromaticity_x(const media::MasteringMetadata& inp) {
-    return inp.white_point_chromaticity_x;
-  }
-  static float white_point_chromaticity_y(const media::MasteringMetadata& inp) {
-    return inp.white_point_chromaticity_y;
+  static gfx::PointF white_point(const media::MasteringMetadata& input) {
+    return input.white_point;
   }
   static float luminance_max(const media::MasteringMetadata& input) {
     return input.luminance_max;
@@ -46,14 +34,6 @@ struct StructTraits<media::mojom::MasteringMetadataDataView,
 
   static bool Read(media::mojom::MasteringMetadataDataView data,
                    media::MasteringMetadata* output) {
-    output->primary_r_chromaticity_x = data.primary_r_chromaticity_x();
-    output->primary_r_chromaticity_y = data.primary_r_chromaticity_y();
-    output->primary_g_chromaticity_x = data.primary_g_chromaticity_x();
-    output->primary_g_chromaticity_y = data.primary_g_chromaticity_y();
-    output->primary_b_chromaticity_x = data.primary_b_chromaticity_x();
-    output->primary_b_chromaticity_y = data.primary_b_chromaticity_y();
-    output->white_point_chromaticity_x = data.white_point_chromaticity_x();
-    output->white_point_chromaticity_y = data.white_point_chromaticity_y();
     output->luminance_max = data.luminance_max();
     output->luminance_min = data.luminance_min();
     return true;
@@ -62,11 +42,12 @@ struct StructTraits<media::mojom::MasteringMetadataDataView,
 
 template <>
 struct StructTraits<media::mojom::HDRMetadataDataView, media::HDRMetadata> {
-  static unsigned max_cll(const media::HDRMetadata& input) {
-    return input.max_cll;
+  static unsigned max_content_light_level(const media::HDRMetadata& input) {
+    return input.max_content_light_level;
   }
-  static unsigned max_fall(const media::HDRMetadata& input) {
-    return input.max_fall;
+  static unsigned max_frame_average_light_level(
+      const media::HDRMetadata& input) {
+    return input.max_frame_average_light_level;
   }
   static media::MasteringMetadata mastering_metadata(
       const media::HDRMetadata& input) {
@@ -75,8 +56,9 @@ struct StructTraits<media::mojom::HDRMetadataDataView, media::HDRMetadata> {
 
   static bool Read(media::mojom::HDRMetadataDataView data,
                    media::HDRMetadata* output) {
-    output->max_cll = data.max_cll();
-    output->max_fall = data.max_fall();
+    output->max_content_light_level = data.max_content_light_level();
+    output->max_frame_average_light_level =
+        data.max_frame_average_light_level();
     return true;
   }
 };

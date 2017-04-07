@@ -76,8 +76,8 @@ class WebMColourParser : public WebMParserClient {
   int64_t range_;
   int64_t transfer_characteristics_;
   int64_t primaries_;
-  int64_t max_cll_;
-  int64_t max_fall_;
+  int64_t max_content_light_level_;
+  int64_t max_frame_average_light_level_;
 
   WebMMasteringMetadataParser mastering_metadata_parser_;
   bool mastering_metadata_parsed_ = false;

@@ -177,18 +177,18 @@ TEST_F(WebMStreamParserTest, ColourElement) {
 
   base::Optional<HDRMetadata> hdr_metadata = video_config.hdr_metadata();
   EXPECT_TRUE(hdr_metadata.has_value());
-  EXPECT_EQ(hdr_metadata->max_cll, 11u);
-  EXPECT_EQ(hdr_metadata->max_fall, 12u);
+  EXPECT_EQ(hdr_metadata->max_content_light_level, 11u);
+  EXPECT_EQ(hdr_metadata->max_frame_average_light_level, 12u);
 
   const MasteringMetadata& mmdata = hdr_metadata->mastering_metadata;
-  EXPECT_FLOAT_EQ(mmdata.primary_r_chromaticity_x, 0.1f);
-  EXPECT_FLOAT_EQ(mmdata.primary_r_chromaticity_y, 0.2f);
-  EXPECT_FLOAT_EQ(mmdata.primary_g_chromaticity_x, 0.1f);
-  EXPECT_FLOAT_EQ(mmdata.primary_g_chromaticity_y, 0.2f);
-  EXPECT_FLOAT_EQ(mmdata.primary_b_chromaticity_x, 0.1f);
-  EXPECT_FLOAT_EQ(mmdata.primary_b_chromaticity_y, 0.2f);
-  EXPECT_FLOAT_EQ(mmdata.white_point_chromaticity_x, 0.1f);
-  EXPECT_FLOAT_EQ(mmdata.white_point_chromaticity_y, 0.2f);
+  EXPECT_FLOAT_EQ(mmdata.primary_r.x(), 0.1f);
+  EXPECT_FLOAT_EQ(mmdata.primary_r.y(), 0.2f);
+  EXPECT_FLOAT_EQ(mmdata.primary_g.x(), 0.1f);
+  EXPECT_FLOAT_EQ(mmdata.primary_g.y(), 0.2f);
+  EXPECT_FLOAT_EQ(mmdata.primary_b.x(), 0.1f);
+  EXPECT_FLOAT_EQ(mmdata.primary_b.y(), 0.2f);
+  EXPECT_FLOAT_EQ(mmdata.white_point.x(), 0.1f);
+  EXPECT_FLOAT_EQ(mmdata.white_point.y(), 0.2f);
   EXPECT_EQ(mmdata.luminance_max, 40);
   EXPECT_EQ(mmdata.luminance_min, 30);
 }

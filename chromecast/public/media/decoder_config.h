@@ -265,8 +265,8 @@ struct MasteringMetadata {
 // HDR metadata common for HDR10 and WebM/VP9-based HDR formats.
 struct HDRMetadata {
   MasteringMetadata mastering_metadata;
-  unsigned max_cll = 0;
-  unsigned max_fall = 0;
+  unsigned max_content_light_level = 0;
+  unsigned max_frame_average_light_level = 0;
 
   HDRMetadata();
   HDRMetadata(const HDRMetadata& rhs);

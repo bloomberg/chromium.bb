@@ -89,22 +89,18 @@ struct VideoColorSpace {
 // This defines a mojo transport format for media::HDRMetadata.
 // See media/base/hdr_metadata.h for description.
 struct MasteringMetadata {
-  float primary_r_chromaticity_x;
-  float primary_r_chromaticity_y;
-  float primary_g_chromaticity_x;
-  float primary_g_chromaticity_y;
-  float primary_b_chromaticity_x;
-  float primary_b_chromaticity_y;
-  float white_point_chromaticity_x;
-  float white_point_chromaticity_y;
+  gfx.mojom.PointF primary_r;
+  gfx.mojom.PointF primary_g;
+  gfx.mojom.PointF primary_b;
+  gfx.mojom.PointF white_point;
   float luminance_max;
   float luminance_min;
 };
 
 struct HDRMetadata {
   MasteringMetadata mastering_metadata;
-  uint32 max_cll;
-  uint32 max_fall;
+  uint32 max_content_light_level;
+  uint32 max_frame_average_light_level;
 };
 
 // This defines a mojo transport format for media::AudioDecoderConfig.

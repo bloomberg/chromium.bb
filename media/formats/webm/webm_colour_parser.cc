@@ -263,28 +263,28 @@ WebMMasteringMetadataParser::~WebMMasteringMetadataParser() {}
 bool WebMMasteringMetadataParser::OnFloat(int id, double val) {
   switch (id) {
     case kWebMIdPrimaryRChromaticityX:
-      mastering_metadata_.primary_r_chromaticity_x = val;
+      mastering_metadata_.primary_r.set_x(val);
       break;
     case kWebMIdPrimaryRChromaticityY:
-      mastering_metadata_.primary_r_chromaticity_y = val;
+      mastering_metadata_.primary_r.set_y(val);
       break;
     case kWebMIdPrimaryGChromaticityX:
-      mastering_metadata_.primary_g_chromaticity_x = val;
+      mastering_metadata_.primary_g.set_x(val);
       break;
     case kWebMIdPrimaryGChromaticityY:
-      mastering_metadata_.primary_g_chromaticity_y = val;
+      mastering_metadata_.primary_g.set_y(val);
       break;
     case kWebMIdPrimaryBChromaticityX:
-      mastering_metadata_.primary_b_chromaticity_x = val;
+      mastering_metadata_.primary_b.set_x(val);
       break;
     case kWebMIdPrimaryBChromaticityY:
-      mastering_metadata_.primary_b_chromaticity_y = val;
+      mastering_metadata_.primary_b.set_y(val);
       break;
     case kWebMIdWhitePointChromaticityX:
-      mastering_metadata_.white_point_chromaticity_x = val;
+      mastering_metadata_.white_point.set_x(val);
       break;
     case kWebMIdWhitePointChromaticityY:
-      mastering_metadata_.white_point_chromaticity_y = val;
+      mastering_metadata_.white_point.set_y(val);
       break;
     case kWebMIdLuminanceMax:
       mastering_metadata_.luminance_max = val;
@@ -317,8 +317,8 @@ void WebMColourParser::Reset() {
   range_ = -1;
   transfer_characteristics_ = -1;
   primaries_ = -1;
-  max_cll_ = -1;
-  max_fall_ = -1;
+  max_content_light_level_ = -1;
+  max_frame_average_light_level_ = -1;
 }
 
 WebMParserClient* WebMColourParser::OnListStart(int id) {
@@ -374,10 +374,10 @@ bool WebMColourParser::OnUInt(int id, int64_t val) {
       dst = &primaries_;
       break;
     case kWebMIdMaxCLL:
-      dst = &max_cll_;
+      dst = &max_content_light_level_;
       break;
     case kWebMIdMaxFALL:
-      dst = &max_fall_;
+      dst = &max_frame_average_light_level_;
       break;
     default:
       return true;
@@ -431,11 +431,13 @@ WebMColorMetadata WebMColourParser::GetWebMColorMetadata() const {
   color_metadata.color_space = VideoColorSpace(
       primaries_, transfer_characteristics_, matrix_coefficients_, range_id);
 
-  if (max_cll_ != -1)
-    color_metadata.hdr_metadata.max_cll = max_cll_;
+  if (max_content_light_level_ != -1)
+    color_metadata.hdr_metadata.max_content_light_level =
+        max_content_light_level_;
 
-  if (max_fall_ != -1)
-    color_metadata.hdr_metadata.max_fall = max_fall_;
+  if (max_frame_average_light_level_ != -1)
+    color_metadata.hdr_metadata.max_frame_average_light_level =
+        max_frame_average_light_level_;
 
   if (mastering_metadata_parsed_)
     color_metadata.hdr_metadata.mastering_metadata =
