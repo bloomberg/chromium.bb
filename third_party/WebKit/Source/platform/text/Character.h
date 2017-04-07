@@ -35,11 +35,11 @@
 #include "platform/text/CharacterProperty.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextRun.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

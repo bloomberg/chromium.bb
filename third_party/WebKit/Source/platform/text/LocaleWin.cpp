@@ -30,19 +30,19 @@
 
 #include "platform/text/LocaleWin.h"
 
+#include <limits>
+#include <memory>
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/text/DateTimeFormat.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
-#include "wtf/HashMap.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
-#include <limits>
-#include <memory>
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

@@ -27,8 +27,8 @@
 #include "platform/text/TextBoundaries.h"
 
 #include "platform/text/TextBreakIterator.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringImpl.h"
 
 using namespace WTF;
 using namespace Unicode;

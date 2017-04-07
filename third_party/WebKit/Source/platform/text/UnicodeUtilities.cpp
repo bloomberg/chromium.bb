@@ -27,9 +27,9 @@
 
 #include "platform/text/UnicodeUtilities.h"
 
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuffer.h"
 #include <unicode/unorm.h>
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuffer.h"
 
 using namespace WTF::Unicode;
 

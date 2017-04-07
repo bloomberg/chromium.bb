@@ -22,8 +22,8 @@
 
 #include "platform/text/BidiContext.h"
 
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -34,9 +34,9 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

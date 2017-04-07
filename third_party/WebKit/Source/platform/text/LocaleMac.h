@@ -31,12 +31,12 @@
 #ifndef LocaleMac_h
 #define LocaleMac_h
 
-#include "platform/text/PlatformLocale.h"
-#include "wtf/Forward.h"
-#include "wtf/RetainPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "platform/text/PlatformLocale.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RetainPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 OBJC_CLASS NSCalendar;
 OBJC_CLASS NSDateFormatter;

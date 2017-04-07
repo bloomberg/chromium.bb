@@ -24,11 +24,11 @@
 #define BidiContext_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Assertions.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

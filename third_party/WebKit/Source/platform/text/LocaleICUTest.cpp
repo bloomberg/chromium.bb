@@ -30,10 +30,10 @@
 
 #include "platform/text/LocaleICU.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
 #include <unicode/uvernum.h>
+#include <memory>
+#include "platform/wtf/text/StringBuilder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #include "platform/text/TextEncodingDetector.h"
 
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

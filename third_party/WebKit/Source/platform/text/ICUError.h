@@ -5,10 +5,10 @@
 #ifndef ICUError_h
 #define ICUError_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
 #include <unicode/utypes.h>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

@@ -31,12 +31,12 @@
 #ifndef LocaleWin_h
 #define LocaleWin_h
 
-#include "platform/text/PlatformLocale.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 #include <windows.h>
+#include <memory>
+#include "platform/text/PlatformLocale.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

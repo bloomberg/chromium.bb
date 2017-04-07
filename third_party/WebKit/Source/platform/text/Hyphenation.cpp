@@ -5,7 +5,7 @@
 #include "platform/text/Hyphenation.h"
 
 #include "platform/fonts/Font.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

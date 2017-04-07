@@ -31,8 +31,8 @@
 #include "platform/fonts/Font.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

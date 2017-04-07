@@ -30,7 +30,7 @@
 #define TextRunIterator_h
 
 #include "platform/text/TextRun.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

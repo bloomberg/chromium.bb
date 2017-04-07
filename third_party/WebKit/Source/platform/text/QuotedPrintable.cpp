@@ -30,7 +30,7 @@
 
 #include "platform/text/QuotedPrintable.h"
 
-#include "wtf/ASCIICType.h"
+#include "platform/wtf/ASCIICType.h"
 
 namespace blink {
 

@@ -24,9 +24,9 @@
 #include "platform/text/TextBreakIterator.h"
 
 #include "platform/text/Character.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 #include <unicode/uchar.h>
 #include <unicode/uvernum.h>

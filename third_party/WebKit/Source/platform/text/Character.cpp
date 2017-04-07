@@ -30,12 +30,12 @@
 
 #include "platform/text/Character.h"
 
-#include "platform/text/ICUError.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include <algorithm>
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
+#include <algorithm>
+#include "platform/text/ICUError.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 #if defined(USING_SYSTEM_ICU)
 #include "platform/text/CharacterPropertyDataGenerator.h"

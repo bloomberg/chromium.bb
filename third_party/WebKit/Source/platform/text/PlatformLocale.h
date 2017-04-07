@@ -26,12 +26,12 @@
 #ifndef PlatformLocale_h
 #define PlatformLocale_h
 
+#include <memory>
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebLocalizedString.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

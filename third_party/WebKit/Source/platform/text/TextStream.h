@@ -27,10 +27,10 @@
 #define TextStream_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

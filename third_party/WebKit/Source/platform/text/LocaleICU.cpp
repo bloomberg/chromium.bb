@@ -30,15 +30,15 @@
 
 #include "platform/text/LocaleICU.h"
 
-#include "wtf/DateMath.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
-#include <limits>
-#include <memory>
 #include <unicode/udatpg.h>
 #include <unicode/udisplaycontext.h>
 #include <unicode/uloc.h>
+#include <limits>
+#include <memory>
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 using namespace icu;
 

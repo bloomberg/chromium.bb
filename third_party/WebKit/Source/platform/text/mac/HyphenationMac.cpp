@@ -4,9 +4,9 @@
 
 #include "platform/text/Hyphenation.h"
 
-#include "wtf/RetainPtr.h"
-#include "wtf/text/StringView.h"
 #include <CoreFoundation/CoreFoundation.h>
+#include "platform/wtf/RetainPtr.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

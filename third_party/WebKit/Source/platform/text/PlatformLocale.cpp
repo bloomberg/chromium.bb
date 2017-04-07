@@ -30,10 +30,10 @@
 
 #include "platform/text/PlatformLocale.h"
 
-#include "platform/text/DateTimeFormat.h"
-#include "public/platform/Platform.h"
-#include "wtf/text/StringBuilder.h"
 #include <memory>
+#include "platform/text/DateTimeFormat.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 

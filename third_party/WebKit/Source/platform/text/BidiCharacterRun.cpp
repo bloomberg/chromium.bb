@@ -23,7 +23,7 @@
 
 #include "platform/text/BidiCharacterRun.h"
 
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 using namespace WTF;
 

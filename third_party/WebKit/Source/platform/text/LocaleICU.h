@@ -31,14 +31,14 @@
 #ifndef LocaleICU_h
 #define LocaleICU_h
 
-#include "platform/DateComponents.h"
-#include "platform/text/PlatformLocale.h"
-#include "wtf/Forward.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 #include <unicode/udat.h>
 #include <unicode/unum.h>
+#include <memory>
+#include "platform/DateComponents.h"
+#include "platform/text/PlatformLocale.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

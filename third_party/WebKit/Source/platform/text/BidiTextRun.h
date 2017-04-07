@@ -33,7 +33,7 @@
 
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextRun.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

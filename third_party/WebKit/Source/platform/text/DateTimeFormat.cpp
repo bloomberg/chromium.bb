@@ -25,8 +25,8 @@
 
 #include "platform/text/DateTimeFormat.h"
 
-#include "wtf/ASCIICType.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

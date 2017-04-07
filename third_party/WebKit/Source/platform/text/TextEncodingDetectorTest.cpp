@@ -5,8 +5,8 @@
 #include "platform/text/TextEncodingDetector.h"
 
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

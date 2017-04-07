@@ -25,14 +25,14 @@
 
 #include "platform/text/LocaleMac.h"
 
+#include <memory>
 #include "platform/DateComponents.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/DateMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/CString.h"
-#include <memory>
 
 namespace blink {
 

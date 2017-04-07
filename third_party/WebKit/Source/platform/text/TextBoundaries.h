@@ -27,7 +27,7 @@
 #define TextBoundaries_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

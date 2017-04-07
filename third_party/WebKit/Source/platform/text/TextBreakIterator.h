@@ -23,8 +23,8 @@
 #define TextBreakIterator_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/Unicode.h"
 
 #include <unicode/brkiter.h>
 

@@ -21,16 +21,16 @@
 
 #include "platform/text/TextBreakIterator.h"
 
-#include "platform/text/TextBreakIteratorInternalICU.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 #include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
+#include <memory>
+#include "platform/text/TextBreakIteratorInternalICU.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/WTFString.h"
 
 using namespace WTF;
 

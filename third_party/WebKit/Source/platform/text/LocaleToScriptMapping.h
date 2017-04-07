@@ -32,8 +32,8 @@
 #define LocaleToScriptMapping_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Forward.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/Unicode.h"
 
 #include <unicode/uscript.h>
 

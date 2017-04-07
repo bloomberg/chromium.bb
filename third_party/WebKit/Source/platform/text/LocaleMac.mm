@@ -32,13 +32,13 @@
 
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
+#include <memory>
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
-#include "wtf/DateMath.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RetainPtr.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RetainPtr.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
