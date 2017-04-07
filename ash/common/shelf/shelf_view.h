@@ -289,7 +289,6 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemRemoved(int model_index, const ShelfItem& old_item) override;
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
-  void OnSetShelfItemDelegate(ShelfID, ShelfItemDelegate*) override;
 
   // Handles the result of an item selection, records the |action| taken and
   // optionally shows an application menu with the given |menu_items|.

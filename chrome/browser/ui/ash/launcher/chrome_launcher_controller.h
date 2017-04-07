@@ -89,11 +89,6 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // browsers shelf item if needed.
   virtual void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) = 0;
 
-  // Updates the delegate associated with id (which should be a shortcut).
-  virtual void SetShelfItemDelegate(
-      ash::ShelfID id,
-      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) = 0;
-
   // Closes or unpins the shelf item.
   virtual void CloseLauncherItem(ash::ShelfID id) = 0;
 
@@ -201,9 +196,6 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Returns the ash::ShelfItemDelegate of BrowserShortcut.
   virtual BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() = 0;
-
-  virtual ash::ShelfItemDelegate* GetShelfItemDelegate(
-      const ash::ShelfID id) = 0;
 
   // Check if the shelf visibility (location, visibility) will change with a new
   // user profile or not. However, since the full visibility calculation of the

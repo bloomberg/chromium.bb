@@ -43,12 +43,6 @@ void ChromeLauncherControllerMus::SetItemStatus(ash::ShelfID id,
   NOTIMPLEMENTED();
 }
 
-void ChromeLauncherControllerMus::SetShelfItemDelegate(
-    ash::ShelfID id,
-    std::unique_ptr<ash::ShelfItemDelegate> item_delegate) {
-  NOTIMPLEMENTED();
-}
-
 void ChromeLauncherControllerMus::CloseLauncherItem(ash::ShelfID id) {
   NOTIMPLEMENTED();
 }
@@ -171,12 +165,6 @@ base::string16 ChromeLauncherControllerMus::GetAppListTitle(
 
 BrowserShortcutLauncherItemController*
 ChromeLauncherControllerMus::GetBrowserShortcutLauncherItemController() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-ash::ShelfItemDelegate* ChromeLauncherControllerMus::GetShelfItemDelegate(
-    const ash::ShelfID id) {
   NOTIMPLEMENTED();
   return nullptr;
 }

@@ -254,7 +254,7 @@ class LauncherPlatformAppBrowserTest
   }
 
   ash::ShelfItemDelegate* GetShelfItemDelegate(ash::ShelfID id) {
-    return controller_->GetShelfItemDelegate(id);
+    return shelf_model()->GetShelfItemDelegate(id);
   }
 
   ChromeLauncherControllerImpl* controller_;
@@ -788,9 +788,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanel) {
   const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  EXPECT_EQ(nullptr, GetShelfItemDelegate(item1.id));
-  ash::ShelfItemDelegate* item1_delegate =
-      shelf_model()->GetShelfItemDelegate(item1.id);
+  ash::ShelfItemDelegate* item1_delegate = GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
   // Click the item and confirm that the panel is activated.
@@ -828,9 +826,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  EXPECT_EQ(nullptr, GetShelfItemDelegate(item1.id));
-  ash::ShelfItemDelegate* item1_delegate =
-      shelf_model()->GetShelfItemDelegate(item1.id);
+  ash::ShelfItemDelegate* item1_delegate = GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
   // Click the item and confirm that the panel is activated.
@@ -910,8 +906,6 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   ASSERT_TRUE(app_custom_icon_item_delegate);
   EXPECT_TRUE(app_custom_icon_item_delegate->image_set_by_controller());
 
-  // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
-  EXPECT_EQ(nullptr, GetShelfItemDelegate(panel_item.id));
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
   EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALL, app_item.image.height());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
@@ -1546,10 +1540,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   EXPECT_FALSE(panel->GetBaseWindow()->IsActive());
   // Confirm that a shelf item was created and is the correct state.
   const ash::ShelfItem& item = GetLastLauncherPanelItem();
-  // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
-  EXPECT_EQ(nullptr, GetShelfItemDelegate(item.id));
-  ash::ShelfItemDelegate* shelf_item_delegate =
-      shelf_model()->GetShelfItemDelegate(item.id);
+  ash::ShelfItemDelegate* shelf_item_delegate = GetShelfItemDelegate(item.id);
   EXPECT_NE(nullptr, shelf_item_delegate);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item.status);
@@ -1774,7 +1765,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
 
   // Now request to either activate an existing app or create a new one.
   ash::ShelfItemDelegate* item_delegate =
-      controller_->GetShelfItemDelegate(shortcut_id);
+      model_->GetShelfItemDelegate(shortcut_id);
   SelectItem(item_delegate, ui::ET_KEY_RELEASED);
 
   // Check that we have set focus on the existing application and nothing new
