@@ -581,7 +581,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Enable/disable native CUPS integration
   printing::PrintBackend::SetNativeCupsEnabled(
-      parsed_command_line().HasSwitch(::switches::kEnableNativeCups));
+      !parsed_command_line().HasSwitch(::switches::kDisableNativeCups));
 
   power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
 

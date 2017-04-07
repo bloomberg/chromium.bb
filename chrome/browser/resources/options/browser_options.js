@@ -724,7 +724,7 @@ cr.define('options', function() {
 
       // CUPS Print section (CrOS only).
       if (cr.isChromeOS) {
-        if (loadTimeData.getBoolean('cupsPrintEnabled')) {
+        if (!loadTimeData.getBoolean('cupsPrintDisabled')) {
           $('cups-printers-section').hidden = false;
           $('cupsPrintersManageButton').onclick = function() {
             chrome.send('showCupsPrintDevicesPage');

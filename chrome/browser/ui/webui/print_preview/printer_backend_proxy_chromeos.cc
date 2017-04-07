@@ -134,8 +134,8 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
 
     PrinterList printer_list;
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNativeCups)) {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableNativeCups)) {
       AddPrintersToList(prefs_->GetPrinters(), &printer_list);
       AddPrintersToList(prefs_->GetRecommendedPrinters(), &printer_list);
     }

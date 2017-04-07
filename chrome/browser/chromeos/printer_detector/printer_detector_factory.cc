@@ -46,13 +46,13 @@ PrinterDetectorFactory::~PrinterDetectorFactory() {
 KeyedService* PrinterDetectorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableNativeCups)) {
-    return PrinterDetector::CreateCups(Profile::FromBrowserContext(context))
-        .release();
-  } else {
+          ::switches::kDisableNativeCups)) {
     return PrinterDetector::CreateLegacy(Profile::FromBrowserContext(context))
         .release();
   }
+
+  return PrinterDetector::CreateCups(Profile::FromBrowserContext(context))
+      .release();
 }
 
 bool PrinterDetectorFactory::ServiceIsCreatedWithBrowserContext() const {

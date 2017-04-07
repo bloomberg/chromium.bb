@@ -934,14 +934,14 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-// Enables apps on the login screen.
-const char kEnableLoginScreenApps[] = "enable-login-screen-apps";
-
-// Enables native cups integration
-const char kEnableNativeCups[] = "enable-native-cups";
-
 // Custom crosh command.
 const char kCroshCommand[] = "crosh-command";
+
+// Disables native cups integration
+const char kDisableNativeCups[] = "disable-native-cups";
+
+// Enables apps on the login screen.
+const char kEnableLoginScreenApps[] = "enable-login-screen-apps";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)

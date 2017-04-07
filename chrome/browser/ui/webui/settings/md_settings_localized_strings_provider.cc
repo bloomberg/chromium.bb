@@ -1466,8 +1466,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 
 #if defined(OS_CHROMEOS)
   html_source->AddBoolean("showCupsPrintingFeatures",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kEnableNativeCups));
+                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              ::switches::kDisableNativeCups));
 #endif
 }
 

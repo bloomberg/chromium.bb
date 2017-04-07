@@ -95,6 +95,7 @@ OptionsWebUITest.prototype = {
       '#privacy-explanation > A',
       '#languages-section > .settings-row > A',
       '#cloudprint-options-mdns > .settings-row > A',
+      '#cups-printers-section > .settings-row > A',
       '#do-not-track-confirm-overlay > .action-area > .hbox.stretch > A',
     ];
 

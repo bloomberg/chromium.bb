@@ -2262,10 +2262,10 @@ const char kEnableScrollAnchoringDescription[] =
 
 #if defined(OS_CHROMEOS)
 
-const char kEnableNativeCupsName[] = "Native CUPS";
+const char kDisableNativeCupsName[] = "Native CUPS";
 
-const char kEnableNativeCupsDescription[] =
-    "Enables the use of the native CUPS printing backend.";
+const char kDisableNativeCupsDescription[] =
+    "Disable the use of the native CUPS printing backend.";
 
 const char kEnableAndroidWallpapersAppName[] = "Android Wallpapers App";
 

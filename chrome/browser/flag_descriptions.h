@@ -2461,10 +2461,10 @@ extern const char kEnableScrollAnchoringDescription[];
 #if defined(OS_CHROMEOS)
 
 // Name of the native cups flag.
-extern const char kEnableNativeCupsName[];
+extern const char kDisableNativeCupsName[];
 
 // Description of the native CUPS flag
-extern const char kEnableNativeCupsDescription[];
+extern const char kDisableNativeCupsDescription[];
 
 // Name of the Android Wallpapers App flag.
 extern const char kEnableAndroidWallpapersAppName[];

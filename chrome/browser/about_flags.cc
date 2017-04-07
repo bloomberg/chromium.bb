@@ -2193,9 +2193,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)},
-    {"enable-native-cups", flag_descriptions::kEnableNativeCupsName,
-     flag_descriptions::kEnableNativeCupsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
+    {"disable-native-cups", flag_descriptions::kDisableNativeCupsName,
+     flag_descriptions::kDisableNativeCupsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kDisableNativeCups)},
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,
      flag_descriptions::kEnableEncryptionMigrationDescription, kOsCrOS,
