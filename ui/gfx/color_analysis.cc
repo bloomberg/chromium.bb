@@ -368,15 +368,16 @@ SkColor CalculateProminentColor(const SkBitmap& bitmap,
   const uint32_t* pixels = static_cast<uint32_t*>(bitmap.getPixels());
   const int pixel_count = bitmap.width() * bitmap.height();
 
-  // We don't know exactly how many distinct colors there will be, so just
-  // reserve enough space to keep the maximum number of table resizes low.
-  // In our testing set, 2/3 of wallpapers have <200k unique colors and 1/4
-  // have <100k. Thus 200k is picked as a number that usually amounts to zero
-  // resizes but usually doesn't waste a lot of space.
-  std::unordered_map<SkColor, int> color_counts(200000);
+  // For better performance, only consider at most 10k pixels (evenly
+  // distributed throughout the image). This has a very minor impact on the
+  // outcome but improves runtime substantially for large images. 10,007 is a
+  // prime number to reduce the chance of picking an unrepresentative sample.
+  constexpr int kMaxConsideredPixels = 10007;
+  const int pixel_increment = std::max(1, pixel_count / kMaxConsideredPixels);
+  std::unordered_map<SkColor, int> color_counts(kMaxConsideredPixels);
 
   // First extract all colors into counts.
-  for (int i = 0; i < pixel_count; ++i) {
+  for (int i = 0; i < pixel_count; i += pixel_increment) {
     // SkBitmap uses pre-multiplied alpha but the prominent color algorithm
     // needs non-pre-multiplied alpha.
     const SkColor pixel = SkUnPreMultiply::PMColorToColor(pixels[i]);
