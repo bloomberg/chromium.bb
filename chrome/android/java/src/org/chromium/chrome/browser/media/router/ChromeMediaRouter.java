@@ -43,6 +43,14 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new HashMap<String, Map<MediaRouteProvider, List<MediaSink>>>();
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
+    private static boolean sAndroidMediaRouterSetForTest = false;
+    private static MediaRouter sAndroidMediaRouterForTest = null;
+
+    @VisibleForTesting
+    public static void setAndroidMediaRouterForTest(MediaRouter router) {
+        sAndroidMediaRouterSetForTest = true;
+        sAndroidMediaRouterForTest = router;
+    }
 
     @VisibleForTesting
     public static void setRouteProviderBuilderForTest(MediaRouteProvider.Builder builder) {
@@ -76,6 +84,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
      */
     @Nullable
     public static MediaRouter getAndroidMediaRouter() {
+        if (sAndroidMediaRouterSetForTest) return sAndroidMediaRouterForTest;
         try {
             // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
             // so getting the MediaRouter instance will throw an exception.

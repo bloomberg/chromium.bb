@@ -43,6 +43,11 @@ class MediaRouterDialogControllerAndroid
   // taking any action (e.g. closing the route or selecting a sink).
   void OnDialogCancelled(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
+  // Notifies the controller the media source URN is not supported so it could
+  // properly reject the request.
+  void OnMediaSourceNotSupported(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerAndroid>;

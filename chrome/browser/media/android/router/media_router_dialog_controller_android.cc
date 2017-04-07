@@ -87,6 +87,18 @@ void MediaRouterDialogControllerAndroid::OnDialogCancelled(
   CancelPresentationRequest();
 }
 
+void MediaRouterDialogControllerAndroid::OnMediaSourceNotSupported(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  std::unique_ptr<CreatePresentationConnectionRequest> request =
+      TakeCreateConnectionRequest();
+  if (!request)
+    return;
+
+  request->InvokeErrorCallback(content::PresentationError(
+      content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, "No screens found."));
+}
+
 void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
   std::unique_ptr<CreatePresentationConnectionRequest> request =
       TakeCreateConnectionRequest();

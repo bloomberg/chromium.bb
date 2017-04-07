@@ -44,7 +44,10 @@ public class ChromeMediaRouterDialogController implements MediaRouteDialogDelega
         if (isShowingDialog()) return;
 
         MediaSource source = MediaSource.from(sourceUrn);
-        if (source == null) return;
+        if (source == null) {
+            nativeOnMediaSourceNotSupported(mNativeDialogController);
+            return;
+        }
 
         mDialogManager = new MediaRouteChooserDialogManager(source, this);
         mDialogManager.openDialog();
@@ -60,7 +63,10 @@ public class ChromeMediaRouterDialogController implements MediaRouteDialogDelega
         if (isShowingDialog()) return;
 
         MediaSource source = MediaSource.from(sourceUrn);
-        if (source == null) return;
+        if (source == null) {
+            nativeOnMediaSourceNotSupported(mNativeDialogController);
+            return;
+        }
 
         mDialogManager = new MediaRouteControllerDialogManager(source, mediaRouteId, this);
         mDialogManager.openDialog();
@@ -117,4 +123,5 @@ public class ChromeMediaRouterDialogController implements MediaRouteDialogDelega
     native void nativeOnSinkSelected(
             long nativeMediaRouterDialogControllerAndroid, String sinkId);
     native void nativeOnRouteClosed(long nativeMediaRouterDialogControllerAndroid, String routeId);
+    native void nativeOnMediaSourceNotSupported(long nativeMediaRouterDialogControllerAndroid);
 }

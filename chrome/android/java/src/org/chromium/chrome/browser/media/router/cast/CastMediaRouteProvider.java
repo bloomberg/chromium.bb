@@ -91,7 +91,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     @Nullable
     public static CastMediaRouteProvider create(MediaRouteManager manager) {
         MediaRouter androidMediaRouter = ChromeMediaRouter.getAndroidMediaRouter();
-        if (androidMediaRouter == null) return null;
 
         return new CastMediaRouteProvider(androidMediaRouter, manager);
     }
@@ -182,10 +181,19 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     @Override
     public void startObservingMediaSinks(String sourceId) {
-        if (mAndroidMediaRouter == null) return;
+        if (mAndroidMediaRouter == null) {
+            // If the MediaRouter API is not available, report no devices so the page doesn't even
+            // try to cast.
+            onSinksReceived(sourceId, new ArrayList<MediaSink>());
+            return;
+        }
 
         MediaSource source = MediaSource.from(sourceId);
-        if (source == null) return;
+        if (source == null) {
+            // If the source is invalid, report no devices available.
+            onSinksReceived(sourceId, new ArrayList<MediaSink>());
+            return;
+        }
 
         MediaRouteSelector routeSelector = source.buildRouteSelector();
         if (routeSelector == null) {
@@ -322,7 +330,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         }
 
         ClientRecord client = getClientRecordByRouteId(routeId);
-        if (client != null) {
+        if (client != null && mAndroidMediaRouter != null) {
             MediaSink sink = MediaSink.fromSinkId(mSession.getSinkId(), mAndroidMediaRouter);
             if (sink != null) sendReceiverAction(routeId, sink, client.clientId, "stop");
         }
