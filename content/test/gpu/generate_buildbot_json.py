@@ -1440,7 +1440,7 @@ COMMON_GTESTS = {
       {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
-        'os_types': ['win', 'linux'],
+        'os_types': ['win', 'linux', 'mac'],
       },
     ],
     'disabled_tester_configs': [
