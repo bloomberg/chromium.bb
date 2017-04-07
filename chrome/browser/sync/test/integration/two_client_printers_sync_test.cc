@@ -128,13 +128,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   EXPECT_EQ(valid_message, GetPrinterStore(1)->GetPrinters()[0]->description());
 }
 
-// crbug.com/689662
-#if defined(OS_CHROMEOS)
-#define MAYBE_SimpleMerge DISABLED_SimpleMerge
-#else
-#define MAYBE_SimpleMerge SimpleMerge
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, MAYBE_SimpleMerge) {
+IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, SimpleMerge) {
   ASSERT_TRUE(SetupClients());
   base::RunLoop().RunUntilIdle();
 

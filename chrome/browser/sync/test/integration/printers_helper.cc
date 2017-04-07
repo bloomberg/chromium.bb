@@ -13,10 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "content/public/browser/browser_thread.h"
 
 using sync_datatype_helper::test;
 
@@ -65,6 +67,24 @@ std::string PrinterId(int index) {
   return base::StringPrintf("printer%d", index);
 }
 
+chromeos::PrintersManager* GetPrinterStore(content::BrowserContext* context) {
+  chromeos::PrintersManager* manager =
+      chromeos::PrintersManagerFactory::GetForBrowserContext(context);
+
+  // TODO(sync): crbug.com/709094: Remove all of this once the bug is fixed.
+  // Must wait for ModelTypeStore initialization.
+  // Since PrintersManagerFactory::BuildServiceInstanceFor() uses
+  // content::BrowserThread::GetBlockingPool() to schedule ModelTypeStore
+  // initialization, tests need to wait for initialization to be completed and
+  // sent ModelTypeStore to UI thread.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  // Wait for UI thread task completion to make sure PrintersSyncBridge received
+  // ModelTypeStore.
+  base::RunLoop().RunUntilIdle();
+
+  return manager;
+}
+
 }  // namespace
 
 void AddPrinter(chromeos::PrintersManager* manager,
@@ -107,20 +127,14 @@ chromeos::Printer CreateTestPrinter(int index) {
 
 chromeos::PrintersManager* GetVerifierPrinterStore() {
   chromeos::PrintersManager* manager =
-      chromeos::PrintersManagerFactory::GetForBrowserContext(
-          sync_datatype_helper::test()->verifier());
-  // Must wait for ModelTypeStore initialization.
-  base::RunLoop().RunUntilIdle();
+      GetPrinterStore(sync_datatype_helper::test()->verifier());
 
   return manager;
 }
 
 chromeos::PrintersManager* GetPrinterStore(int index) {
   chromeos::PrintersManager* manager =
-      chromeos::PrintersManagerFactory::GetForBrowserContext(
-          sync_datatype_helper::test()->GetProfile(index));
-  // Must wait for ModelTypeStore initialization.
-  base::RunLoop().RunUntilIdle();
+      GetPrinterStore(sync_datatype_helper::test()->GetProfile(index));
 
   return manager;
 }

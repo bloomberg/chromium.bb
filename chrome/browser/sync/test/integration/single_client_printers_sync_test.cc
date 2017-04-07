@@ -25,14 +25,6 @@ class SingleClientPrintersSyncTest : public SyncTest {
   SingleClientPrintersSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientPrintersSyncTest() override {}
 
-  bool SetupSync() override {
-    if (!SyncTest::SetupSync())
-      return false;
-
-    // Wait for sync to complete initialization before proceeding.
-    return UpdatedProgressMarkerChecker(GetSyncService(0)).Wait();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientPrintersSyncTest);
 };
@@ -40,6 +32,12 @@ class SingleClientPrintersSyncTest : public SyncTest {
 // Verify that printers aren't added with a sync call.
 IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, NoPrinters) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // TODO(sync): Should not use UpdatedProgressMarkerChecker here since
+  // UpdatedProgressMarkerChecker is for SyncableService datatype, but
+  // syncer::PRINTERS is ModelTypeSyncBridge datatype. So maybe we should create
+  // another checker for ModelTypeSyncBridge, or some other things to wait for
+  // ModelTypeSyncBridge datatype.
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   EXPECT_TRUE(ProfileContainsSamePrintersAsVerifier(0));
 }
 
@@ -60,13 +58,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, SingleNewPrinter) {
 }
 
 // Verify editing a printer doesn't add it.
-// Flaky on ChromeOS. http://crbug.com/701999
-#if defined(OS_CHROMEOS)
-#define MAYBE_EditPrinter DISABLED_EditPrinter
-#else
-#define MAYBE_EditPrinter EditPrinter
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, MAYBE_EditPrinter) {
+IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, EditPrinter) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddPrinter(GetPrinterStore(0), printers_helper::CreateTestPrinter(0));
@@ -92,13 +84,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, RemovePrinter) {
 }
 
 // Verify that merging data added before sync works.
-// crbug.com/689662
-#if defined(OS_CHROMEOS)
-#define MAYBE_AddBeforeSetup DISABLED_AddBeforeSetup
-#else
-#define MAYBE_AddBeforeSetup AddBeforeSetup
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, MAYBE_AddBeforeSetup) {
+IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, AddBeforeSetup) {
   ASSERT_TRUE(SetupClients());
 
   AddPrinter(GetPrinterStore(0), printers_helper::CreateTestPrinter(0));
