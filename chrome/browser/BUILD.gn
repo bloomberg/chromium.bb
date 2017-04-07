@@ -2755,8 +2755,6 @@ split_static_library("browser") {
       "android/download/intercept_download_resource_throttle.h",
       "android/download/items/offline_content_aggregator_factory_android.cc",
       "android/download/items/offline_content_aggregator_factory_android.h",
-      "android/download/mock_download_controller.cc",
-      "android/download/mock_download_controller.h",
       "android/download/ui/thumbnail_provider.cc",
       "android/download/ui/thumbnail_provider.h",
       "android/favicon_helper.cc",
@@ -4450,7 +4448,12 @@ static_library("test_support") {
     "//ui/gfx",
   ]
 
-  if (!is_android) {
+  if (is_android) {
+    sources += [
+      "android/download/mock_download_controller.cc",
+      "android/download/mock_download_controller.h",
+    ]
+  } else {
     sources += [
       "chooser_controller/mock_chooser_controller.cc",
       "chooser_controller/mock_chooser_controller.h",
