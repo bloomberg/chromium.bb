@@ -436,8 +436,8 @@ class HttpStreamFactoryImpl::Job {
 
   const JobType job_type_;
 
-  // True if handling a HTTPS request, or using SPDY with SSL
-  bool using_ssl_;
+  // True if handling a HTTPS request.
+  const bool using_ssl_;
 
   // True if this network transaction is using SPDY instead of HTTP.
   bool using_spdy_;

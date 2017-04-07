@@ -217,7 +217,8 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       enable_ip_based_pooling_(enable_ip_based_pooling),
       delegate_(delegate),
       job_type_(job_type),
-      using_ssl_(false),
+      using_ssl_(origin_url_.SchemeIs(url::kHttpsScheme) ||
+                 origin_url_.SchemeIs(url::kWssScheme)),
       using_spdy_(false),
       using_quic_(false),
       quic_request_(session_->quic_stream_factory(),
@@ -871,8 +872,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     return OK;
   }
 
-  using_ssl_ = origin_url_.SchemeIs(url::kHttpsScheme) ||
-               origin_url_.SchemeIs(url::kWssScheme);
   using_spdy_ = false;
 
   if (ShouldForceQuic())
