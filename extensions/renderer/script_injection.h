@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_injector.h"
@@ -84,9 +85,10 @@ class ScriptInjection {
   const HostID& host_id() const { return injection_host_->id(); }
   int64_t request_id() const { return request_id_; }
 
-  // Called when JS injection for the given frame has been completed.
+  // Called when JS injection for the given frame has been completed or
+  // cancelled.
   void OnJsInjectionCompleted(const std::vector<v8::Local<v8::Value>>& results,
-                              base::TimeDelta elapsed);
+                              base::Optional<base::TimeDelta> elapsed);
 
  private:
   class FrameWatcher;

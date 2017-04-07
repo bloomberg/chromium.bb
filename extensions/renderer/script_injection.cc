@@ -91,7 +91,12 @@ class TimedScriptInjectionCallback : public ScriptInjectionCallback {
 
   void OnCompleted(const std::vector<v8::Local<v8::Value>>& result) {
     if (injection_) {
-      base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
+      base::Optional<base::TimeDelta> elapsed;
+      // If the script will never execute (such as if the context is destroyed),
+      // willExecute() will not be called, but OnCompleted() will. Only log a
+      // time for execution if the script, in fact, executed.
+      if (!start_time_.is_null())
+        elapsed = base::TimeTicks::Now() - start_time_;
       injection_->OnJsInjectionCompleted(result, elapsed);
     }
   }
@@ -320,23 +325,23 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
 
 void ScriptInjection::OnJsInjectionCompleted(
     const std::vector<v8::Local<v8::Value>>& results,
-    base::TimeDelta elapsed) {
+    base::Optional<base::TimeDelta> elapsed) {
   DCHECK(!did_inject_js_);
 
-  if (injection_host_->id().type() == HostID::EXTENSIONS) {
-    UMA_HISTOGRAM_TIMES("Extensions.InjectedScriptExecutionTime", elapsed);
+  if (injection_host_->id().type() == HostID::EXTENSIONS && elapsed) {
+    UMA_HISTOGRAM_TIMES("Extensions.InjectedScriptExecutionTime", *elapsed);
     switch (run_location_) {
       case UserScript::DOCUMENT_START:
         UMA_HISTOGRAM_TIMES(
-            "Extensions.InjectedScriptExecutionTime.DocumentStart", elapsed);
+            "Extensions.InjectedScriptExecutionTime.DocumentStart", *elapsed);
         break;
       case UserScript::DOCUMENT_END:
         UMA_HISTOGRAM_TIMES(
-            "Extensions.InjectedScriptExecutionTime.DocumentEnd", elapsed);
+            "Extensions.InjectedScriptExecutionTime.DocumentEnd", *elapsed);
         break;
       case UserScript::DOCUMENT_IDLE:
         UMA_HISTOGRAM_TIMES(
-            "Extensions.InjectedScriptExecutionTime.DocumentIdle", elapsed);
+            "Extensions.InjectedScriptExecutionTime.DocumentIdle", *elapsed);
         break;
       default:
         break;
