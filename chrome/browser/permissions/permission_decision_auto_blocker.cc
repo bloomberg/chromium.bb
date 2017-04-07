@@ -360,6 +360,41 @@ bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
   return false;
 }
 
+void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
+    const GURL& url,
+    ContentSettingsType permission) {
+  if (!PermissionUtil::IsPermission(permission))
+    return;
+
+  // Don't proceed if |permission| was not under embargo for |url|.
+  PermissionResult result = GetEmbargoResult(url, permission);
+  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS &&
+      result.source != PermissionStatusSource::SAFE_BROWSING_BLACKLIST) {
+    return;
+  }
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
+  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  // Deleting non-existent entries will return a false value. Since it should be
+  // impossible for a permission to have been embargoed for two different
+  // reasons at the same time, check that exactly one deletion was successful.
+  const bool dismissal_key_deleted =
+      permission_dict->RemoveWithoutPathExpansion(
+          kPermissionDismissalEmbargoKey, nullptr);
+  const bool blacklist_key_deleted =
+      permission_dict->RemoveWithoutPathExpansion(
+          kPermissionBlacklistEmbargoKey, nullptr);
+  DCHECK(dismissal_key_deleted != blacklist_key_deleted);
+
+  map->SetWebsiteSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+      std::string(), std::move(dict));
+}
+
 void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
     base::Callback<bool(const GURL& url)> filter) {
   HostContentSettingsMap* map =

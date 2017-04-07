@@ -203,6 +203,14 @@ void SetSettingForOrigin(JNIEnv* env,
   GURL embedder_url =
       embedder ? GURL(ConvertJavaStringToUTF8(env, embedder)) : GURL();
   Profile* profile = GetActiveUserProfile(is_incognito);
+
+  // The permission may have been blocked due to being under embargo, so if it
+  // was changed away from BLOCK, clear embargo status if it exists.
+  if (setting != CONTENT_SETTING_BLOCK) {
+    PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
+        origin_url, content_type);
+  }
+
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, origin_url, embedder_url, content_type,
       PermissionSourceUI::SITE_SETTINGS);
@@ -331,6 +339,12 @@ static void SetNotificationSettingForOrigin(
   Profile* profile = GetActiveUserProfile(is_incognito);
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
   ContentSetting setting = static_cast<ContentSetting>(value);
+
+  if (setting != CONTENT_SETTING_BLOCK) {
+    PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
+        url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  }
+
   switch (setting) {
     case CONTENT_SETTING_DEFAULT:
       DesktopNotificationProfileUtil::ClearSetting(profile, url);

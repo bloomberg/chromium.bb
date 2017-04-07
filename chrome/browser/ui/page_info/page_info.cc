@@ -32,6 +32,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -340,9 +341,14 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   RecordPageInfoAction(PAGE_INFO_CHANGED_PERMISSION);
 
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      this->profile_, this->site_url_, this->site_url_, type,
-      PermissionSourceUI::OIB);
+      profile_, site_url_, site_url_, type, PermissionSourceUI::OIB);
 
+  // The permission may have been blocked due to being under embargo, so if it
+  // was changed away from BLOCK, clear embargo status if it exists.
+  if (setting != CONTENT_SETTING_BLOCK) {
+    PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveEmbargoByUrl(
+        site_url_, type);
+  }
   content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
                                                 setting);
 

@@ -160,6 +160,123 @@ class PermissionDecisionAutoBlockerUnitTest
   bool callback_was_run_;
 };
 
+// Check removing the the embargo for a single permission on a site works, and
+// that it doesn't interfere with other embargoed permissions or the same
+// permission embargoed on other sites.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveEmbargoByUrl) {
+  GURL url1("https://www.google.com");
+  GURL url2("https://www.example.com");
+
+  // Record dismissals for location and notifications in |url1|.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  // Record dismissals for location in |url2|.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Verify all dismissals recorded above resulted in embargo.
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url1, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+  result = autoblocker()->GetEmbargoResult(url1,
+                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+  result =
+      autoblocker()->GetEmbargoResult(url2, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+
+  // Remove the embargo on notifications. Verify it is no longer under embargo,
+  // but location still is.
+  autoblocker()->RemoveEmbargoByUrl(url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  result =
+      autoblocker()->GetEmbargoResult(url1, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+  result = autoblocker()->GetEmbargoResult(url1,
+                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  // If not under embargo, GetEmbargoResult() returns a setting of ASK.
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+  // Verify |url2|'s embargo is still intact as well.
+  result =
+      autoblocker()->GetEmbargoResult(url2, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+}
+
+// Test that removing embargo from blacklisted permissions also works.
+TEST_F(PermissionDecisionAutoBlockerUnitTest,
+       RemoveEmbargoByUrlForBlacklistedPermission) {
+  GURL url("https://www.example.com");
+
+  // Place under embargo and verify.
+  PlaceUnderBlacklistEmbargo(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
+
+  // Remove embargo and verify.
+  autoblocker()->RemoveEmbargoByUrl(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+}
+
+// Test it still only takes one more dismissal to re-trigger embargo after
+// removing the embargo status for a site.
+TEST_F(PermissionDecisionAutoBlockerUnitTest,
+       DismissAfterRemovingEmbargoByURL) {
+  GURL url("https://www.example.com");
+
+  // Record dismissals for location.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Verify location is under embargo.
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+
+  // Remove embargo and verify this is true.
+  autoblocker()->RemoveEmbargoByUrl(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // Record another dismissal and verify location is under embargo again.
+  autoblocker()->RecordDismissAndEmbargo(url,
+                                         CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+}
+
 TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
   GURL url1("https://www.google.com");
   GURL url2("https://www.example.com");
