@@ -219,6 +219,8 @@ component("proxy") {
     sources += [
       "audio_input_resource.cc",
       "audio_input_resource.h",
+      "audio_output_resource.cc",
+      "audio_output_resource.h",
       "broker_dispatcher.cc",
       "broker_dispatcher.h",
       "browser_font_singleton_resource.cc",

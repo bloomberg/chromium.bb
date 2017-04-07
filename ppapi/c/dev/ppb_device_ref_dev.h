@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_device_ref_dev.idl modified Wed Nov 07 13:28:37 2012. */
+/* From dev/ppb_device_ref_dev.idl modified Mon Jan 09 12:04:09 2017. */
 
 #ifndef PPAPI_C_DEV_PPB_DEVICE_REF_DEV_H_
 #define PPAPI_C_DEV_PPB_DEVICE_REF_DEV_H_
@@ -55,7 +55,8 @@ typedef void (*PP_MonitorDeviceChangeCallback)(void* user_data,
 typedef enum {
   PP_DEVICETYPE_DEV_INVALID = 0,
   PP_DEVICETYPE_DEV_AUDIOCAPTURE = 1,
-  PP_DEVICETYPE_DEV_VIDEOCAPTURE = 2
+  PP_DEVICETYPE_DEV_VIDEOCAPTURE = 2,
+  PP_DEVICETYPE_DEV_AUDIOOUTPUT = 3
 } PP_DeviceType_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DeviceType_Dev, 4);
 /**

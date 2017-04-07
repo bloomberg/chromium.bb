@@ -185,6 +185,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 #if !defined(OS_NACL)
   virtual PP_Resource CreateAudioInput(PP_Instance instance) = 0;
+  virtual PP_Resource CreateAudioOutput(PP_Instance instance) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
   virtual PP_Resource CreateBrowserFont(
       PP_Instance instance,

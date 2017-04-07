@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,6 +8,7 @@
 
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
+#include "ppapi/c/dev/ppb_audio_output_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
@@ -156,6 +157,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
@@ -2750,6 +2752,55 @@ static void Pnacl_M30_PPB_AudioInput_Dev_Close(PP_Resource audio_input) {
 }
 
 /* End wrapper methods for PPB_AudioInput_Dev_0_4 */
+
+/* Begin wrapper methods for PPB_AudioOutput_Dev_0_1 */
+
+static PP_Resource Pnacl_M59_PPB_AudioOutput_Dev_Create(PP_Instance instance) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M59_PPB_AudioOutput_Dev_IsAudioOutput(PP_Resource resource) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->IsAudioOutput(resource);
+}
+
+static int32_t Pnacl_M59_PPB_AudioOutput_Dev_EnumerateDevices(PP_Resource audio_output, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->EnumerateDevices(audio_output, *output, *callback);
+}
+
+static int32_t Pnacl_M59_PPB_AudioOutput_Dev_MonitorDeviceChange(PP_Resource audio_output, PP_MonitorDeviceChangeCallback callback, void* user_data) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->MonitorDeviceChange(audio_output, callback, user_data);
+}
+
+static int32_t Pnacl_M59_PPB_AudioOutput_Dev_Open(PP_Resource audio_output, PP_Resource device_ref, PP_Resource config, PPB_AudioOutput_Callback audio_output_callback, void* user_data, struct PP_CompletionCallback* callback) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->Open(audio_output, device_ref, config, audio_output_callback, user_data, *callback);
+}
+
+static PP_Resource Pnacl_M59_PPB_AudioOutput_Dev_GetCurrentConfig(PP_Resource audio_output) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->GetCurrentConfig(audio_output);
+}
+
+static PP_Bool Pnacl_M59_PPB_AudioOutput_Dev_StartPlayback(PP_Resource audio_output) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->StartPlayback(audio_output);
+}
+
+static PP_Bool Pnacl_M59_PPB_AudioOutput_Dev_StopPlayback(PP_Resource audio_output) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  return iface->StopPlayback(audio_output);
+}
+
+static void Pnacl_M59_PPB_AudioOutput_Dev_Close(PP_Resource audio_output) {
+  const struct PPB_AudioOutput_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1.real_iface;
+  iface->Close(audio_output);
+}
+
+/* End wrapper methods for PPB_AudioOutput_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Buffer_Dev_0_4 */
 
@@ -5408,6 +5459,18 @@ static const struct PPB_AudioInput_Dev_0_4 Pnacl_Wrappers_PPB_AudioInput_Dev_0_4
     .Close = (void (*)(PP_Resource audio_input))&Pnacl_M30_PPB_AudioInput_Dev_Close
 };
 
+static const struct PPB_AudioOutput_Dev_0_1 Pnacl_Wrappers_PPB_AudioOutput_Dev_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M59_PPB_AudioOutput_Dev_Create,
+    .IsAudioOutput = (PP_Bool (*)(PP_Resource resource))&Pnacl_M59_PPB_AudioOutput_Dev_IsAudioOutput,
+    .EnumerateDevices = (int32_t (*)(PP_Resource audio_output, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M59_PPB_AudioOutput_Dev_EnumerateDevices,
+    .MonitorDeviceChange = (int32_t (*)(PP_Resource audio_output, PP_MonitorDeviceChangeCallback callback, void* user_data))&Pnacl_M59_PPB_AudioOutput_Dev_MonitorDeviceChange,
+    .Open = (int32_t (*)(PP_Resource audio_output, PP_Resource device_ref, PP_Resource config, PPB_AudioOutput_Callback audio_output_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M59_PPB_AudioOutput_Dev_Open,
+    .GetCurrentConfig = (PP_Resource (*)(PP_Resource audio_output))&Pnacl_M59_PPB_AudioOutput_Dev_GetCurrentConfig,
+    .StartPlayback = (PP_Bool (*)(PP_Resource audio_output))&Pnacl_M59_PPB_AudioOutput_Dev_StartPlayback,
+    .StopPlayback = (PP_Bool (*)(PP_Resource audio_output))&Pnacl_M59_PPB_AudioOutput_Dev_StopPlayback,
+    .Close = (void (*)(PP_Resource audio_output))&Pnacl_M59_PPB_AudioOutput_Dev_Close
+};
+
 /* Not generating wrapper interface for PPB_Buffer_Dev_0_4 */
 
 /* Not generating wrapper interface for PPB_Crypto_Dev_0_1 */
@@ -6322,6 +6385,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1 = {
+  .iface_macro = PPB_AUDIO_OUTPUT_DEV_INTERFACE_0_1,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_AudioOutput_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1 = {
   .iface_macro = PPB_DEVICEREF_DEV_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_DeviceRef_Dev_0_1,
@@ -6690,6 +6759,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4,
+  &Pnacl_WrapperInfo_PPB_AudioOutput_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,

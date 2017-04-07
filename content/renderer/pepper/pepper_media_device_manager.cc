@@ -25,6 +25,8 @@ PP_DeviceType_Dev FromMediaDeviceType(MediaDeviceType type) {
       return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
     case MEDIA_DEVICE_TYPE_VIDEO_INPUT:
       return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
+    case MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
+      return PP_DEVICETYPE_DEV_AUDIOOUTPUT;
     default:
       NOTREACHED();
       return PP_DEVICETYPE_DEV_INVALID;
@@ -37,6 +39,8 @@ MediaDeviceType ToMediaDeviceType(PP_DeviceType_Dev type) {
       return MEDIA_DEVICE_TYPE_AUDIO_INPUT;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
       return MEDIA_DEVICE_TYPE_VIDEO_INPUT;
+    case PP_DEVICETYPE_DEV_AUDIOOUTPUT:
+      return MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
     default:
       NOTREACHED();
       return MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
@@ -82,9 +86,10 @@ void PepperMediaDeviceManager::EnumerateDevices(
 #if BUILDFLAG(ENABLE_WEBRTC)
   bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
   bool request_video_input = type == PP_DEVICETYPE_DEV_VIDEOCAPTURE;
-  CHECK(request_audio_input || request_video_input);
+  bool request_audio_output = type == PP_DEVICETYPE_DEV_AUDIOOUTPUT;
+  CHECK(request_audio_input || request_video_input || request_audio_output);
   GetMediaDevicesDispatcher()->EnumerateDevices(
-      request_audio_input, request_video_input, false /* audio_output */,
+      request_audio_input, request_video_input, request_audio_output,
       url::Origin(document_url.GetOrigin()),
       base::Bind(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
                  callback, ToMediaDeviceType(type)));

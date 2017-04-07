@@ -11,6 +11,7 @@
 
 namespace content {
 
+class PepperAudioOutputHost;
 class PepperPluginInstanceImpl;
 class PPB_Audio_Impl;
 
@@ -25,9 +26,11 @@ class PepperAudioController {
 
   // Adds an audio instance to the controller.
   void AddInstance(PPB_Audio_Impl* audio);
+  void AddInstance(PepperAudioOutputHost* audio_output);
 
   // Removes an audio instance from the controller.
   void RemoveInstance(PPB_Audio_Impl* audio);
+  void RemoveInstance(PepperAudioOutputHost* audio_output);
 
   // Sets the volume of all audio instances.
   void SetVolume(double volume);
@@ -42,8 +45,17 @@ class PepperAudioController {
   // only be called when |ppb_audios_| turns from non-empty to empty.
   void NotifyPlaybackStopsOnEmpty();
 
-  // All active audio instances.
+  // Helper functions to deal with the first and last audio instance.
+  void StartPlaybackIfFirstInstance();
+  void StopPlaybackIfLastInstance();
+
+  // All active audio instances that are using the old
+  // PPB_Audio interface.
   std::set<PPB_Audio_Impl*> ppb_audios_;
+
+  // All active audio output instances that are using the new
+  // PPB_AudioOutput interface.
+  std::set<PepperAudioOutputHost*> audio_output_hosts_;
 
   // The Pepper instance which this controller is for. Will be null after
   // OnPepperInstanceDeleted() is called.

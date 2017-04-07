@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/audio_encoder_resource.h"
 #include "ppapi/proxy/audio_input_resource.h"
+#include "ppapi/proxy/audio_output_resource.h"
 #include "ppapi/proxy/camera_device_resource.h"
 #include "ppapi/proxy/compositor_resource.h"
 #include "ppapi/proxy/connection.h"
@@ -427,6 +428,10 @@ PP_Resource ResourceCreationProxy::CreateX509CertificatePrivate(
 PP_Resource ResourceCreationProxy::CreateAudioInput(
     PP_Instance instance) {
   return (new AudioInputResource(GetConnection(), instance))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateAudioOutput(PP_Instance instance) {
+  return (new AudioOutputResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {

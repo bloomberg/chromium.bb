@@ -2246,6 +2246,18 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_AudioInput_OpenReply)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_AudioInput_StartOrStop, bool /* capture */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Close)
 
+// Audio output.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioOutput_Create)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_AudioOutput_Open,
+                     std::string /* device_id */,
+                     PP_AudioSampleRate /* sample_rate */,
+                     uint32_t /* sample_frame_count */)
+// Reply to an Open call. This supplies a socket handle and a shared memory
+// handle. Both handles are passed in the ReplyParams struct.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_AudioOutput_OpenReply)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_AudioOutput_StartOrStop, bool /* playback */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioOutput_Close)
+
 // BrowserFont -----------------------------------------------------------------
 
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_BrowserFontSingleton_Create)

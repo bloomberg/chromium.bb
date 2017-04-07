@@ -161,6 +161,8 @@ source_set("objects") {
     # Dev interfaces.
     "dev/audio_input_dev.cc",
     "dev/audio_input_dev.h",
+    "dev/audio_output_dev.cc",
+    "dev/audio_output_dev.h",
     "dev/buffer_dev.cc",
     "dev/buffer_dev.h",
     "dev/crypto_dev.cc",

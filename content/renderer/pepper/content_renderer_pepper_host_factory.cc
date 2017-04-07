@@ -15,6 +15,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/pepper_audio_encoder_host.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
+#include "content/renderer/pepper/pepper_audio_output_host.h"
 #include "content/renderer/pepper/pepper_camera_device_host.h"
 #include "content/renderer/pepper/pepper_compositor_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
@@ -211,6 +212,9 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_AudioInput_Create::ID:
         return base::MakeUnique<PepperAudioInputHost>(host_, instance,
                                                       resource);
+      case PpapiHostMsg_AudioOutput_Create::ID:
+        return base::MakeUnique<PepperAudioOutputHost>(host_, instance,
+                                                       resource);
       case PpapiHostMsg_FileChooser_Create::ID:
         return base::MakeUnique<PepperFileChooserHost>(host_, instance,
                                                        resource);
