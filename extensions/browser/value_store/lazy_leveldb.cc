@@ -253,6 +253,9 @@ ValueStore::Status LazyLevelDb::EnsureDbIsOpen() {
 
 ValueStore::Status LazyLevelDb::ToValueStoreError(
     const leveldb::Status& status) {
+  if (status.ok())
+    return ValueStore::Status();
+
   CHECK(!status.IsNotFound());  // not an error
 
   std::string message = status.ToString();
