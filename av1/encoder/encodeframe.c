@@ -446,8 +446,14 @@ static void set_block_size(AV1_COMP *const cpi, MACROBLOCK *const x,
                            MACROBLOCKD *const xd, int mi_row, int mi_col,
                            BLOCK_SIZE bsize) {
   if (cpi->common.mi_cols > mi_col && cpi->common.mi_rows > mi_row) {
-    set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
-    xd->mi[0]->mbmi.sb_type = bsize;
+    const int mi_width = AOMMAX(mi_size_wide[bsize], mi_size_wide[BLOCK_8X8]);
+    const int mi_height = AOMMAX(mi_size_high[bsize], mi_size_high[BLOCK_8X8]);
+    for (int r = 0; r < mi_height; ++r) {
+      for (int c = 0; c < mi_width; ++c) {
+        set_mode_info_offsets(cpi, x, xd, mi_row + r, mi_col + c);
+        xd->mi[0]->mbmi.sb_type = bsize;
+      }
+    }
   }
 }
 
@@ -2764,13 +2770,17 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   const int bs = mi_size_wide[bsize];
   const int hbs = bs / 2;
   int i;
-  const int pl = partition_plane_context(xd, mi_row, mi_col,
+  const int pl = (bsize >= BLOCK_8X8)
+                     ? partition_plane_context(xd, mi_row, mi_col,
 #if CONFIG_UNPOISON_PARTITION_CTX
-                                         mi_row + hbs < cm->mi_rows,
-                                         mi_col + hbs < cm->mi_cols,
+                                               mi_row + hbs < cm->mi_rows,
+                                               mi_col + hbs < cm->mi_cols,
 #endif
-                                         bsize);
-  const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
+                                               bsize)
+                     : 0;
+  const PARTITION_TYPE partition =
+      (bsize >= BLOCK_8X8) ? get_partition(cm, mi_row, mi_col, bsize)
+                           : PARTITION_NONE;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
   RD_COST last_part_rdc, none_rdc, chosen_rdc;
@@ -2779,6 +2789,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   BLOCK_SIZE bs_type = mib[0]->mbmi.sb_type;
   int do_partition_search = 1;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
+  const int unify_bsize = CONFIG_CB4X4;
 #if CONFIG_SUPERTX
   int last_part_rate_nocoef = INT_MAX;
   int none_rate_nocoef = INT_MAX;
@@ -2962,7 +2973,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       }
       break;
     case PARTITION_SPLIT:
-      if (bsize == BLOCK_8X8) {
+      if (bsize == BLOCK_8X8 && !unify_bsize) {
         rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &last_part_rdc,
 #if CONFIG_SUPERTX
                          &last_part_rate_nocoef,
