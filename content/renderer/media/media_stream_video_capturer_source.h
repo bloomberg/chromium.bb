@@ -46,6 +46,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
  private:
   friend class CanvasCaptureHandlerTest;
   friend class MediaStreamVideoCapturerSourceTest;
+  friend class MediaStreamVideoCapturerSourceOldConstraintsTest;
 
   // MediaStreamVideoSource overrides.
   void RequestRefreshFrame() override;

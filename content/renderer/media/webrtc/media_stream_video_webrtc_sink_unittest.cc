@@ -18,7 +18,10 @@ namespace {
 
 class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
  public:
-  MediaStreamVideoWebRtcSinkTest() {}
+  MediaStreamVideoWebRtcSinkTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMediaStreamOldVideoConstraints);
+  }
 
   void SetVideoTrack() {
     registry_.Init("stream URL");
@@ -61,14 +64,78 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   // and Sources in |registry_| into believing they are on the right threads.
   base::MessageLoopForUI message_loop_;
   const ChildProcess child_process_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
+  SetVideoTrack();
+  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
+  EXPECT_TRUE(my_sink.webrtc_video_track());
+  EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
+}
+
 // TODO(guidou): Remove this test. http://crbug.com/706408
-TEST_F(MediaStreamVideoWebRtcSinkTest,
-       NoiseReductionDefaultsToNotSetOldConstraints) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kMediaStreamOldVideoConstraints);
+TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionConstraintPassThrough) {
+  SetVideoTrack(base::Optional<bool>(true));
+  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
+  EXPECT_TRUE(my_sink.SourceNeedsDenoisingForTesting());
+  EXPECT_TRUE(*(my_sink.SourceNeedsDenoisingForTesting()));
+}
+
+// TODO(guidou): Remove this test. http://crbug.com/706408
+class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
+ public:
+  MediaStreamVideoWebRtcSinkOldConstraintsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kMediaStreamOldVideoConstraints);
+  }
+
+  void SetVideoTrack() {
+    registry_.Init("stream URL");
+    registry_.AddVideoTrack("test video track");
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    registry_.test_stream().videoTracks(video_tracks);
+    track_ = video_tracks[0];
+    // TODO(hta): Verify that track_ is valid. When constraints produce
+    // no valid format, using the track will cause a crash.
+  }
+
+  void SetVideoTrack(blink::WebMediaConstraints constraints) {
+    registry_.Init("stream URL");
+    registry_.AddVideoTrack("test video track", constraints);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    registry_.test_stream().videoTracks(video_tracks);
+    track_ = video_tracks[0];
+    // TODO(hta): Verify that track_ is valid. When constraints produce
+    // no valid format, using the track will cause a crash.
+  }
+
+  void SetVideoTrack(const base::Optional<bool>& noise_reduction) {
+    registry_.Init("stream URL");
+    registry_.AddVideoTrack("test video track", VideoTrackAdapterSettings(),
+                            noise_reduction, false, 0.0);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    registry_.test_stream().videoTracks(video_tracks);
+    track_ = video_tracks[0];
+    // TODO(hta): Verify that track_ is valid. When constraints produce
+    // no valid format, using the track will cause a crash.
+  }
+
+ protected:
+  blink::WebMediaStreamTrack track_;
+  MockPeerConnectionDependencyFactory dependency_factory_;
+
+ private:
+  MockMediaStreamRegistry registry_;
+  // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
+  // and Sources in |registry_| into believing they are on the right threads.
+  base::MessageLoopForUI message_loop_;
+  const ChildProcess child_process_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(MediaStreamVideoWebRtcSinkOldConstraintsTest,
+       NoiseReductionDefaultsToNotSet) {
   blink::WebMediaConstraints constraints;
   constraints.initialize();
   SetVideoTrack(constraints);
@@ -77,37 +144,11 @@ TEST_F(MediaStreamVideoWebRtcSinkTest,
   EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
 }
 
-// TODO(guidou): Remove this test. http://crbug.com/706408
-TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kMediaStreamOldVideoConstraints);
-  SetVideoTrack();
-  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
-  EXPECT_TRUE(my_sink.webrtc_video_track());
-  EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
-}
-
-// TODO(guidou): Remove this test. http://crbug.com/706408
-TEST_F(MediaStreamVideoWebRtcSinkTest,
-       NoiseReductionConstraintPassThroughOldConstraints) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kMediaStreamOldVideoConstraints);
+TEST_F(MediaStreamVideoWebRtcSinkOldConstraintsTest,
+       NoiseReductionConstraintPassThrough) {
   MockConstraintFactory factory;
   factory.basic().googNoiseReduction.setExact(true);
   SetVideoTrack(factory.CreateWebMediaConstraints());
-  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
-  EXPECT_TRUE(my_sink.SourceNeedsDenoisingForTesting());
-  EXPECT_TRUE(*(my_sink.SourceNeedsDenoisingForTesting()));
-}
-
-// TODO(guidou): Remove this test. http://crbug.com/706408
-TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionConstraintPassThrough) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kMediaStreamOldVideoConstraints);
-  SetVideoTrack(base::Optional<bool>(true));
   MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
   EXPECT_TRUE(my_sink.SourceNeedsDenoisingForTesting());
   EXPECT_TRUE(*(my_sink.SourceNeedsDenoisingForTesting()));
