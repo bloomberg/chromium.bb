@@ -28,6 +28,8 @@
 
 namespace blink {
 
+namespace cssvalue {
+
 class CSSCounterValue : public CSSValue {
  public:
   static CSSCounterValue* create(CSSCustomIdentValue* identifier,
@@ -64,6 +66,8 @@ class CSSCounterValue : public CSSValue {
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, isCounterValue());
+
+}  // namespace cssvalue
 
 }  // namespace blink
 

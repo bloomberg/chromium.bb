@@ -9,6 +9,8 @@
 
 namespace blink {
 
+namespace cssvalue {
+
 String CSSCounterValue::customCSSText() const {
   StringBuilder result;
   if (separator().isEmpty())
@@ -37,5 +39,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCounterValue) {
   visitor->trace(m_separator);
   CSSValue::traceAfterDispatch(visitor);
 }
+
+}  // namespace cssvalue
 
 }  // namespace blink

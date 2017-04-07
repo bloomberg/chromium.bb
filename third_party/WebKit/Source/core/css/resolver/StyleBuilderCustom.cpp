@@ -217,7 +217,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(
     state.style()->setCursor(ECursor::kAuto);
     for (const auto& item : toCSSValueList(value)) {
       if (item->isCursorImageValue()) {
-        const CSSCursorImageValue& cursor = toCSSCursorImageValue(*item);
+        const cssvalue::CSSCursorImageValue& cursor =
+            cssvalue::toCSSCursorImageValue(*item);
         const CSSValue& image = cursor.imageValue();
         state.style()->addCursor(state.styleImage(CSSPropertyCursor, image),
                                  cursor.hotSpotSpecified(), cursor.hotSpot());
@@ -723,7 +724,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
       nextContent =
           ContentData::create(state.styleImage(CSSPropertyContent, *item));
     } else if (item->isCounterValue()) {
-      const CSSCounterValue* counterValue = toCSSCounterValue(item.get());
+      const cssvalue::CSSCounterValue* counterValue =
+          cssvalue::toCSSCounterValue(item.get());
       const auto listStyleType =
           cssValueIDToPlatformEnum<EListStyleType>(counterValue->listStyle());
       std::unique_ptr<CounterContent> counter =

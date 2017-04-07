@@ -13,6 +13,8 @@
 
 namespace blink {
 
+using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
+
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {

@@ -26,6 +26,8 @@
 
 namespace blink {
 
+namespace cssvalue {
+
 class CSSCursorImageValue : public CSSValue {
  public:
   static const CSSCursorImageValue* create(const CSSValue& imageValue,
@@ -57,6 +59,8 @@ class CSSCursorImageValue : public CSSValue {
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());
+
+}  // namespace cssvalue
 
 }  // namespace blink
 

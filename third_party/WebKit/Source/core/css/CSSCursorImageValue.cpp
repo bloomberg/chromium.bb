@@ -26,6 +26,8 @@
 
 namespace blink {
 
+namespace cssvalue {
+
 CSSCursorImageValue::CSSCursorImageValue(const CSSValue& imageValue,
                                          bool hotSpotSpecified,
                                          const IntPoint& hotSpot)
@@ -61,5 +63,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue) {
   visitor->trace(m_imageValue);
   CSSValue::traceAfterDispatch(visitor);
 }
+
+}  // namespace cssvalue
 
 }  // namespace blink

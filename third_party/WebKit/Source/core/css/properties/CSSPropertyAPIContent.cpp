@@ -14,6 +14,8 @@
 
 namespace blink {
 
+using CSSCounterValue = cssvalue::CSSCounterValue;
+
 namespace {
 
 CSSValue* consumeAttr(CSSParserTokenRange args,
