@@ -38,9 +38,9 @@
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/Rotation.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <cmath>
 #include <cstdlib>

@@ -26,16 +26,16 @@
 #ifndef TransformationMatrix_h
 #define TransformationMatrix_h
 
+#include <string.h>  // for memcpy
+#include <memory>
 #include "SkMatrix44.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
-#include "wtf/Alignment.h"
-#include "wtf/Allocator.h"
-#include "wtf/CPU.h"
-#include "wtf/Compiler.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
-#include <string.h>  // for memcpy
+#include "platform/wtf/Alignment.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

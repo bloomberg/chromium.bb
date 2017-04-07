@@ -29,8 +29,8 @@
 
 #include "platform/transforms/TransformationMatrix.h"
 
-#include "wtf/Allocator.h"
 #include <string.h>  // for memcpy
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 
