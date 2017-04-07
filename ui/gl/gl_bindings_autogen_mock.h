@@ -1177,8 +1177,6 @@ static void GL_BINDING_CALL Mock_glReadPixelsRobustANGLE(GLint x,
                                                          GLenum type,
                                                          GLsizei bufSize,
                                                          GLsizei* length,
-                                                         GLsizei* columns,
-                                                         GLsizei* rows,
                                                          void* pixels);
 static void GL_BINDING_CALL Mock_glReadnPixelsRobustANGLE(GLint x,
                                                           GLint y,
@@ -1188,8 +1186,6 @@ static void GL_BINDING_CALL Mock_glReadnPixelsRobustANGLE(GLint x,
                                                           GLenum type,
                                                           GLsizei bufSize,
                                                           GLsizei* length,
-                                                          GLsizei* columns,
-                                                          GLsizei* rows,
                                                           void* data);
 static void GL_BINDING_CALL Mock_glReleaseShaderCompiler(void);
 static void GL_BINDING_CALL Mock_glRenderbufferStorage(GLenum target,

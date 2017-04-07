@@ -116,34 +116,6 @@ class MockGLInterface {
                      GLenum format,
                      GLenum type));
 
-  void ReadPixelsRobustANGLE(GLint /*x*/,
-                             GLint /*y*/,
-                             GLsizei /*width*/,
-                             GLsizei /*height*/,
-                             GLenum /*format*/,
-                             GLenum /*type*/,
-                             GLsizei /*bufSize*/,
-                             GLsizei* /*length*/,
-                             GLsizei* /*columns*/,
-                             GLsizei* /*rows*/,
-                             void* /*pixels*/) {
-    NOTREACHED();
-  }
-
-  void ReadnPixelsRobustANGLE(GLint /*x*/,
-                              GLint /*y*/,
-                              GLsizei /*width*/,
-                              GLsizei /*height*/,
-                              GLenum /*format*/,
-                              GLenum /*type*/,
-                              GLsizei /*bufSize*/,
-                              GLsizei* /*length*/,
-                              GLsizei* /*columns*/,
-                              GLsizei* /*rows*/,
-                              void* /*data*/) {
-    NOTREACHED();
-  }
-
  private:
   static MockGLInterface* interface_;
 

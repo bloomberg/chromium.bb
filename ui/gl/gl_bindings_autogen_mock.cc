@@ -2851,12 +2851,10 @@ MockGLInterface::Mock_glReadPixelsRobustANGLE(GLint x,
                                               GLenum type,
                                               GLsizei bufSize,
                                               GLsizei* length,
-                                              GLsizei* columns,
-                                              GLsizei* rows,
                                               void* pixels) {
   MakeFunctionUnique("glReadPixelsRobustANGLE");
   interface_->ReadPixelsRobustANGLE(x, y, width, height, format, type, bufSize,
-                                    length, columns, rows, pixels);
+                                    length, pixels);
 }
 
 void GL_BINDING_CALL
@@ -2868,12 +2866,10 @@ MockGLInterface::Mock_glReadnPixelsRobustANGLE(GLint x,
                                                GLenum type,
                                                GLsizei bufSize,
                                                GLsizei* length,
-                                               GLsizei* columns,
-                                               GLsizei* rows,
                                                void* data) {
   MakeFunctionUnique("glReadnPixelsRobustANGLE");
   interface_->ReadnPixelsRobustANGLE(x, y, width, height, format, type, bufSize,
-                                     length, columns, rows, data);
+                                     length, data);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glReleaseShaderCompiler(void) {

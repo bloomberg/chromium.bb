@@ -859,11 +859,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
 
   GLsizei bufsize = buffer_size;
   GLsizei length = 0;
-  GLsizei columns = 0;
-  GLsizei rows = 0;
   int32_t success = 0;
   error::Error error = DoReadPixels(x, y, width, height, format, type, bufsize,
-                                    &length, &columns, &rows, pixels, &success);
+                                    &length, pixels, &success);
   if (error != error::kNoError) {
     return error;
   }
@@ -886,8 +884,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
 
   if (result) {
     result->success = success;
-    result->row_length = static_cast<uint32_t>(columns);
-    result->num_rows = static_cast<uint32_t>(rows);
+    result->row_length = static_cast<uint32_t>(width);
+    result->num_rows = static_cast<uint32_t>(height);
   }
 
   return error::kNoError;

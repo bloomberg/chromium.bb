@@ -1003,8 +1003,6 @@ typedef void(GL_BINDING_CALL* glReadnPixelsRobustANGLEProc)(GLint x,
                                                             GLenum type,
                                                             GLsizei bufSize,
                                                             GLsizei* length,
-                                                            GLsizei* columns,
-                                                            GLsizei* rows,
                                                             void* data);
 typedef void(GL_BINDING_CALL* glReadPixelsProc)(GLint x,
                                                 GLint y,
@@ -1021,8 +1019,6 @@ typedef void(GL_BINDING_CALL* glReadPixelsRobustANGLEProc)(GLint x,
                                                            GLenum type,
                                                            GLsizei bufSize,
                                                            GLsizei* length,
-                                                           GLsizei* columns,
-                                                           GLsizei* rows,
                                                            void* pixels);
 typedef void(GL_BINDING_CALL* glReleaseShaderCompilerProc)(void);
 typedef void(GL_BINDING_CALL* glRenderbufferStorageEXTProc)(
@@ -2835,8 +2831,6 @@ class GL_EXPORT GLApi {
                                           GLenum type,
                                           GLsizei bufSize,
                                           GLsizei* length,
-                                          GLsizei* columns,
-                                          GLsizei* rows,
                                           void* data) = 0;
   virtual void glReadPixelsFn(GLint x,
                               GLint y,
@@ -2853,8 +2847,6 @@ class GL_EXPORT GLApi {
                                          GLenum type,
                                          GLsizei bufSize,
                                          GLsizei* length,
-                                         GLsizei* columns,
-                                         GLsizei* rows,
                                          void* pixels) = 0;
   virtual void glReleaseShaderCompilerFn(void) = 0;
   virtual void glRenderbufferStorageEXTFn(GLenum target,

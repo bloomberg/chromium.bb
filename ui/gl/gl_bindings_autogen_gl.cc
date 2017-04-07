@@ -4247,11 +4247,9 @@ void GLApiBase::glReadnPixelsRobustANGLEFn(GLint x,
                                            GLenum type,
                                            GLsizei bufSize,
                                            GLsizei* length,
-                                           GLsizei* columns,
-                                           GLsizei* rows,
                                            void* data) {
   driver_->fn.glReadnPixelsRobustANGLEFn(x, y, width, height, format, type,
-                                         bufSize, length, columns, rows, data);
+                                         bufSize, length, data);
 }
 
 void GLApiBase::glReadPixelsFn(GLint x,
@@ -4272,11 +4270,9 @@ void GLApiBase::glReadPixelsRobustANGLEFn(GLint x,
                                           GLenum type,
                                           GLsizei bufSize,
                                           GLsizei* length,
-                                          GLsizei* columns,
-                                          GLsizei* rows,
                                           void* pixels) {
   driver_->fn.glReadPixelsRobustANGLEFn(x, y, width, height, format, type,
-                                        bufSize, length, columns, rows, pixels);
+                                        bufSize, length, pixels);
 }
 
 void GLApiBase::glReleaseShaderCompilerFn(void) {
@@ -7150,12 +7146,10 @@ void TraceGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                             GLenum type,
                                             GLsizei bufSize,
                                             GLsizei* length,
-                                            GLsizei* columns,
-                                            GLsizei* rows,
                                             void* data) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glReadnPixelsRobustANGLE")
   gl_api_->glReadnPixelsRobustANGLEFn(x, y, width, height, format, type,
-                                      bufSize, length, columns, rows, data);
+                                      bufSize, length, data);
 }
 
 void TraceGLApi::glReadPixelsFn(GLint x,
@@ -7177,12 +7171,10 @@ void TraceGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                            GLenum type,
                                            GLsizei bufSize,
                                            GLsizei* length,
-                                           GLsizei* columns,
-                                           GLsizei* rows,
                                            void* pixels) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glReadPixelsRobustANGLE")
   gl_api_->glReadPixelsRobustANGLEFn(x, y, width, height, format, type, bufSize,
-                                     length, columns, rows, pixels);
+                                     length, pixels);
 }
 
 void TraceGLApi::glReleaseShaderCompilerFn(void) {
@@ -10867,19 +10859,15 @@ void DebugGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                             GLenum type,
                                             GLsizei bufSize,
                                             GLsizei* length,
-                                            GLsizei* columns,
-                                            GLsizei* rows,
                                             void* data) {
   GL_SERVICE_LOG("glReadnPixelsRobustANGLE"
                  << "(" << x << ", " << y << ", " << width << ", " << height
                  << ", " << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", " << bufSize << ", "
                  << static_cast<const void*>(length) << ", "
-                 << static_cast<const void*>(columns) << ", "
-                 << static_cast<const void*>(rows) << ", "
                  << static_cast<const void*>(data) << ")");
   gl_api_->glReadnPixelsRobustANGLEFn(x, y, width, height, format, type,
-                                      bufSize, length, columns, rows, data);
+                                      bufSize, length, data);
 }
 
 void DebugGLApi::glReadPixelsFn(GLint x,
@@ -10905,19 +10893,15 @@ void DebugGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                            GLenum type,
                                            GLsizei bufSize,
                                            GLsizei* length,
-                                           GLsizei* columns,
-                                           GLsizei* rows,
                                            void* pixels) {
   GL_SERVICE_LOG("glReadPixelsRobustANGLE"
                  << "(" << x << ", " << y << ", " << width << ", " << height
                  << ", " << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", " << bufSize << ", "
                  << static_cast<const void*>(length) << ", "
-                 << static_cast<const void*>(columns) << ", "
-                 << static_cast<const void*>(rows) << ", "
                  << static_cast<const void*>(pixels) << ")");
   gl_api_->glReadPixelsRobustANGLEFn(x, y, width, height, format, type, bufSize,
-                                     length, columns, rows, pixels);
+                                     length, pixels);
 }
 
 void DebugGLApi::glReleaseShaderCompilerFn(void) {
@@ -14490,8 +14474,6 @@ void NoContextGLApi::glReadnPixelsRobustANGLEFn(GLint x,
                                                 GLenum type,
                                                 GLsizei bufSize,
                                                 GLsizei* length,
-                                                GLsizei* columns,
-                                                GLsizei* rows,
                                                 void* data) {
   NOTREACHED()
       << "Trying to call glReadnPixelsRobustANGLE() without current GL context";
@@ -14518,8 +14500,6 @@ void NoContextGLApi::glReadPixelsRobustANGLEFn(GLint x,
                                                GLenum type,
                                                GLsizei bufSize,
                                                GLsizei* length,
-                                               GLsizei* columns,
-                                               GLsizei* rows,
                                                void* pixels) {
   NOTREACHED()
       << "Trying to call glReadPixelsRobustANGLE() without current GL context";

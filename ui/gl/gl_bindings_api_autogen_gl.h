@@ -849,8 +849,6 @@ void glReadnPixelsRobustANGLEFn(GLint x,
                                 GLenum type,
                                 GLsizei bufSize,
                                 GLsizei* length,
-                                GLsizei* columns,
-                                GLsizei* rows,
                                 void* data) override;
 void glReadPixelsFn(GLint x,
                     GLint y,
@@ -867,8 +865,6 @@ void glReadPixelsRobustANGLEFn(GLint x,
                                GLenum type,
                                GLsizei bufSize,
                                GLsizei* length,
-                               GLsizei* columns,
-                               GLsizei* rows,
                                void* pixels) override;
 void glReleaseShaderCompilerFn(void) override;
 void glRenderbufferStorageEXTFn(GLenum target,
