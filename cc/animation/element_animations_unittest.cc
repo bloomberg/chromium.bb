@@ -3588,5 +3588,27 @@ TEST_F(ElementAnimationsTest, DestroyTestMainLayerBeforePushProperties) {
   EXPECT_EQ(0u, host_impl_->ticking_players_for_testing().size());
 }
 
+TEST_F(ElementAnimationsTest, RemoveAndReAddPlayerToTicking) {
+  CreateTestLayer(false, false);
+  AttachTimelinePlayerLayer();
+  EXPECT_EQ(0u, host_->ticking_players_for_testing().size());
+
+  // Add an animation and ensure the player is in the host's ticking players.
+  // Remove the player using RemoveFromTicking().
+  player_->AddAnimation(CreateAnimation(
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
+      2, TargetProperty::OPACITY));
+  ASSERT_EQ(1u, host_->ticking_players_for_testing().size());
+  player_->RemoveFromTicking();
+  ASSERT_EQ(0u, host_->ticking_players_for_testing().size());
+
+  // Ensure that adding a new animation will correctly update the ticking
+  // players list.
+  player_->AddAnimation(CreateAnimation(
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
+      2, TargetProperty::OPACITY));
+  EXPECT_EQ(1u, host_->ticking_players_for_testing().size());
+}
+
 }  // namespace
 }  // namespace cc
