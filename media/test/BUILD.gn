@@ -46,13 +46,6 @@ source_set("pipeline_integration_test_base") {
       "//testing/gmock",
       "//testing/gtest",
     ]
-
-    if (enable_media_remoting) {
-      deps += [
-        "//media/remoting:media_remoting_proto",
-        "//media/remoting:media_remoting_tests",
-      ]
-    }
   }
 }
 
