@@ -1111,8 +1111,6 @@ crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
-crbug.com/691045 media/autoplay-muted.html [ Pass Timeout ]
-
 # These tests pass but images do not match because tests are stricter than the spec.
 #crbug.com/492664 external/wpt/css/css-writing-modes-3/text-combine-upright-value-all-001.html [ Failure ]
 #crbug.com/492664 external/wpt/css/css-writing-modes-3/text-combine-upright-value-all-002.html [ Failure ]
@@ -1233,7 +1231,6 @@ crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/613887 virtual/mojo-loading/http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
-crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -1294,8 +1291,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-v
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled-after-onload.html [ Failure ]
-
-crbug.com/651343 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Pass Failure ]
 
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
@@ -1653,8 +1648,6 @@ crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Failure ]
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display.html [ Pass Failure ]
 crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display-intervention.html [ Pass Failure ]
-
-crbug.com/581468 http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
@@ -2508,9 +2501,6 @@ crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 
-crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
-crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
-
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
 crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
@@ -2576,7 +2566,6 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
-crbug.com/664839 virtual/mojo-loading/http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/498539
 # crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
@@ -2625,10 +2614,7 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass T
 
 crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
-crbug.com/678489 http/tests/inspector/tracing/timeline-script-parse.html [ Timeout Pass ]
 crbug.com/678489 virtual/mojo-loading/http/tests/inspector/tracing/timeline-script-parse.html [ Timeout Pass ]
-crbug.com/678490 http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure Pass ]
-crbug.com/678490 virtual/mojo-loading/http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure Pass ]
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
@@ -2667,10 +2653,6 @@ crbug.com/685951 css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/redirect/redirect-location-worker.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/redirect/redirect-location.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/redirect/redirect-origin-worker.html [ Timeout Pass ]
-crbug.com/705490 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 # Non-deterministic output, as the failing subtests dump timestamps.
 crbug.com/705490 external/wpt/fetch/api/request/request-cache-reload.html [ Failure ]
@@ -2690,8 +2672,6 @@ crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pa
 crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-with-colon.sub.html [ Failure Pass ]
 crbug.com/694338 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Failure ]
 crbug.com/694338 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ Failure ]
-
-crbug.com/697087 external/wpt/service-workers/service-worker/registration-iframe.https.html [ Pass Timeout ]
 
 crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
 crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
