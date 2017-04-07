@@ -612,6 +612,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         (ControlContainer) findViewById(R.id.control_container);
                 controlContainer.getToolbarResourceAdapter().invalidate(null);
             }
+
+            @Override
+            public void onContentChanged(Tab tab) {
+                if (getBottomSheet() != null) setStatusBarColor(tab, tab.getDefaultThemeColor());
+            }
         };
 
         if (mAssistStatusHandler != null) {
@@ -794,11 +799,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void setStatusBarColor(Tab tab, int color) {
         int statusBarColor = (tab != null && tab.isDefaultThemeColor())
                 ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
-        if (getBottomSheet() != null) {
-            statusBarColor =
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
-            getBottomSheet().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 
