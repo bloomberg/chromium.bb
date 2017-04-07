@@ -2104,7 +2104,8 @@ const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
 DispatchEventResult dispatchBeforeInputInsertText(
     Node* target,
     const String& data,
-    InputEvent::InputType inputType) {
+    InputEvent::InputType inputType,
+    const StaticRangeVector* ranges) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
     return DispatchEventResult::NotCanceled;
   if (!target)
@@ -2114,7 +2115,7 @@ DispatchEventResult dispatchBeforeInputInsertText(
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
       inputType, data, inputTypeIsCancelable(inputType),
       InputEvent::EventIsComposing::NotComposing,
-      targetRangesForInputEvent(*target));
+      ranges ? ranges : targetRangesForInputEvent(*target));
   return target->dispatchEvent(beforeInputEvent);
 }
 

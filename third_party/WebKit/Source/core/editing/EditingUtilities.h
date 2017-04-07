@@ -438,7 +438,8 @@ const StaticRangeVector* targetRangesForInputEvent(const Node&);
 DispatchEventResult dispatchBeforeInputInsertText(
     Node*,
     const String& data,
-    InputEvent::InputType = InputEvent::InputType::InsertText);
+    InputEvent::InputType = InputEvent::InputType::InsertText,
+    const StaticRangeVector* = nullptr);
 DispatchEventResult dispatchBeforeInputEditorCommand(Node*,
                                                      InputEvent::InputType,
                                                      const StaticRangeVector*);

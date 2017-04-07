@@ -145,6 +145,25 @@ bool isInPasswordFieldWithUnrevealedPassword(const Position& position) {
          !input->shouldRevealPassword();
 }
 
+EphemeralRange computeRangeForTranspose(LocalFrame& frame) {
+  const VisibleSelection& selection =
+      frame.selection().computeVisibleSelectionInDOMTree();
+  if (!selection.isCaret())
+    return EphemeralRange();
+
+  // Make a selection that goes back one character and forward two characters.
+  const VisiblePosition& caret = selection.visibleStart();
+  const VisiblePosition& next =
+      isEndOfParagraph(caret) ? caret : nextPositionOf(caret);
+  const VisiblePosition& previous = previousPositionOf(next);
+  if (next.deepEquivalent() == previous.deepEquivalent())
+    return EphemeralRange();
+  const VisiblePosition& previousOfPrevious = previousPositionOf(previous);
+  if (!inSameParagraph(next, previousOfPrevious))
+    return EphemeralRange();
+  return makeRange(previousOfPrevious, next);
+}
+
 }  // anonymous namespace
 
 Editor::RevealSelectionScope::RevealSelectionScope(Editor* editor)
@@ -1380,41 +1399,24 @@ void Editor::transpose() {
   if (!canEdit())
     return;
 
-  VisibleSelection selection =
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
-  if (!selection.isCaret())
-    return;
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // Make a selection that goes back one character and forward two characters.
-  VisiblePosition caret = selection.visibleStart();
-  VisiblePosition next =
-      isEndOfParagraph(caret) ? caret : nextPositionOf(caret);
-  VisiblePosition previous = previousPositionOf(next);
-  if (next.deepEquivalent() == previous.deepEquivalent())
-    return;
-  previous = previousPositionOf(previous);
-  if (!inSameParagraph(next, previous))
-    return;
-  const EphemeralRange range = makeRange(previous, next);
+  const EphemeralRange& range = computeRangeForTranspose(frame());
   if (range.isNull())
     return;
-  const SelectionInDOMTree newSelection =
-      SelectionInDOMTree::Builder().setBaseAndExtent(range).build();
 
   // Transpose the two characters.
-  String text = plainText(range);
+  const String& text = plainText(range);
   if (text.length() != 2)
     return;
-  String transposed = text.right(1) + text.left(1);
-
-  // Select the two characters.
-  if (createVisibleSelection(newSelection) !=
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated())
-    frame().selection().setSelection(newSelection);
+  const String& transposed = text.right(1) + text.left(1);
 
   if (dispatchBeforeInputInsertText(
           eventTargetNodeForDocument(frame().document()), transposed,
-          InputEvent::InputType::InsertTranspose) !=
+          InputEvent::InputType::InsertTranspose,
+          new StaticRangeVector(1, StaticRange::create(range))) !=
       DispatchEventResult::NotCanceled)
     return;
 
@@ -1426,8 +1428,27 @@ void Editor::transpose() {
   // needs to be audited. see http://crbug.com/590369 for more details.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
+  // 'beforeinput' event handler may change selection, we need to re-calculate
+  // range.
+  const EphemeralRange& newRange = computeRangeForTranspose(frame());
+  if (newRange.isNull())
+    return;
+
+  const String& newText = plainText(newRange);
+  if (newText.length() != 2)
+    return;
+  const String& newTransposed = newText.right(1) + newText.left(1);
+
+  const SelectionInDOMTree& newSelection =
+      SelectionInDOMTree::Builder().setBaseAndExtent(newRange).build();
+
+  // Select the two characters.
+  if (createVisibleSelection(newSelection) !=
+      frame().selection().computeVisibleSelectionInDOMTree())
+    frame().selection().setSelection(newSelection);
+
   // Insert the transposed characters.
-  replaceSelectionWithText(transposed, false, false,
+  replaceSelectionWithText(newTransposed, false, false,
                            InputEvent::InputType::InsertTranspose);
 }
 
