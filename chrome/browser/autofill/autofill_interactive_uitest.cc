@@ -1275,8 +1275,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
   TryBasicFormFill();
 }
 
+// https://crbug.com/708861 tracks test flakiness.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
+#else
+#define MAYBE_AutofillAfterReload AutofillAfterReload
+#endif
 // Test that form filling works after reloading the current page.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
   CreateTestProfile();
 
   // Load the test page.
