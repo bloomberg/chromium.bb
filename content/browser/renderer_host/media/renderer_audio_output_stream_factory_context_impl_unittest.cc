@@ -327,7 +327,14 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
       factory_context_;
 };
 
-TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
+// Flaky on Win x64. https://crbug.com/709394
+#if defined(OS_WIN)
+#define MAYBE_StreamIntegrationTest DISABLED_StreamIntegrationTest
+#else
+#define MAYBE_StreamIntegrationTest StreamIntegrationTest
+#endif
+TEST_F(RendererAudioOutputStreamFactoryIntegrationTest,
+       MAYBE_StreamIntegrationTest) {
   // Sets up the factory on the IO thread and runs client code on the UI thread.
   // Send a sine wave from the client and makes sure it's received by the output
   // stream.
