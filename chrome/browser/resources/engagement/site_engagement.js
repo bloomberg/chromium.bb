@@ -4,11 +4,22 @@
 
 'use strict';
 
+// Allow a function to be provided by tests, which will be called when
+// the page has been populated with site engagement details.
+var resolvePageIsPopulated = null;
+var pageIsPopulatedPromise = new Promise((resolve, reject) => {
+  resolvePageIsPopulated = resolve;
+});
+
+function whenPageIsPopulatedForTest() {
+  return pageIsPopulatedPromise;
+}
+
 define('main', [
     'chrome/browser/engagement/site_engagement.mojom',
     'content/public/renderer/frame_interfaces',
-], function(siteEngagementMojom, frameInterfaces) {
-  return function() {
+], (siteEngagementMojom, frameInterfaces) => {
+  return () => {
     var uiHandler = new siteEngagementMojom.SiteEngagementUIHandlerPtr(
         frameInterfaces.getInterface(
             siteEngagementMojom.SiteEngagementUIHandler.name));
@@ -23,7 +34,7 @@ define('main', [
     var engagementTableHeader = $('engagement-table-header');
     var headers = engagementTableHeader.children;
     for (var i = 0; i < headers.length; i++) {
-      headers[i].addEventListener('click', function(e) {
+      headers[i].addEventListener('click', (e) => {
         var newSortKey = e.target.getAttribute('sort-key');
         if (sortKey == newSortKey) {
           sortReverse = !sortReverse;
@@ -117,7 +128,7 @@ define('main', [
      * Sort the engagement info based on |sortKey| and |sortReverse|.
      */
     function sortInfo() {
-      info.sort(function(a, b) {
+      info.sort((a, b) => {
         return (sortReverse ? -1 : 1) *
                compareTableItem(sortKey, a, b);
       });
@@ -151,10 +162,12 @@ define('main', [
       clearTable();
       sortInfo();
       // Round each score to 2 decimal places.
-      info.forEach(function(info) {
+      info.forEach((info) => {
         info.score = Number(Math.round(info.score * 100) / 100);
         engagementTableBody.appendChild(createRow(info));
       });
+
+      resolvePageIsPopulated();
     }
 
     /**
@@ -162,7 +175,7 @@ define('main', [
      */
     function updateEngagementTable() {
       // Populate engagement table.
-      uiHandler.getSiteEngagementInfo().then(function(response) {
+      uiHandler.getSiteEngagementInfo().then((response) => {
         info = response.info;
         renderTable(info);
       });
