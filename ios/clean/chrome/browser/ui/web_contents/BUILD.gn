@@ -14,6 +14,7 @@ source_set("web_contents") {
 
   deps = [
     ":web_contents_ui",
+    "//ios/chrome/browser",
     "//ios/clean/chrome/browser/ui/context_menu",
     "//ios/shared/chrome/browser/tabs",
     "//ios/shared/chrome/browser/ui/browser_list",

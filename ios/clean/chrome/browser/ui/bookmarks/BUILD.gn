@@ -1,0 +1,32 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("bookmarks") {
+  sources = [
+    "bookmarks_coordinator.h",
+    "bookmarks_coordinator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/bookmarks",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/coordinators",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "bookmarks_coordinator_unittest.mm",
+  ]
+
+  deps = [
+    ":bookmarks",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

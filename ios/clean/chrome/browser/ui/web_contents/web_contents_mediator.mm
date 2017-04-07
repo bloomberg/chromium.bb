@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
@@ -102,8 +103,7 @@
 // PLACEHOLDER: This navigates the page since the omnibox is not yet hooked up.
 - (void)navigateToDefaultPage:(web::WebState*)webState {
   if (!webState->GetNavigationManager()->GetItemCount()) {
-    web::NavigationManager::WebLoadParams params(
-        GURL("https://dev.chromium.org/"));
+    web::NavigationManager::WebLoadParams params((GURL(kChromeUINewTabURL)));
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
     webState->GetNavigationManager()->LoadURLWithParams(params);
   }

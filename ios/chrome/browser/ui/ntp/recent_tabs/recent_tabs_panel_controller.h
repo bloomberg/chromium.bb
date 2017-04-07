@@ -45,6 +45,10 @@ class ChromeBrowserState;
 // Sets the tab restore service to null.
 - (void)tabRestoreServiceDestroyed;
 
+// TODO(crbug.com/708319): Expose the view controller in preparation for a full
+// view controller conversion.
+- (UIViewController*)viewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_PANEL_CONTROLLER_H_

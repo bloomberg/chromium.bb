@@ -8,12 +8,16 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
-#import "ios/clean/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
+#import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -29,8 +33,11 @@ const BOOL kUseBottomToolbar = NO;
 }  // namespace
 
 @interface TabCoordinator ()<CRWWebStateObserver,
+                             TabCommands,
                              UIViewControllerTransitioningDelegate>
 @property(nonatomic, strong) TabContainerViewController* viewController;
+@property(nonatomic, weak) NTPCoordinator* ntpCoordinator;
+@property(nonatomic, weak) WebCoordinator* webCoordinator;
 @end
 
 @implementation TabCoordinator {
@@ -40,6 +47,8 @@ const BOOL kUseBottomToolbar = NO;
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
+@synthesize webCoordinator = _webCoordinator;
+@synthesize ntpCoordinator = _ntpCoordinator;
 
 #pragma mark - BrowserCoordinator
 
@@ -50,10 +59,15 @@ const BOOL kUseBottomToolbar = NO;
   _webStateObserver =
       base::MakeUnique<web::WebStateObserverBridge>(self.webState, self);
 
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  // TabCommands
+  [dispatcher startDispatchingToTarget:self forSelector:@selector(loadURL:)];
+
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
   webCoordinator.webState = self.webState;
   [self addChildCoordinator:webCoordinator];
   [webCoordinator start];
+  self.webCoordinator = webCoordinator;
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
   toolbarCoordinator.webState = self.webState;
@@ -63,6 +77,15 @@ const BOOL kUseBottomToolbar = NO;
   TabStripCoordinator* tabStripCoordinator = [[TabStripCoordinator alloc] init];
   [self addChildCoordinator:tabStripCoordinator];
   [tabStripCoordinator start];
+
+  // PLACEHOLDER: Fix the order of events here. The ntpCoordinator was already
+  // created above when |webCoordinator.webState = self.webState;| triggers
+  // a load event, but then the webCoordinator stomps on the
+  // contentViewController when it starts afterwards.
+  if (self.webState->GetLastCommittedURL() == GURL(kChromeUINewTabURL)) {
+    self.viewController.contentViewController =
+        self.ntpCoordinator.viewController;
+  }
 
   [super start];
 }
@@ -75,6 +98,7 @@ const BOOL kUseBottomToolbar = NO;
     [child stop];
   }
   _webStateObserver.reset();
+  [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
@@ -87,6 +111,10 @@ const BOOL kUseBottomToolbar = NO;
     self.viewController.tabStripViewController =
         childCoordinator.viewController;
   }
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  self.viewController.contentViewController = nil;
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {
@@ -112,10 +140,21 @@ const BOOL kUseBottomToolbar = NO;
 // optimization in some equivalent to loadURL.
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
-  if (webState->GetLastCommittedURL() == GURL("chrome://newtab/")) {
+  if (webState->GetLastCommittedURL() == GURL(kChromeUINewTabURL)) {
     NTPCoordinator* ntpCoordinator = [[NTPCoordinator alloc] init];
     [self addChildCoordinator:ntpCoordinator];
     [ntpCoordinator start];
+    self.ntpCoordinator = ntpCoordinator;
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    didStartProvisionalNavigationForURL:(const GURL&)URL {
+  if (self.ntpCoordinator) {
+    [self.ntpCoordinator stop];
+    [self removeChildCoordinator:self.ntpCoordinator];
+    self.viewController.contentViewController =
+        self.webCoordinator.viewController;
   }
 }
 
@@ -139,6 +178,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   animator.presentationKey = self.presentationKey;
   [animator selectDelegate:@[ dismissed.presentingViewController ]];
   return animator;
+}
+
+#pragma mark - TabCommands
+
+- (void)loadURL:(web::NavigationManager::WebLoadParams)params {
+  self.webState->GetNavigationManager()->LoadURLWithParams(params);
 }
 
 @end

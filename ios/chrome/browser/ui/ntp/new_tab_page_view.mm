@@ -80,11 +80,15 @@
     [self.scrollView setContentOffset:point animated:NO];
   }
 
-  // Trigger a layout.  The |-layoutIfNeeded| call is required because sometimes
-  // |-layoutSubviews| is not successfully triggered when |-setNeedsLayout| is
-  // called after frame changes due to autoresizing masks.
-  [self setNeedsLayout];
-  [self layoutIfNeeded];
+  // This should never be needed in autolayout.
+  if (self.translatesAutoresizingMaskIntoConstraints) {
+    // Trigger a layout.  The |-layoutIfNeeded| call is required because
+    // sometimes  |-layoutSubviews| is not successfully triggered when
+    // |-setNeedsLayout| is called after frame changes due to autoresizing
+    // masks.
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+  }
 }
 
 - (void)layoutSubviews {
@@ -101,6 +105,14 @@
     self.scrollView.frame = CGRectMake(
         CGRectGetMinX(self.bounds), CGRectGetMinY(self.bounds),
         CGRectGetWidth(self.bounds), CGRectGetMinY(self.tabBar.frame));
+  }
+
+  // When using a new_tab_page_view in autolayout -setFrame is never called,
+  // which means all the logic to keep the selected scroll index set is never
+  // called.  Rather than refactor away all of this to support ios/clean, just
+  // make sure -setFrame is called when loaded in autolayout.
+  if (!self.translatesAutoresizingMaskIntoConstraints) {
+    [self setFrame:self.frame];
   }
 }
 

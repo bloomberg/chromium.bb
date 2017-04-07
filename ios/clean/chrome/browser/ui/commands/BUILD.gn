@@ -5,13 +5,16 @@
 source_set("commands") {
   sources = [
     "navigation_commands.h",
+    "ntp_commands.h",
     "settings_commands.h",
+    "tab_commands.h",
     "tab_grid_commands.h",
     "tab_strip_commands.h",
     "tools_menu_commands.h",
   ]
   deps = [
     "//base",
+    "//ios/web:web_arc",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

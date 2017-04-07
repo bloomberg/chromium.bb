@@ -206,10 +206,12 @@ enum {
   [super hideViewsForNewTabPage:hide];
   // Show the back/forward buttons if there is forward history.
   ToolbarModelIOS* toolbarModelIOS = [_delegate toolbarModelIOS];
-  BOOL forwardEnabled = toolbarModelIOS->CanGoForward();
-  [_backButton setHidden:!forwardEnabled && hide];
-  [_backButton setEnabled:toolbarModelIOS->CanGoBack()];
-  [_forwardButton setHidden:!forwardEnabled && hide];
+  if (toolbarModelIOS) {
+    BOOL forwardEnabled = toolbarModelIOS->CanGoForward();
+    [_backButton setHidden:!forwardEnabled && hide];
+    [_backButton setEnabled:toolbarModelIOS->CanGoBack()];
+    [_forwardButton setHidden:!forwardEnabled && hide];
+  }
 }
 
 - (void)focusOmnibox:(id)sender {

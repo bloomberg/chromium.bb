@@ -4,22 +4,41 @@
 
 source_set("ntp") {
   sources = [
-    "new_tab_page_coordinator.h",
-    "new_tab_page_coordinator.mm",
+    "ntp_coordinator.h",
+    "ntp_coordinator.mm",
+    "ntp_home_coordinator.h",
+    "ntp_home_coordinator.mm",
+    "ntp_home_mediator.h",
+    "ntp_home_mediator.mm",
+    "ntp_mediator.h",
+    "ntp_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     ":ntp_ui",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/clean/chrome/browser/ui/bookmarks",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/recent_tabs",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",
+    "//ios/web:web_arc",
+    "//ui/base:base",
+    "//url:url",
   ]
 }
 
 source_set("ntp_ui") {
   sources = [
-    "new_tab_page_view_controller.h",
-    "new_tab_page_view_controller.mm",
+    "ntp_consumer.h",
+    "ntp_view_controller.h",
+    "ntp_view_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -28,8 +47,28 @@ source_set("ntp_ui") {
     "//base",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/commands:commands",
     "//ui/base:base",
   ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ntp_coordinator_unittest.mm",
+    "ntp_home_coordinator_unittest.mm",
+    "ntp_home_mediator_unittest.mm",
+    "ntp_mediator_unittest.mm",
+    "ntp_view_controller_unittest.mm",
+  ]
+
+  deps = [
+    ":ntp",
+    ":ntp_ui",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

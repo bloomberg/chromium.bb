@@ -180,6 +180,10 @@
   return [_tableViewController view];
 }
 
+- (UIViewController*)viewController {
+  return _tableViewController;
+}
+
 #pragma mark - Private
 
 - (BOOL)isSignedIn {
