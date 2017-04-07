@@ -20,13 +20,12 @@ class ContentURLRequestClassifier : public URLRequestClassifier {
  private:
   // UrlRequestClassifier:
   bool IsUserRequest(const net::URLRequest& request) const override;
-
   DataUseUserData::DataUseContentType GetContentType(
       const net::URLRequest& request,
       const net::HttpResponseHeaders& response_headers) const override;
-
   void RecordPageTransitionUMA(uint64_t page_transition,
                                int64_t received_bytes) const override;
+  bool IsFavIconRequest(const net::URLRequest& request) const override;
 };
 
 }  // namespace data_use_measurement

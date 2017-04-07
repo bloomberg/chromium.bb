@@ -156,4 +156,12 @@ void ContentURLRequestClassifier::RecordPageTransitionUMA(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
+bool ContentURLRequestClassifier::IsFavIconRequest(
+    const net::URLRequest& request) const {
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+  return request_info && request_info->GetResourceType() ==
+                             content::ResourceType::RESOURCE_TYPE_FAVICON;
+}
+
 }  // namespace data_use_measurement

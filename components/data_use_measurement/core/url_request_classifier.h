@@ -34,6 +34,9 @@ class URLRequestClassifier {
   // Records the page transition histograms.
   virtual void RecordPageTransitionUMA(uint64_t page_transition,
                                        int64_t received_bytes) const = 0;
+
+  // Returns true if |request| is fetching a favicon.
+  virtual bool IsFavIconRequest(const net::URLRequest& request) const = 0;
 };
 
 }  // namespace data_use_measurement

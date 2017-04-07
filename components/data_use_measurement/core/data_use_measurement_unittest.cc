@@ -58,6 +58,10 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
   void RecordPageTransitionUMA(uint64_t page_transition,
                                int64_t received_bytes) const override {}
 
+  bool IsFavIconRequest(const net::URLRequest& request) const override {
+    return false;
+  }
+
  private:
   DataUseUserData::DataUseContentType content_type_;
 };

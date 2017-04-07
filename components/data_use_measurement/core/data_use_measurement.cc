@@ -17,6 +17,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
@@ -64,6 +65,17 @@ void IncrementLatencyHistogramByCount(const std::string& name,
   histogram_pointer->AddCount(latency.InMilliseconds(), count);
 }
 #endif
+
+void RecordFavIconDataUse(const net::URLRequest& request) {
+  UMA_HISTOGRAM_COUNTS_100000(
+      "DataUse.FavIcon.Downstream",
+      request.was_cached() ? 0 : request.GetTotalReceivedBytes());
+  if (request.status().is_success() &&
+      request.GetResponseCode() != net::HTTP_OK) {
+    UMA_HISTOGRAM_COUNTS_100000("DataUse.FavIcon.Downstream.Non200Response",
+                                request.GetTotalReceivedBytes());
+  }
+}
 
 }  // namespace
 
@@ -132,6 +144,8 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
   // TODO(rajendrant): May not be needed when http://crbug/651957 is fixed.
   UpdateDataUsePrefs(request);
   ReportServicesMessageSizeUMA(request);
+  if (url_request_classifier_->IsFavIconRequest(request))
+    RecordFavIconDataUse(request);
 }
 
 void DataUseMeasurement::OnHeadersReceived(
@@ -173,6 +187,8 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
 #if defined(OS_ANDROID)
   MaybeRecordNetworkBytesOS();
 #endif
+  if (url_request_classifier_->IsFavIconRequest(request))
+    RecordFavIconDataUse(request);
 }
 
 void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
