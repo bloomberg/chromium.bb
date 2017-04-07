@@ -17,7 +17,6 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_normalizer.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
-#include "third_party/libaddressinput/src/cpp/src/rule.h"
 
 namespace autofill {
 namespace {
@@ -28,7 +27,6 @@ using ::i18n::addressinput::AddressNormalizer;
 using ::i18n::addressinput::BuildCallback;
 using ::i18n::addressinput::FieldProblemMap;
 using ::i18n::addressinput::PreloadSupplier;
-using ::i18n::addressinput::Rule;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 
@@ -58,20 +56,6 @@ AddressValidator::~AddressValidator() {}
 void AddressValidator::LoadRules(const std::string& region_code) {
   attempts_number_[region_code] = 0;
   supplier_->LoadRules(region_code, *rules_loaded_);
-}
-
-std::vector<std::string> AddressValidator::GetRegionSubKeys(
-    const std::string& region_code) {
-  if (!AreRulesLoadedForRegion(region_code))
-    return std::vector<std::string>();
-
-  auto rules = supplier_->GetRulesForRegion(region_code);
-  auto rule_iterator = rules.find("data/" + region_code);
-
-  if (rule_iterator == rules.end() || !rule_iterator->second)
-    return std::vector<std::string>();
-
-  return rule_iterator->second->GetSubKeys();
 }
 
 AddressValidator::Status AddressValidator::ValidateAddress(
@@ -157,7 +141,7 @@ void AddressValidator::RulesLoaded(bool success,
                                    const std::string& region_code,
                                    int) {
   if (load_rules_listener_)
-    load_rules_listener_->OnAddressRulesLoaded(region_code, success);
+    load_rules_listener_->OnAddressValidationRulesLoaded(region_code, success);
 
   // Count the first failed attempt to load rules as well.
   if (success || attempts_number_[region_code] + 1 >= kMaxAttemptsNumber)

@@ -529,7 +529,7 @@ public class PaymentRequestImpl
             String countryCode = AutofillAddress.getCountryCode(addresses.get(i).getProfile());
             if (!uniqueCountryCodes.contains(countryCode)) {
                 uniqueCountryCodes.add(countryCode);
-                PersonalDataManager.getInstance().loadRulesForAddressNormalization(countryCode);
+                PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
             }
         }
 
@@ -1387,7 +1387,7 @@ public class PaymentRequestImpl
             String countryCode = AutofillAddress.getCountryCode(creditCard.getBillingAddress());
             if (!uniqueCountryCodes.contains(countryCode)) {
                 uniqueCountryCodes.add(countryCode);
-                PersonalDataManager.getInstance().loadRulesForAddressNormalization(countryCode);
+                PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
             }
 
             // If there's a card on file with a valid number and a name, then

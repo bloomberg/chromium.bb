@@ -10,7 +10,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
@@ -19,7 +18,6 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Android wrapper of the PersonalDataManager which provides access from the Java
@@ -61,20 +59,6 @@ public class PersonalDataManager {
          */
         @CalledByNative("FullCardRequestDelegate")
         void onFullCardError();
-    }
-
-    /**
-     * Callback for subKeys request.
-     */
-    public interface GetSubKeysRequestDelegate {
-        /**
-         * Called when the sub-keys are received sucessfully.
-         * Here the sub-keys are admin areas.
-         *
-         * @param subKeys The subKeys.
-         */
-        @CalledByNative("GetSubKeysRequestDelegate")
-        void onSubKeysReceived(String[] subKeys);
     }
 
     /**
@@ -528,8 +512,6 @@ public class PersonalDataManager {
 
     private static PersonalDataManager sManager;
 
-    // Suppress FindBugs warning, since |sManager| is only used on the UI thread.
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static PersonalDataManager getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sManager == null) {
@@ -823,42 +805,16 @@ public class PersonalDataManager {
      *
      * @param regionCode The code of the region for which to load the rules.
      */
-    public void loadRulesForAddressNormalization(String regionCode) {
+    public void loadRulesForRegion(String regionCode) {
         ThreadUtils.assertOnUiThread();
-        nativeLoadRulesForAddressNormalization(mPersonalDataManagerAndroid, regionCode);
+        nativeLoadRulesForRegion(mPersonalDataManagerAndroid, regionCode);
     }
 
     /**
-     * Starts loading the sub-key request rules for the specified {@code regionCode}.
-     *
-     * @param regionCode The code of the region for which to load the rules.
-     */
-    public void loadRulesForSubKeys(String regionCode) {
-        ThreadUtils.assertOnUiThread();
-        nativeLoadRulesForSubKeys(mPersonalDataManagerAndroid, regionCode);
-    }
-
-    /**
-     * Starts loading the sub keys for the specified {@code regionCode}.
-     *
-     * @param regionCode The code of the region for which to load the sub keys.
-     */
-    public void getRegionSubKeys(String regionCode, GetSubKeysRequestDelegate delegate) {
-        ThreadUtils.assertOnUiThread();
-        nativeStartRegionSubKeysRequest(mPersonalDataManagerAndroid, regionCode, delegate);
-    }
-
-    /** Cancels the pending sub keys request. */
-    public void cancelPendingGetSubKeys() {
-        ThreadUtils.assertOnUiThread();
-        nativeCancelPendingGetSubKeys(mPersonalDataManagerAndroid);
-    }
-
-    /**
-     * Normalizes the address of the profile associated with the {@code guid} if the rules
-     * associated with the {@code regionCode} are done loading. Otherwise sets up the callback to
-     * start normalizing the address when the rules are loaded. The normalized profile will be sent
-     * to the {@code delegate}. If the profile is not normalized in the specified
+     * Normalizes the address of the {@code profile} if the rules associated with the
+     * {@code regionCode} are done loading. Otherwise sets up the callback to start normalizing the
+     * address when the rules are loaded. The normalized profile will be sent to the
+     * {@code delegate}. If the profile is not normalized in the specified
      * {@code sNormalizationTimeoutSeconds}, the {@code delegate} will be notified.
      *
      * @param profile The profile to normalize.
@@ -932,10 +888,6 @@ public class PersonalDataManager {
         sNormalizationTimeoutSeconds = timeout;
     }
 
-    public static long getRequestTimeoutMS() {
-        return TimeUnit.SECONDS.toMillis(sNormalizationTimeoutSeconds);
-    }
-
     private native long nativeInit();
     private native boolean nativeIsDataLoaded(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileGUIDsForSettings(long nativePersonalDataManagerAndroid);
@@ -995,15 +947,11 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid, String guid);
     private native void nativeGetFullCardForPaymentRequest(long nativePersonalDataManagerAndroid,
             WebContents webContents, CreditCard card, FullCardRequestDelegate delegate);
-    private native void nativeLoadRulesForAddressNormalization(
-            long nativePersonalDataManagerAndroid, String regionCode);
-    private native void nativeLoadRulesForSubKeys(
+    private native void nativeLoadRulesForRegion(
             long nativePersonalDataManagerAndroid, String regionCode);
     private native void nativeStartAddressNormalization(long nativePersonalDataManagerAndroid,
             AutofillProfile profile, String regionCode, int timeoutSeconds,
             NormalizedAddressRequestDelegate delegate);
-    private native void nativeStartRegionSubKeysRequest(long nativePersonalDataManagerAndroid,
-            String regionCode, GetSubKeysRequestDelegate delegate);
     private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();
@@ -1012,5 +960,4 @@ public class PersonalDataManager {
     private static native boolean nativeIsPaymentsIntegrationEnabled();
     private static native void nativeSetPaymentsIntegrationEnabled(boolean enable);
     private static native String nativeToCountryCode(String countryName);
-    private static native void nativeCancelPendingGetSubKeys(long nativePersonalDataManagerAndroid);
 }

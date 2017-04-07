@@ -46,8 +46,8 @@ class LoadRulesListener {
   // then these are also loaded.
   //
   // The |success| parameter is true when the rules were loaded successfully.
-  virtual void OnAddressRulesLoaded(const std::string& region_code,
-                                    bool success) = 0;
+  virtual void OnAddressValidationRulesLoaded(const std::string& region_code,
+                                              bool success) = 0;
 };
 
 // Interface to the libaddressinput AddressValidator for Chromium Autofill. The
@@ -93,13 +93,6 @@ class AddressValidator {
   // If the rules are already in progress of being loaded, it does nothing.
   // Invokes |load_rules_listener| when the loading has finished.
   virtual void LoadRules(const std::string& region_code);
-
-  // Returns the list of sub-regions (recorded as sub-keys) of the region
-  // (recorded as rule) indicated by |region_code|. So, if the |region_code| is
-  // a country code, sub-region means the country's admin area.
-  // This function should be called when the rules are loaded.
-  virtual std::vector<std::string> GetRegionSubKeys(
-      const std::string& region_code);
 
   // Validates the |address| and populates |problems| with the validation
   // problems, filtered according to the |filter| parameter.

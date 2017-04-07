@@ -390,8 +390,8 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
                     if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
                 }
             };
-            EditorDropdownField dropdownView = new EditorDropdownField(
-                    mContext, parent, fieldModel, prepareEditorRunnable, mObserverForTest);
+            EditorDropdownField dropdownView =
+                    new EditorDropdownField(mContext, parent, fieldModel, prepareEditorRunnable);
             mFieldViews.add(dropdownView);
             mDropdownFields.add(dropdownView.getDropdown());
 
