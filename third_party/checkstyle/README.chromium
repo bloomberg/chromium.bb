@@ -1,8 +1,8 @@
 Name: Checkstyle is a development tool to help programmers write Java code that
       adheres to a coding standard.
 Short Name: checkstyle
-URL: https://github.com/checkstyle/checkstyle
-Version: 7.6.1
+URL: http://checkstyle.sourceforge.net/
+Version: 6.5
 License: LGPL 2.1
 License File: NOT_SHIPPED
 Security Critical: no
@@ -11,15 +11,5 @@ Description:
 Checkstyle is used to validate Java code style on Chromium PRESUBMIT step.
 
 Local Modifications:
-None
-
-Update instructions (requires @google.com account):
-- Download fat jar from https://sourceforge.net/projects/checkstyle/files/checkstyle/
-- Modify tools/android/checkstyle/checkstyle.py and verify the new fat jar works
-- Remove existing SHA1 file
-- If gcloud auth tokens are not set up, run
-$ download_from_google_storage --config
-- Upload new fat jar to gcloud. In third_party/checkstyle, run
-$ upload_to_google_storage.py -b chromium-android-tools/checkstyle {new_far_jar}
-- Check in new SHA1 file
-
+- Downloaded checkstyle-6.5-all.jar without source code development
+  documentation.

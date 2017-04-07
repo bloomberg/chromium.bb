@@ -13,15 +13,7 @@ CHROMIUM_SRC = os.path.normpath(
     os.path.join(os.path.dirname(__file__),
                  os.pardir, os.pardir, os.pardir))
 CHECKSTYLE_ROOT = os.path.join(CHROMIUM_SRC, 'third_party', 'checkstyle',
-                               'checkstyle-7.6.1-all.jar')
-
-
-def FormatCheckstyleOutput(checkstyle_output):
-  lines = checkstyle_output.splitlines(True)
-  if 'Checkstyle ends with' in lines[-1]:
-    return ''.join(lines[:-1])
-  else:
-    return checkstyle_output
+                               'checkstyle-6.5-all.jar')
 
 
 def RunCheckstyle(input_api, output_api, style_file, black_list=None):
@@ -57,10 +49,8 @@ def RunCheckstyle(input_api, output_api, style_file, black_list=None):
   result_errors = []
   result_warnings = []
 
-  formatted_checkstyle_output = FormatCheckstyleOutput(stdout)
-
   local_path = input_api.PresubmitLocalPath()
-  root = xml.dom.minidom.parseString(formatted_checkstyle_output)
+  root = xml.dom.minidom.parseString(stdout)
   for fileElement in root.getElementsByTagName('file'):
     fileName = fileElement.attributes['name'].value
     fileName = os.path.relpath(fileName, local_path)
