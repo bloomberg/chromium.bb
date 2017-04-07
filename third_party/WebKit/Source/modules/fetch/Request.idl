@@ -6,13 +6,6 @@
 
 typedef (Request or USVString) RequestInfo;
 
-enum RequestContext {
-    "", "audio", "beacon", "cspreport", "download", "embed", "eventsource", "favicon",
-    "fetch", "font", "form", "frame", "hyperlink", "iframe", "image", "imageset", "import",
-    "internal", "location", "manifest", "metarefresh", "object", "ping", "plugin",
-    "prefetch", "script", "serviceworker", "sharedworker",
-    "subresource", "style", "track", "video", "worker", "xmlhttprequest", "xslt"
-};
 enum RequestMode { "navigate", "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 enum RequestRedirect { "follow", "error", "manual" };
