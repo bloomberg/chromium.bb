@@ -1074,19 +1074,31 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue) {
 void CSSGradientValue::appendCSSTextForColorStops(
     StringBuilder& result,
     bool requiresSeparator) const {
+  const CSSValue* prevColor = nullptr;
+
   for (const auto& stop : m_stops) {
+    bool isColorRepeat = false;
+    if (RuntimeEnabledFeatures::multipleColorStopPositionsEnabled()) {
+      isColorRepeat = stop.m_color && stop.m_offset &&
+                      dataEquivalent(stop.m_color.get(), prevColor);
+    }
+
     if (requiresSeparator) {
-      result.append(", ");
+      if (!isColorRepeat)
+        result.append(", ");
     } else {
       requiresSeparator = true;
     }
 
-    if (stop.m_color)
+    if (stop.m_color && !isColorRepeat)
       result.append(stop.m_color->cssText());
     if (stop.m_color && stop.m_offset)
       result.append(' ');
     if (stop.m_offset)
       result.append(stop.m_offset->cssText());
+
+    // Reset prevColor if we've emitted a color repeat.
+    prevColor = isColorRepeat ? nullptr : stop.m_color.get();
   }
 }
 
