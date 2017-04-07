@@ -211,7 +211,9 @@ TEST_F(SubresourceFilterComponentInstallerTest,
                             subresource_filter::kActivationScopeNoSites);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
-  EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(1);
+  EXPECT_CALL(*component_updater, RegisterComponent(testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(true));
   RegisterSubresourceFilterComponent(component_updater.get());
   base::RunLoop().RunUntilIdle();
 }
