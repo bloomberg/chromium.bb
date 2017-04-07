@@ -86,7 +86,7 @@ public class AsyncInitTaskRunnerTest {
         verify(mLoader).ensureInitialized();
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
-        verify(mVariationsSeedFetcher, never()).fetchSeed();
+        verify(mVariationsSeedFetcher, never()).fetchSeed("");
     }
 
     @Test
@@ -100,7 +100,7 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mRunner).onFailure();
-        verify(mVariationsSeedFetcher, never()).fetchSeed();
+        verify(mVariationsSeedFetcher, never()).fetchSeed("");
     }
 
     @Test
@@ -113,7 +113,7 @@ public class AsyncInitTaskRunnerTest {
         verify(mLoader).ensureInitialized();
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
-        verify(mVariationsSeedFetcher).fetchSeed();
+        verify(mVariationsSeedFetcher).fetchSeed("");
     }
 
     // TODO(aberent) Test for allocateChildConnection. Needs refactoring of ChildProcessLauncher to
