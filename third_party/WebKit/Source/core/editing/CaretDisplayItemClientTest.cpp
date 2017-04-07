@@ -36,17 +36,19 @@ class CaretDisplayItemClientTest : public RenderingTest {
     return document().view()->frame().selection();
   }
 
-  const DisplayItemClient& caretDisplayItemClient() const {
+  const DisplayItemClient& getCaretDisplayItemClient() const {
     return selection().caretDisplayItemClientForTesting();
   }
 
   const LayoutBlock* caretLayoutBlock() const {
-    return static_cast<const CaretDisplayItemClient&>(caretDisplayItemClient())
+    return static_cast<const CaretDisplayItemClient&>(
+               getCaretDisplayItemClient())
         .m_layoutBlock;
   }
 
   const LayoutBlock* previousCaretLayoutBlock() const {
-    return static_cast<const CaretDisplayItemClient&>(caretDisplayItemClient())
+    return static_cast<const CaretDisplayItemClient&>(
+               getCaretDisplayItemClient())
         .m_previousLayoutBlock;
   }
 
@@ -88,7 +90,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   updateAllLifecyclePhases();
   EXPECT_TRUE(block->shouldPaintCursorCaret());
 
-  LayoutRect caretVisualRect = caretDisplayItemClient().visualRect();
+  LayoutRect caretVisualRect = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect.width());
   EXPECT_EQ(block->location(), caretVisualRect.location());
 
@@ -115,7 +117,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   updateAllLifecyclePhases();
   EXPECT_TRUE(block->shouldPaintCursorCaret());
 
-  LayoutRect newCaretVisualRect = caretDisplayItemClient().visualRect();
+  LayoutRect newCaretVisualRect = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(caretVisualRect.size(), newCaretVisualRect.size());
   EXPECT_EQ(caretVisualRect.y(), newCaretVisualRect.y());
   EXPECT_LT(caretVisualRect.x(), newCaretVisualRect.x());
@@ -144,7 +146,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   selection().setSelection(SelectionInDOMTree());
   updateAllLifecyclePhases();
   EXPECT_FALSE(block->shouldPaintCursorCaret());
-  EXPECT_EQ(LayoutRect(), caretDisplayItemClient().visualRect());
+  EXPECT_EQ(LayoutRect(), getCaretDisplayItemClient().visualRect());
 
   rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
@@ -174,7 +176,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   // Focus the body.
   document().body()->focus();
   updateAllLifecyclePhases();
-  LayoutRect caretVisualRect1 = caretDisplayItemClient().visualRect();
+  LayoutRect caretVisualRect1 = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect1.width());
   EXPECT_EQ(block1->visualRect().location(), caretVisualRect1.location());
   EXPECT_TRUE(block1->shouldPaintCursorCaret());
@@ -187,7 +189,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
                                .build());
   updateAllLifecyclePhases();
 
-  LayoutRect caretVisualRect2 = caretDisplayItemClient().visualRect();
+  LayoutRect caretVisualRect2 = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect2.width());
   EXPECT_EQ(block2->visualRect().location(), caretVisualRect2.location());
   EXPECT_FALSE(block1->shouldPaintCursorCaret());
@@ -215,7 +217,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
                                .build());
   updateAllLifecyclePhases();
 
-  EXPECT_EQ(caretVisualRect1, caretDisplayItemClient().visualRect());
+  EXPECT_EQ(caretVisualRect1, getCaretDisplayItemClient().visualRect());
   EXPECT_TRUE(block1->shouldPaintCursorCaret());
   EXPECT_FALSE(block2->shouldPaintCursorCaret());
 
@@ -303,7 +305,7 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   updateAllLifecyclePhases();
   const auto* block = toLayoutBlock(document().body()->layoutObject());
 
-  LayoutRect caretVisualRect = caretDisplayItemClient().visualRect();
+  LayoutRect caretVisualRect = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(1, caretVisualRect.width());
   EXPECT_EQ(block->location(), caretVisualRect.location());
 
@@ -317,7 +319,7 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   selection().setCaretVisible(true);
   updateAllLifecyclePhases();
 
-  LayoutRect newCaretVisualRect = caretDisplayItemClient().visualRect();
+  LayoutRect newCaretVisualRect = getCaretDisplayItemClient().visualRect();
   EXPECT_EQ(caretVisualRect.size(), newCaretVisualRect.size());
   EXPECT_EQ(caretVisualRect.y(), newCaretVisualRect.y());
   EXPECT_LT(caretVisualRect.x(), newCaretVisualRect.x());
@@ -363,17 +365,19 @@ TEST_F(CaretDisplayItemClientTest, CompositingChange) {
 
   EXPECT_TRUE(editorBlock->shouldPaintCursorCaret());
   EXPECT_EQ(editorBlock, caretLayoutBlock());
-  EXPECT_EQ(LayoutRect(116, 105, 1, 1), caretDisplayItemClient().visualRect());
+  EXPECT_EQ(LayoutRect(116, 105, 1, 1),
+            getCaretDisplayItemClient().visualRect());
 
   // Composite container.
   container->setAttribute(HTMLNames::styleAttr, "will-change: transform");
   updateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(50, 50, 1, 1), caretDisplayItemClient().visualRect());
+  EXPECT_EQ(LayoutRect(50, 50, 1, 1), getCaretDisplayItemClient().visualRect());
 
   // Uncomposite container.
   container->setAttribute(HTMLNames::styleAttr, "");
   updateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(116, 105, 1, 1), caretDisplayItemClient().visualRect());
+  EXPECT_EQ(LayoutRect(116, 105, 1, 1),
+            getCaretDisplayItemClient().visualRect());
 }
 
 }  // namespace blink
