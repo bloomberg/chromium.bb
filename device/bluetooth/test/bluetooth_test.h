@@ -87,11 +87,24 @@ class BluetoothTestBase : public testing::Test {
     LOWER = -20,
   };
 
+  // Services
   static const std::string kTestUUIDGenericAccess;
   static const std::string kTestUUIDGenericAttribute;
   static const std::string kTestUUIDImmediateAlert;
   static const std::string kTestUUIDLinkLoss;
   static const std::string kTestUUIDHeartRate;
+  // Characteristics
+  // The following three characteristics are for kTestUUIDGenericAccess.
+  static const std::string kTestUUIDDeviceName;
+  static const std::string kTestUUIDAppearance;
+  static const std::string kTestUUIDReconnectionAddress;
+  // This characteristic is for kTestUUIDHeartRate.
+  static const std::string kTestUUIDHeartRateMeasurement;
+  // Descriptors
+  static const std::string kTestUUIDCharacteristicUserDescription;
+  static const std::string kTestUUIDClientCharacteristicConfiguration;
+  static const std::string kTestUUIDServerCharacteristicConfiguration;
+  static const std::string kTestUUIDCharacteristicPresentationFormat;
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;

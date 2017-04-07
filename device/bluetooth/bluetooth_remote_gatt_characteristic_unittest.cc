@@ -38,15 +38,13 @@ class BluetoothRemoteGattCharacteristicTest : public BluetoothTest {
     SimulateGattConnection(device_);
     base::RunLoop().RunUntilIdle();
 
-    std::vector<std::string> services;
-    std::string uuid("00000000-0000-1000-8000-00805f9b34fb");
-    services.push_back(uuid);
-    SimulateGattServicesDiscovered(device_, services);
+    SimulateGattServicesDiscovered(
+        device_, std::vector<std::string>({kTestUUIDGenericAccess}));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(1u, device_->GetGattServices().size());
     service_ = device_->GetGattServices()[0];
-    SimulateGattCharacteristic(service_, uuid, properties);
-    SimulateGattCharacteristic(service_, uuid, properties);
+    SimulateGattCharacteristic(service_, kTestUUIDDeviceName, properties);
+    SimulateGattCharacteristic(service_, kTestUUIDDeviceName, properties);
     ASSERT_EQ(2u, service_->GetCharacteristics().size());
     characteristic1_ = service_->GetCharacteristics()[0];
     characteristic2_ = service_->GetCharacteristics()[1];
@@ -159,24 +157,23 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetIdentifier) {
   // 3 services (all with same UUID).
   //   1 on the first device (to test characteristic instances across devices).
   //   2 on the second device (to test same device, multiple service instances).
-  std::vector<std::string> services;
-  std::string uuid = "00000000-0000-1000-8000-00805f9b34fb";
-  services.push_back(uuid);
-  SimulateGattServicesDiscovered(device1, services);
+  SimulateGattServicesDiscovered(
+      device1, std::vector<std::string>({kTestUUIDGenericAccess}));
   base::RunLoop().RunUntilIdle();
-  services.push_back(uuid);
-  SimulateGattServicesDiscovered(device2, services);
+  SimulateGattServicesDiscovered(
+      device2, std::vector<std::string>(
+                   {kTestUUIDGenericAccess, kTestUUIDGenericAccess}));
   base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service1 = device1->GetGattServices()[0];
   BluetoothRemoteGattService* service2 = device2->GetGattServices()[0];
   BluetoothRemoteGattService* service3 = device2->GetGattServices()[1];
   // 6 characteristics (same UUID), 2 on each service.
-  SimulateGattCharacteristic(service1, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service1, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service2, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service2, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service3, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service3, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service1, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service1, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service2, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service2, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service3, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service3, kTestUUIDDeviceName, /* properties */ 0);
   BluetoothRemoteGattCharacteristic* char1 = service1->GetCharacteristics()[0];
   BluetoothRemoteGattCharacteristic* char2 = service1->GetCharacteristics()[1];
   BluetoothRemoteGattCharacteristic* char3 = service2->GetCharacteristics()[0];
@@ -220,20 +217,17 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetUUID) {
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>({kTestUUIDGenericAccess}));
   base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service = device->GetGattServices()[0];
 
   // Create 3 characteristics. Two of them are duplicates.
-  std::string uuid_str1("11111111-0000-1000-8000-00805f9b34fb");
-  std::string uuid_str2("22222222-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID uuid1(uuid_str1);
-  BluetoothUUID uuid2(uuid_str2);
-  SimulateGattCharacteristic(service, uuid_str1, /* properties */ 0);
-  SimulateGattCharacteristic(service, uuid_str2, /* properties */ 0);
-  SimulateGattCharacteristic(service, uuid_str2, /* properties */ 0);
+  BluetoothUUID uuid1(kTestUUIDDeviceName);
+  BluetoothUUID uuid2(kTestUUIDAppearance);
+  SimulateGattCharacteristic(service, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service, kTestUUIDAppearance, /* properties */ 0);
+  SimulateGattCharacteristic(service, kTestUUIDAppearance, /* properties */ 0);
   BluetoothRemoteGattCharacteristic* char1 = service->GetCharacteristics()[0];
   BluetoothRemoteGattCharacteristic* char2 = service->GetCharacteristics()[1];
   BluetoothRemoteGattCharacteristic* char3 = service->GetCharacteristics()[2];
@@ -264,16 +258,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetProperties) {
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
-  std::vector<std::string> services;
-  std::string uuid("00000000-0000-1000-8000-00805f9b34fb");
-  services.push_back(uuid);
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>({kTestUUIDGenericAccess}));
   base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service = device->GetGattServices()[0];
 
   // Create two characteristics with different properties:
-  SimulateGattCharacteristic(service, uuid, /* properties */ 0);
-  SimulateGattCharacteristic(service, uuid, /* properties */ 7);
+  SimulateGattCharacteristic(service, kTestUUIDDeviceName, /* properties */ 0);
+  SimulateGattCharacteristic(service, kTestUUIDDeviceName, /* properties */ 7);
 
   // Read the properties. Because ordering is unknown swap as necessary.
   int properties1 = service->GetCharacteristics()[0]->GetProperties();
@@ -2208,10 +2200,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   // Add several Descriptors:
-  BluetoothUUID uuid1("11111111-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID uuid2("22222222-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID uuid3("33333333-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID uuid4("44444444-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID uuid1(kTestUUIDCharacteristicUserDescription);
+  BluetoothUUID uuid2(kTestUUIDClientCharacteristicConfiguration);
+  BluetoothUUID uuid3(kTestUUIDServerCharacteristicConfiguration);
+  BluetoothUUID uuid4(kTestUUIDCharacteristicPresentationFormat);
   SimulateGattDescriptor(characteristic1_, uuid1.canonical_value());
   SimulateGattDescriptor(characteristic1_, uuid2.canonical_value());
   SimulateGattDescriptor(characteristic2_, uuid3.canonical_value());
@@ -2253,9 +2245,9 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetDescriptorsByUUID) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   // Add several Descriptors:
-  BluetoothUUID id1("11111111-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID id2("22222222-0000-1000-8000-00805f9b34fb");
-  BluetoothUUID id3("33333333-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID id1(kTestUUIDCharacteristicUserDescription);
+  BluetoothUUID id2(kTestUUIDClientCharacteristicConfiguration);
+  BluetoothUUID id3(kTestUUIDServerCharacteristicConfiguration);
   SimulateGattDescriptor(characteristic1_, id1.canonical_value());
   SimulateGattDescriptor(characteristic1_, id2.canonical_value());
   SimulateGattDescriptor(characteristic2_, id3.canonical_value());

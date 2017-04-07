@@ -1276,10 +1276,9 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
   EXPECT_TRUE(device->IsConnected());
 
   // Discover services
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device,
+      std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(2u, device->GetGattServices().size());
@@ -1301,9 +1300,8 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
   EXPECT_TRUE(device->IsConnected());
 
   // Verify that service discovery can be done again
-  std::vector<std::string> services2;
-  services2.push_back("00000002-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services2);
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>({kTestUUIDGenericAttribute}));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(1u, device->GetGattServices().size());
@@ -1361,10 +1359,9 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_discovery_attempts_);
 
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device,
+      std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, observer.gatt_services_discovered_count());
@@ -1396,10 +1393,9 @@ TEST_F(BluetoothTest, GattServicesDiscovered_AfterDeleted) {
   RememberDeviceForSubsequentAction(device);
   DeleteDevice(device);
 
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(nullptr /* use remembered device */, services);
+  SimulateGattServicesDiscovered(
+      nullptr /* use remembered device */,
+      std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
 }
 #endif  // defined(OS_ANDROID)
@@ -1454,10 +1450,9 @@ TEST_F(BluetoothTest, GattServicesDiscovered_AfterDisconnection) {
   SimulateGattDisconnection(device);
   base::RunLoop().RunUntilIdle();
 
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device,
+      std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
@@ -1509,12 +1504,11 @@ TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_discovery_attempts_);
 
-  std::vector<std::string> services;
-  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
   // 2 duplicate UUIDs creating 2 instances.
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
-  SimulateGattServicesDiscovered(device, services);
+  SimulateGattServicesDiscovered(
+      device,
+      std::vector<std::string>(
+          {kTestUUIDGenericAccess, kTestUUIDHeartRate, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, device->GetGattServices().size());
 
