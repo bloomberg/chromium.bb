@@ -25,8 +25,10 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/util.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -89,12 +91,14 @@ NSImage* CreateNSImageFromIcon(const gfx::VectorIcon& icon,
 NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
                                BrowserWindowTouchBar* owner,
                                int command,
+                               int tooltip_id,
                                SkColor color = kTouchBarDefaultIconColor) {
   NSButton* button =
       [NSButton buttonWithImage:CreateNSImageFromIcon(icon, color)
                          target:owner
                          action:@selector(executeCommand:)];
   button.tag = command;
+  [button setAccessibilityLabel:l10n_util::GetNSString(tooltip_id)];
   return button;
 }
 
@@ -234,21 +238,25 @@ class HomePrefNotificationBridge {
   } else if ([identifier isEqualTo:kReloadOrStopTouchId]) {
     const gfx::VectorIcon& icon =
         isPageLoading_ ? kNavigateStopIcon : kNavigateReloadIcon;
-    int command_id = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
-    [touchBarItem setView:CreateTouchBarButton(icon, self, command_id)];
-  } else if ([identifier isEqualTo:kHomeTouchId]) {
+    int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
+    int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
     [touchBarItem
-        setView:CreateTouchBarButton(kNavigateHomeIcon, self, IDC_HOME)];
+        setView:CreateTouchBarButton(icon, self, commandId, tooltipId)];
+  } else if ([identifier isEqualTo:kHomeTouchId]) {
+    [touchBarItem setView:CreateTouchBarButton(kNavigateHomeIcon, self,
+                                               IDC_HOME, IDS_TOOLTIP_HOME)];
   } else if ([identifier isEqualTo:kNewTabTouchId]) {
-    [touchBarItem setView:CreateTouchBarButton(kNewTabMacTouchbarIcon, self,
-                                               IDC_NEW_TAB)];
+    [touchBarItem
+        setView:CreateTouchBarButton(kNewTabMacTouchbarIcon, self, IDC_NEW_TAB,
+                                     IDS_TOOLTIP_NEW_TAB)];
   } else if ([identifier isEqualTo:kStarTouchId]) {
     const gfx::VectorIcon& icon =
         isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
     SkColor iconColor =
         isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
-    [touchBarItem
-        setView:CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE, iconColor)];
+    int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
+    [touchBarItem setView:CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
+                                               tooltipId, iconColor)];
   } else if ([identifier isEqualTo:kSearchTouchId]) {
     [touchBarItem setView:[self searchTouchBarView]];
   }
@@ -272,6 +280,21 @@ class HomePrefNotificationBridge {
            forSegment:kBackSegmentIndex];
   [control setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
            forSegment:kForwardSegmentIndex];
+
+  // Use the accessibility protocol to get the children.
+  // Use NSAccessibilityUnignoredDescendant to be sure we start with the correct
+  // object.
+  id segmentElement = NSAccessibilityUnignoredDescendant(control);
+  NSArray* segments = [segmentElement
+      accessibilityAttributeValue:NSAccessibilityChildrenAttribute];
+  NSEnumerator* e = [segments objectEnumerator];
+  [[e nextObject] accessibilitySetOverrideValue:l10n_util::GetNSString(
+                                                    IDS_TOOLTIP_TOUCH_BAR_BACK)
+                                   forAttribute:NSAccessibilityTitleAttribute];
+  [[e nextObject]
+      accessibilitySetOverrideValue:l10n_util::GetNSString(
+                                        IDS_TOOLTIP_TOUCH_BAR_FORWARD)
+                       forAttribute:NSAccessibilityTitleAttribute];
   return control;
 }
 

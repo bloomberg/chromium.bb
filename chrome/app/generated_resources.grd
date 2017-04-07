@@ -1926,10 +1926,16 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           Search or type URL
         </message>
         <message name="IDS_TOUCH_BAR_SEARCH"
-                   desc="Text for the search button in the touch bar when Google is not the default search provider. Pressing the button will bring focus to the omnibox.">
-          Search $1
+                   desc="Text for the search button in the touch bar when Google is not the default search provider. Pressing the button will bring focus to the omnibox. $1 is the name of the search provider)">
+          Search <ph name="SEARCH_ENGINE">$1<ex>Bing</ex></ph>
         </message>
 
+        <message name="IDS_TOOLTIP_TOUCH_BAR_BACK" desc="The tooltip for the touch bar back button.">
+        Touch to go back.
+        </message>
+        <message name="IDS_TOOLTIP_TOUCH_BAR_FORWARD" desc="The tooltip for the touch bar forward button.">
+        Touch to go forward.
+        </message>
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
