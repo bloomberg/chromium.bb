@@ -149,13 +149,13 @@ void PaintController::addCachedSubsequence(const DisplayItemClient& client,
     if (!markers) {
       showSequenceUnderInvalidationError(
           "under-invalidation : unexpected subsequence", client, start, end);
-      DCHECK(false);
+      CHECK(false);
     }
     if (markers->end - markers->start != end - start) {
       showSequenceUnderInvalidationError(
           "under-invalidation: new subsequence wrong length", client, start,
           end);
-      DCHECK(false);
+      CHECK(false);
     }
   }
 
