@@ -122,7 +122,7 @@ void MessagePopupCollection::ClickOnNotificationButton(
 
 void MessagePopupCollection::ClickOnSettingsButton(
     const std::string& notification_id) {
-  message_center_->ClickOnSettingsButton(notification_id);
+  tray_->ShowNotifierSettingsBubble();
 }
 
 void MessagePopupCollection::UpdateNotificationSize(
