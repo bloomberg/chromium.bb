@@ -2158,8 +2158,8 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
-  const int xr_chr_offset = (plane && bsize < BLOCK_8X8) ? 2 : 0;
-  const int yd_chr_offset = (plane && bsize < BLOCK_8X8) ? 2 : 0;
+  const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
+  const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
 #else
   const int xr_chr_offset = 0;
   const int yd_chr_offset = 0;
