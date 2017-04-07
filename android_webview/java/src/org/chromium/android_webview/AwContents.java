@@ -72,6 +72,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.net.NetworkChangeNotifier;
@@ -1526,11 +1527,11 @@ public class AwContents implements SmartClipProvider {
     }
 
     private static String fixupBase(String url) {
-        return TextUtils.isEmpty(url) ? "about:blank" : url;
+        return TextUtils.isEmpty(url) ? ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL : url;
     }
 
     private static String fixupHistory(String url) {
-        return TextUtils.isEmpty(url) ? "about:blank" : url;
+        return TextUtils.isEmpty(url) ? ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL : url;
     }
 
     private static boolean isBase64Encoded(String encoding) {

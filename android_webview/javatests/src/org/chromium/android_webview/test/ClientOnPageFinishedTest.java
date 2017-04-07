@@ -13,6 +13,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.CountDownLatch;
@@ -73,7 +74,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
 
             @Override
             public void onPageFinished(String url) {
-                if (mAllowAboutBlank && "about:blank".equals(url)) {
+                if (mAllowAboutBlank && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
                     super.onPageFinished(url);
                     return;
                 }
@@ -107,7 +108,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         // we load a valid page. Since callbacks arrive sequentially, this will ensure that
         // any extra calls of onPageFinished / onReceivedError will arrive to our client.
         testContentsClient.setAllowAboutBlank();
-        loadUrlSync(mAwContents, onPageFinishedHelper, "about:blank");
+        loadUrlSync(mAwContents, onPageFinishedHelper, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @MediumTest

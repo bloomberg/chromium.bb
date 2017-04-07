@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -55,7 +56,8 @@ public class AwContentsRenderTest extends AwTestBase {
         setBackgroundColorOnUiThread(Color.CYAN);
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.CYAN);
 
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         assertEquals(Color.CYAN, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
 
         setBackgroundColorOnUiThread(Color.YELLOW);
@@ -86,7 +88,8 @@ public class AwContentsRenderTest extends AwTestBase {
         });
 
         int pictureCount = mContentsClient.getPictureListenerHelper().getCallCount();
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         mContentsClient.getPictureListenerHelper().waitForCallback(pictureCount, 1);
         // Invalidation only, so picture should be null.
         assertNull(mContentsClient.getPictureListenerHelper().getPicture());

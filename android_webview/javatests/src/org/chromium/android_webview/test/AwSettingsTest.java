@@ -38,6 +38,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
@@ -2935,7 +2936,8 @@ public class AwSettingsTest extends AwTestBase {
         JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "window.emptyDocumentPersistenceTest = true;");
-        loadUrlSync(awContents, client.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(awContents, client.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         String result = JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "window.emptyDocumentPersistenceTest ? 'set' : 'not set';");

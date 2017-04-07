@@ -27,6 +27,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.TimeUnit;
 
@@ -180,7 +181,7 @@ public class VisualStateCallbackTest extends AwTestBase {
         insertVisualStateCallbackOnUIThread(mAwContents, vsImpl.requestId(), vsImpl);
         VisualStateCallbackHelper vsCallbackHelper = mAwContents.getVisualStateCallbackHelper();
         int callCount = vsCallbackHelper.getCallCount();
-        loadUrlAsync(mAwContents, "about:blank");
+        loadUrlAsync(mAwContents, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         vsCallbackHelper.waitForCallback(
                 callCount, 1, CallbackHelper.WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertEquals(callCount + 1, vsCallbackHelper.getCallCount());

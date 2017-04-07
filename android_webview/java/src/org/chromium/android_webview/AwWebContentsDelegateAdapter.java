@@ -27,6 +27,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.InvalidateTypes;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.ResourceRequestBody;
 
 /**
@@ -261,7 +262,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
             // Hint the client to show the last committed url, as it may be unsafe to show
             // the pending entry.
             String url = mAwContents.getLastCommittedUrl();
-            url = TextUtils.isEmpty(url) ? "about:blank" : url;
+            url = TextUtils.isEmpty(url) ? ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL : url;
             mContentsClient.getCallbackHelper().postSynthesizedPageLoadingForUrlBarUpdate(url);
         }
     }

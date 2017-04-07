@@ -12,6 +12,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.Locale;
@@ -132,7 +133,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
 
-        loadUrlSync(awContents, onPageFinishedHelper, "about:blank");
+        loadUrlSync(awContents, onPageFinishedHelper, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
                 getInstrumentation().getTargetContext());

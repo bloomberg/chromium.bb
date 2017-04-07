@@ -8,6 +8,7 @@ import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.NetError;
 import org.chromium.ui.base.PageTransition;
 
@@ -57,7 +58,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didStopLoading(String validatedUrl) {
-        if (validatedUrl.length() == 0) validatedUrl = "about:blank";
+        if (validatedUrl.length() == 0) validatedUrl = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
         AwContentsClient client = getClientIfNeedToFireCallback(validatedUrl);
         if (client != null && validatedUrl.equals(mLastDidFinishLoadUrl)) {
             client.getCallbackHelper().postOnPageFinished(validatedUrl);

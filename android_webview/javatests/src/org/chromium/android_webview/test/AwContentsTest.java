@@ -34,6 +34,7 @@ import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -83,7 +84,8 @@ public class AwContentsTest extends AwTestBase {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
             AwContents awContents = testView.getAwContents();
 
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                    ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             destroyAwContentsOnMainSync(awContents);
         }
     }
@@ -96,7 +98,7 @@ public class AwContentsTest extends AwTestBase {
         for (int i = 0; i < views.length; ++i) {
             views[i] = createAwTestContainerViewOnMainSync(mContentsClient);
             loadUrlSync(views[i].getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                    "about:blank");
+                    ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
         for (int i = 0; i < views.length; ++i) {
@@ -236,9 +238,8 @@ public class AwContentsTest extends AwTestBase {
 
             // Load about:blank so next load is not treated as reload by webkit and force
             // revalidate with the server.
-            loadUrlSync(awContents,
-                        mContentsClient.getOnPageFinishedHelper(),
-                        "about:blank");
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                    ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
             // No clearCache call, so should be loaded from cache.
             loadUrlSync(awContents,
@@ -247,9 +248,8 @@ public class AwContentsTest extends AwTestBase {
             assertEquals(1, webServer.getRequestCount(pagePath));
 
             // Same as above.
-            loadUrlSync(awContents,
-                        mContentsClient.getOnPageFinishedHelper(),
-                        "about:blank");
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                    ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
             // Clear cache, so should hit server again.
             clearCacheOnUiThread(awContents, true);
@@ -363,7 +363,8 @@ public class AwContentsTest extends AwTestBase {
         String script = "navigator.onLine";
 
         enableJavaScriptOnUiThread(awContents);
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         // Default to "online".
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
@@ -546,7 +547,8 @@ public class AwContentsTest extends AwTestBase {
         String script = "window.Notification || window.PushManager";
 
         enableJavaScriptOnUiThread(awContents);
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         assertEquals("null", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
                 script));
     }

@@ -9,6 +9,7 @@ import android.support.test.filters.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 /**
  * Tests for the ContentViewClient.onPageStarted() method.
@@ -65,7 +66,7 @@ public class ClientOnPageStartedTest extends AwTestBase {
 
             @Override
             public void onPageStarted(String url) {
-                if (mAllowAboutBlank && "about:blank".equals(url)) {
+                if (mAllowAboutBlank && ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
                     super.onPageStarted(url);
                     return;
                 }
@@ -102,6 +103,6 @@ public class ClientOnPageStartedTest extends AwTestBase {
         // we load a valid page. Since callbacks arrive sequentially, this will ensure that
         // any extra calls of onPageStarted / onReceivedError will arrive to our client.
         testContentsClient.setAllowAboutBlank();
-        loadUrlSync(mAwContents, onPageFinishedHelper, "about:blank");
+        loadUrlSync(mAwContents, onPageFinishedHelper, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 }

@@ -15,6 +15,7 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.CountDownLatch;
@@ -265,8 +266,8 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         final String iframeUrl = baseUrl + "does_not_exist.html";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
-        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                pageHtml, "text/html", false, baseUrl, "about:blank");
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageHtml,
+                "text/html", false, baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
@@ -291,7 +292,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
         loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageHtml,
-                "text/html", false, baseUrl, "about:blank");
+                "text/html", false, baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();

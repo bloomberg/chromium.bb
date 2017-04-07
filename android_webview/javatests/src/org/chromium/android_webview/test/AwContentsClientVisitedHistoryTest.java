@@ -11,6 +11,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 
 /**
@@ -134,7 +135,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         final int callCount = visitedHistoryHelper.getCallCount();
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-        loadUrlAsync(awContents, "about:blank");
+        loadUrlAsync(awContents, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         visitedHistoryHelper.waitForCallback(callCount);
         assertNotNull(visitedHistoryHelper.getCallback());
 

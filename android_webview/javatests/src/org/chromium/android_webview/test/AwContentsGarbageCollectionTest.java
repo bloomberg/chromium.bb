@@ -18,6 +18,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.Callable;
 
@@ -94,7 +95,8 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
             containerViews[i] = createAwTestContainerViewOnMainSync(client);
-            loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
+            loadUrlAsync(
+                    containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -118,7 +120,8 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         for (int i = 0; i < containerViews.length; i++) {
             final AwTestContainerView containerView = createAwTestContainerViewOnMainSync(client);
             containerViews[i] = containerView;
-            loadUrlAsync(containerView.getAwContents(), "about:blank");
+            loadUrlAsync(
+                    containerView.getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             // When we call showSoftInput(), we pass a ResultReceiver object as a parameter.
             // Android framework will hold the object reference until the matching
             // ResultReceiver in InputMethodService (IME app) gets garbage-collected.
@@ -154,7 +157,8 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         for (int i = 0; i < containerViews.length; i++) {
             StrongRefTestAwContentsClient client = new StrongRefTestAwContentsClient();
             containerViews[i] = createAwTestContainerViewOnMainSync(client);
-            loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
+            loadUrlAsync(
+                    containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -178,7 +182,8 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             mOverridenFactory = new GcTestDependencyFactory(context);
             containerViews[i] = createAwTestContainerViewOnMainSync(client);
             mOverridenFactory = null;
-            loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
+            loadUrlAsync(
+                    containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -211,7 +216,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
                 // have AwContentsClient hold a strong ref to the AwContents object.
                 client.setAwContentsStrongRef(view.getAwContents());
                 context.setAwContentsStrongRef(view.getAwContents());
-                loadUrlAsync(view.getAwContents(), "about:blank");
+                loadUrlAsync(view.getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             }
             assertTrue(AwContents.getNativeInstanceCount() >= concurrentInstances);
             assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * concurrentInstances);
