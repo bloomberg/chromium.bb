@@ -670,6 +670,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
                                               "counterDirectives",
                                               "counterMaps"
                                               "document",
+                                              "dragOperation",
                                               "element",
                                               "emptyChromeClient",
                                               "emptyEditorClient",
@@ -702,6 +703,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
                                               "lineEndings",
                                               "lineJoin",
                                               "listItems",
+                                              "locationInBackingMap",
                                               "matchedProperties",
                                               "midpointState",
                                               "modifiers",
