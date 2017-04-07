@@ -13,11 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/values.h"
 #include "rlz/lib/rlz_value_store.h"
 
 namespace base {
-class SequencedTaskRunner;
+class DictionaryValue;
 class Value;
 }
 
@@ -27,12 +26,8 @@ namespace rlz_lib {
 class RlzValueStoreChromeOS : public RlzValueStore,
                               public base::NonThreadSafe {
  public:
-  // // Sets the task runner that will be used by ImportantFileWriter for write
-  // // operations.
-  // static void SetFileTaskRunner(base::SequencedTaskRunner* file_task_runner);
-
   // Creates new instance and synchronously reads data from file.
-  RlzValueStoreChromeOS(const base::FilePath& store_path);
+  explicit RlzValueStoreChromeOS(const base::FilePath& store_path);
   ~RlzValueStoreChromeOS() override;
 
   // RlzValueStore overrides:
