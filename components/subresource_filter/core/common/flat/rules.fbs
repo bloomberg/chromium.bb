@@ -32,7 +32,8 @@ table UrlRule {
 
   // A bitmask of element types, same as proto::UrlRule::element_types. Enables
   // all element types except POPUP by default.
-  element_types : ushort = 2047;
+  // Note: Keep it equal to ELEMENT_TYPE_ALL-ELEMENT_TYPE_POPUP for compactness.
+  element_types : ushort = 6143;
 
   // A bitmask of activation types, same as proto::UrlRule::activation_types.
   // Disables all activation types by default.
