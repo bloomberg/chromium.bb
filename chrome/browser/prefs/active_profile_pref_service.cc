@@ -19,7 +19,7 @@ void ActiveProfilePrefService::Connect(
     const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
     const ConnectCallback& callback) {
   auto* connector = content::BrowserContext::GetConnectorFor(
-      ProfileManager::GetActiveUserProfile());
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile());
   connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
   connector_ptr_.set_connection_error_handler(base::Bind(
       &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
