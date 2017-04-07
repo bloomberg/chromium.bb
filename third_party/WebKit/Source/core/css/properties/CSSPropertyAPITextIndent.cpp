@@ -13,7 +13,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITextIndent::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   // [ <length> | <percentage> ] && hanging? && each-line?
   // Keywords only allowed when css3Text is enabled.
   CSSValueList* list = CSSValueList::createSpaceSeparated();
@@ -26,7 +26,7 @@ const CSSValue* CSSPropertyAPITextIndent::parseSingleValue(
     if (!hasLengthOrPercentage) {
       if (CSSValue* textIndent =
               CSSPropertyParserHelpers::consumeLengthOrPercent(
-                  range, context->mode(), ValueRangeAll,
+                  range, context.mode(), ValueRangeAll,
                   CSSPropertyParserHelpers::UnitlessQuirk::Allow)) {
         list->append(*textIndent);
         hasLengthOrPercentage = true;

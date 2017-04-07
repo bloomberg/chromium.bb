@@ -12,9 +12,9 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIFontSize::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   return CSSPropertyFontUtils::consumeFontSize(
-      range, context->mode(), CSSPropertyParserHelpers::UnitlessQuirk::Allow);
+      range, context.mode(), CSSPropertyParserHelpers::UnitlessQuirk::Allow);
 }
 
 }  // namespace blink

@@ -15,11 +15,11 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
-  bool inQuirksMode = isQuirksModeBehavior(context->mode());
+    const CSSParserContext& context) {
+  bool inQuirksMode = isQuirksModeBehavior(context.mode());
   CSSValueList* list = nullptr;
   while (CSSValue* image = CSSPropertyParserHelpers::consumeImage(
-             range, context,
+             range, &context,
              CSSPropertyParserHelpers::ConsumeGeneratedImagePolicy::Forbid)) {
     double num;
     IntPoint hotSpot(-1, -1);
@@ -44,9 +44,9 @@ const CSSValue* CSSPropertyAPICursor::parseSingleValue(
   CSSValueID id = range.peek().id();
   if (!range.atEnd()) {
     if (id == CSSValueWebkitZoomIn)
-      context->count(UseCounter::PrefixedCursorZoomIn);
+      context.count(UseCounter::PrefixedCursorZoomIn);
     else if (id == CSSValueWebkitZoomOut)
-      context->count(UseCounter::PrefixedCursorZoomOut);
+      context.count(UseCounter::PrefixedCursorZoomOut);
   }
   CSSValue* cursorType = nullptr;
   if (id == CSSValueHand) {

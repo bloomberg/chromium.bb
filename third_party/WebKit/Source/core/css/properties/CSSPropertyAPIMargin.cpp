@@ -12,9 +12,9 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIMargin::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   return CSSPropertyMarginUtils::consumeMarginOrOffset(
-      range, context->mode(), CSSPropertyParserHelpers::UnitlessQuirk::Allow);
+      range, context.mode(), CSSPropertyParserHelpers::UnitlessQuirk::Allow);
 }
 
 }  // namespace blink

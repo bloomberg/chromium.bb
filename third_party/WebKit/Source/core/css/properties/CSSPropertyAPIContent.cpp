@@ -72,7 +72,7 @@ CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters) {
 
 const CSSValue* CSSPropertyAPIContent::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   if (CSSPropertyParserHelpers::identMatches<CSSValueNone, CSSValueNormal>(
           range.peek().id()))
     return CSSPropertyParserHelpers::consumeIdent(range);
@@ -81,7 +81,7 @@ const CSSValue* CSSPropertyAPIContent::parseSingleValue(
 
   do {
     CSSValue* parsedValue =
-        CSSPropertyParserHelpers::consumeImage(range, context);
+        CSSPropertyParserHelpers::consumeImage(range, &context);
     if (!parsedValue) {
       parsedValue = CSSPropertyParserHelpers::consumeIdent<
           CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote,
@@ -92,7 +92,7 @@ const CSSValue* CSSPropertyAPIContent::parseSingleValue(
     if (!parsedValue) {
       if (range.peek().functionId() == CSSValueAttr) {
         parsedValue = consumeAttr(
-            CSSPropertyParserHelpers::consumeFunction(range), context);
+            CSSPropertyParserHelpers::consumeFunction(range), &context);
       } else if (range.peek().functionId() == CSSValueCounter) {
         parsedValue = consumeCounterContent(
             CSSPropertyParserHelpers::consumeFunction(range), false);

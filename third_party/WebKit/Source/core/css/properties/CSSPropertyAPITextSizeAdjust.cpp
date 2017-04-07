@@ -11,7 +11,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITextSizeAdjust::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   if (range.peek().id() == CSSValueAuto)
     return CSSPropertyParserHelpers::consumeIdent(range);
   if (range.peek().id() == CSSValueNone)

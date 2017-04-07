@@ -11,7 +11,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIAlignOrJustifyContent::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
   return CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
       range);

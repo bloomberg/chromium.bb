@@ -12,11 +12,11 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIOutlineColor::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.peek().id() == CSSValueWebkitFocusRingColor)
     return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeColor(range, context->mode());
+  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
 }
 
 }  // namespace blink

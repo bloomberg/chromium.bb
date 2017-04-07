@@ -14,17 +14,17 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIPaintStroke::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   if (range.peek().id() == CSSValueNone)
     return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSURIValue* url = CSSPropertyParserHelpers::consumeUrl(range, context);
+  CSSURIValue* url = CSSPropertyParserHelpers::consumeUrl(range, &context);
   if (url) {
     CSSValue* parsedValue = nullptr;
     if (range.peek().id() == CSSValueNone) {
       parsedValue = CSSPropertyParserHelpers::consumeIdent(range);
     } else {
       parsedValue =
-          CSSPropertyParserHelpers::consumeColor(range, context->mode());
+          CSSPropertyParserHelpers::consumeColor(range, context.mode());
     }
     if (parsedValue) {
       CSSValueList* values = CSSValueList::createSpaceSeparated();
@@ -34,7 +34,7 @@ const CSSValue* CSSPropertyAPIPaintStroke::parseSingleValue(
     }
     return url;
   }
-  return CSSPropertyParserHelpers::consumeColor(range, context->mode());
+  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
 }
 
 }  // namespace blink

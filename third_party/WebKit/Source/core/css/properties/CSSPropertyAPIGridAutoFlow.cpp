@@ -13,7 +13,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIGridAutoFlow::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
   CSSIdentifierValue* rowOrColumnValue =
       CSSPropertyParserHelpers::consumeIdent<CSSValueRow, CSSValueColumn>(
