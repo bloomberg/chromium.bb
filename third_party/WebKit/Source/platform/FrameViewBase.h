@@ -32,7 +32,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -72,8 +71,6 @@ class PLATFORM_EXPORT FrameViewBase
   virtual void paint(GraphicsContext&, const CullRect&) const {}
   void invalidate() { invalidateRect(boundsRect()); }
   virtual void invalidateRect(const IntRect&) = 0;
-
-  virtual void setFocused(bool, WebFocusType) {}
 
   virtual void show() {}
   virtual void hide() {}

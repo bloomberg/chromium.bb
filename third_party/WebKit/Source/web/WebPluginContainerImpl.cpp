@@ -186,7 +186,6 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect) {
 }
 
 void WebPluginContainerImpl::setFocused(bool focused, WebFocusType focusType) {
-  FrameViewBase::setFocused(focused, focusType);
   m_webPlugin->updateFocus(focused, focusType);
 }
 

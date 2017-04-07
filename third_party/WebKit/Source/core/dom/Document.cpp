@@ -375,20 +375,6 @@ static inline bool isValidNamePart(UChar32 c) {
   return true;
 }
 
-static FrameViewBase* frameViewBaseForElement(const Element& focusedElement) {
-  // Return either plugin or frame.
-  // TODO(joelhockey): FrameViewBase class will soon be removed.  It will be
-  // replaced with Focusable ABC that FrameView and PluginView will implement
-  // and this method will return Focusable.
-  if (isHTMLPlugInElement(focusedElement))
-    return toHTMLPlugInElement(focusedElement).plugin();
-
-  LayoutObject* layoutObject = focusedElement.layoutObject();
-  if (!layoutObject || !layoutObject->isLayoutPart())
-    return 0;
-  return toLayoutPart(layoutObject)->frameViewBase();
-}
-
 static bool acceptsEditingFocus(const Element& element) {
   DCHECK(hasEditableStyle(element));
 
@@ -4053,7 +4039,6 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     if (page() && (page()->focusController().isFocused())) {
       oldFocusedElement->dispatchBlurEvent(newFocusedElement, params.type,
                                            params.sourceCapabilities);
-
       if (m_focusedElement) {
         // handler shifted focus
         focusChangeBlocked = true;
@@ -4079,13 +4064,9 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
       }
     }
 
-    if (view()) {
-      FrameViewBase* oldFrameViewBase =
-          frameViewBaseForElement(*oldFocusedElement);
-      if (oldFrameViewBase)
-        oldFrameViewBase->setFocused(false, params.type);
-      else
-        view()->setFocused(false, params.type);
+    if (isHTMLPlugInElement(oldFocusedElement)) {
+      if (PluginView* plugin = toHTMLPlugInElement(oldFocusedElement)->plugin())
+        plugin->setFocused(false, params.type);
     }
   }
 
@@ -4152,23 +4133,9 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     if (isRootEditableElement(*m_focusedElement))
       frame()->spellChecker().didBeginEditing(m_focusedElement.get());
 
-    // eww, I suck. set the qt focus correctly
-    // ### find a better place in the code for this
-    if (view()) {
-      FrameViewBase* focusFrameViewBase =
-          frameViewBaseForElement(*m_focusedElement);
-      if (focusFrameViewBase) {
-        // Make sure a FrameViewBase has the right size before giving it focus.
-        // Otherwise, we are testing edge cases of the FrameViewBase code.
-        // Specifically, in WebCore this does not work well for text fields.
-        updateStyleAndLayout();
-        // Re-get the FrameViewBase in case updating the layout changed things.
-        focusFrameViewBase = frameViewBaseForElement(*m_focusedElement);
-      }
-      if (focusFrameViewBase)
-        focusFrameViewBase->setFocused(true, params.type);
-      else
-        view()->setFocused(true, params.type);
+    if (isHTMLPlugInElement(m_focusedElement)) {
+      if (PluginView* plugin = toHTMLPlugInElement(m_focusedElement)->plugin())
+        plugin->setFocused(true, params.type);
     }
   }
 

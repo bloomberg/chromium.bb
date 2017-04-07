@@ -31,6 +31,7 @@
 #include "core/CoreExport.h"
 #include "platform/FrameViewBase.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebFocusType.h"
 #include "v8/include/v8.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,6 +46,7 @@ class ResourceResponse;
 class CORE_EXPORT PluginView : public FrameViewBase {
  public:
   bool isPluginView() const final { return true; }
+  virtual void setFocused(bool, WebFocusType) {}
 
   virtual WebLayer* platformLayer() const { return 0; }
   virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) {
