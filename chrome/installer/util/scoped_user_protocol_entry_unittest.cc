@@ -31,8 +31,8 @@ class ScopedUserProtocolEntryTest : public testing::Test {
   void CreateNewRegistryValue(const base::string16& key_path,
                               const base::string16& name,
                               const base::string16& value) {
-    ScopedVector<RegistryEntry> entries;
-    entries.push_back(new RegistryEntry(key_path, name, value));
+    std::vector<std::unique_ptr<RegistryEntry>> entries;
+    entries.push_back(base::MakeUnique<RegistryEntry>(key_path, name, value));
     ASSERT_TRUE(ShellUtil::AddRegistryEntries(HKEY_CURRENT_USER, entries));
   }
 

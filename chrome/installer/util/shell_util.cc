@@ -13,9 +13,12 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 
+#include <algorithm>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,7 +29,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -224,10 +227,10 @@ base::string16 GetCapabilitiesKey(const base::string16& suffix) {
 
 // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8. This is only
 // needed for registring a web browser, not for general associations.
-ScopedVector<RegistryEntry> GetChromeDelegateExecuteEntries(
+std::vector<std::unique_ptr<RegistryEntry>> GetChromeDelegateExecuteEntries(
     const base::FilePath& chrome_exe,
     const ApplicationInfo& app_info) {
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
 
   base::string16 app_id_shell_key(ShellUtil::kRegClasses);
   app_id_shell_key.push_back(base::FilePath::kSeparators[0]);
@@ -236,8 +239,8 @@ ScopedVector<RegistryEntry> GetChromeDelegateExecuteEntries(
   app_id_shell_key.append(ShellUtil::kRegShellPath);
 
   // <root hkey>\Software\Classes\<app_id>\.exe\shell @=open
-  entries.push_back(
-      new RegistryEntry(app_id_shell_key, ShellUtil::kRegVerbOpen));
+  entries.push_back(base::MakeUnique<RegistryEntry>(app_id_shell_key,
+                                                    ShellUtil::kRegVerbOpen));
 
   // The command to execute when opening this application via the Metro UI.
   const base::string16 delegate_command(
@@ -267,17 +270,19 @@ ScopedVector<RegistryEntry> GetChromeDelegateExecuteEntries(
       // resource.
       const base::string16 verb_name(
           installer::GetLocalizedString(verb_and_id.name_id));
-      entries.push_back(new RegistryEntry(sub_path, verb_name.c_str()));
+      entries.push_back(
+          base::MakeUnique<RegistryEntry>(sub_path, verb_name.c_str()));
     }
-    entries.push_back(
-        new RegistryEntry(sub_path, L"CommandId", L"Browser.Launch"));
+    entries.push_back(base::MakeUnique<RegistryEntry>(sub_path, L"CommandId",
+                                                      L"Browser.Launch"));
 
     sub_path.push_back(base::FilePath::kSeparators[0]);
     sub_path.append(ShellUtil::kRegCommand);
 
     // <root hkey>\Software\Classes\<app_id>\.exe\shell\<verb>\command
-    entries.push_back(new RegistryEntry(sub_path, delegate_command));
-    entries.push_back(new RegistryEntry(
+    entries.push_back(
+        base::MakeUnique<RegistryEntry>(sub_path, delegate_command));
+    entries.push_back(base::MakeUnique<RegistryEntry>(
         sub_path, ShellUtil::kRegDelegateExecute, app_info.delegate_clsid));
   }
 
@@ -287,7 +292,7 @@ ScopedVector<RegistryEntry> GetChromeDelegateExecuteEntries(
 // Gets the registry entries to register an application in the Windows registry.
 // |app_info| provides all of the information needed.
 void GetProgIdEntries(const ApplicationInfo& app_info,
-                      ScopedVector<RegistryEntry>* entries) {
+                      std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // Basic sanity checks.
   DCHECK(!app_info.prog_id.empty());
   DCHECK_NE(L'.', app_info.prog_id[0]);
@@ -296,15 +301,16 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
   base::string16 prog_id_path(ShellUtil::kRegClasses);
   prog_id_path.push_back(base::FilePath::kSeparators[0]);
   prog_id_path.append(app_info.prog_id);
-  entries->push_back(new RegistryEntry(prog_id_path, app_info.file_type_name));
-  entries->push_back(new RegistryEntry(
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(prog_id_path, app_info.file_type_name));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       prog_id_path + ShellUtil::kRegDefaultIcon,
       ShellUtil::FormatIconLocation(app_info.file_type_icon_path,
                                     app_info.file_type_icon_index)));
-  entries->push_back(new RegistryEntry(prog_id_path + ShellUtil::kRegShellOpen,
-                                       app_info.command_line));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      prog_id_path + ShellUtil::kRegShellOpen, app_info.command_line));
   if (!app_info.delegate_clsid.empty()) {
-    entries->push_back(new RegistryEntry(
+    entries->push_back(base::MakeUnique<RegistryEntry>(
         prog_id_path + ShellUtil::kRegShellOpen, ShellUtil::kRegDelegateExecute,
         app_info.delegate_clsid));
     // TODO(scottmg): Simplify after Metro removal. https://crbug.com/558054.
@@ -315,36 +321,36 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
   // depend on the DelegateExecute verb handler being set.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     if (!app_info.app_id.empty()) {
-      entries->push_back(new RegistryEntry(
+      entries->push_back(base::MakeUnique<RegistryEntry>(
           prog_id_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
     }
 
     // Add \Software\Classes\<prog_id>\Application entries
     base::string16 application_path(prog_id_path + ShellUtil::kRegApplication);
     if (!app_info.app_id.empty()) {
-      entries->push_back(new RegistryEntry(
+      entries->push_back(base::MakeUnique<RegistryEntry>(
           application_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
     }
     if (!app_info.application_icon_path.empty()) {
-      entries->push_back(new RegistryEntry(
+      entries->push_back(base::MakeUnique<RegistryEntry>(
           application_path, ShellUtil::kRegApplicationIcon,
           ShellUtil::FormatIconLocation(app_info.application_icon_path,
                                         app_info.application_icon_index)));
     }
     if (!app_info.application_name.empty()) {
-      entries->push_back(new RegistryEntry(application_path,
-                                           ShellUtil::kRegApplicationName,
-                                           app_info.application_name));
+      entries->push_back(base::MakeUnique<RegistryEntry>(
+          application_path, ShellUtil::kRegApplicationName,
+          app_info.application_name));
     }
     if (!app_info.application_description.empty()) {
-      entries->push_back(new RegistryEntry(
+      entries->push_back(base::MakeUnique<RegistryEntry>(
           application_path, ShellUtil::kRegApplicationDescription,
           app_info.application_description));
     }
     if (!app_info.publisher_name.empty()) {
-      entries->push_back(new RegistryEntry(application_path,
-                                           ShellUtil::kRegApplicationCompany,
-                                           app_info.publisher_name));
+      entries->push_back(base::MakeUnique<RegistryEntry>(
+          application_path, ShellUtil::kRegApplicationCompany,
+          app_info.publisher_name));
     }
   }
 }
@@ -352,10 +358,11 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
 // This method returns a list of all the registry entries that are needed to
 // register this installation's ProgId and AppId. These entries need to be
 // registered in HKLM prior to Win8.
-void GetChromeProgIdEntries(BrowserDistribution* dist,
-                            const base::FilePath& chrome_exe,
-                            const base::string16& suffix,
-                            ScopedVector<RegistryEntry>* entries) {
+void GetChromeProgIdEntries(
+    BrowserDistribution* dist,
+    const base::FilePath& chrome_exe,
+    const base::string16& suffix,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   int chrome_icon_index = install_static::GetIconResourceIndex();
 
   ApplicationInfo app_info;
@@ -382,28 +389,28 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   GetProgIdEntries(app_info, entries);
 
   if (!app_info.delegate_clsid.empty()) {
-    ScopedVector<RegistryEntry> delegate_execute_entries =
+    auto delegate_execute_entries =
         GetChromeDelegateExecuteEntries(chrome_exe, app_info);
     // Remove the keys (not only their values) so that Windows will continue
     // to launch Chrome without a pesky association error.
     // TODO(scottmg): Simplify after Metro removal. https://crbug.com/558054.
-    for (RegistryEntry* entry : delegate_execute_entries)
+    for (const auto& entry : delegate_execute_entries)
       entry->set_removal_flag(RegistryEntry::RemovalFlag::KEY);
     // Move |delegate_execute_entries| to |entries|.
-    entries->insert(entries->end(), delegate_execute_entries.begin(),
-                    delegate_execute_entries.end());
-    delegate_execute_entries.weak_clear();
+    std::move(delegate_execute_entries.begin(), delegate_execute_entries.end(),
+              std::back_inserter(*entries));
   }
 }
 
 // This method returns a list of the registry entries needed to declare a
 // capability of handling a protocol on Windows.
-void GetProtocolCapabilityEntries(const base::string16& suffix,
-                                  const base::string16& protocol,
-                                  ScopedVector<RegistryEntry>* entries) {
-  entries->push_back(
-      new RegistryEntry(GetCapabilitiesKey(suffix).append(L"\\URLAssociations"),
-                        protocol, GetBrowserProgId(suffix)));
+void GetProtocolCapabilityEntries(
+    const base::string16& suffix,
+    const base::string16& protocol,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      GetCapabilitiesKey(suffix).append(L"\\URLAssociations"), protocol,
+      GetBrowserProgId(suffix)));
 }
 
 // This method returns a list of the registry entries required to register this
@@ -411,10 +418,11 @@ void GetProtocolCapabilityEntries(const base::string16& suffix,
 // Programs, StartMenuInternet, etc.). These entries need to be registered in
 // HKLM prior to Win8. If |suffix| is not empty, these entries are guaranteed to
 // be unique on this machine.
-void GetShellIntegrationEntries(BrowserDistribution* dist,
-                                const base::FilePath& chrome_exe,
-                                const base::string16& suffix,
-                                ScopedVector<RegistryEntry>* entries) {
+void GetShellIntegrationEntries(
+    BrowserDistribution* dist,
+    const base::FilePath& chrome_exe,
+    const base::string16& suffix,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   const base::string16 icon_path(ShellUtil::FormatIconLocation(
       chrome_exe, install_static::GetIconResourceIndex()));
   const base::string16 quoted_exe_path(L"\"" + chrome_exe.value() + L"\"");
@@ -424,60 +432,61 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
   // Register Chrome's display name.
   // TODO(grt): http://crbug.com/75152 Also set LocalizedString; see
   // http://msdn.microsoft.com/en-us/library/windows/desktop/cc144109(v=VS.85).aspx#registering_the_display_name
-  entries->push_back(
-      new RegistryEntry(start_menu_entry, dist->GetDisplayName()));
+  entries->push_back(base::MakeUnique<RegistryEntry>(start_menu_entry,
+                                                     dist->GetDisplayName()));
   // Register the "open" verb for launching Chrome via the "Internet" link.
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       start_menu_entry + ShellUtil::kRegShellOpen, quoted_exe_path));
   // Register Chrome's icon for the Start Menu "Internet" link.
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       start_menu_entry + ShellUtil::kRegDefaultIcon, icon_path));
 
   // Register installation information.
   base::string16 install_info(start_menu_entry + L"\\InstallInfo");
   // Note: not using CommandLine since it has ambiguous rules for quoting
   // strings.
-  entries->push_back(
-      new RegistryEntry(install_info, kReinstallCommand,
-                        quoted_exe_path + L" --" +
-                            base::ASCIIToUTF16(switches::kMakeDefaultBrowser)));
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      install_info, kReinstallCommand,
+      quoted_exe_path + L" --" +
+          base::ASCIIToUTF16(switches::kMakeDefaultBrowser)));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       install_info, L"HideIconsCommand",
       quoted_exe_path + L" --" + base::ASCIIToUTF16(switches::kHideIcons)));
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       install_info, L"ShowIconsCommand",
       quoted_exe_path + L" --" + base::ASCIIToUTF16(switches::kShowIcons)));
-  entries->push_back(new RegistryEntry(install_info, L"IconsVisible", 1));
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(install_info, L"IconsVisible", 1));
 
   // Register with Default Programs.
   const base::string16 reg_app_name(
       install_static::GetBaseAppName().append(suffix));
   // Tell Windows where to find Chrome's Default Programs info.
   const base::string16 capabilities(GetCapabilitiesKey(suffix));
-  entries->push_back(new RegistryEntry(ShellUtil::kRegRegisteredApplications,
-                                       reg_app_name, capabilities));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      ShellUtil::kRegRegisteredApplications, reg_app_name, capabilities));
   // Write out Chrome's Default Programs info.
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource rather than this.
-  entries->push_back(new RegistryEntry(capabilities,
-                                       ShellUtil::kRegApplicationDescription,
-                                       dist->GetLongAppDescription()));
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      capabilities, ShellUtil::kRegApplicationDescription,
+      dist->GetLongAppDescription()));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       capabilities, ShellUtil::kRegApplicationIcon, icon_path));
-  entries->push_back(new RegistryEntry(
+  entries->push_back(base::MakeUnique<RegistryEntry>(
       capabilities, ShellUtil::kRegApplicationName, dist->GetDisplayName()));
 
-  entries->push_back(new RegistryEntry(capabilities + L"\\Startmenu",
-                                       L"StartMenuInternet", reg_app_name));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      capabilities + L"\\Startmenu", L"StartMenuInternet", reg_app_name));
 
   const base::string16 html_prog_id(GetBrowserProgId(suffix));
   for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
-    entries->push_back(new RegistryEntry(
+    entries->push_back(base::MakeUnique<RegistryEntry>(
         capabilities + L"\\FileAssociations",
         ShellUtil::kPotentialFileAssociations[i], html_prog_id));
   }
   for (int i = 0; ShellUtil::kPotentialProtocolAssociations[i] != NULL; i++) {
-    entries->push_back(new RegistryEntry(
+    entries->push_back(base::MakeUnique<RegistryEntry>(
         capabilities + L"\\URLAssociations",
         ShellUtil::kPotentialProtocolAssociations[i], html_prog_id));
   }
@@ -486,9 +495,10 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
 // Gets the registry entries to register an application as a handler for a
 // particular file extension. |prog_id| is the ProgId used by Windows for the
 // application. |ext| is the file extension, which must begin with a '.'.
-void GetAppExtRegistrationEntries(const base::string16& prog_id,
-                                  const base::string16& ext,
-                                  ScopedVector<RegistryEntry>* entries) {
+void GetAppExtRegistrationEntries(
+    const base::string16& prog_id,
+    const base::string16& ext,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // In HKEY_CURRENT_USER\Software\Classes\EXT\OpenWithProgids, create an
   // empty value with this class's ProgId.
   base::string16 key_name(ShellUtil::kRegClasses);
@@ -496,7 +506,8 @@ void GetAppExtRegistrationEntries(const base::string16& prog_id,
   key_name.append(ext);
   key_name.push_back(base::FilePath::kSeparators[0]);
   key_name.append(ShellUtil::kRegOpenWithProgids);
-  entries->push_back(new RegistryEntry(key_name, prog_id, base::string16()));
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(key_name, prog_id, base::string16()));
 }
 
 // This method returns a list of the registry entries required for this
@@ -507,16 +518,18 @@ void GetAppExtRegistrationEntries(const base::string16& prog_id,
 //  - File Associations
 //    http://msdn.microsoft.com/en-us/library/bb166549
 // These entries need to be registered in HKLM prior to Win8.
-void GetChromeAppRegistrationEntries(const base::FilePath& chrome_exe,
-                                     const base::string16& suffix,
-                                     ScopedVector<RegistryEntry>* entries) {
+void GetChromeAppRegistrationEntries(
+    const base::FilePath& chrome_exe,
+    const base::string16& suffix,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   base::string16 app_path_key(ShellUtil::kAppPathsRegistryKey);
   app_path_key.push_back(base::FilePath::kSeparators[0]);
   app_path_key.append(chrome_exe.BaseName().value());
-  entries->push_back(new RegistryEntry(app_path_key, chrome_exe.value()));
-  entries->push_back(new RegistryEntry(app_path_key,
-                                       ShellUtil::kAppPathsRegistryPathName,
-                                       chrome_exe.DirName().value()));
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(app_path_key, chrome_exe.value()));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      app_path_key, ShellUtil::kAppPathsRegistryPathName,
+      chrome_exe.DirName().value()));
 
   const base::string16 html_prog_id(GetBrowserProgId(suffix));
   for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
@@ -536,29 +549,30 @@ void GetChromeAppRegistrationEntries(const base::FilePath& chrome_exe,
 // become the default. Otherwise, the first time the user opens a file, they are
 // presented with the dialog to set the default handler. (This is roughly
 // equivalent to being called with |overwrite_existing| false.)
-void GetAppDefaultRegistrationEntries(const base::string16& prog_id,
-                                      const base::string16& ext,
-                                      bool overwrite_existing,
-                                      ScopedVector<RegistryEntry>* entries) {
+void GetAppDefaultRegistrationEntries(
+    const base::string16& prog_id,
+    const base::string16& ext,
+    bool overwrite_existing,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // Set the default value of HKEY_CURRENT_USER\Software\Classes\EXT to this
   // class's name.
   base::string16 key_name(ShellUtil::kRegClasses);
   key_name.push_back(base::FilePath::kSeparators[0]);
   key_name.append(ext);
-  std::unique_ptr<RegistryEntry> default_association(
-      new RegistryEntry(key_name, prog_id));
+  auto default_association = base::MakeUnique<RegistryEntry>(key_name, prog_id);
   if (overwrite_existing ||
       !default_association->KeyExistsInRegistry(RegistryEntry::LOOK_IN_HKCU)) {
-    entries->push_back(default_association.release());
+    entries->push_back(std::move(default_association));
   }
 }
 
 // This method returns a list of all the user level registry entries that are
 // needed to make Chromium the default handler for a protocol on XP.
-void GetXPStyleUserProtocolEntries(const base::string16& protocol,
-                                   const base::string16& chrome_icon,
-                                   const base::string16& chrome_open,
-                                   ScopedVector<RegistryEntry>* entries) {
+void GetXPStyleUserProtocolEntries(
+    const base::string16& protocol,
+    const base::string16& chrome_icon,
+    const base::string16& chrome_open,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // Protocols associations.
   base::string16 url_key(ShellUtil::kRegClasses);
   url_key.push_back(base::FilePath::kSeparators[0]);
@@ -567,33 +581,36 @@ void GetXPStyleUserProtocolEntries(const base::string16& protocol,
   // This registry value tells Windows that this 'class' is a URL scheme
   // so IE, explorer and other apps will route it to our handler.
   // <root hkey>\Software\Classes\<protocol>\URL Protocol
-  entries->push_back(
-      new RegistryEntry(url_key, ShellUtil::kRegUrlProtocol, base::string16()));
+  entries->push_back(base::MakeUnique<RegistryEntry>(
+      url_key, ShellUtil::kRegUrlProtocol, base::string16()));
 
   // <root hkey>\Software\Classes\<protocol>\DefaultIcon
   base::string16 icon_key = url_key + ShellUtil::kRegDefaultIcon;
-  entries->push_back(new RegistryEntry(icon_key, chrome_icon));
+  entries->push_back(base::MakeUnique<RegistryEntry>(icon_key, chrome_icon));
 
   // <root hkey>\Software\Classes\<protocol>\shell\open\command
   base::string16 shell_key = url_key + ShellUtil::kRegShellOpen;
-  entries->push_back(new RegistryEntry(shell_key, chrome_open));
+  entries->push_back(base::MakeUnique<RegistryEntry>(shell_key, chrome_open));
 
   // <root hkey>\Software\Classes\<protocol>\shell\open\ddeexec
   base::string16 dde_key = url_key + L"\\shell\\open\\ddeexec";
-  entries->push_back(new RegistryEntry(dde_key, base::string16()));
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(dde_key, base::string16()));
 
   // <root hkey>\Software\Classes\<protocol>\shell\@
   base::string16 protocol_shell_key = url_key + ShellUtil::kRegShellPath;
-  entries->push_back(new RegistryEntry(protocol_shell_key, L"open"));
+  entries->push_back(
+      base::MakeUnique<RegistryEntry>(protocol_shell_key, L"open"));
 }
 
 // This method returns a list of all the user level registry entries that are
 // needed to make Chromium default browser on XP. Some of these entries are
 // irrelevant in recent versions of Windows, but we register them anyways as
 // some legacy apps are hardcoded to lookup those values.
-void GetXPStyleDefaultBrowserUserEntries(const base::FilePath& chrome_exe,
-                                         const base::string16& suffix,
-                                         ScopedVector<RegistryEntry>* entries) {
+void GetXPStyleDefaultBrowserUserEntries(
+    const base::FilePath& chrome_exe,
+    const base::string16& suffix,
+    std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // File extension associations.
   base::string16 html_prog_id(GetBrowserProgId(suffix));
   for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
@@ -613,15 +630,16 @@ void GetXPStyleDefaultBrowserUserEntries(const base::FilePath& chrome_exe,
   // start->Internet shortcut.
   base::string16 start_menu(ShellUtil::kRegStartMenuInternet);
   base::string16 app_name = install_static::GetBaseAppName().append(suffix);
-  entries->push_back(new RegistryEntry(start_menu, app_name));
+  entries->push_back(base::MakeUnique<RegistryEntry>(start_menu, app_name));
 }
 
 // Checks that all |entries| are present on this computer (or absent if their
 // |removal_flag_| is set). |look_for_in| is passed to
 // RegistryEntry::ExistsInRegistry(). Documentation for it can be found there.
-bool AreEntriesAsDesired(const ScopedVector<RegistryEntry>& entries,
-                         uint32_t look_for_in) {
-  for (const auto* entry : entries) {
+bool AreEntriesAsDesired(
+    const std::vector<std::unique_ptr<RegistryEntry>>& entries,
+    uint32_t look_for_in) {
+  for (const auto& entry : entries) {
     if (entry->ExistsInRegistry(look_for_in) != !entry->IsFlaggedForRemoval())
       return false;
   }
@@ -642,7 +660,7 @@ bool IsChromeRegistered(BrowserDistribution* dist,
                         const base::FilePath& chrome_exe,
                         const base::string16& suffix,
                         uint32_t look_for_in) {
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
   GetChromeProgIdEntries(dist, chrome_exe, suffix, &entries);
   GetShellIntegrationEntries(dist, chrome_exe, suffix, &entries);
   GetChromeAppRegistrationEntries(chrome_exe, suffix, &entries);
@@ -655,7 +673,7 @@ bool IsChromeRegistered(BrowserDistribution* dist,
 bool IsChromeRegisteredForProtocol(const base::string16& suffix,
                                    const base::string16& protocol,
                                    uint32_t look_for_in) {
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
   GetProtocolCapabilityEntries(suffix, protocol, &entries);
   return AreEntriesAsDesired(entries, look_for_in);
 }
@@ -888,7 +906,7 @@ HKEY DetermineRegistrationRoot(bool is_per_user) {
 bool RegisterChromeAsDefaultXPStyle(int shell_change,
                                     const base::FilePath& chrome_exe) {
   bool ret = true;
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
   GetXPStyleDefaultBrowserUserEntries(
       chrome_exe, ShellUtil::GetCurrentInstallationSuffix(chrome_exe),
       &entries);
@@ -917,7 +935,7 @@ bool RegisterChromeAsDefaultXPStyle(int shell_change,
 bool RegisterChromeAsDefaultProtocolClientXPStyle(
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
   const base::string16 chrome_open(
       ShellUtil::GetChromeShellOpenCmd(chrome_exe));
   const base::string16 chrome_icon(ShellUtil::FormatIconLocation(
@@ -2074,8 +2092,8 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
     // Do the full registration if we can do it at user-level or if the user is
     // an admin.
-    ScopedVector<RegistryEntry> progid_and_appreg_entries;
-    ScopedVector<RegistryEntry> shell_entries;
+    std::vector<std::unique_ptr<RegistryEntry>> progid_and_appreg_entries;
+    std::vector<std::unique_ptr<RegistryEntry>> shell_entries;
     GetChromeProgIdEntries(dist, chrome_exe, suffix,
                            &progid_and_appreg_entries);
     GetChromeAppRegistrationEntries(chrome_exe, suffix,
@@ -2094,7 +2112,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   } else {
     // If we got to this point then all we can do is create ProgId and basic app
     // registrations under HKCU.
-    ScopedVector<RegistryEntry> entries;
+    std::vector<std::unique_ptr<RegistryEntry>> entries;
     GetChromeProgIdEntries(dist, chrome_exe, base::string16(), &entries);
     // Prefer to use |suffix|; unless Chrome's ProgIds are already registered
     // with no suffix (as per the old registration style): in which case some
@@ -2157,7 +2175,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
       return false;
 
     // Write in the capabillity for the protocol.
-    ScopedVector<RegistryEntry> entries;
+    std::vector<std::unique_ptr<RegistryEntry>> entries;
     GetProtocolCapabilityEntries(suffix, protocol, &entries);
     return AddRegistryEntries(root, entries);
   } else if (elevate_if_not_admin &&
@@ -2269,7 +2287,7 @@ bool ShellUtil::AddFileAssociations(
     const base::string16& file_type_name,
     const base::FilePath& icon_path,
     const std::set<base::string16>& file_extensions) {
-  ScopedVector<RegistryEntry> entries;
+  std::vector<std::unique_ptr<RegistryEntry>> entries;
 
   // Create a class for this app.
   ApplicationInfo app_info;
@@ -2317,13 +2335,13 @@ bool ShellUtil::DeleteFileAssociations(const base::string16& prog_id) {
 }
 
 // static
-bool ShellUtil::AddRegistryEntries(HKEY root,
-                                   const ScopedVector<RegistryEntry>& entries) {
+bool ShellUtil::AddRegistryEntries(
+    HKEY root,
+    const std::vector<std::unique_ptr<RegistryEntry>>& entries) {
   std::unique_ptr<WorkItemList> items(WorkItem::CreateWorkItemList());
 
-  for (ScopedVector<RegistryEntry>::const_iterator itr = entries.begin();
-       itr != entries.end(); ++itr)
-    (*itr)->AddToWorkItemList(root, items.get());
+  for (const auto& entry : entries)
+    entry->AddToWorkItemList(root, items.get());
 
   // Apply all the registry changes and if there is a problem, rollback
   if (!items->Do()) {

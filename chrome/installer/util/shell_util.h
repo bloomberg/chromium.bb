@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -22,7 +23,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -633,8 +633,9 @@ class ShellUtil {
 
   // This method converts all the RegistryEntries from the given list to
   // Set/CreateRegWorkItems and runs them using WorkItemList.
-  static bool AddRegistryEntries(HKEY root,
-                                 const ScopedVector<RegistryEntry>& entries);
+  static bool AddRegistryEntries(
+      HKEY root,
+      const std::vector<std::unique_ptr<RegistryEntry>>& entries);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);

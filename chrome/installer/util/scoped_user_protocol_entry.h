@@ -5,8 +5,10 @@
 #ifndef CHROME_INSTALLER_UTIL_SCOPED_USER_PROTOCOL_ENTRY_H_
 #define CHROME_INSTALLER_UTIL_SCOPED_USER_PROTOCOL_ENTRY_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 class RegistryEntry;
 
@@ -24,7 +26,7 @@ class ScopedUserProtocolEntry {
   ~ScopedUserProtocolEntry();
 
  private:
-  ScopedVector<RegistryEntry> entries_;
+  std::vector<std::unique_ptr<RegistryEntry>> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUserProtocolEntry);
 };
