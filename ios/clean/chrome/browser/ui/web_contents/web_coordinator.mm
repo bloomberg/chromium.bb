@@ -8,6 +8,7 @@
 #import "ios/clean/chrome/browser/ui/context_menu/web_context_menu_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_view_controller.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
@@ -37,22 +38,22 @@
 }
 
 - (void)setWebState:(web::WebState*)webState {
+  // PLACEHOLDER: The web state delegate will be set by another object, and
+  // this coordinator will not need to know the active web state.
   _webState = webState;
   self.webState->SetDelegate(_webStateDelegate.get());
-  self.mediator.webState = self.webState;
 }
 
 - (void)start {
   self.viewController = [[WebContentsViewController alloc] init];
   self.mediator.consumer = self.viewController;
+  self.mediator.webStateList = &self.browser->web_state_list();
   [super start];
 }
 
 - (void)stop {
   [super stop];
-  // PLACEHOLDER: This is how the webUsageEnabled is set to false. Find a
-  // better way in the future.
-  self.mediator.webState = nullptr;
+  [self.mediator disconnect];
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {

@@ -4,7 +4,10 @@
 
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
 
+#include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_observer_bridge.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
@@ -14,32 +17,96 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation WebContentsMediator
-@synthesize webState = _webState;
+@interface WebContentsMediator ()<WebStateListObserving>
+@end
+
+@implementation WebContentsMediator {
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+}
+@synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
 
-- (void)setWebState:(web::WebState*)webState {
-  if (_webState)
-    _webState->SetWebUsageEnabled(false);
+- (void)dealloc {
+  [self disconnect];
+}
 
-  _webState = webState;
-  if (!self.webState)
+#pragma mark - Public
+
+- (void)disconnect {
+  if (!self.webStateList) {
     return;
-
-  self.webState->SetWebUsageEnabled(true);
-  if (!self.webState->GetNavigationManager()->GetItemCount()) {
-    web::NavigationManager::WebLoadParams params(
-        GURL("https://dev.chromium.org/"));
-    params.transition_type = ui::PAGE_TRANSITION_TYPED;
-    self.webState->GetNavigationManager()->LoadURLWithParams(params);
   }
-  [self.consumer contentViewDidChange:self.webState->GetView()];
+  [self disableWebUsage:self.webStateList->GetActiveWebState()];
+  self.webStateList = nullptr;
+}
+
+#pragma mark - Properties
+
+- (void)setWebStateList:(WebStateList*)webStateList {
+  if (_webStateList) {
+    _webStateList->RemoveObserver(_webStateListObserver.get());
+    _webStateListObserver.reset();
+  }
+  _webStateList = webStateList;
+  if (!_webStateList) {
+    return;
+  }
+  _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
+  _webStateList->AddObserver(_webStateListObserver.get());
+  if (_webStateList->GetActiveWebState()) {
+    [self updateConsumerWithWebState:_webStateList->GetActiveWebState()];
+  }
 }
 
 - (void)setConsumer:(id<WebContentsConsumer>)consumer {
   _consumer = consumer;
-  if (self.webState)
-    [self.consumer contentViewDidChange:self.webState->GetView()];
+  if (self.webStateList && self.webStateList->GetActiveWebState()) {
+    [self updateConsumerWithWebState:self.webStateList->GetActiveWebState()];
+  }
+}
+
+#pragma mark - WebStateListObserving
+
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                 userAction:(BOOL)userAction {
+  [self disableWebUsage:oldWebState];
+  [self updateConsumerWithWebState:newWebState];
+}
+
+#pragma mark - Private
+
+- (void)disableWebUsage:(web::WebState*)webState {
+  if (webState) {
+    webState->SetWebUsageEnabled(false);
+  }
+}
+
+// Sets |webState| webUsageEnabled and updates the consumer's contentView.
+- (void)updateConsumerWithWebState:(web::WebState*)webState {
+  UIView* updatedView = nil;
+  if (webState) {
+    webState->SetWebUsageEnabled(true);
+    updatedView = webState->GetView();
+    // PLACEHOLDER: This navigates the page since the omnibox is not yet
+    // hooked up.
+    [self navigateToDefaultPage:webState];
+  }
+  if (self.consumer) {
+    [self.consumer contentViewDidChange:updatedView];
+  }
+}
+
+// PLACEHOLDER: This navigates the page since the omnibox is not yet hooked up.
+- (void)navigateToDefaultPage:(web::WebState*)webState {
+  if (!webState->GetNavigationManager()->GetItemCount()) {
+    web::NavigationManager::WebLoadParams params(
+        GURL("https://dev.chromium.org/"));
+    params.transition_type = ui::PAGE_TRANSITION_TYPED;
+    webState->GetNavigationManager()->LoadURLWithParams(params);
+  }
 }
 
 @end
