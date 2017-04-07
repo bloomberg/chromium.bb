@@ -2223,6 +2223,9 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       content::PUSH_UNREGISTRATION_REASON_PERMISSION_REVOKED, 1);
+
+  base::RunLoop().RunUntilIdle();
+
   // Revoked permission should trigger an automatic unsubscription attempt.
   EXPECT_EQ(app_id, gcm_driver_->last_deletetoken_app_id());
 }
