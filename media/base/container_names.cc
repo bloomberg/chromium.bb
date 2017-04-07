@@ -956,29 +956,35 @@ static bool CheckMov(const uint8_t* buffer, int buffer_size) {
   RCHECK(buffer_size > 8);
 
   int offset = 0;
+  int valid_top_level_boxes = 0;
   while (offset + 8 < buffer_size) {
     uint32_t atomsize = Read32(buffer + offset);
     uint32_t atomtype = Read32(buffer + offset + 4);
-    // Only need to check for ones that are valid at the top level.
+
+    // Only need to check for atoms that are valid at the top level. However,
+    // "Boxes with an unrecognized type shall be ignored and skipped." So
+    // simply make sure that at least two recognized top level boxes are found.
+    // This list matches BoxReader::IsValidTopLevelBox().
     switch (atomtype) {
-      case TAG('f','t','y','p'):
-      case TAG('p','d','i','n'):
-      case TAG('m','o','o','v'):
-      case TAG('m','o','o','f'):
-      case TAG('m','f','r','a'):
-      case TAG('m','d','a','t'):
-      case TAG('f','r','e','e'):
-      case TAG('s','k','i','p'):
-      case TAG('m','e','t','a'):
-      case TAG('m','e','c','o'):
-      case TAG('s','t','y','p'):
-      case TAG('s','i','d','x'):
-      case TAG('s','s','i','x'):
-      case TAG('p','r','f','t'):
-      case TAG('b','l','o','c'):
+      case TAG('f', 't', 'y', 'p'):
+      case TAG('p', 'd', 'i', 'n'):
+      case TAG('b', 'l', 'o', 'c'):
+      case TAG('m', 'o', 'o', 'v'):
+      case TAG('m', 'o', 'o', 'f'):
+      case TAG('m', 'f', 'r', 'a'):
+      case TAG('m', 'd', 'a', 't'):
+      case TAG('f', 'r', 'e', 'e'):
+      case TAG('s', 'k', 'i', 'p'):
+      case TAG('m', 'e', 't', 'a'):
+      case TAG('m', 'e', 'c', 'o'):
+      case TAG('s', 't', 'y', 'p'):
+      case TAG('s', 'i', 'd', 'x'):
+      case TAG('s', 's', 'i', 'x'):
+      case TAG('p', 'r', 'f', 't'):
+      case TAG('u', 'u', 'i', 'd'):
+      case TAG('e', 'm', 's', 'g'):
+        ++valid_top_level_boxes;
         break;
-      default:
-        return false;
     }
     if (atomsize == 1) {
       // Indicates that the length is the next 64bits.
@@ -992,7 +998,7 @@ static bool CheckMov(const uint8_t* buffer, int buffer_size) {
       break;  // Indicates the last atom or length too big.
     offset += atomsize;
   }
-  return true;
+  return valid_top_level_boxes >= 2;
 }
 
 enum MPEGVersion {

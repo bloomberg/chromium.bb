@@ -160,7 +160,9 @@ TEST(ContainerNamesTest, FileCheckWAV) {
 }
 
 TEST(ContainerNamesTest, FileCheckMOV) {
+  TestFile(CONTAINER_MOV, GetTestDataFilePath("bear_rotate_90.mp4"));
   TestFile(CONTAINER_MOV, GetTestDataFilePath("bear-1280x720.mp4"));
+  TestFile(CONTAINER_MOV, GetTestDataFilePath("crbug657437.mp4"));
   TestFile(CONTAINER_MOV, GetTestDataFilePath("sfx.m4a"));
 }
 
