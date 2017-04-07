@@ -78,7 +78,6 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
     BrowserWithTestWindowTest::TearDown();
     testing_io_thread_state_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-    DestroyBrowserAndProfile();
   }
 
  private:

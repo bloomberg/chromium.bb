@@ -127,10 +127,6 @@ class BrowserWithTestWindowTest : public testing::Test {
                                            const GURL& url,
                                            const base::string16& title);
 
-  // Destroys the browser, window, and profile created by this class. This is
-  // invoked from the destructor.
-  void DestroyBrowserAndProfile();
-
   // Creates the profile used by this test. The caller owns the return value.
   virtual TestingProfile* CreateProfile();
 

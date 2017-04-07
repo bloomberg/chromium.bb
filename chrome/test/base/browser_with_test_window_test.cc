@@ -87,9 +87,11 @@ void BrowserWithTestWindowTest::TearDown() {
   // before the profile can be destroyed and the test safely shut down.
   base::RunLoop().RunUntilIdle();
 
-  // Reset the profile here because some profile keyed services (like the
-  // audio service) depend on test stubs that the helpers below will remove.
-  DestroyBrowserAndProfile();
+  // Close the browser tabs and destroy the browser and window instances.
+  if (browser_)
+    browser_->tab_strip_model()->CloseAllTabs();
+  browser_.reset();
+  window_.reset();
 
   if (content::IsBrowserSideNavigationEnabled())
     content::BrowserSideNavigationTearDown();
@@ -99,15 +101,23 @@ void BrowserWithTestWindowTest::TearDown() {
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Destroy the shell before the profile to match production shutdown ordering.
   ash_test_helper_->TearDown();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset();
 #endif
 
+  // Destroy the profile here - otherwise, if the profile is freed in the
+  // destructor, and a test subclass owns a resource that the profile depends
+  // on (such as g_browser_process()->local_state()) there's no way for the
+  // subclass to free it after the profile.
+  if (profile_)
+    DestroyProfile(profile_);
+  profile_ = nullptr;
+
   testing::Test::TearDown();
 
-  // A Task is leaked if we don't destroy everything, then run the message
-  // loop.
+  // A Task is leaked if we don't destroy everything, then run the message loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
@@ -162,23 +172,6 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
   NavigationController* controller = &contents->GetController();
   NavigateAndCommit(controller, url);
   contents->UpdateTitleForEntry(controller->GetActiveEntry(), title);
-}
-
-void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
-  if (browser_.get()) {
-    // Make sure we close all tabs, otherwise Browser isn't happy in its
-    // destructor.
-    browser()->tab_strip_model()->CloseAllTabs();
-    browser_.reset(NULL);
-  }
-  window_.reset(NULL);
-  // Destroy the profile here - otherwise, if the profile is freed in the
-  // destructor, and a test subclass owns a resource that the profile depends
-  // on (such as g_browser_process()->local_state()) there's no way for the
-  // subclass to free it after the profile.
-  if (profile_)
-    DestroyProfile(profile_);
-  profile_ = NULL;
 }
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {
