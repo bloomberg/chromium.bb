@@ -60,6 +60,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // Returns the time at which the response was completed.
   const base::Time& GetResponseTime() const;
 
+  // Returns the mime type describing the response, as indicated by the server.
+  const std::string& GetResponseType() const;
+
  private:
   friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
 
@@ -87,6 +90,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   base::FilePath file_path_;
   int64_t file_size_ = 0;
   base::Time response_time_;
+  std::string response_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestInfo);
 };

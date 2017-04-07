@@ -36,6 +36,7 @@ void BackgroundFetchRequestInfo::PopulateResponseFromDownloadItem(
   file_path_ = download_item->GetTargetFilePath();
   file_size_ = download_item->GetReceivedBytes();
   response_time_ = download_item->GetEndTime();
+  response_type_ = download_item->GetMimeType();
 
   response_data_populated_ = true;
 }
@@ -58,6 +59,11 @@ int64_t BackgroundFetchRequestInfo::GetFileSize() const {
 const base::Time& BackgroundFetchRequestInfo::GetResponseTime() const {
   DCHECK(response_data_populated_);
   return response_time_;
+}
+
+const std::string& BackgroundFetchRequestInfo::GetResponseType() const {
+  DCHECK(response_data_populated_);
+  return response_type_;
 }
 
 }  // namespace content

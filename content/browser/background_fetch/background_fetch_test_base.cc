@@ -133,6 +133,7 @@ class BackgroundFetchTestBase::RespondingDownloadManager
 
     download_item->SetTargetFilePath(response_path);
     download_item->SetReceivedBytes(response_info.second.size());
+    download_item->SetMimeType("text/plain");
 
     // Notify the Job Controller about the download having been updated.
     download_item->NotifyDownloadUpdated();

@@ -369,11 +369,11 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     EXPECT_EQ(fetches[i].request.url, fetches[i].response.url_list[0]);
 
     // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response.status_code, 0);
+    EXPECT_EQ(fetches[i].response.status_code, 200);
     EXPECT_TRUE(fetches[i].response.status_text.empty());
     EXPECT_EQ(fetches[i].response.response_type,
               blink::WebServiceWorkerResponseTypeDefault);
-    EXPECT_TRUE(fetches[i].response.headers.empty());
+    EXPECT_FALSE(fetches[i].response.headers.empty());
     EXPECT_EQ(fetches[i].response.error,
               blink::WebServiceWorkerResponseErrorUnknown);
 
