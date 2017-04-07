@@ -481,6 +481,11 @@ component("base") {
 
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
+    sources += [
+      "glib/glib_integers.h",
+      "glib/glib_signal.h",
+      "glib/scoped_gobject.h",
+    ]
   }
 
   if (is_linux) {

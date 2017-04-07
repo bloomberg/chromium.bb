@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "ui/base/glib/scoped_gobject.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace aura {
@@ -115,47 +116,14 @@ class CairoSurface {
 // |major|.|minor|.|micro|.
 bool GtkVersionCheck(int major, int minor = 0, int micro = 0);
 
-// Similar in spirit to a std::unique_ptr.
-template <typename T>
-class ScopedGObject {
- public:
-  explicit ScopedGObject(T* obj) : obj_(obj) {
-    // Remove the floating reference from |obj_| if it has one.
-    if (g_object_is_floating(obj_))
-      g_object_ref_sink(obj_);
-    DCHECK(G_OBJECT(obj_)->ref_count == 1);
-  }
+using ScopedStyleContext = ScopedGObject<GtkStyleContext>;
+using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
-  ScopedGObject(const ScopedGObject<T>& other) = delete;
+}  // namespace libgtkui
 
-  ScopedGObject(ScopedGObject<T>&& other) : obj_(other.obj_) {
-    other.obj_ = nullptr;
-  }
-
-  ~ScopedGObject() {
-    if (obj_)
-      Unref();
-  }
-
-  ScopedGObject<T>& operator=(const ScopedGObject<T>& other) = delete;
-
-  ScopedGObject<T>& operator=(ScopedGObject<T>&& other) {
-    g_object_unref(obj_);
-    obj_ = other.obj_;
-    other.obj_ = nullptr;
-    return *this;
-  }
-
-  operator T*() { return obj_; }
-
- private:
-  void Unref() { g_object_unref(obj_); }
-
-  T* obj_;
-};
-
+// Template override cannot be in the libgtkui namespace.
 template <>
-inline void ScopedGObject<GtkStyleContext>::Unref() {
+inline void libgtkui::ScopedStyleContext::Unref() {
   // Versions of GTK earlier than 3.15.4 had a bug where a g_assert
   // would be triggered when trying to free a GtkStyleContext that had
   // a parent whose only reference was the child context in question.
@@ -165,7 +133,7 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
   while (context) {
     GtkStyleContext* parent = gtk_style_context_get_parent(context);
     if (parent && G_OBJECT(context)->ref_count == 1 &&
-        !GtkVersionCheck(3, 15, 4)) {
+        !libgtkui::GtkVersionCheck(3, 15, 4)) {
       g_object_ref(parent);
       gtk_style_context_set_parent(context, nullptr);
       g_object_unref(context);
@@ -177,8 +145,7 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
   }
 }
 
-typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
-typedef ScopedGObject<GtkCssProvider> ScopedCssProvider;
+namespace libgtkui {
 
 // Converts ui::NativeTheme::State to GtkStateFlags.
 GtkStateFlags StateToStateFlags(ui::NativeTheme::State state);
