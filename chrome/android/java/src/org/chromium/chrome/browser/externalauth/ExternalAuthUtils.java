@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -89,6 +90,7 @@ public class ExternalAuthUtils {
         return true;
     }
 
+    // TODO(paulmiller): Remove; replaced by no-argument isChromeGoogleSigned().
     /**
      * Returns whether the current build of Chrome is a Google-signed package.
      *
@@ -100,11 +102,30 @@ public class ExternalAuthUtils {
     }
 
     /**
+     * Returns whether the current build of Chrome is a Google-signed package.
+     * @return whether the currently running application is signed with Google keys.
+     */
+    public boolean isChromeGoogleSigned() {
+        String packageName = ContextUtils.getApplicationContext().getPackageName();
+        return isGoogleSigned(null, packageName);
+    }
+
+    // TODO(paulmiller): Remove; replaced by isGoogleSigned(String).
+    /**
      * Returns whether the call is originating from a Google-signed package.
      * @param appContext the current context.
      * @param packageName The package name to inquire about.
      */
     public boolean isGoogleSigned(Context context, String packageName) {
+        // This is overridden in a subclass.
+        return isGoogleSigned(packageName);
+    }
+
+    /**
+     * Returns whether the call is originating from a Google-signed package.
+     * @param packageName The package name to inquire about.
+     */
+    public boolean isGoogleSigned(String packageName) {
         // This is overridden in a subclass.
         return false;
     }
