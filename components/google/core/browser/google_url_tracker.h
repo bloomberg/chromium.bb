@@ -65,13 +65,11 @@ class GoogleURLTracker
   const GURL& google_url() const { return google_url_; }
 
   // Requests that the tracker perform a server check to update the Google URL
-  // as necessary.  If |force| is false, this will happen at most once per
-  // network change, not sooner than five seconds after startup (checks
-  // requested before that time will occur then; checks requested afterwards
-  // will occur immediately, if no other checks have been made during this run).
-  // If |force| is true, and the tracker has already performed any requested
-  // check, it will check again.
-  void RequestServerCheck(bool force);
+  // as necessary.  This will happen at most once per network change, not sooner
+  // than five seconds after startup (checks requested before that time will
+  // occur then; checks requested afterwards will occur immediately, if no other
+  // checks have been made during this run).
+  void RequestServerCheck();
 
   std::unique_ptr<Subscription> RegisterCallback(
       const OnGoogleURLUpdatedCallback& cb);

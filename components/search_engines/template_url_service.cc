@@ -671,18 +671,7 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
 
   default_search_manager_.ClearUserSelectedDefaultSearchEngine();
 
-  if (!default_search_provider_) {
-    // If the default search provider came from a user pref we would have been
-    // notified of the new (fallback-provided) value in
-    // ClearUserSelectedDefaultSearchEngine() above. Since we are here, the
-    // value was presumably originally a fallback value (which may have been
-    // repaired).
-    DefaultSearchManager::Source source;
-    const TemplateURLData* new_dse =
-        default_search_manager_.GetDefaultSearchEngine(&source);
-    // ApplyDefaultSearchChange will notify observers once it is done.
-    ApplyDefaultSearchChange(new_dse, source);
-  } else {
+  if (default_search_provider_) {
     // Set fallback engine as user selected, because repair is considered a user
     // action and we are expected to sync new fallback engine to other devices.
     const TemplateURLData* fallback_engine_data =
@@ -701,6 +690,18 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
                         fallback_engine->sync_guid());
     }
     NotifyObservers();
+    RequestGoogleURLTrackerServerCheckIfNecessary();
+  } else {
+    // If the default search provider came from a user pref we would have been
+    // notified of the new (fallback-provided) value in
+    // ClearUserSelectedDefaultSearchEngine() above. Since we are here, the
+    // value was presumably originally a fallback value (which may have been
+    // repaired).
+    DefaultSearchManager::Source source;
+    const TemplateURLData* new_dse =
+        default_search_manager_.GetDefaultSearchEngine(&source);
+    // ApplyDefaultSearchChange will notify observers once it is done.
+    ApplyDefaultSearchChange(new_dse, source);
   }
 }
 
@@ -1829,7 +1830,7 @@ void TemplateURLService::RequestGoogleURLTrackerServerCheckIfNecessary() {
   if (default_search_provider_ &&
       default_search_provider_->HasGoogleBaseURLs(search_terms_data()) &&
       google_url_tracker_)
-    google_url_tracker_->RequestServerCheck(false);
+    google_url_tracker_->RequestServerCheck();
 }
 
 void TemplateURLService::GoogleBaseURLChanged() {

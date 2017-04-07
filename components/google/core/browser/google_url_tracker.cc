@@ -74,14 +74,9 @@ void GoogleURLTracker::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kLastPromptedGoogleURL, std::string());
 }
 
-void GoogleURLTracker::RequestServerCheck(bool force) {
-  // If this instance already has a fetcher, SetNeedToFetch() is unnecessary,
-  // and changing |already_fetched_| is wrong.
-  if (!fetcher_) {
-    if (force)
-      already_fetched_ = false;
+void GoogleURLTracker::RequestServerCheck() {
+  if (!fetcher_)
     SetNeedToFetch();
-  }
 }
 
 std::unique_ptr<GoogleURLTracker::Subscription>

@@ -42,7 +42,7 @@ NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
     if (google_util::IsGoogleDomainUrl(GetNavigationCorrectionURL(),
                                        google_util::ALLOW_SUBDOMAIN,
                                        google_util::ALLOW_NON_STANDARD_PORTS))
-      google_url_tracker->RequestServerCheck(false);
+      google_url_tracker->RequestServerCheck();
     google_url_updated_subscription_ = google_url_tracker->RegisterCallback(
         base::Bind(&NavigationCorrectionTabObserver::OnGoogleURLUpdated,
                    base::Unretained(this)));
