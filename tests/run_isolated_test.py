@@ -173,6 +173,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--cache', self.tempdir,
         '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '--isolate-server', 'https://localhost',
+        '--root-dir', self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -195,6 +196,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
         '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--root-dir', self.tempdir,
         '--',
         '--extraargs',
         'bar',
@@ -335,6 +337,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost',
         '--named-cache-root', os.path.join(self.tempdir, 'c'),
+        '--root-dir', self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -785,6 +788,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         '--isolate-server', 'https://localhost:1',
         '--named-cache-root', os.path.join(self.tempdir, 'c'),
         '--json', out,
+        '--root-dir', self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)

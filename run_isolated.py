@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.9'
+__version__ = '0.9.1'
 
 import argparse
 import base64
@@ -403,7 +403,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 def map_and_run(
     command, isolated_hash, storage, isolate_cache, outputs, init_named_caches,
     leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
-    install_packages_fn, use_symlinks):
+    install_packages_fn, use_symlinks, constant_run_path):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -453,7 +453,14 @@ def map_and_run(
   elif isolate_cache.cache_dir:
     root_dir = os.path.dirname(isolate_cache.cache_dir)
   # See comment for these constants.
-  run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
+  # If root_dir is not specified, it is not constant.
+  # TODO(maruel): This is not obvious. Change this to become an error once we
+  # make the constant_run_path an exposed flag.
+  if constant_run_path and root_dir:
+    run_dir = os.path.join(root_dir, ISOLATED_RUN_DIR)
+    os.mkdir(run_dir)
+  else:
+    run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
   # as Swarming task can run without an isolate server.
   out_dir = make_temp_dir(ISOLATED_OUT_DIR, root_dir) if storage else None
@@ -646,7 +653,7 @@ def run_tha_test(
   result = map_and_run(
       command, isolated_hash, storage, isolate_cache, outputs,
       init_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-      bot_file, extra_args, install_packages_fn, use_symlinks)
+      bot_file, extra_args, install_packages_fn, use_symlinks, True)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
