@@ -113,13 +113,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   // TODO(sky): fix constness.
   WmShell* GetShell() const;
 
-  // Used for debugging.
-  void SetName(const char* name);
-  std::string GetName() const;
-
-  void SetTitle(const base::string16& title);
-  base::string16 GetTitle() const;
-
   // See shell_window_ids.h for list of known ids.
   void SetShellWindowId(int id);
   int GetShellWindowId() const;

@@ -70,7 +70,7 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
         mirror_view_(window->CreateViewWithRecreatedLayers().release()),
         window_observer_(this) {
     window_observer_.Add(window->aura_window());
-    window_title_->SetText(window->GetTitle());
+    window_title_->SetText(window->aura_window()->GetTitle());
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetEnabledColor(SK_ColorWHITE);
     window_title_->SetAutoColorReadabilityEnabled(false);

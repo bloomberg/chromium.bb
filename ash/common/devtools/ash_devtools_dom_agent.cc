@@ -41,7 +41,7 @@ std::unique_ptr<DOM::Node> BuildNode(
 std::unique_ptr<Array<std::string>> GetAttributes(const ash::WmWindow* window) {
   std::unique_ptr<Array<std::string>> attributes = Array<std::string>::create();
   attributes->addItem("name");
-  attributes->addItem(window->GetName());
+  attributes->addItem(window->aura_window()->GetName());
   attributes->addItem("active");
   attributes->addItem(window->IsActive() ? "true" : "false");
   return attributes;

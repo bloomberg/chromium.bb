@@ -158,22 +158,6 @@ WmShell* WmWindow::GetShell() const {
   return WmShell::Get();
 }
 
-void WmWindow::SetName(const char* name) {
-  window_->SetName(name);
-}
-
-std::string WmWindow::GetName() const {
-  return window_->GetName();
-}
-
-void WmWindow::SetTitle(const base::string16& title) {
-  window_->SetTitle(title);
-}
-
-base::string16 WmWindow::GetTitle() const {
-  return window_->GetTitle();
-}
-
 void WmWindow::SetShellWindowId(int id) {
   window_->set_id(id);
 }

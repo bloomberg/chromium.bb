@@ -414,7 +414,7 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
       close_button_(new OverviewCloseButton(this)),
       window_selector_(window_selector),
       background_view_(nullptr) {
-  CreateWindowLabel(window->GetTitle());
+  CreateWindowLabel(window->aura_window()->GetTitle());
   GetWindow()->aura_window()->AddObserver(this);
 }
 
@@ -725,7 +725,7 @@ void WindowSelectorItem::AnimateOpacity(float opacity,
 
 void WindowSelectorItem::UpdateAccessibilityName() {
   caption_container_view_->listener_button()->SetAccessibleName(
-      GetWindow()->GetTitle());
+      GetWindow()->aura_window()->GetTitle());
 }
 
 void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {

@@ -539,7 +539,8 @@ bool WindowGrid::Contains(const WmWindow* window) const {
 void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
   for (const auto& window : window_list_) {
-    if (finder.Search(window->GetWindow()->GetTitle(), nullptr, nullptr)) {
+    if (finder.Search(window->GetWindow()->aura_window()->GetTitle(), nullptr,
+                      nullptr)) {
       window->SetDimmed(false);
     } else {
       window->SetDimmed(true);
@@ -651,7 +652,7 @@ void WindowGrid::InitShieldWidget() {
   WmWindow* widget_window = WmWindow::Get(shield_widget_->GetNativeWindow());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
   widget_window->SetBounds(bounds);
-  widget_window->SetName("OverviewModeShield");
+  widget_window->aura_window()->SetName("OverviewModeShield");
 
   ui::ScopedLayerAnimationSettings animation_settings(
       widget_window->GetLayer()->GetAnimator());
@@ -674,7 +675,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   gfx::Vector2d fade_out_direction =
       GetSlideVectorForFadeIn(direction, target_bounds);
   widget_window->SetBounds(target_bounds - fade_out_direction);
-  widget_window->SetName("OverviewModeSelector");
+  widget_window->aura_window()->SetName("OverviewModeSelector");
 
   selector_shadow_.reset(new ::wm::Shadow());
   selector_shadow_->Init(::wm::ShadowElevation::LARGE);

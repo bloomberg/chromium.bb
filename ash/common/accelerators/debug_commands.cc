@@ -35,26 +35,27 @@ namespace debug {
 namespace {
 
 void HandlePrintLayerHierarchy() {
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
-    ui::Layer* layer = root->GetLayer();
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
+    ui::Layer* layer = root->layer();
     if (layer)
       ui::PrintLayerHierarchy(
-          layer, root->GetRootWindowController()->GetLastMouseLocationInRoot());
+          layer,
+          RootWindowController::ForWindow(root)->GetLastMouseLocationInRoot());
   }
 }
 
 void HandlePrintViewHierarchy() {
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
+  aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return;
-  views::Widget* widget = active_window->GetInternalWidget();
+  views::Widget* widget = WmWindow::Get(active_window)->GetInternalWidget();
   if (!widget)
     return;
   views::PrintViewHierarchy(widget->GetRootView());
 }
 
-void PrintWindowHierarchy(const WmWindow* active_window,
-                          WmWindow* window,
+void PrintWindowHierarchy(const aura::Window* active_window,
+                          aura::Window* window,
                           int indent,
                           std::ostringstream* out) {
   std::string indent_str(indent, ' ');
@@ -62,23 +63,22 @@ void PrintWindowHierarchy(const WmWindow* active_window,
   if (name.empty())
     name = "\"\"";
   *out << indent_str << name << " (" << window << ")"
-       << " type=" << window->GetType()
+       << " type=" << window->type()
        << ((window == active_window) ? " [active] " : " ")
        << (window->IsVisible() ? " visible " : " ")
-       << window->GetBounds().ToString()
-       << (window->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)
-               ? " [snapped] "
-               : "")
+       << window->bounds().ToString()
+       << (window->GetProperty(kSnapChildrenToPixelBoundary) ? " [snapped] "
+                                                             : "")
        << ", subpixel offset="
-       << window->GetLayer()->subpixel_position_offset().ToString() << '\n';
+       << window->layer()->subpixel_position_offset().ToString() << '\n';
 
-  for (WmWindow* child : window->GetChildren())
+  for (aura::Window* child : window->children())
     PrintWindowHierarchy(active_window, child, indent + 3, out);
 }
 
 void HandlePrintWindowHierarchy() {
-  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
-  WmWindow::Windows roots = WmShell::Get()->GetAllRootWindows();
+  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;
     out << "RootWindow " << i << ":\n";

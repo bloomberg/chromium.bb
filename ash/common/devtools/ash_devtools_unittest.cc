@@ -83,7 +83,7 @@ bool Equals(WmWindow* window, DOM::Node* node) {
   if (window->GetInternalWidget())
     children_count++;
   return "Window" == node->getNodeName() &&
-         window->GetName() == GetAttributeValue("name", node) &&
+         window->aura_window()->GetName() == GetAttributeValue("name", node) &&
          children_count == node->getChildNodeCount(kDefaultChildNodeCount);
 }
 
@@ -140,7 +140,7 @@ WmWindow* GetHighlightingWindow(int root_window_index) {
           ->GetChildByShellWindowId(kShellWindowId_OverlayContainer)
           ->GetChildren();
   for (WmWindow* window : overlay_windows) {
-    if (window->GetName() == "HighlightingWidget")
+    if (window->aura_window()->GetName() == "HighlightingWidget")
       return window;
   }
   NOTREACHED();
@@ -298,10 +298,10 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
-  parent_window->SetName("parent_window");
+  parent_window->aura_window()->SetName("parent_window");
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
   WmWindow* child_window = child_owner->window();
-  child_window->SetName("child_window");
+  child_window->aura_window()->SetName("child_window");
   widget->Show();
   views::View* child_view = new TestView("child_view");
   widget->GetRootView()->AddChildView(child_view);
