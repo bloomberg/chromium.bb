@@ -31,6 +31,24 @@
  test(() => {
    let recordTest = internals.recordTest();
 
+   let record = {'foo': 42, 'quux': 34};
+   let handler = {
+     getOwnPropertyDescriptor: (target, name) => {
+       if (name == 'quux')
+         return undefined;
+       return Reflect.getOwnPropertyDescriptor(target, name);
+     }
+   };
+   var recordProxy = new Proxy(record, handler);
+   recordTest.setStringLongRecord(record);
+   assert_record_equals(
+     recordTest.getStringLongRecord(), [['foo', 42]],
+     "Entries whose getOwnPropertyDescriptor return undefined are skipped");
+ }, "Test GetOwnPropertyDescriptor() returning undefined");
+
+ test(() => {
+   let recordTest = internals.recordTest();
+
    recordTest.setStringLongRecord({a: true, false: null, c: "foo"});
    assert_record_equals(recordTest.getStringLongRecord(),
                         [['a', 1], ['false', 0], ['c', 0]],

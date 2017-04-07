@@ -375,6 +375,8 @@ struct NativeValueTraits<IDLRecord<K, V>>
       // GetOwnPropertyDescriptor is responsible for catching any exceptions
       // and failures, and if we got to this point of the code we have a proper
       // object that was not created by a user.
+      if (desc->IsUndefined())
+        continue;
       DCHECK(desc->IsObject());
       v8::Local<v8::Value> enumerable =
           v8::Local<v8::Object>::Cast(desc)
