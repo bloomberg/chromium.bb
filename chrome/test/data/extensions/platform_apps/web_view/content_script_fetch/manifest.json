@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> content script fetch",
+  "description": "Loads a guest which does a fetch from a content script",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

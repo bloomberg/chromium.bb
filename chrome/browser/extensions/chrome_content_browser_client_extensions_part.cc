@@ -202,15 +202,17 @@ content::HeaderInterceptorResult CheckOriginHeader(
     return content::HeaderInterceptorResult::FAIL;
 
   // Check for platform app origins.  These can only be committed by the app
-  // itself, or by one if its guests if there are accessible_resources.
+  // itself, or by one if its guests if it has the webview permission.
   // Processes that incorrectly claim to be an app should be killed.
   const ProcessMap& process_map = extension_info_map->process_map();
   if (extension->is_platform_app() &&
       !process_map.Contains(extension->id(), child_id)) {
-    // This is a platform app origin not in the app's own process.  If there
-    // are no accessible resources, this is illegal.
-    if (!extension->GetManifestData(manifest_keys::kWebviewAccessibleResources))
+    // This is a platform app origin not in the app's own process.  If it cannot
+    // create webviews, this is illegal.
+    if (!extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kWebView)) {
       return content::HeaderInterceptorResult::KILL;
+    }
 
     // If there are accessible resources, the origin is only legal if the
     // given process is a guest of the app.

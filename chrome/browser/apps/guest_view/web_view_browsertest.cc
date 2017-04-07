@@ -2241,6 +2241,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_TearDownTest) {
   LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
 }
 
+// Tests that an app can inject a content script into a webview, and that it can
+// send cross-origin requests with CORS headers.
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContentScriptFetch) {
+  TestHelper("testContentScriptFetch", "web_view/content_script_fetch",
+             NEEDS_TEST_SERVER);
+}
+
 // In following GeolocationAPIEmbedderHasNoAccess* tests, embedder (i.e. the
 // platform app) does not have geolocation permission for this test.
 // No matter what the API does, geolocation permission would be denied.
