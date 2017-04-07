@@ -13,7 +13,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -28,14 +27,13 @@
 #include "net/spdy/hpack/hpack_decoder_interface.h"
 #include "net/spdy/hpack/hpack_header_table.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_headers_handler_interface.h"
 #include "net/spdy/spdy_protocol.h"
-
-using std::string;
 
 namespace net {
 
@@ -940,8 +938,8 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
   base::Optional<size_t> opt_pad_length_;
 
   // Temporary buffers for the AltSvc fields.
-  string alt_svc_origin_;
-  string alt_svc_value_;
+  SpdyString alt_svc_origin_;
+  SpdyString alt_svc_value_;
 
   // Listener used if we transition to an error state; the listener ignores all
   // the callbacks.

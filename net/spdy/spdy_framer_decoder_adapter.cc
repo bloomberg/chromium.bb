@@ -5,7 +5,6 @@
 #include "net/spdy/spdy_framer_decoder_adapter.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/format_macros.h"

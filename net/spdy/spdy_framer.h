@@ -11,13 +11,13 @@
 #include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack/hpack_decoder_interface.h"
 #include "net/spdy/hpack/hpack_encoder.h"
+#include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_flags.h"
@@ -715,7 +715,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetNumberRequiredContinuationFrames(size_t size);
 
   bool WritePayloadWithContinuation(SpdyFrameBuilder* builder,
-                                    const std::string& hpack_encoding,
+                                    const SpdyString& hpack_encoding,
                                     SpdyStreamId stream_id,
                                     SpdyFrameType type,
                                     int padding_payload_len);
@@ -733,7 +733,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // block. Does not need or use the SpdyHeaderBlock inside SpdyHeadersIR.
   SpdySerializedFrame SerializeHeadersGivenEncoding(
       const SpdyHeadersIR& headers,
-      const std::string& encoding) const;
+      const SpdyString& encoding) const;
 
   // Calculates the number of bytes required to serialize a SpdyHeadersIR, not
   // including the bytes to be used for the encoded header set.
@@ -760,17 +760,17 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                       const SettingsMap* values,
                                       size_t* size) const;
   void SerializeAltSvcBuilderHelper(const SpdyAltSvcIR& altsvc_ir,
-                                    std::string* value,
+                                    SpdyString* value,
                                     size_t* size) const;
   void SerializeHeadersBuilderHelper(const SpdyHeadersIR& headers,
                                      uint8_t* flags,
                                      size_t* size,
-                                     std::string* hpack_encoding,
+                                     SpdyString* hpack_encoding,
                                      int* weight,
                                      size_t* length_field);
   void SerializePushPromiseBuilderHelper(const SpdyPushPromiseIR& push_promise,
                                          uint8_t* flags,
-                                         std::string* hpack_encoding,
+                                         SpdyString* hpack_encoding,
                                          size_t* size);
 
   // The size of the control frame buffer.

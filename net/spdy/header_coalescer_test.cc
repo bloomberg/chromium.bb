@@ -4,8 +4,7 @@
 
 #include "header_coalescer.h"
 
-#include <string>
-
+#include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +40,7 @@ TEST_F(HeaderCoalescerTest, EmptyHeaderKey) {
 TEST_F(HeaderCoalescerTest, HeaderBlockTooLarge) {
   // 3 byte key, 256 * 1024 - 40 byte value, 32 byte overhead:
   // less than 256 * 1024 bytes in total.
-  std::string data(256 * 1024 - 40, 'a');
+  SpdyString data(256 * 1024 - 40, 'a');
   header_coalescer_.OnHeader("foo", data);
   EXPECT_FALSE(header_coalescer_.error_seen());
 

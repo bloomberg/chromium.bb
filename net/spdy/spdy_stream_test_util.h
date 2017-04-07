@@ -64,7 +64,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   // Drains all data from the underlying read queue and returns it as
   // a string.
-  std::string TakeReceivedData();
+  SpdyString TakeReceivedData();
 
   // Returns whether or not the stream is closed.
   bool StreamIsClosed() const { return !stream_.get(); }
@@ -73,7 +73,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   // returns the stream's ID when it was open.
   SpdyStreamId stream_id() const { return stream_id_; }
 
-  std::string GetResponseHeaderValue(const std::string& name) const;
+  SpdyString GetResponseHeaderValue(const SpdyString& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
 
  protected:
