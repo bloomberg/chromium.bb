@@ -804,14 +804,6 @@ void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv);
 void av1_set_temporal_mv_prediction(AV1_COMP *cpi, int allow_tempmv_prediction);
 #endif
 
-YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
-                                               YV12_BUFFER_CONFIG *unscaled,
-                                               YV12_BUFFER_CONFIG *scaled);
-
-YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
-                                          YV12_BUFFER_CONFIG *unscaled,
-                                          YV12_BUFFER_CONFIG *scaled);
-
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags);
 
 static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {

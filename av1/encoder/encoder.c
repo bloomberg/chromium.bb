@@ -2900,48 +2900,6 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
 #endif  // OUTPUT_YUV_REC
 
 #if CONFIG_HIGHBITDEPTH
-static void scale_and_extend_frame_nonnormative(const YV12_BUFFER_CONFIG *src,
-                                                YV12_BUFFER_CONFIG *dst,
-                                                int bd) {
-#else
-static void scale_and_extend_frame_nonnormative(const YV12_BUFFER_CONFIG *src,
-                                                YV12_BUFFER_CONFIG *dst) {
-#endif  // CONFIG_HIGHBITDEPTH
-  // TODO(dkovalev): replace YV12_BUFFER_CONFIG with aom_image_t
-  int i;
-  const uint8_t *const srcs[3] = { src->y_buffer, src->u_buffer,
-                                   src->v_buffer };
-  const int src_strides[3] = { src->y_stride, src->uv_stride, src->uv_stride };
-  const int src_widths[3] = { src->y_crop_width, src->uv_crop_width,
-                              src->uv_crop_width };
-  const int src_heights[3] = { src->y_crop_height, src->uv_crop_height,
-                               src->uv_crop_height };
-  uint8_t *const dsts[3] = { dst->y_buffer, dst->u_buffer, dst->v_buffer };
-  const int dst_strides[3] = { dst->y_stride, dst->uv_stride, dst->uv_stride };
-  const int dst_widths[3] = { dst->y_crop_width, dst->uv_crop_width,
-                              dst->uv_crop_width };
-  const int dst_heights[3] = { dst->y_crop_height, dst->uv_crop_height,
-                               dst->uv_crop_height };
-
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
-#if CONFIG_HIGHBITDEPTH
-    if (src->flags & YV12_FLAG_HIGHBITDEPTH) {
-      av1_highbd_resize_plane(srcs[i], src_heights[i], src_widths[i],
-                              src_strides[i], dsts[i], dst_heights[i],
-                              dst_widths[i], dst_strides[i], bd);
-    } else {
-      av1_resize_plane(srcs[i], src_heights[i], src_widths[i], src_strides[i],
-                       dsts[i], dst_heights[i], dst_widths[i], dst_strides[i]);
-    }
-#else
-    av1_resize_plane(srcs[i], src_heights[i], src_widths[i], src_strides[i],
-                     dsts[i], dst_heights[i], dst_widths[i], dst_strides[i]);
-#endif  // CONFIG_HIGHBITDEPTH
-  }
-  aom_extend_frame_borders(dst);
-}
-
-#if CONFIG_HIGHBITDEPTH
 static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                    YV12_BUFFER_CONFIG *dst, int planes,
                                    int bd) {
@@ -4420,36 +4378,6 @@ static void set_ext_overrides(AV1_COMP *cpi) {
     cpi->refresh_golden_frame = cpi->ext_refresh_golden_frame;
     cpi->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
     cpi->ext_refresh_frame_flags_pending = 0;
-  }
-}
-
-YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
-                                               YV12_BUFFER_CONFIG *unscaled,
-                                               YV12_BUFFER_CONFIG *scaled) {
-  if (cm->mi_cols * MI_SIZE != unscaled->y_width ||
-      cm->mi_rows * MI_SIZE != unscaled->y_height) {
-    // For 2x2 scaling down.
-    aom_scale_frame(unscaled, scaled, unscaled->y_buffer, 9, 2, 1, 2, 1, 0);
-    aom_extend_frame_borders(scaled);
-    return scaled;
-  } else {
-    return unscaled;
-  }
-}
-
-YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
-                                          YV12_BUFFER_CONFIG *unscaled,
-                                          YV12_BUFFER_CONFIG *scaled) {
-  if (cm->mi_cols * MI_SIZE != unscaled->y_width ||
-      cm->mi_rows * MI_SIZE != unscaled->y_height) {
-#if CONFIG_HIGHBITDEPTH
-    scale_and_extend_frame_nonnormative(unscaled, scaled, (int)cm->bit_depth);
-#else
-    scale_and_extend_frame_nonnormative(unscaled, scaled);
-#endif  // CONFIG_HIGHBITDEPTH
-    return scaled;
-  } else {
-    return unscaled;
   }
 }
 
