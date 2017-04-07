@@ -53,7 +53,9 @@
         </template>
       </div>
       <template is="dom-if" if="[[showChannelSwitcherDialog_]]" restamp>
-        <settings-channel-switcher-dialog></settings-channel-switcher-dialog>
+        <settings-channel-switcher-dialog
+            on-close="onChannelSwitcherDialogClosed_">
+        </settings-channel-switcher-dialog>
       </template>
     </div>
     <div class="settings-box two-line single-column"
