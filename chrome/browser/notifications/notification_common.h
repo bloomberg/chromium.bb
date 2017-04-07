@@ -24,7 +24,8 @@ class NotificationCommon {
   enum Type {
     PERSISTENT = 0,
     NON_PERSISTENT = 1,
-    TYPE_MAX = NON_PERSISTENT
+    EXTENSION = 2,
+    TYPE_MAX = EXTENSION
   };
 
   // Open the Notification settings screen when clicking the right button.

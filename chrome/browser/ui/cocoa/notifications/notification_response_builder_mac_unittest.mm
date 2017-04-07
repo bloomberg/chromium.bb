@@ -13,7 +13,8 @@
 
 class NotificationResponseBuilderMacTest : public testing::Test {
  protected:
-  base::scoped_nsobject<NotificationBuilder> NewTestBuilder() {
+  base::scoped_nsobject<NotificationBuilder> NewTestBuilder(
+      NotificationCommon::Type type) {
     base::scoped_nsobject<NotificationBuilder> builder(
         [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
                                            optionsLabel:@"Options"
@@ -26,13 +27,15 @@ class NotificationResponseBuilderMacTest : public testing::Test {
     [builder setNotificationId:@"notificationId"];
     [builder setProfileId:@"profileId"];
     [builder setIncognito:false];
-    [builder setNotificationType:@(NotificationCommon::PERSISTENT)];
+    [builder setNotificationType:@(type)];
+    [builder setShowSettingsButton:(type != NotificationCommon::EXTENSION)];
     return builder;
   }
 };
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   NSUserNotification* notification = [builder buildUserNotification];
   // This will be set by the notification center to indicate the notification
   // was clicked.
@@ -46,12 +49,14 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
+
   EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
   EXPECT_EQ(-1, buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   NSUserNotification* notification = [builder buildUserNotification];
 
   // This will be set by the notification center to indicate the only available
@@ -65,12 +70,14 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
       [response objectForKey:notification_constants::kNotificationOperation];
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
+
   EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
   EXPECT_EQ(-1, buttonIndex.intValue);
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   [builder setButtons:@"Button1" secondaryButton:@""];
 
   NSUserNotification* notification = [builder buildUserNotification];
@@ -93,7 +100,8 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   [builder setButtons:@"Button1" secondaryButton:@"Button2"];
 
   NSUserNotification* notification = [builder buildUserNotification];
@@ -118,7 +126,8 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
 
 TEST_F(NotificationResponseBuilderMacTest,
        TestNotificationTwoActionSettingsClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   [builder setButtons:@"Button1" secondaryButton:@"Button2"];
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -144,7 +153,8 @@ TEST_F(NotificationResponseBuilderMacTest,
 }
 
 TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::PERSISTENT);
   NSUserNotification* notification = [builder buildUserNotification];
 
   // None is what the NSUserNotification center emits when closing since it
@@ -161,4 +171,30 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
       [response objectForKey:notification_constants::kNotificationButtonIndex];
   EXPECT_EQ(1 /* NOTIFICATION_CLOSE */, operation.intValue);
   EXPECT_EQ(-1, buttonIndex.intValue);
+}
+
+TEST_F(NotificationResponseBuilderMacTest, TestNotificationExtension) {
+  base::scoped_nsobject<NotificationBuilder> builder =
+      NewTestBuilder(NotificationCommon::EXTENSION);
+  [builder setButtons:@"Button1" secondaryButton:@"Button2"];
+  NSUserNotification* notification = [builder buildUserNotification];
+  // These values will be set by the notification center to indicate that button
+  // 1 was clicked.
+  [notification
+      setValue:
+          [NSNumber
+              numberWithInt:NSUserNotificationActivationTypeActionButtonClicked]
+        forKey:@"_activationType"];
+  [notification setValue:[NSNumber numberWithInt:1]
+                  forKey:@"_alternateActionIndex"];
+
+  NSDictionary* response =
+      [NotificationResponseBuilder buildDictionary:notification];
+
+  NSNumber* operation =
+      [response objectForKey:notification_constants::kNotificationOperation];
+  NSNumber* buttonIndex =
+      [response objectForKey:notification_constants::kNotificationButtonIndex];
+  EXPECT_EQ(0 /* NOTIFICATION_CLICK */, operation.intValue);
+  EXPECT_EQ(1, buttonIndex.intValue);
 }

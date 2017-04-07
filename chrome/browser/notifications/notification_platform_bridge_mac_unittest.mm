@@ -54,6 +54,7 @@ class NotificationPlatformBridgeMacTest : public testing::Test {
     [builder setProfileId:@"profile_id"];
     [builder setIncognito:false];
     [builder setNotificationType:@(NotificationCommon::PERSISTENT)];
+    [builder setShowSettingsButton:true];
 
     return [builder buildUserNotification];
   }

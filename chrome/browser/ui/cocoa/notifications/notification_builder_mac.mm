@@ -26,6 +26,7 @@ NSString* const kNotificationTag = @"tag";
 NSString* const kNotificationCloseButtonTag = @"closeButton";
 NSString* const kNotificationOptionsButtonTag = @"optionsButton";
 NSString* const kNotificationSettingsButtonTag = @"settingsButton";
+
 }  // namespace
 
 @implementation NotificationBuilder {
@@ -122,6 +123,12 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
                         forKey:notification_constants::kNotificationType];
 }
 
+- (void)setShowSettingsButton:(BOOL)showSettingsButton {
+  [notificationData_
+      setObject:[NSNumber numberWithBool:showSettingsButton]
+         forKey:notification_constants::kNotificationHasSettingsButton];
+}
+
 - (NSUserNotification*)buildUserNotification {
   base::scoped_nsobject<NSUserNotification> toast(
       [[NSUserNotification alloc] init]);
@@ -142,11 +149,23 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
     }
   }
 
+  // Type (needed to define the buttons)
+  NSNumber* type = [notificationData_
+      objectForKey:notification_constants::kNotificationType];
+
+  // Extensions don't have a settings button.
+  NSNumber* showSettingsButton = [notificationData_
+      objectForKey:notification_constants::kNotificationHasSettingsButton];
+
   // Buttons
   if ([toast respondsToSelector:@selector(_showsButtons)]) {
     DCHECK([notificationData_ objectForKey:kNotificationCloseButtonTag]);
     DCHECK([notificationData_ objectForKey:kNotificationSettingsButtonTag]);
     DCHECK([notificationData_ objectForKey:kNotificationOptionsButtonTag]);
+    DCHECK([notificationData_
+        objectForKey:notification_constants::kNotificationHasSettingsButton]);
+
+    BOOL settingsButton = [showSettingsButton boolValue];
 
     [toast setValue:@YES forKey:@"_showsButtons"];
     // A default close button label is provided by the platform but we
@@ -158,15 +177,19 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
     // Display the Settings button as the action button if there are either no
     // developer-provided action buttons, or the alternate action menu is not
     // available on this Mac version. This avoids needlessly showing the menu.
-    // TODO(miguelg): Extensions should not have a settings button.
     if (![notificationData_ objectForKey:kNotificationButtonOne] ||
         ![toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]) {
-      [toast
-          setActionButtonTitle:
-              [notificationData_ objectForKey:kNotificationSettingsButtonTag]];
+      if (settingsButton) {
+        [toast setActionButtonTitle:
+                   [notificationData_
+                       objectForKey:kNotificationSettingsButtonTag]];
+      } else {
+        [toast setHasActionButton:NO];
+      }
+
     } else {
       // Otherwise show the alternate menu, then show the developer actions and
-      // finally the settings one.
+      // finally the settings one if needed.
       DCHECK(
           [toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]);
       DCHECK(
@@ -183,8 +206,11 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
         [buttons
             addObject:[notificationData_ objectForKey:kNotificationButtonTwo]];
       }
-      [buttons addObject:[notificationData_
-                             objectForKey:kNotificationSettingsButtonTag]];
+      if (settingsButton) {
+        [buttons addObject:[notificationData_
+                               objectForKey:kNotificationSettingsButtonTag]];
+      }
+
       [toast setValue:buttons forKey:@"_alternateActionButtonTitles"];
     }
   }
@@ -216,8 +242,6 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
       objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [notificationData_
       objectForKey:notification_constants::kNotificationIncognito];
-  NSNumber* type = [notificationData_
-      objectForKey:notification_constants::kNotificationType];
 
   toast.get().userInfo = @{
     notification_constants::kNotificationOrigin : origin,
@@ -225,6 +249,7 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
     notification_constants::kNotificationType : type,
+    notification_constants::kNotificationHasSettingsButton : showSettingsButton,
   };
 
   return toast.autorelease();

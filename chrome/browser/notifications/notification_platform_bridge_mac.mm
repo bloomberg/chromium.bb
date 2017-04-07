@@ -172,8 +172,12 @@ void NotificationPlatformBridgeMac::Display(
   [builder setTitle:base::SysUTF16ToNSString(notification.title())];
   [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
 
+  bool requires_attribution =
+      notification.context_message().empty() &&
+      notification_type != NotificationCommon::EXTENSION;
+
   base::string16 subtitle =
-      notification.context_message().empty()
+      requires_attribution
           ? url_formatter::FormatOriginForSecurityDisplay(
                 url::Origin(notification.origin_url()),
                 url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)
@@ -184,6 +188,8 @@ void NotificationPlatformBridgeMac::Display(
     [builder setIcon:notification.icon().ToNSImage()];
   }
 
+  [builder setShowSettingsButton:(notification_type !=
+                                  NotificationCommon::EXTENSION)];
   std::vector<message_center::ButtonInfo> buttons = notification.buttons();
   if (!buttons.empty()) {
     DCHECK_LE(buttons.size(), blink::kWebNotificationMaxActions);

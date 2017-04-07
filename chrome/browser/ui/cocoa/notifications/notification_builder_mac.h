@@ -59,6 +59,7 @@
 - (void)setProfileId:(NSString*)profileId;
 - (void)setIncognito:(BOOL)incognito;
 - (void)setNotificationType:(NSNumber*)notificationType;
+- (void)setShowSettingsButton:(BOOL)showSettingsButton;
 
 // Returns a notification ready to be displayed out of the provided
 // |notificationData|.

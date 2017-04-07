@@ -45,6 +45,8 @@ enum NotificationOperation {
       objectForKey:notification_constants::kNotificationIncognito];
   NSNumber* notificationType = [[notification userInfo]
       objectForKey:notification_constants::kNotificationType];
+  NSNumber* hasSettingsButton = [[notification userInfo]
+      objectForKey:notification_constants::kNotificationHasSettingsButton];
 
   // Closed notifications are not activated.
   NotificationOperation operation =
@@ -54,7 +56,7 @@ enum NotificationOperation {
   int buttonIndex = -1;
 
   // Determine whether the user clicked on a button, and if they did, whether it
-  // was a developer-provided button or the mandatory Settings button.
+  // was a developer-provided button or the  Settings button.
   if (notification.activationType ==
       NSUserNotificationActivationTypeActionButtonClicked) {
     NSArray* alternateButtons = @[];
@@ -64,26 +66,29 @@ enum NotificationOperation {
           [notification valueForKey:@"_alternateActionButtonTitles"];
     }
 
-    bool multipleButtons = (alternateButtons.count > 0);
+    BOOL settingsButtonRequired = [hasSettingsButton boolValue];
+    BOOL multipleButtons = (alternateButtons.count > 0);
 
     // No developer actions, just the settings button.
     if (!multipleButtons) {
+      DCHECK(settingsButtonRequired);
       operation = NOTIFICATION_SETTINGS;
       buttonIndex = -1;
     } else {
       // 0 based array containing.
       // Button 1
       // Button 2 (optional)
-      // Settings
+      // Settings (if required)
       NSNumber* actionIndex =
           [notification valueForKey:@"_alternateActionIndex"];
-      operation = (actionIndex.unsignedLongValue == alternateButtons.count - 1)
+      operation = settingsButtonRequired && (actionIndex.unsignedLongValue ==
+                                             alternateButtons.count - 1)
                       ? NOTIFICATION_SETTINGS
                       : NOTIFICATION_CLICK;
-      buttonIndex =
-          (actionIndex.unsignedLongValue == alternateButtons.count - 1)
-              ? -1
-              : actionIndex.intValue;
+      buttonIndex = settingsButtonRequired && (actionIndex.unsignedLongValue ==
+                                               alternateButtons.count - 1)
+                        ? -1
+                        : actionIndex.intValue;
     }
   }
 
