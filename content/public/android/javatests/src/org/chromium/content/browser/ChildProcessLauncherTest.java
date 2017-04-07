@@ -103,7 +103,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
         // Crash the service.
-        assertTrue(connection.crashServiceForTesting());
+        connection.crashServiceForTesting();
 
         // Verify that the connection gets cleaned-up.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
@@ -153,7 +153,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 });
 
         // Crash the service.
-        assertTrue(connection.crashServiceForTesting());
+        connection.crashServiceForTesting();
 
         // Verify that the connection gets cleaned-up.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
@@ -217,7 +217,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 });
 
         // Crash the service.
-        assertTrue(connection.crashServiceForTesting());
+        connection.crashServiceForTesting();
 
         // Verify that a new service is started for the pending spawn.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {

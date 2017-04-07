@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -541,13 +540,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @VisibleForTesting
-    public boolean crashServiceForTesting() throws RemoteException {
-        try {
-            mService.crashIntentionallyForTesting();
-        } catch (DeadObjectException e) {
-            return true;
-        }
-        return false;
+    public void crashServiceForTesting() throws RemoteException {
+        mService.crashIntentionallyForTesting();
     }
 
     @VisibleForTesting

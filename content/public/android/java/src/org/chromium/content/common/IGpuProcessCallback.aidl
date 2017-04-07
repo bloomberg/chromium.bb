@@ -9,7 +9,7 @@ import android.view.Surface;
 
 interface IGpuProcessCallback {
 
-  void forwardSurfaceForSurfaceRequest(
+  oneway void forwardSurfaceForSurfaceRequest(
       in UnguessableToken requestToken, in Surface surface);
 
   SurfaceWrapper getViewSurface(int surfaceId);
