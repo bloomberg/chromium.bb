@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace banners {
 
@@ -116,7 +117,7 @@ class AppBannerManagerAndroid
   GURL badge_icon_url_;
 
   // The badge icon object.
-  std::unique_ptr<SkBitmap> badge_icon_;
+  SkBitmap badge_icon_;
 
   // The Java-side AppBannerManager.
   base::android::ScopedJavaGlobalRef<jobject> java_banner_manager_;

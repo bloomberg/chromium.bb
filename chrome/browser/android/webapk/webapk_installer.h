@@ -46,16 +46,18 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // APK to be installed. Calls |callback| once the install completed or failed.
   static void InstallAsync(content::BrowserContext* context,
                            const ShortcutInfo& shortcut_info,
-                           const SkBitmap& shortcut_icon,
+                           const SkBitmap& primary_icon,
+                           const SkBitmap& badge_icon,
                            const FinishCallback& finish_callback);
 
+  // TODO(zpeng): Add badge icon to WebAPK update route.
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
   // WebAPK server to update a WebAPK on the server and locally requests the
   // APK to be installed. Calls |callback| once the install completed or failed.
   static void UpdateAsync(
       content::BrowserContext* context,
       const ShortcutInfo& shortcut_info,
-      const SkBitmap& shortcut_icon,
+      const SkBitmap& primary_icon,
       const std::string& webapk_package,
       int webapk_version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
@@ -98,7 +100,8 @@ class WebApkInstaller : public net::URLFetcherDelegate {
  protected:
   WebApkInstaller(content::BrowserContext* browser_context,
                   const ShortcutInfo& shortcut_info,
-                  const SkBitmap& shortcut_icon);
+                  const SkBitmap& primary_icon,
+                  const SkBitmap& badge_icon);
 
   // Returns whether the device supports installing WebAPKs.
   virtual bool CanInstallWebApks();
@@ -140,8 +143,15 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Called with the computed Murmur2 hash for the app icon.
-  void OnGotIconMurmur2Hash(const std::string& icon_murmur2_hash);
+  // Called with the computed Murmur2 hash for the primary icon.
+  void OnGotPrimaryIconMurmur2Hash(const std::string& primary_icon_hash);
+
+  // Called with the computed Murmur2 hash for the badge icon, and
+  // |did_fetch_badge_icon| to indicate whether there was an attempt to fetch
+  // badge icon.
+  void OnGotBadgeIconMurmur2Hash(bool did_fetch_badge_icon,
+                                 const std::string& primary_icon_hash,
+                                 const std::string& badge_icon_hash);
 
   // Sends request to WebAPK server to create WebAPK. During a successful
   // request the WebAPK server responds with the URL of the generated WebAPK.
@@ -178,8 +188,11 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Web Manifest info.
   const ShortcutInfo shortcut_info_;
 
-  // WebAPK app icon.
-  const SkBitmap shortcut_icon_;
+  // WebAPK primary icon.
+  const SkBitmap primary_icon_;
+
+  // WebAPK badge icon.
+  const SkBitmap badge_icon_;
 
   // WebAPK server URL.
   GURL server_url_;

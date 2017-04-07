@@ -157,10 +157,11 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
 void ShortcutHelper::InstallWebApkWithSkBitmap(
     content::WebContents* web_contents,
     const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap,
+    const SkBitmap& primary_icon_bitmap,
+    const SkBitmap& badge_icon_bitmap,
     const WebApkInstallService::FinishCallback& callback) {
   WebApkInstallService::Get(web_contents->GetBrowserContext())
-      ->InstallAsync(info, icon_bitmap, callback);
+      ->InstallAsync(info, primary_icon_bitmap, badge_icon_bitmap, callback);
   webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
 }
 

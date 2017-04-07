@@ -52,7 +52,9 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
 
   // Called only when the AddToHomescreenDataFetcher has retrieved all of the
   // data needed to install a WebAPK.
-  void CreateInfoBarForWebApk(const ShortcutInfo& info, const SkBitmap& icon);
+  void CreateInfoBarForWebApk(const ShortcutInfo& info,
+                              const SkBitmap& primary_icon,
+                              const SkBitmap& badge_icon);
 
   void RecordAddToHomescreen();
 

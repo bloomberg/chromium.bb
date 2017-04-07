@@ -5,7 +5,6 @@
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 
 #include <memory>
-#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -24,7 +23,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
 #include "net/base/url_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
@@ -39,12 +37,14 @@ namespace {
 std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
     const GURL& manifest_url,
     const content::Manifest& manifest,
-    const GURL& icon_url) {
+    const GURL& primary_icon_url,
+    const GURL& badge_icon_url) {
   auto shortcut_info = base::MakeUnique<ShortcutInfo>(GURL());
   if (!manifest.IsEmpty()) {
     shortcut_info->UpdateFromManifest(manifest);
     shortcut_info->manifest_url = manifest_url;
-    shortcut_info->best_primary_icon_url = icon_url;
+    shortcut_info->best_primary_icon_url = primary_icon_url;
+    shortcut_info->best_badge_icon_url = badge_icon_url;
     shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
   }
 
@@ -210,7 +210,7 @@ void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
     DCHECK(!data.badge_icon_url.is_empty());
 
     badge_icon_url_ = data.badge_icon_url;
-    badge_icon_.reset(new SkBitmap(*data.badge_icon));
+    badge_icon_ = *data.badge_icon;
   }
 
   AppBannerManager::OnDidPerformInstallableCheck(data);
@@ -225,7 +225,7 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (!is_active())
     return;
 
-  primary_icon_.reset(new SkBitmap(bitmap));
+  primary_icon_ = bitmap;
   SendBannerPromptRequest();
 }
 
@@ -240,11 +240,11 @@ void AppBannerManagerAndroid::ShowBanner() {
   DCHECK(contents);
 
   if (native_app_data_.is_null()) {
-    // TODO(zpeng): Add badge to WebAPK installation flow.
     if (AppBannerInfoBarDelegateAndroid::Create(
             contents, GetWeakPtr(), app_title_,
-            CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_),
-            std::move(primary_icon_), event_request_id(),
+            CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
+                               badge_icon_url_),
+            primary_icon_, badge_icon_, event_request_id(),
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
@@ -254,7 +254,7 @@ void AppBannerManagerAndroid::ShowBanner() {
     }
   } else {
     if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, app_title_, native_app_data_, std::move(primary_icon_),
+            contents, app_title_, native_app_data_, primary_icon_,
             native_app_package_, referrer_, event_request_id())) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);

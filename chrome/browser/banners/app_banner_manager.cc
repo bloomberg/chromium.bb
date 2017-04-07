@@ -267,7 +267,7 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   DCHECK(data.primary_icon);
 
   primary_icon_url_ = data.primary_icon_url;
-  primary_icon_.reset(new SkBitmap(*data.primary_icon));
+  primary_icon_ = *data.primary_icon;
 
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but
@@ -540,7 +540,7 @@ void AppBannerManager::OnBannerPromptReply(
   DCHECK(!manifest_url_.is_empty());
   DCHECK(!manifest_.IsEmpty());
   DCHECK(!primary_icon_url_.is_empty());
-  DCHECK(primary_icon_.get());
+  DCHECK(!primary_icon_.drawsNothing());
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_COMPLETE);
   ShowBanner();

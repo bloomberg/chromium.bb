@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 namespace content {
@@ -36,14 +37,14 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
  public:
   // Creates an infobar and delegate for promoting the installation of a web
   // app, and adds the infobar to the InfoBarManager for |web_contents|.
-  static bool Create(
-      content::WebContents* web_contents,
-      base::WeakPtr<AppBannerManager> weak_manager,
-      const base::string16& app_title,
-      std::unique_ptr<ShortcutInfo> info,
-      std::unique_ptr<SkBitmap> icon,
-      int event_request_id,
-      webapk::InstallSource webapk_install_source);
+  static bool Create(content::WebContents* web_contents,
+                     base::WeakPtr<AppBannerManager> weak_manager,
+                     const base::string16& app_title,
+                     std::unique_ptr<ShortcutInfo> info,
+                     const SkBitmap& primary_icon,
+                     const SkBitmap& badge_icon,
+                     int event_request_id,
+                     webapk::InstallSource webapk_install_source);
 
   // Creates an infobar and delegate for promoting the installation of an
   // Android app, and adds the infobar to the InfoBarManager for |web_contents|.
@@ -51,7 +52,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       content::WebContents* web_contents,
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
-      std::unique_ptr<SkBitmap> icon,
+      const SkBitmap& icon,
       const std::string& native_app_package,
       const std::string& referrer,
       int event_request_id);
@@ -94,7 +95,8 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       base::WeakPtr<AppBannerManager> weak_manager,
       const base::string16& app_title,
       std::unique_ptr<ShortcutInfo> info,
-      std::unique_ptr<SkBitmap> icon,
+      const SkBitmap& primary_icon,
+      const SkBitmap& badge_icon,
       int event_request_id,
       bool is_webapk,
       webapk::InstallSource webapk_install_source);
@@ -103,7 +105,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   AppBannerInfoBarDelegateAndroid(
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
-      std::unique_ptr<SkBitmap> icon,
+      const SkBitmap& icon,
       const std::string& native_app_package,
       const std::string& referrer,
       int event_request_id);
@@ -148,7 +150,8 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
 
-  std::unique_ptr<SkBitmap> icon_;
+  const SkBitmap primary_icon_;
+  const SkBitmap badge_icon_;
 
   std::string native_app_package_;
   std::string referrer_;

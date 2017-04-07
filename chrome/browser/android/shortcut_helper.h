@@ -33,18 +33,17 @@ class ShortcutHelper {
   static bool RegisterShortcutHelper(JNIEnv* env);
 
   // Adds a shortcut to the launcher using a SkBitmap. The type of shortcut
-  // added depends on the properties in |info|. Calls one of
-  // InstallWebApkInBackgroundWithSkBitmap, AddWebappInBackgroundWithSkBitmap,
-  // or AddShortcutInBackgroundWithSkBitmap.
+  // added depends on the properties in |info|.
   static void AddToLauncherWithSkBitmap(content::WebContents* web_contents,
                                         const ShortcutInfo& info,
                                         const SkBitmap& icon_bitmap);
 
   // Installs WebAPK and adds shortcut to the launcher.
   static void InstallWebApkWithSkBitmap(
-      content::WebContents* web_conetnts,
+      content::WebContents* web_contents,
       const ShortcutInfo& info,
-      const SkBitmap& icon_bitmap,
+      const SkBitmap& primary_icon_bitmap,
+      const SkBitmap& badge_icon_bitmap,
       const WebApkInstallService::FinishCallback& callback);
 
   // Shows toast notifying user that a WebAPK install is already in progress
@@ -70,8 +69,8 @@ class ShortcutHelper {
 
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously
-  // created by |AddShortcutInBackgroundWithSkBitmap|; this method should be
-  // passed as a closure to that method.
+  // created by AddToLauncherWithSkBitmap(); this method should be passed as a
+  // closure to that method.
   static void FetchSplashScreenImage(content::WebContents* web_contents,
                                      const GURL& image_url,
                                      const int ideal_splash_image_size_in_px,

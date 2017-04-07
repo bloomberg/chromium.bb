@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -243,7 +242,7 @@ class AppBannerManager : public content::WebContentsObserver,
   GURL primary_icon_url_;
 
   // The primary icon object.
-  std::unique_ptr<SkBitmap> primary_icon_;
+  SkBitmap primary_icon_;
 
   // The referrer string (if any) specified in the app URL. Used only for native
   // app banners.
