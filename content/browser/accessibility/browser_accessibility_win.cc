@@ -483,20 +483,8 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left,
   if (!instance_active())
     return E_FAIL;
 
-  if (!x_left || !y_top || !width || !height)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  gfx::Rect bounds = target->GetScreenBoundsRect();
-  *x_left = bounds.x();
-  *y_top  = bounds.y();
-  *width  = bounds.width();
-  *height = bounds.height();
-
-  return S_OK;
+  return GetPlatformNodeWin()->accLocation(x_left, y_top, width, height,
+                                           var_id);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
@@ -5035,6 +5023,11 @@ void BrowserAccessibilityWin::FireNativeEvent(LONG win_event_type) const {
       ui::AX_EVENT_NONE,
       win_event_type,
       this))->Fire();
+}
+
+ui::AXPlatformNodeWin* BrowserAccessibilityWin::GetPlatformNodeWin() const {
+  DCHECK(platform_node_);
+  return static_cast<ui::AXPlatformNodeWin*>(platform_node_);
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {

@@ -918,6 +918,8 @@ BrowserAccessibilityWin
   // Fire a Windows-specific accessibility event notification on this node.
   void FireNativeEvent(LONG win_event_type) const;
 
+  ui::AXPlatformNodeWin* GetPlatformNodeWin() const;
+
   struct WinAttributes {
     WinAttributes();
     ~WinAttributes();
