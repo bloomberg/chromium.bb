@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.7
+
 [
     DependentLifetime,
 ] interface WebGLRenderbuffer {
