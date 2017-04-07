@@ -27,6 +27,7 @@
 #include "content/public/common/previews_state.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,7 +100,8 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
   net::TestURLRequestContext context;
   net::TestDelegate test_delegate;
   std::unique_ptr<net::URLRequest> request =
-      context.CreateRequest(GURL("http://foo.com"), net::IDLE, &test_delegate);
+      context.CreateRequest(GURL("http://foo.com"), net::IDLE, &test_delegate,
+                            TRAFFIC_ANNOTATION_FOR_TESTS);
 
   if (render_process_id != -1 && render_frame_id != -1) {
     // The only args that matter here for the ResourceRequestInfo are the

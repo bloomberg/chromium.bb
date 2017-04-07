@@ -39,6 +39,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,8 +74,9 @@ std::unique_ptr<net::URLRequest> RequestURL(
   socket_factory->AddSocketDataProvider(&response_socket_data_provider);
   net::TestDelegate test_delegate;
   test_delegate.set_quit_on_complete(true);
-  std::unique_ptr<net::URLRequest> request(context->CreateRequest(
-      GURL("http://example.com"), net::DEFAULT_PRIORITY, &test_delegate));
+  std::unique_ptr<net::URLRequest> request(
+      context->CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
+                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
@@ -262,8 +264,9 @@ TEST_F(ChromeNetworkDelegateTest, HttpRequestCompletionErrorCodes) {
     base::HistogramTester histograms;
 
     net::TestDelegate test_delegate;
-    std::unique_ptr<net::URLRequest> request(context()->CreateRequest(
-        test.url, net::DEFAULT_PRIORITY, &test_delegate));
+    std::unique_ptr<net::URLRequest> request(
+        context()->CreateRequest(test.url, net::DEFAULT_PRIORITY,
+                                 &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     if (test.is_main_frame) {
       request->SetLoadFlags(request->load_flags() |
                             net::LOAD_MAIN_FRAME_DEPRECATED);
@@ -350,8 +353,9 @@ class ChromeNetworkDelegateSafeSearchTest :
     safe_search_util::ClearForceGoogleSafeSearchCountForTesting();
     safe_search_util::ClearForceYouTubeRestrictCountForTesting();
 
-    std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
-        GURL("http://anyurl.com"), net::DEFAULT_PRIORITY, &delegate_));
+    std::unique_ptr<net::URLRequest> request(
+        context_.CreateRequest(GURL("http://anyurl.com"), net::DEFAULT_PRIORITY,
+                               &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     request->Start();
     base::RunLoop().RunUntilIdle();
@@ -421,7 +425,7 @@ class ChromeNetworkDelegateAllowedDomainsTest :
     allowed_domains_for_apps_.SetValue(allowed);
 
     std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, &delegate_));
+        url, net::DEFAULT_PRIORITY, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     request->Start();
     base::RunLoop().RunUntilIdle();

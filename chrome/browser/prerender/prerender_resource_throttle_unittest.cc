@@ -23,6 +23,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -211,7 +212,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
   DeferredRedirectDelegate delegate;
   std::unique_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl("prerender/image-deferred.png"),
-      net::DEFAULT_PRIORITY, &delegate));
+      net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_IMAGE, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,

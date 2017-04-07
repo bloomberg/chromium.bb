@@ -19,6 +19,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +123,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
     GURL sensitive_url(sensitive_urls[i]);
     std::unique_ptr<net::URLRequest> request(
-        context.CreateRequest(sensitive_url, net::DEFAULT_PRIORITY, NULL));
+        context.CreateRequest(sensitive_url, net::DEFAULT_PRIORITY, NULL,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
         extension_info_map_.get(), request.get(), nullptr)) <<
         sensitive_urls[i];
@@ -131,7 +133,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
     GURL non_sensitive_url(non_sensitive_urls[i]);
     std::unique_ptr<net::URLRequest> request(
-        context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
+        context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
     EXPECT_FALSE(WebRequestPermissions::HideRequest(
         extension_info_map_.get(), request.get(), nullptr)) <<
         non_sensitive_urls[i];
@@ -142,7 +145,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   // Normally this request is not protected:
   GURL non_sensitive_url("http://www.google.com/test.js");
   std::unique_ptr<net::URLRequest> non_sensitive_request(
-      context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
+      context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_FALSE(WebRequestPermissions::HideRequest(
       extension_info_map_.get(), non_sensitive_request.get(), nullptr));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
@@ -151,7 +155,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int site_instance_id = 23;
     int view_id = 17;
     std::unique_ptr<net::URLRequest> sensitive_request(
-        context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
+        context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
     ResourceRequestInfo::AllocateForTesting(
         sensitive_request.get(), content::RESOURCE_TYPE_SCRIPT, NULL,
         process_id, view_id, MSG_ROUTING_NONE,
@@ -168,8 +173,9 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
        TestCanExtensionAccessURL_HostPermissions) {
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL));
+  std::unique_ptr<net::URLRequest> request(
+      context.CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
+                            NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(PermissionsData::ACCESS_ALLOWED,
             WebRequestPermissions::CanExtensionAccessURL(
@@ -237,8 +243,9 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                 WebRequestPermissions::REQUIRE_ALL_URLS));
 
   // Make sure that chrome:// URLs cannot be accessed.
-  std::unique_ptr<net::URLRequest> chrome_request(context.CreateRequest(
-    GURL("chrome://version/"), net::DEFAULT_PRIORITY, nullptr));
+  std::unique_ptr<net::URLRequest> chrome_request(
+      context.CreateRequest(GURL("chrome://version/"), net::DEFAULT_PRIORITY,
+                            nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(PermissionsData::ACCESS_DENIED,
             WebRequestPermissions::CanExtensionAccessURL(

@@ -34,6 +34,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/file_util.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -246,7 +247,7 @@ class ExtensionProtocolsTest : public testing::Test {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension.GetResourceURL(relative_path), net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
     return test_delegate_.request_status();
   }
@@ -301,7 +302,7 @@ TEST_F(ExtensionProtocolsTest, IncognitoRequest) {
       std::unique_ptr<net::URLRequest> request(
           resource_context_.GetRequestContext()->CreateRequest(
               extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
-              &test_delegate_));
+              &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
       StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
 
       if (cases[i].should_allow_main_frame_load) {
@@ -323,7 +324,7 @@ TEST_F(ExtensionProtocolsTest, IncognitoRequest) {
         std::unique_ptr<net::URLRequest> request(
             resource_context_.GetRequestContext()->CreateRequest(
                 extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
-                &test_delegate_));
+                &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
         StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
 
         if (cases[i].should_allow_sub_frame_load) {
@@ -365,7 +366,8 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("webstore_icon_16.png"),
-            net::DEFAULT_PRIORITY, &test_delegate_));
+            net::DEFAULT_PRIORITY, &test_delegate_,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::OK, test_delegate_.request_status());
     CheckForContentLengthHeader(request.get());
@@ -378,7 +380,8 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("webstore_icon_16.png"),
-            net::DEFAULT_PRIORITY, &test_delegate_));
+            net::DEFAULT_PRIORITY, &test_delegate_,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::OK, test_delegate_.request_status());
     CheckForContentLengthHeader(request.get());
@@ -401,7 +404,7 @@ TEST_F(ExtensionProtocolsTest, ResourceRequestResponseHeaders) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::OK, test_delegate_.request_status());
 
@@ -442,7 +445,7 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
     EXPECT_EQ(net::OK, test_delegate_.request_status());
   }
@@ -455,7 +458,7 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
       std::unique_ptr<net::URLRequest> request(
           resource_context_.GetRequestContext()->CreateRequest(
               extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
-              &test_delegate_));
+              &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
       StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
       EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
     }
@@ -466,7 +469,7 @@ TEST_F(ExtensionProtocolsTest, AllowFrameRequests) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
-            &test_delegate_));
+            &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
   }

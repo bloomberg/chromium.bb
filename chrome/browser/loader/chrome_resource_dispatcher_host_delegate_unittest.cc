@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +38,9 @@ class ChromeResourceDispatcherHostDelegateTest : public testing::Test {
 TEST_F(ChromeResourceDispatcherHostDelegateTest,
        GetNavigationDataWithDataReductionProxyData) {
   std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
-  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("google.com"), net::RequestPriority::IDLE, nullptr));
+  std::unique_ptr<net::URLRequest> fake_request(
+      context->CreateRequest(GURL("google.com"), net::RequestPriority::IDLE,
+                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   // Add DataReductionProxyData to URLRequest
   data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
       data_reduction_proxy::DataReductionProxyData::GetDataAndCreateIfNecessary(
@@ -63,8 +65,9 @@ TEST_F(ChromeResourceDispatcherHostDelegateTest,
 TEST_F(ChromeResourceDispatcherHostDelegateTest,
        GetNavigationDataWithoutDataReductionProxyData) {
   std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
-  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("google.com"), net::RequestPriority::IDLE, nullptr));
+  std::unique_ptr<net::URLRequest> fake_request(
+      context->CreateRequest(GURL("google.com"), net::RequestPriority::IDLE,
+                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<ChromeResourceDispatcherHostDelegate> delegate(
       new ChromeResourceDispatcherHostDelegate());
   ChromeNavigationData* chrome_navigation_data =

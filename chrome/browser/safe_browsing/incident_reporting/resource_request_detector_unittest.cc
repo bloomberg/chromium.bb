@@ -21,6 +21,7 @@
 #include "crypto/sha2.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -86,8 +87,8 @@ class ResourceRequestDetectorTest : public testing::Test {
   std::unique_ptr<net::URLRequest> GetTestURLRequest(
       const std::string& url,
       content::ResourceType resource_type) const {
-    std::unique_ptr<net::URLRequest> url_request(
-        context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL));
+    std::unique_ptr<net::URLRequest> url_request(context_.CreateRequest(
+        GURL(url), net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     content::ResourceRequestInfo::AllocateForTesting(
         url_request.get(), resource_type,

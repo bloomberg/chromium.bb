@@ -16,6 +16,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,8 +55,8 @@ class ChromeDataUseAscriberTest : public testing::Test {
                                                     int request_id,
                                                     int render_process_id,
                                                     int render_frame_id) {
-    std::unique_ptr<net::URLRequest> request =
-        context()->CreateRequest(GURL(url), net::IDLE, nullptr);
+    std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+        GURL(url), net::IDLE, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
     // TODO(kundaji): Allow request_id to be specified in AllocateForTesting.
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, resource_context(),

@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -92,7 +93,8 @@ class IframeSourceTest : public testing::Test {
                                                int render_process_id) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
-            GURL(url), net::DEFAULT_PRIORITY, NULL));
+            GURL(url), net::DEFAULT_PRIORITY, NULL,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_SUB_FRAME, &resource_context_,
         render_process_id, MSG_ROUTING_NONE, MSG_ROUTING_NONE,

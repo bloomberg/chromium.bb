@@ -10,6 +10,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,8 +19,9 @@
 class ChromeDataUseGroupTest : public testing::Test {
  protected:
   void SetUp() override {
-    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
-        GURL("http://foo.com/index.html"), net::IDLE, &test_delegate_);
+    std::unique_ptr<net::URLRequest> request =
+        context_.CreateRequest(GURL("http://foo.com/index.html"), net::IDLE,
+                               &test_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr,

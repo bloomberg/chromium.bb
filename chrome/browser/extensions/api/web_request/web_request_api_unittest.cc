@@ -56,6 +56,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
@@ -249,8 +250,9 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   GURL redirect_url("about:redirected");
   GURL not_chosen_redirect_url("about:not_chosen");
 
-  std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
-      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_));
+  std::unique_ptr<net::URLRequest> request(
+      context_->CreateRequest(GURL("about:blank"), net::DEFAULT_PRIORITY,
+                              &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
   {
     // onBeforeRequest will be dispatched twice initially. The second response -
     // the redirect - should win, since it has a later |install_time|. The
@@ -303,8 +305,9 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   }
 
   // Now test the same thing but the extensions answer in reverse order.
-  std::unique_ptr<net::URLRequest> request2(context_->CreateRequest(
-      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_));
+  std::unique_ptr<net::URLRequest> request2(
+      context_->CreateRequest(GURL("about:blank"), net::DEFAULT_PRIORITY,
+                              &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS));
   {
     ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -381,7 +384,8 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   GURL request_url("about:blank");
   std::unique_ptr<net::URLRequest> request(
-      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // onBeforeRequest will be dispatched twice. The second response -
   // the redirect - would win, since it has a later |install_time|, but
@@ -452,7 +456,8 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
 
   GURL request_url("about:blank");
   std::unique_ptr<net::URLRequest> request(
-      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -520,7 +525,8 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   // The request URL can be arbitrary but must have an HTTP or HTTPS scheme.
   GURL request_url("http://www.example.com");
   std::unique_ptr<net::URLRequest> request(
-      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
   request->set_method(method);
   if (content_type != NULL) {
     request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kContentType,
@@ -823,8 +829,9 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   const GURL request_url("http://www.example.com");
 
   for (size_t i = 0; i < arraysize(kMethods); ++i) {
-    std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
-        request_url, net::DEFAULT_PRIORITY, &delegate_));
+    std::unique_ptr<net::URLRequest> request(
+        context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                                TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method(kMethods[i]);
     ipc_sender_.PushTask(base::Bind(&base::DoNothing));
     request->Start();
@@ -920,7 +927,8 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   // Send a request. It should block. Wait for the run loop to become idle.
   GURL request_url("about:blank");
   std::unique_ptr<net::URLRequest> request(
-      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
   // Extension response for OnErrorOccurred: Terminate the message loop.
   {
     base::RunLoop run_loop;
@@ -1053,7 +1061,8 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
   GURL request_url("http://doesnotexist/does_not_exist.html");
   std::unique_ptr<net::URLRequest> request(
-      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_));
+      context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Initialize headers available before extensions are notified of the
   // onBeforeSendHeaders event.
