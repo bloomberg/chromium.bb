@@ -16,12 +16,14 @@
   var abeSizedPngWithNewline = abeSizedPng.replace("i", "i\n");
 
   var should_block = [
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${rawNewline}b${rawBrace}c">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?data=1${rawNewline}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=2${rawNewline}b${rawBrace}c">`,
     `
-      <img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a
+      <img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=3
         b${rawBrace}c
       ">
     `,
+    `<img id="dangling" src="${abeSizedPngWithNewline}">`,
   ];
 
   should_block.forEach(markup => {
@@ -32,35 +34,30 @@
   });
 
   var should_load = [
-
-    // `data:` and `javascript:` URLs don't check the content:
-    `<img id="dangling" src="${abeSizedPngWithNewline}">`,
-
-    // Just one or the other isn't enough:
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?data=a${rawNewline}b">`,
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${rawBrace}b">`,
+    // Brace alone doesn't block:
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?4&img=${rawBrace}b">`,
 
     // Entity-escaped characters don't trigger blocking:
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?data=a${escapedNewline}b">`,
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${escapedBrace}b">`,
-    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${escapedNewline}b${escapedBrace}c">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?5&data=${escapedNewline}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?6&img=${escapedBrace}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?7&img=${escapedNewline}b${escapedBrace}c">`,
 
     // Leading and trailing whitespace is stripped:
     `
       <img id="dangling" src="
-        http://127.0.0.1:8000/security/resources/abe.png
+        http://127.0.0.1:8000/security/resources/abe.png?8
       ">
       <input type=hidden name=csrf value=sekrit>
     `,
     `
       <img id="dangling" src="
-      http://127.0.0.1:8000/security/resources/abe.png?img=${escapedBrace}
+      http://127.0.0.1:8000/security/resources/abe.png?9&img=${escapedBrace}
       ">
       <input type=hidden name=csrf value=sekrit>
     `,
     `
       <img id="dangling" src="
-      http://127.0.0.1:8000/security/resources/abe.png?img=${escapedNewline}
+      http://127.0.0.1:8000/security/resources/abe.png?10&img=${escapedNewline}
       ">
       <input type=hidden name=csrf value=sekrit>
     `,

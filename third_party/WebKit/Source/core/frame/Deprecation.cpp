@@ -424,6 +424,16 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
                                    "the 'script-src' directive for Workers",
                                    M60, "5922594955984896");
 
+    case UseCounter::CanRequestURLHTTPContainingNewline:
+      return String::format(
+          "Resource requests whose URLs contain raw newline characters are "
+          "deprecated, and may be blocked in %s. Please remove newlines from "
+          "places like element attribute values in order to continue loading "
+          "those resources. See "
+          "https://www.chromestatus.com/features/5735596811091968 for more "
+          "details.",
+          milestoneString(M60));
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

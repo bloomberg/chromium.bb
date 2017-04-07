@@ -843,6 +843,18 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
                                             reportingPolicy))
     return ResourceRequestBlockedReason::MixedContent;
 
+  if (url.whitespaceRemoved()) {
+    Deprecation::countDeprecation(
+        frame()->document(), UseCounter::CanRequestURLHTTPContainingNewline);
+    if (url.protocolIsInHTTPFamily()) {
+      if (RuntimeEnabledFeatures::restrictCanRequestURLCharacterSetEnabled())
+        return ResourceRequestBlockedReason::Other;
+    } else {
+      UseCounter::count(frame()->document(),
+                        UseCounter::CanRequestURLNonHTTPContainingNewline);
+    }
+  }
+
   // Let the client have the final say into whether or not the load should
   // proceed.
   DocumentLoader* documentLoader = masterDocumentLoader();

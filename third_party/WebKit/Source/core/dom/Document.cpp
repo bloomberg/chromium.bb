@@ -5047,9 +5047,6 @@ KURL Document::completeURL(const String& url) const {
         UseCounter::count(
             *this,
             UseCounter::DocumentCompleteURLHTTPContainingNewlineAndLessThan);
-
-        if (RuntimeEnabledFeatures::restrictCompleteURLCharacterSetEnabled())
-          return KURL();
       }
     } else {
       UseCounter::count(

@@ -802,7 +802,7 @@
       status: "experimental",
     },
     {
-      name: "RestrictCompleteURLCharacterSet",
+      name: "RestrictCanRequestURLCharacterSet",
       status: "experimental",
     },
     // Handles frame scrolling via the root PaintLayer instead of the FrameView.
