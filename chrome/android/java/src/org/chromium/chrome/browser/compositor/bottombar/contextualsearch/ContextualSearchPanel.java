@@ -199,12 +199,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             if (getPeekPromoControl().isVisible()) {
                 getPeekPromoControl().animateAppearance();
             }
-            if (getImageControl().getIconSpriteControl().shouldAnimateAppearance()) {
-                mPanelMetrics.setWasIconSpriteAnimated(true);
-                getImageControl().getIconSpriteControl().animateApperance();
-            } else {
-                mPanelMetrics.setWasIconSpriteAnimated(false);
-            }
         }
 
         if (fromState == PanelState.PEEKED
@@ -265,7 +259,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
-        getImageControl().hideStaticImage(false);
+        getImageControl().hideCustomImage(false);
 
         super.onClosed(reason);
 
@@ -535,7 +529,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      */
     public void setSearchTerm(String searchTerm) {
-        getImageControl().hideStaticImage(true);
+        getImageControl().hideCustomImage(true);
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -546,7 +540,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param end The portion of the context from the selection to its end.
      */
     public void setContextDetails(String selection, String end) {
-        getImageControl().hideStaticImage(true);
+        getImageControl().hideCustomImage(true);
         getSearchBarControl().setContextDetails(selection, end);
         mPanelMetrics.onSearchRequestStarted();
         // Make sure the new Context draws.

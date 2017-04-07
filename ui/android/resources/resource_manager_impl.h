@@ -41,8 +41,6 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
       int res_id, SkColor tint_color) override;
   void RemoveUnusedTints(const std::unordered_set<int>& used_tints) override;
   void PreloadResource(AndroidResourceType res_type, int res_id) override;
-  CrushedSpriteResource* GetCrushedSpriteResource(
-      int bitmap_res_id, int metadata_res_id) override;
 
   // Called from Java
   // ----------------------------------------------------------
@@ -52,21 +50,6 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
                        jint res_id,
                        const base::android::JavaRef<jobject>& bitmap,
                        jlong native_resource);
-  void OnCrushedSpriteResourceReady(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& jobj,
-      jint bitmap_res_id,
-      const base::android::JavaRef<jobject>& bitmap,
-      const base::android::JavaRef<jobjectArray>& frame_rects,
-      jint unscaled_sprite_width,
-      jint unscaled_sprite_height,
-      jfloat scaled_sprite_width,
-      jfloat scaled_sprite_height);
-  void OnCrushedSpriteResourceReloaded(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& jobj,
-      jint bitmap_res_id,
-      const base::android::JavaRef<jobject>& bitmap);
   void RemoveResource(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj,
@@ -76,10 +59,6 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
       const base::android::JavaRef<jobject>& jobj);
 
   static bool RegisterResourceManager(JNIEnv* env);
-
-  // Helper method for processing crushed sprite metadata; public for testing.
-  CrushedSpriteResource::SrcDstRects ProcessCrushedSpriteFrameRects(
-      std::vector<std::vector<int>> frame_rects_vector);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -93,19 +72,13 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
                                        int res_id);
   virtual void RequestResourceFromJava(AndroidResourceType res_type,
                                        int res_id);
-  virtual void RequestCrushedSpriteResourceFromJava(int bitmap_res_id,
-                                                    int metadata_res_id,
-                                                    bool reloading);
 
   using ResourceMap = std::unordered_map<int, std::unique_ptr<Resource>>;
-  using CrushedSpriteResourceMap =
-      std::unordered_map<int, std::unique_ptr<CrushedSpriteResource>>;
   using TintedResourceMap =
       std::unordered_map<SkColor, std::unique_ptr<ResourceMap>>;
 
   cc::UIResourceManager* ui_resource_manager_;
   ResourceMap resources_[ANDROID_RESOURCE_TYPE_COUNT];
-  CrushedSpriteResourceMap crushed_sprite_resources_;
   TintedResourceMap tinted_resources_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

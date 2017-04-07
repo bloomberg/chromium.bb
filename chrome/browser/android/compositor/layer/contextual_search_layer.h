@@ -26,8 +26,6 @@ class ResourceManager;
 
 namespace android {
 
-class CrushedSpriteLayer;
-
 class ContextualSearchLayer : public OverlayPanelLayer {
  public:
   static scoped_refptr<ContextualSearchLayer> Create(
@@ -38,9 +36,8 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      int search_term_resource_id,
                      int search_caption_resource_id,
                      int search_bar_shadow_resource_id,
-                     int sprite_resource_id,
-                     int search_provider_icon_sprite_metadata_resource_id,
-                     int  quick_action_icon_resource_id,
+                     int search_provider_icon_resource_id,
+                     int quick_action_icon_resource_id,
                      int arrow_up_resource_id,
                      int close_icon_resource_id,
                      int progress_bar_background_resource_id,
@@ -75,12 +72,10 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
                      float search_bar_shadow_opacity,
-                     bool search_provider_icon_sprite_visible,
-                     float search_provider_icon_sprite_completion_percentage,
                      bool quick_action_icon_visible,
                      bool thumbnail_visible,
-                     float static_image_visibility_percentage,
-                     int static_image_size,
+                     float custom_image_visibility_percentage,
+                     int bar_image_size,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      float close_icon_opacity,
@@ -107,16 +102,14 @@ class ContextualSearchLayer : public OverlayPanelLayer {
  private:
   // Sets up |icon_layer_|, which displays an icon or thumbnail at the start
   // of the Bar.
-  void SetupIconLayer(bool search_provider_icon_sprite_visible,
-                      int search_provider_icon_sprite_metadata_resource_id,
-                      float search_provider_icon_sprite_completion_percentage,
+  void SetupIconLayer(int search_provider_icon_resource_id,
                       bool quick_action_icon_visible,
                       int quick_action_icon_resource_id,
                       bool thumbnail_visible,
-                      float static_image_visibility_percentage);
+                      float custom_image_visibility_percentage);
 
-  void SetStaticImageProperties(
-      scoped_refptr<cc::UIResourceLayer> static_image_layer,
+  void SetCustomImageProperties(
+      scoped_refptr<cc::UIResourceLayer> custom_image_layer,
       float top_margin,
       float side_margin,
       float visibility_percentage);
@@ -134,13 +127,13 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                       float search_context_opacity,
                       float search_term_caption_spacing);
 
-  int static_image_size_;
+  int bar_image_size_;
   float thumbnail_side_margin_;
   float thumbnail_top_margin_;
 
   scoped_refptr<cc::UIResourceLayer> search_context_;
   scoped_refptr<cc::Layer> icon_layer_;
-  scoped_refptr<CrushedSpriteLayer> search_provider_icon_sprite_;
+  scoped_refptr<cc::UIResourceLayer> search_provider_icon_layer_;
   scoped_refptr<cc::UIResourceLayer> thumbnail_layer_;
   scoped_refptr<cc::UIResourceLayer> quick_action_icon_layer_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;

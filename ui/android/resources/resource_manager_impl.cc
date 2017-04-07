@@ -209,91 +209,11 @@ void ResourceManagerImpl::RemoveResource(
   resources_[res_type].erase(res_id);
 }
 
-CrushedSpriteResource* ResourceManagerImpl::GetCrushedSpriteResource(
-    int bitmap_res_id, int metadata_res_id) {
-
-  CrushedSpriteResource* resource = nullptr;
-  if (crushed_sprite_resources_.find(bitmap_res_id)
-      != crushed_sprite_resources_.end()) {
-    resource = crushed_sprite_resources_[bitmap_res_id].get();
-  }
-
-  if (!resource) {
-    RequestCrushedSpriteResourceFromJava(bitmap_res_id, metadata_res_id, false);
-    resource = crushed_sprite_resources_[bitmap_res_id].get();
-  } else if (resource->BitmapHasBeenEvictedFromMemory()) {
-    RequestCrushedSpriteResourceFromJava(bitmap_res_id, metadata_res_id, true);
-  }
-
-  return resource;
-}
-
-void ResourceManagerImpl::OnCrushedSpriteResourceReady(
-    JNIEnv* env,
-    const JavaRef<jobject>& jobj,
-    jint bitmap_res_id,
-    const JavaRef<jobject>& bitmap,
-    const JavaRef<jobjectArray>& frame_rects,
-    jint unscaled_sprite_width,
-    jint unscaled_sprite_height,
-    jfloat scaled_sprite_width,
-    jfloat scaled_sprite_height) {
-  // Construct source and destination rectangles for each frame from
-  // |frame_rects|.
-  std::vector<std::vector<int>> all_frame_rects_vector;
-  JavaArrayOfIntArrayToIntVector(env, frame_rects.obj(),
-                                 &all_frame_rects_vector);
-  CrushedSpriteResource::SrcDstRects src_dst_rects =
-      ProcessCrushedSpriteFrameRects(all_frame_rects_vector);
-
-  SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
-
-  std::unique_ptr<CrushedSpriteResource> resource =
-      base::MakeUnique<CrushedSpriteResource>(
-          skbitmap,
-          src_dst_rects,
-          gfx::Size(unscaled_sprite_width, unscaled_sprite_height),
-          gfx::Size(scaled_sprite_width, scaled_sprite_height));
-
-  crushed_sprite_resources_[bitmap_res_id].swap(resource);
-}
-
-CrushedSpriteResource::SrcDstRects
-ResourceManagerImpl::ProcessCrushedSpriteFrameRects(
-    std::vector<std::vector<int>> frame_rects_vector) {
-  CrushedSpriteResource::SrcDstRects src_dst_rects;
-  for (size_t i = 0; i < frame_rects_vector.size(); ++i) {
-    std::vector<int> frame_ints = frame_rects_vector[i];
-    CrushedSpriteResource::FrameSrcDstRects frame_src_dst_rects;
-
-    // Create source and destination gfx::Rect's for each rectangle in
-    // |frame_ints|. Each rectangle consists of 6 values:
-    // i: destination x   i+1: destination y   i+2: source x   i+3: source y
-    // i+4: width   i+5: height
-    for (size_t j = 0; j < frame_ints.size(); j += 6) {
-      gfx::Rect sprite_rect_destination(frame_ints[j],
-                                        frame_ints[j+1],
-                                        frame_ints[j+4],
-                                        frame_ints[j+5]);
-      gfx::Rect sprite_rect_source(frame_ints[j+2],
-                                   frame_ints[j+3],
-                                   frame_ints[j+4],
-                                   frame_ints[j+5]);
-      frame_src_dst_rects.push_back(std::pair<gfx::Rect, gfx::Rect>(
-          sprite_rect_source, sprite_rect_destination));
-    }
-    src_dst_rects.push_back(frame_src_dst_rects);
-  }
-  return src_dst_rects;
-}
-
 bool ResourceManagerImpl::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   size_t memory_usage =
       base::trace_event::EstimateMemoryUsage(resources_) +
-      base::trace_event::EstimateMemoryUsage(crushed_sprite_resources_) +
       base::trace_event::EstimateMemoryUsage(tinted_resources_);
 
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
@@ -311,22 +231,6 @@ bool ResourceManagerImpl::OnMemoryDump(
   }
 
   return true;
-}
-
-void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(
-    JNIEnv* env,
-    const JavaRef<jobject>& jobj,
-    jint bitmap_res_id,
-    const JavaRef<jobject>& bitmap) {
-  std::unordered_map<int, std::unique_ptr<CrushedSpriteResource>>::iterator
-      item = crushed_sprite_resources_.find(bitmap_res_id);
-  if (item == crushed_sprite_resources_.end()) {
-    // Cannot reload a resource that has not been previously loaded.
-    return;
-  }
-  SkBitmap skbitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap));
-  item->second->SetBitmap(skbitmap);
 }
 
 // static
@@ -350,17 +254,6 @@ void ResourceManagerImpl::RequestResourceFromJava(AndroidResourceType res_type,
                "resource_id", res_id);
   Java_ResourceManager_resourceRequested(base::android::AttachCurrentThread(),
                                          java_obj_, res_type, res_id);
-}
-
-void ResourceManagerImpl::RequestCrushedSpriteResourceFromJava(
-    int bitmap_res_id, int metadata_res_id, bool reloading) {
-  TRACE_EVENT2("ui",
-               "ResourceManagerImpl::RequestCrushedSpriteResourceFromJava",
-               "bitmap_res_id", bitmap_res_id,
-               "metadata_res_id", metadata_res_id);
-  Java_ResourceManager_crushedSpriteResourceRequested(
-      base::android::AttachCurrentThread(), java_obj_, bitmap_res_id,
-      metadata_res_id, reloading);
 }
 
 }  // namespace ui

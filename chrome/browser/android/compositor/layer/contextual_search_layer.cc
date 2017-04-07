@@ -9,10 +9,8 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
-#include "chrome/browser/android/compositor/layer/crushed_sprite_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -45,8 +43,7 @@ void ContextualSearchLayer::SetProperties(
     int search_term_resource_id,
     int search_caption_resource_id,
     int search_bar_shadow_resource_id,
-    int sprite_resource_id,
-    int search_provider_icon_sprite_metadata_resource_id,
+    int search_provider_icon_resource_id,
     int quick_action_icon_resource_id,
     int arrow_up_resource_id,
     int close_icon_resource_id,
@@ -82,12 +79,10 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_border_height,
     bool search_bar_shadow_visible,
     float search_bar_shadow_opacity,
-    bool search_provider_icon_sprite_visible,
-    float search_provider_icon_sprite_completion_percentage,
     bool quick_action_icon_visible,
     bool thumbnail_visible,
-    float static_image_visibility_percentage,
-    int static_image_size,
+    float custom_image_visibility_percentage,
+    int bar_image_size,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -103,7 +98,6 @@ void ContextualSearchLayer::SetProperties(
     bool touch_highlight_visible,
     float touch_highlight_x_offset,
     float touch_highlight_width) {
-
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
 
@@ -113,10 +107,8 @@ void ContextualSearchLayer::SetProperties(
       progress_bar_visible && progress_bar_opacity > 0.f;
 
   OverlayPanelLayer::SetResourceIds(
-      search_term_resource_id,
-      panel_shadow_resource_id,
-      search_bar_shadow_resource_id,
-      sprite_resource_id,
+      search_term_resource_id, panel_shadow_resource_id,
+      search_bar_shadow_resource_id, search_provider_icon_resource_id,
       close_icon_resource_id);
 
   float content_view_top = search_bar_bottom + search_promo_height;
@@ -428,14 +420,10 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Icon Layer
   // ---------------------------------------------------------------------------
-  static_image_size_ = static_image_size;
-  SetupIconLayer(search_provider_icon_sprite_visible,
-                 search_provider_icon_sprite_metadata_resource_id,
-                 search_provider_icon_sprite_completion_percentage,
-                 quick_action_icon_visible,
-                 quick_action_icon_resource_id,
-                 thumbnail_visible,
-                 static_image_visibility_percentage);
+  bar_image_size_ = bar_image_size;
+  SetupIconLayer(search_provider_icon_resource_id, quick_action_icon_visible,
+                 quick_action_icon_resource_id, thumbnail_visible,
+                 custom_image_visibility_percentage);
 }
 
 scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
@@ -443,17 +431,15 @@ scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
 }
 
 void ContextualSearchLayer::SetupIconLayer(
-    bool search_provider_icon_sprite_visible,
-    int search_provider_icon_sprite_metadata_resource_id,
-    float search_provider_icon_sprite_completion_percentage,
+    int search_provider_icon_resource_id,
     bool quick_action_icon_visible,
     int quick_action_icon_resource_id,
     bool thumbnail_visible,
-    float static_image_visibility_percentage) {
-  icon_layer_->SetBounds(gfx::Size(static_image_size_, static_image_size_));
+    float custom_image_visibility_percentage) {
+  icon_layer_->SetBounds(gfx::Size(bar_image_size_, bar_image_size_));
   icon_layer_->SetMasksToBounds(true);
 
-  scoped_refptr<cc::UIResourceLayer> static_image_layer;
+  scoped_refptr<cc::UIResourceLayer> custom_image_layer;
 
   if (quick_action_icon_visible) {
     if (quick_action_icon_layer_->parent() != icon_layer_)
@@ -464,11 +450,11 @@ void ContextualSearchLayer::SetupIconLayer(
     if (quick_action_icon_resource) {
       quick_action_icon_layer_->SetUIResourceId(
           quick_action_icon_resource->ui_resource()->id());
-      quick_action_icon_layer_->SetBounds(gfx::Size(static_image_size_,
-                                                    static_image_size_));
+      quick_action_icon_layer_->SetBounds(
+          gfx::Size(bar_image_size_, bar_image_size_));
 
-      SetStaticImageProperties(quick_action_icon_layer_, 0, 0,
-                               static_image_visibility_percentage);
+      SetCustomImageProperties(quick_action_icon_layer_, 0, 0,
+                               custom_image_visibility_percentage);
     }
   } else if (quick_action_icon_layer_->parent()) {
     quick_action_icon_layer_->RemoveFromParent();
@@ -479,58 +465,58 @@ void ContextualSearchLayer::SetupIconLayer(
     if (thumbnail_layer_->parent() != icon_layer_)
           icon_layer_->AddChild(thumbnail_layer_);
 
-    SetStaticImageProperties(thumbnail_layer_,
-                             thumbnail_top_margin_,
+    SetCustomImageProperties(thumbnail_layer_, thumbnail_top_margin_,
                              thumbnail_side_margin_,
-                             static_image_visibility_percentage);
+                             custom_image_visibility_percentage);
   } else if (thumbnail_layer_->parent()) {
     thumbnail_layer_->RemoveFromParent();
   }
 
-  // Search Provider Icon Sprite
-  if (search_provider_icon_sprite_visible) {
-    if (search_provider_icon_sprite_->layer()->parent() != icon_layer_)
-      icon_layer_->AddChild(search_provider_icon_sprite_->layer().get());
+  // Search Provider Icon
+  if (search_provider_icon_layer_->parent() != icon_layer_)
+    icon_layer_->AddChild(search_provider_icon_layer_);
 
-    search_provider_icon_sprite_->DrawSpriteFrame(
-        resource_manager_,
-        panel_icon_resource_id_,
-        search_provider_icon_sprite_metadata_resource_id,
-        search_provider_icon_sprite_completion_percentage);
+  ui::Resource* search_provider_icon_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_STATIC, search_provider_icon_resource_id);
+  if (search_provider_icon_resource) {
+    gfx::Size icon_size = search_provider_icon_resource->size();
+    search_provider_icon_layer_->SetUIResourceId(
+        search_provider_icon_resource->ui_resource()->id());
+    search_provider_icon_layer_->SetBounds(icon_size);
 
-    search_provider_icon_sprite_->layer()->SetOpacity(
-        1.f - static_image_visibility_percentage);
+    search_provider_icon_layer_->SetOpacity(1.f -
+                                            custom_image_visibility_percentage);
 
-    float icon_y_offset =
-        -(static_image_size_ * static_image_visibility_percentage);
-    search_provider_icon_sprite_->layer()->SetPosition(
-        gfx::PointF(0.f, icon_y_offset));
+    // Determine x and y offsets to center the icon in its parent layer
+    float icon_x_offset = (bar_image_size_ - icon_size.width()) / 2;
+    float icon_y_offset = (bar_image_size_ - icon_size.height()) / 2;
 
-  } else if (search_provider_icon_sprite_->layer().get() &&
-      search_provider_icon_sprite_->layer()->parent()) {
-    search_provider_icon_sprite_->layer()->RemoveFromParent();
+    // Determine extra y-offset if thumbnail or quick action are visible.
+    icon_y_offset -= (bar_image_size_ * custom_image_visibility_percentage);
+
+    search_provider_icon_layer_->SetPosition(
+        gfx::PointF(icon_x_offset, icon_y_offset));
   }
 }
 
-void ContextualSearchLayer::SetStaticImageProperties(
-    scoped_refptr<cc::UIResourceLayer> static_image_layer,
+void ContextualSearchLayer::SetCustomImageProperties(
+    scoped_refptr<cc::UIResourceLayer> custom_image_layer,
     float top_margin,
     float side_margin,
     float visibility_percentage) {
-  static_image_layer->SetOpacity(visibility_percentage);
+  custom_image_layer->SetOpacity(visibility_percentage);
 
-  // When animating, the static image and icon sprite slide through
+  // When animating, the custom image and search provider icon slide through
   // |icon_layer_|. This effect is achieved by changing the y-offset
   // for each child layer.
-  // If the static image has a height less than |static_image_size_|, it will
+  // If the custom image has a height less than |bar_image_size_|, it will
   // have a top margin that needs to be accounted for while running the
-  // animation. The final |static_image_y_offset| should be equal to
+  // animation. The final |custom_image_y_offset| should be equal to
   // |tpp_margin|.
-  float static_image_y_offset =
-      (static_image_size_ * (1.f - visibility_percentage))
-      + top_margin;
-  static_image_layer->SetPosition(
-      gfx::PointF(side_margin, static_image_y_offset));
+  float custom_image_y_offset =
+      (bar_image_size_ * (1.f - visibility_percentage)) + top_margin;
+  custom_image_layer->SetPosition(
+      gfx::PointF(side_margin, custom_image_y_offset));
 }
 
 void ContextualSearchLayer::SetupTextLayer(float bar_top,
@@ -670,16 +656,16 @@ void ContextualSearchLayer::SetupTextLayer(float bar_top,
 
 void ContextualSearchLayer::SetThumbnail(const SkBitmap* thumbnail) {
   // Determine the scaled thumbnail width and height. If both the height and
-  // width of |thumbnail| are larger than |static_image_size_|, the thumbnail
+  // width of |thumbnail| are larger than |bar_image_size_|, the thumbnail
   // will be scaled down by a call to Layer::SetBounds() below.
   int min_dimension = std::min(thumbnail->width(), thumbnail->height());
   int scaled_thumbnail_width = thumbnail->width();
   int scaled_thumbnail_height = thumbnail->height();
-  if (min_dimension > static_image_size_) {
+  if (min_dimension > bar_image_size_) {
     scaled_thumbnail_width =
-        scaled_thumbnail_width * static_image_size_ / min_dimension;
+        scaled_thumbnail_width * bar_image_size_ / min_dimension;
     scaled_thumbnail_height =
-        scaled_thumbnail_height * static_image_size_ / min_dimension;
+        scaled_thumbnail_height * bar_image_size_ / min_dimension;
   }
 
   // Determine the UV transform coordinates. This will crop the thumbnail.
@@ -690,44 +676,42 @@ void ContextualSearchLayer::SetThumbnail(const SkBitmap* thumbnail) {
   float bottom_right_x = 1;
   float bottom_right_y = 1;
 
-  if (scaled_thumbnail_width > static_image_size_) {
+  if (scaled_thumbnail_width > bar_image_size_) {
     // Crop an even amount on the left and right sides of the thumbnail.
-    float top_left_x_px = (scaled_thumbnail_width - static_image_size_) / 2.f;
-    float bottom_right_x_px = top_left_x_px + static_image_size_;
+    float top_left_x_px = (scaled_thumbnail_width - bar_image_size_) / 2.f;
+    float bottom_right_x_px = top_left_x_px + bar_image_size_;
 
     top_left_x = top_left_x_px / scaled_thumbnail_width;
     bottom_right_x = bottom_right_x_px / scaled_thumbnail_width;
-  } else if (scaled_thumbnail_height > static_image_size_) {
+  } else if (scaled_thumbnail_height > bar_image_size_) {
     // Crop an even amount on the top and bottom of the thumbnail.
-    float top_left_y_px = (scaled_thumbnail_height - static_image_size_) / 2.f;
-    float bottom_right_y_px = top_left_y_px + static_image_size_;
+    float top_left_y_px = (scaled_thumbnail_height - bar_image_size_) / 2.f;
+    float bottom_right_y_px = top_left_y_px + bar_image_size_;
 
     top_left_y = top_left_y_px / scaled_thumbnail_height;
     bottom_right_y = bottom_right_y_px / scaled_thumbnail_height;
   }
 
   // If the original |thumbnail| height or width is smaller than
-  // |static_image_size_| determine the side and top margins needed to center
+  // |bar_image_size_| determine the side and top margins needed to center
   // the thumbnail.
   thumbnail_side_margin_ = 0;
   thumbnail_top_margin_ = 0;
 
-  if (scaled_thumbnail_width < static_image_size_) {
-    thumbnail_side_margin_ =
-        (static_image_size_ - scaled_thumbnail_width) / 2.f;
+  if (scaled_thumbnail_width < bar_image_size_) {
+    thumbnail_side_margin_ = (bar_image_size_ - scaled_thumbnail_width) / 2.f;
   }
 
-  if (scaled_thumbnail_height < static_image_size_) {
-    thumbnail_top_margin_ =
-        (static_image_size_ - scaled_thumbnail_height) / 2.f;
+  if (scaled_thumbnail_height < bar_image_size_) {
+    thumbnail_top_margin_ = (bar_image_size_ - scaled_thumbnail_height) / 2.f;
   }
 
   // Determine the layer bounds. This will down scale the thumbnail if
-  // necessary and ensure it is displayed at |static_image_size_|. If
+  // necessary and ensure it is displayed at |bar_image_size_|. If
   // either the original |thumbnail| height or width is smaller than
-  // |static_image_size_|, the thumbnail will not be scaled.
-  int layer_width = std::min(static_image_size_, scaled_thumbnail_width);
-  int layer_height = std::min(static_image_size_, scaled_thumbnail_height);
+  // |bar_image_size_|, the thumbnail will not be scaled.
+  int layer_width = std::min(bar_image_size_, scaled_thumbnail_width);
+  int layer_height = std::min(bar_image_size_, scaled_thumbnail_height);
 
   // UIResourceLayer requires an immutable copy of the input |thumbnail|.
   SkBitmap thumbnail_copy;
@@ -751,7 +735,7 @@ ContextualSearchLayer::ContextualSearchLayer(
     : OverlayPanelLayer(resource_manager),
       search_context_(cc::UIResourceLayer::Create()),
       icon_layer_(cc::Layer::Create()),
-      search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
+      search_provider_icon_layer_(cc::UIResourceLayer::Create()),
       thumbnail_layer_(cc::UIResourceLayer::Create()),
       quick_action_icon_layer_(cc::UIResourceLayer::Create()),
       arrow_icon_(cc::UIResourceLayer::Create()),
@@ -798,9 +782,12 @@ ContextualSearchLayer::ContextualSearchLayer(
   progress_bar_->SetIsDrawable(true);
   progress_bar_->SetFillCenter(true);
 
-  // Icon - holds thumbnail, search provider sprite and/or quick action icon
+  // Icon - holds thumbnail, search provider icon and/or quick action icon
   icon_layer_->SetIsDrawable(true);
   layer_->AddChild(icon_layer_);
+
+  // Search provider icon
+  search_provider_icon_layer_->SetIsDrawable(true);
 
   // Thumbnail
   thumbnail_layer_->SetIsDrawable(true);

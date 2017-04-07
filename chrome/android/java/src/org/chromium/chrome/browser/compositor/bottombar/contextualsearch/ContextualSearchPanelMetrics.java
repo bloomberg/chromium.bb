@@ -36,7 +36,6 @@ public class ContextualSearchPanelMetrics {
     private boolean mHasExitedMaximized;
     private boolean mIsSerpNavigation;
     private boolean mWasActivatedByTap;
-    private boolean mWasIconSpriteAnimated;
     private boolean mWasPanelOpenedBeyondPeek;
     private boolean mWasSelectionPartOfUrl;
     private boolean mWasContextualCardsDataShown;
@@ -147,9 +146,6 @@ public class ContextualSearchPanelMetrics {
             }
 
             ContextualSearchUma.logBlacklistSeen(mBlacklistReason, mWasSearchContentViewSeen);
-
-            ContextualSearchUma.logIconSpriteAnimated(mWasIconSpriteAnimated,
-                    mWasSearchContentViewSeen, mWasActivatedByTap);
 
             if (mResultsSeenExperiments != null) {
                 mResultsSeenExperiments.logResultsSeen(
@@ -287,13 +283,6 @@ public class ContextualSearchPanelMetrics {
      */
     public void setIsPromoActive(boolean shown) {
         mIsPromoActive = shown;
-    }
-
-    /**
-     * @param wasIconSpriteAnimated Whether the search provider icon sprite was animated.
-     */
-    public void setWasIconSpriteAnimated(boolean wasIconSpriteAnimated) {
-        mWasIconSpriteAnimated = wasIconSpriteAnimated;
     }
 
     /**

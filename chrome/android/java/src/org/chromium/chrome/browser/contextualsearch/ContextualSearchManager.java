@@ -485,12 +485,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             }
         }
 
-        // Note: whether the sprite should be animated or not needs to be set before the call to
-        // peekPanel(). If the sprite should be animated, the animation will begin after the panel
-        // finishes peeking. If it should not be animated, the icon will be drawn right away.
-        mSearchPanel.getImageControl().setShouldAnimateIconSprite(
-                mPolicy.shouldAnimateSearchProviderIcon());
-
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {
             mIsShowingPromo = true;

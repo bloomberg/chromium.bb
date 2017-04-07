@@ -196,11 +196,11 @@ public class ContextualSearchBarControl
         // instead. If the panel is fully peeked, call #onUpdateFromPeekToExpanded().
         if (percentage == 1.f) onUpdateFromPeekToExpand(0.f);
 
-        // When the panel is completely closed the caption and static image should be hidden.
+        // When the panel is completely closed the caption and custom image should be hidden.
         if (percentage == 0.f) {
             mQuickActionControl.reset();
             mCaptionControl.hide();
-            getImageControl().hideStaticImage(false);
+            getImageControl().hideCustomImage(false);
         }
     }
 

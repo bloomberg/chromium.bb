@@ -29,8 +29,6 @@ component("android") {
     "overscroll_refresh.h",
     "overscroll_refresh_handler.cc",
     "overscroll_refresh_handler.h",
-    "resources/crushed_sprite_resource.cc",
-    "resources/crushed_sprite_resource.h",
     "resources/nine_patch_resource.cc",
     "resources/nine_patch_resource.h",
     "resources/resource.cc",
@@ -214,8 +212,6 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/resources/dynamics/DynamicResourceLoader.java",
     "java/src/org/chromium/ui/resources/dynamics/ViewResourceAdapter.java",
     "java/src/org/chromium/ui/resources/dynamics/ViewResourceInflater.java",
-    "java/src/org/chromium/ui/resources/sprites/CrushedSpriteResource.java",
-    "java/src/org/chromium/ui/resources/sprites/CrushedSpriteResourceLoader.java",
     "java/src/org/chromium/ui/resources/statics/NinePatchData.java",
     "java/src/org/chromium/ui/resources/statics/StaticResource.java",
     "java/src/org/chromium/ui/resources/statics/StaticResourceLoader.java",
@@ -234,17 +230,6 @@ android_library("ui_java") {
     "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
   srcjar_deps = [ ":java_enums_srcjar" ]
-}
-
-android_library("ui_javatests") {
-  java_files = [ "javatests/src/org/chromium/ui/resources/sprites/CrushedSpriteResourceTest.java" ]
-  testonly = true
-  deps = [
-    ":ui_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//third_party/android_support_test_runner:runner_java",
-  ]
 }
 
 junit_binary("ui_junit_tests") {

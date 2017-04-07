@@ -12,7 +12,6 @@
 #include "base/android/jni_android.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/resource.h"
 #include "ui/android/ui_android_export.h"
 
@@ -25,11 +24,10 @@ enum AndroidResourceType {
   ANDROID_RESOURCE_TYPE_DYNAMIC,
   ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP,
   ANDROID_RESOURCE_TYPE_SYSTEM,
-  ANDROID_RESOURCE_TYPE_CRUSHED_SPRITE,
 
   ANDROID_RESOURCE_TYPE_COUNT,
   ANDROID_RESOURCE_TYPE_FIRST = ANDROID_RESOURCE_TYPE_STATIC,
-  ANDROID_RESOURCE_TYPE_LAST = ANDROID_RESOURCE_TYPE_CRUSHED_SPRITE,
+  ANDROID_RESOURCE_TYPE_LAST = ANDROID_RESOURCE_TYPE_SYSTEM,
 };
 
 // The ResourceManager serves as a cache for resources obtained through Android
@@ -59,14 +57,6 @@ class UI_ANDROID_EXPORT ResourceManager {
   // Trigger asynchronous loading of the resource specified by |res_type| and
   // |res_id|, if it has not yet been loaded.
   virtual void PreloadResource(AndroidResourceType res_type, int res_id) = 0;
-
-  // Return a handle to the CrushedSpriteResource specified by |bitmap_res_id|
-  // and |metadata_res_id|. If the resource has not been loaded, loading will be
-  // performed synchronously, blocking until the load completes. If load fails,
-  // a null handle will be returned and it is up to the caller to react
-  // appropriately.
-  virtual CrushedSpriteResource* GetCrushedSpriteResource(
-      int bitmap_res_id, int metadata_res_id) = 0;
 
   // Convenience wrapper method.
   cc::UIResourceId GetUIResourceId(AndroidResourceType res_type, int res_id) {

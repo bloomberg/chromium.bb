@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchCaptionControl;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
@@ -2702,10 +2701,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         simulateTapSearch("search");
 
         final ContextualSearchImageControl imageControl = mPanel.getImageControl();
-        final ContextualSearchIconSpriteControl iconSpriteControl =
-                imageControl.getIconSpriteControl();
 
-        assertTrue(iconSpriteControl.isVisible());
         assertFalse(imageControl.getThumbnailVisible());
         assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
 
@@ -2720,23 +2716,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertTrue(imageControl.getThumbnailVisible());
         assertEquals(imageControl.getThumbnailUrl(), "http://someimageurl.com/image.png");
 
-        // The switch between the icon sprite and thumbnail is animated. Poll the UI thread to
-        // check that the icon sprite is hidden at the end of the animation.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !iconSpriteControl.isVisible();
-            }
-        });
-
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                imageControl.hideStaticImage(false);
+                imageControl.hideCustomImage(false);
             }
         });
 
-        assertTrue(iconSpriteControl.isVisible());
         assertFalse(imageControl.getThumbnailVisible());
         assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
     }
@@ -2790,8 +2776,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
         ContextualSearchQuickActionControl quickActionControl = barControl.getQuickActionControl();
         ContextualSearchImageControl imageControl = mPanel.getImageControl();
-        final ContextualSearchIconSpriteControl iconSpriteControl =
-                imageControl.getIconSpriteControl();
 
         // Check that the peeking bar is showing the quick action data.
         assertTrue(quickActionControl.hasQuickAction());
@@ -2799,7 +2783,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(getActivity().getResources().getString(
                 R.string.contextual_search_quick_action_caption_phone),
                 barControl.getCaptionText());
-        assertEquals(1.f, imageControl.getStaticImageVisibilityPercentage());
+        assertEquals(1.f, imageControl.getCustomImageVisibilityPercentage());
 
         // Expand the bar.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -2815,8 +2799,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(getActivity().getResources().getString(
                 ContextualSearchCaptionControl.EXPANED_CAPTION_ID),
                 barControl.getCaptionText());
-        assertEquals(0.f, imageControl.getStaticImageVisibilityPercentage());
-        assertTrue(iconSpriteControl.isVisible());
+        assertEquals(0.f, imageControl.getCustomImageVisibilityPercentage());
 
         // Go back to peeking.
         swipePanelDown();
@@ -2827,7 +2810,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(getActivity().getResources().getString(
                 R.string.contextual_search_quick_action_caption_phone),
                 barControl.getCaptionText());
-        assertEquals(1.f, imageControl.getStaticImageVisibilityPercentage());
+        assertEquals(1.f, imageControl.getCustomImageVisibilityPercentage());
     }
 
     /**
