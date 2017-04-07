@@ -114,8 +114,10 @@ Polymer({
       },
 
       keyBindings: {
-        'left down pagedown home': '_decrementKey',
-        'right up pageup end': '_incrementKey'
+        'left': '_leftKey',
+        'right': '_rightKey',
+        'down pagedown home': '_decrementKey',
+        'up pageup end': '_incrementKey'
       },
 
       /**
@@ -213,7 +215,9 @@ Polymer({
           this._trackStart(event);
         }
 
-        var dx = Math.min(this._maxx, Math.max(this._minx, event.detail.dx));
+        var direction = this._isRTL ? -1 : 1;
+        var dx = Math.min(
+            this._maxx, Math.max(this._minx, event.detail.dx * direction));
         this._x = this._startx + dx;
 
         var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
@@ -251,6 +255,9 @@ Polymer({
         this._w = this.$.sliderBar.offsetWidth;
         var rect = this.$.sliderBar.getBoundingClientRect();
         var ratio = (event.detail.x - rect.left) / this._w;
+        if (this._isRTL) {
+          ratio = 1 - ratio;
+        }
         var prevRatio = this.ratio;
 
         this._setTransiting(true);
@@ -292,6 +299,9 @@ Polymer({
         if (steps > maxMarkers) {
           steps = maxMarkers;
         }
+        if (steps < 0 || !isFinite(steps)) {
+          steps = 0;
+        }
         this._setMarkers(new Array(steps));
       },
 
@@ -313,6 +323,27 @@ Polymer({
           transiting: this.transiting,
           editable: this.editable
         });
+      },
+
+      get _isRTL() {
+        if (this.__isRTL === undefined) {
+          this.__isRTL = window.getComputedStyle(this)['direction'] === 'rtl';
+        }
+        return this.__isRTL;
+      },
+
+      _leftKey: function(event) {
+        if (this._isRTL)
+          this._incrementKey(event);
+        else
+          this._decrementKey(event);
+      },
+
+      _rightKey: function(event) {
+        if (this._isRTL)
+          this._decrementKey(event);
+        else
+          this._incrementKey(event);
       },
 
       _incrementKey: function(event) {

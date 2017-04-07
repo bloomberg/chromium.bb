@@ -88,6 +88,11 @@ Custom property | Description | Default
       :host(:focus) {
         outline: none;
       }
+        
+      :host-context([dir="rtl"]) #sliderContainer {
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+      }
 
       #sliderContainer {
         position: relative;
