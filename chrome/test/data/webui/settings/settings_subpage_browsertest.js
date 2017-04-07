@@ -96,7 +96,13 @@ SettingsBasicSubPageBrowserTest.prototype = {
   __proto__: SettingsSubPageBrowserTest.prototype,
 };
 
-TEST_F('SettingsBasicSubPageBrowserTest', 'SubPages', function() {
+// Failing on ChromiumOS dbg. https://crbug.com/709442
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_SubPages DISABLED_SubPages');
+GEN('#else');
+GEN('#define MAYBE_SubPages SubPages');
+GEN('#endif');
+TEST_F('SettingsBasicSubPageBrowserTest', 'MAYBE_SubPages', function() {
   suiteSetup(this.verifySubPagesHidden_.bind(this));
   suite('Basic', this.testSubPages.bind(this));
   mocha.run();

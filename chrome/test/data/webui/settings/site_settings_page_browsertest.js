@@ -15,7 +15,13 @@ SettingsSiteSettingsPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 };
 
-TEST_F('SettingsSiteSettingsPageBrowserTest', 'labels', function() {
+// Failing on ChromiumOS dbg. https://crbug.com/709442
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_labels DISABLED_labels');
+GEN('#else');
+GEN('#define MAYBE_labels labels');
+GEN('#endif');
+TEST_F('SettingsSiteSettingsPageBrowserTest', 'MAYBE_labels', function() {
   suite('Site settings page', function() {
     var ui;
 

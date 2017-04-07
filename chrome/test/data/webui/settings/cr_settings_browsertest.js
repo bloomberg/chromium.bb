@@ -1136,7 +1136,13 @@ CrSettingsNonExistentRouteTest.prototype = {
   runAccessibilityChecks: false,
 };
 
-TEST_F('CrSettingsNonExistentRouteTest', 'All', function() {
+// Failing on ChromiumOS dbg. https://crbug.com/709442
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_All', function() {
   suite('NonExistentRoutes', function() {
     test('redirect to basic', function() {
       assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
