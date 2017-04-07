@@ -32,7 +32,7 @@ namespace {
 const char kGoogleServerV2RequestFormat[] =
     "https://t0.gstatic.com/faviconV2?"
     "client=chrome&drop_404_icon=true&size=%d&min_size=%d&max_size=%d&"
-    "fallback_opts=TYPE,SIZE&url=%s";
+    "fallback_opts=TYPE,SIZE,URL&url=%s";
 const int kGoogleServerV2MaxSizeInPixel = 128;
 const int kGoogleServerV2DesiredSizeInPixel = 64;
 
