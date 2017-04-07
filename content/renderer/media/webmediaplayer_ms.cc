@@ -248,7 +248,8 @@ void WebMediaPlayerMS::load(LoadType load_type,
   if (frame) {
     // Report UMA and RAPPOR metrics.
     GURL url = source.isURL() ? GURL(source.getAsURL()) : GURL();
-    media::ReportMetrics(load_type, url, frame_->getSecurityOrigin());
+    media::ReportMetrics(load_type, url, frame_->getSecurityOrigin(),
+                         media_log_);
 
     audio_renderer_ = renderer_factory_->GetAudioRenderer(
         web_stream, frame->GetRoutingID(), initial_audio_output_device_id_,

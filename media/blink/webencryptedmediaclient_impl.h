@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/blink/key_system_config_selector.h"
 #include "media/blink/media_blink_export.h"
@@ -27,6 +28,7 @@ namespace media {
 
 struct CdmConfig;
 class CdmFactory;
+class MediaLog;
 class MediaPermission;
 
 class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
@@ -35,7 +37,8 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   WebEncryptedMediaClientImpl(
       base::Callback<bool(void)> are_secure_codecs_supported_cb,
       CdmFactory* cdm_factory,
-      MediaPermission* media_permission);
+      MediaPermission* media_permission,
+      const scoped_refptr<MediaLog>& media_log);
   ~WebEncryptedMediaClientImpl() override;
 
   // WebEncryptedMediaClient implementation.
@@ -78,6 +81,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;
+  scoped_refptr<MediaLog> media_log_;
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;
 };
 

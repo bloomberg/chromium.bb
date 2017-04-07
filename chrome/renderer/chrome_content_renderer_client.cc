@@ -44,7 +44,6 @@
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
-#include "chrome/renderer/media/chrome_key_systems.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
@@ -1285,7 +1284,11 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
 
 void ChromeContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems) {
-  AddChromeKeySystems(key_systems);
+  key_systems_provider_.AddSupportedKeySystems(key_systems);
+}
+
+bool ChromeContentRendererClient::IsKeySystemsUpdateNeeded() {
+  return key_systems_provider_.IsKeySystemsUpdateNeeded();
 }
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(

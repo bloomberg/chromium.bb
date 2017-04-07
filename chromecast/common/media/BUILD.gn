@@ -6,27 +6,17 @@ import("//chromecast/chromecast.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("media") {
-  sources = [
-    "cast_media_client.cc",
-    "cast_media_client.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/media",
-    "//chromecast/media/cdm",
-    "//chromecast/public:public",
-    "//media",
-  ]
-
   if (is_android) {
-    sources += [
+    sources = [
       "cast_media_drm_bridge_client.cc",
       "cast_media_drm_bridge_client.h",
     ]
-    deps += [
+    deps = [
+      "//base",
       "//chromecast/media",
+      "//chromecast/media/cdm",
       "//components/cdm/common",
+      "//media",
     ]
   }
 

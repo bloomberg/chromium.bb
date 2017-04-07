@@ -16,104 +16,32 @@
 namespace content {
 
 void RenderMediaClient::Initialize() {
-  GetInstance();
+  static RenderMediaClient* client = new RenderMediaClient();
+  media::SetMediaClient(client);
 }
 
-RenderMediaClient::RenderMediaClient()
-    : has_updated_(false),
-      is_update_needed_(true),
-      tick_clock_(new base::DefaultTickClock()) {
-  media::SetMediaClient(this);
-}
+RenderMediaClient::RenderMediaClient() {}
 
 RenderMediaClient::~RenderMediaClient() {
 }
 
-void RenderMediaClient::AddKeySystemsInfoForUMA(
-    std::vector<media::KeySystemInfoForUMA>* key_systems_info_for_uma) {
-  DVLOG(2) << __func__;
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  key_systems_info_for_uma->push_back(media::KeySystemInfoForUMA(
-      kWidevineKeySystem, kWidevineKeySystemNameForUMA));
-#endif  // WIDEVINE_CDM_AVAILABLE
+void RenderMediaClient::AddSupportedKeySystems(
+    std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
+  GetContentClient()->renderer()->AddSupportedKeySystems(key_systems);
 }
 
 bool RenderMediaClient::IsKeySystemsUpdateNeeded() {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Always needs update if we have never updated, regardless the
-  // |last_update_time_ticks_|'s initial value.
-  if (!has_updated_) {
-    DCHECK(is_update_needed_);
-    return true;
-  }
-
-  if (!is_update_needed_)
-    return false;
-
-  // The update could be expensive. For example, it could involve a sync IPC to
-  // the browser process. Use a minimum update interval to avoid unnecessarily
-  // frequent update.
-  static const int kMinUpdateIntervalInMilliseconds = 1000;
-  if ((tick_clock_->NowTicks() - last_update_time_ticks_).InMilliseconds() <
-      kMinUpdateIntervalInMilliseconds) {
-    return false;
-  }
-
-  return true;
-}
-
-void RenderMediaClient::AddSupportedKeySystems(
-    std::vector<std::unique_ptr<media::KeySystemProperties>>*
-        key_systems_properties) {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  GetContentClient()->renderer()->AddSupportedKeySystems(
-      key_systems_properties);
-
-  has_updated_ = true;
-  last_update_time_ticks_ = tick_clock_->NowTicks();
-
-  // Check whether all potentially supported key systems are supported. If so,
-  // no need to update again.
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-  for (const auto& properties : *key_systems_properties) {
-    if (properties->GetKeySystemName() == kWidevineKeySystem)
-      is_update_needed_ = false;
-  }
-#else
-  is_update_needed_ = false;
-#endif
-}
-
-void RenderMediaClient::RecordRapporURL(const std::string& metric,
-                                        const GURL& url) {
-  GetContentClient()->renderer()->RecordRapporURL(metric, url);
+  return GetContentClient()->renderer()->IsKeySystemsUpdateNeeded();
 }
 
 bool RenderMediaClient::IsSupportedAudioConfig(
     const media::AudioConfig& config) {
-  // Render media client does not customize decoder support. Defer to media/.
-  return ::media::IsSupportedAudioConfig(config);
+  return GetContentClient()->renderer()->IsSupportedAudioConfig(config);
 }
 
 bool RenderMediaClient::IsSupportedVideoConfig(
     const media::VideoConfig& config) {
-  // Render media client does not customize decoder support. Defer to media/.
-  return ::media::IsSupportedVideoConfig(config);
-}
-
-void RenderMediaClient::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_.swap(tick_clock);
-}
-
-// static
-RenderMediaClient* RenderMediaClient::GetInstance() {
-  static RenderMediaClient* client = new RenderMediaClient();
-  return client;
+  return GetContentClient()->renderer()->IsSupportedVideoConfig(config);
 }
 
 }  // namespace content

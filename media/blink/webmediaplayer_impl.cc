@@ -394,7 +394,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  ReportMetrics(load_type, gurl, frame_->getSecurityOrigin());
+  ReportMetrics(load_type, gurl, frame_->getSecurityOrigin(), media_log_);
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
@@ -1207,7 +1207,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   if (suppress_destruction_errors_)
     return;
 
-  ReportPipelineError(load_type_, frame_->getSecurityOrigin(), status);
+  ReportPipelineError(load_type_, status, media_log_);
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {

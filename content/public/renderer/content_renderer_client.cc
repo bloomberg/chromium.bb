@@ -169,6 +169,22 @@ bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
 void ContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {}
 
+bool ContentRendererClient::IsKeySystemsUpdateNeeded() {
+  return false;
+}
+
+bool ContentRendererClient::IsSupportedAudioConfig(
+    const media::AudioConfig& config) {
+  // Defer to media's default support.
+  return ::media::IsSupportedAudioConfig(config);
+}
+
+bool ContentRendererClient::IsSupportedVideoConfig(
+    const media::VideoConfig& config) {
+  // Defer to media's default support.
+  return ::media::IsSupportedVideoConfig(config);
+}
+
 std::unique_ptr<MediaStreamRendererFactory>
 ContentRendererClient::CreateMediaStreamRendererFactory() {
   return nullptr;

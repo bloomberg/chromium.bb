@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -162,6 +163,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
+  bool IsKeySystemsUpdateNeeded() override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
   bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url) override;
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
@@ -239,6 +241,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
+
+  chrome::ChromeKeySystemsProvider key_systems_provider_;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;

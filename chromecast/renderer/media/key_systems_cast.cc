@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/key_systems_cast.h"
+#include "chromecast/renderer/media/key_systems_cast.h"
 
 #include <string>
 
@@ -16,7 +16,7 @@
 #include "media/base/key_system_properties.h"
 #include "media/media_features.h"
 
-#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
@@ -26,15 +26,14 @@ using ::media::EmeSessionTypeSupport;
 using ::media::SupportedCodecs;
 
 namespace chromecast {
-namespace shell {
+namespace media {
 namespace {
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
  public:
   explicit PlayReadyKeySystemProperties(bool persistent_license_support)
-      : persistent_license_support_(persistent_license_support) {
-  }
+      : persistent_license_support_(persistent_license_support) {}
 
   std::string GetKeySystemName() const override {
     return media::kChromecastPlayreadyKeySystem;
@@ -62,7 +61,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
     return persistent_license_support_ ? EmeSessionTypeSupport::SUPPORTED
-        : EmeSessionTypeSupport::NOT_SUPPORTED;
+                                       : EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
   EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
@@ -113,7 +112,7 @@ void AddChromecastKeySystems(
   codecs |= ::media::EME_CODEC_MP4_HEVC;
 #endif
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
-      codecs,  // Regular codecs.
+      codecs,                     // Regular codecs.
       Robustness::HW_SECURE_ALL,  // Max audio robustness.
       Robustness::HW_SECURE_ALL,  // Max video robustness.
       enable_persistent_license_support
@@ -127,5 +126,5 @@ void AddChromecastKeySystems(
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
-}  // namespace shell
+}  // namespace media
 }  // namespace chromecast

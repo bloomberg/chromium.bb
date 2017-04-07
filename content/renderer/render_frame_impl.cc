@@ -2798,6 +2798,15 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
+const scoped_refptr<RenderMediaLog>& RenderFrameImpl::GetMediaLog() {
+  if (!media_log_.get()) {
+    media_log_ =
+        new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL());
+  }
+
+  return media_log_;
+}
+
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
@@ -2833,9 +2842,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       &GetSharedMainThreadContext3D,
       RenderThreadImpl::current()->SharedMainThreadContextProvider());
 
-  scoped_refptr<media::MediaLog> media_log(
-      new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL()));
-
   bool embedded_media_experience_enabled = false;
 #if defined(OS_ANDROID)
   if (!UseMediaPlayerRenderer(url) && !media_surface_manager_)
@@ -2865,7 +2871,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this),
                  GetWebMediaPlayerDelegate()->has_played_media()),
-      audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
+      audio_renderer_sink, GetMediaLog(),
+      render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(),
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
@@ -2904,7 +2911,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMojoRenderer)) {
       media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-          media_log, GetDecoderFactory(),
+          GetMediaLog(), GetDecoderFactory(),
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread)));
     }
@@ -2917,7 +2924,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     }
 #else
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-        media_log, GetDecoderFactory(),
+        GetMediaLog(), GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
 #endif  // defined(ENABLE_MOJO_RENDERER)
@@ -4656,7 +4663,7 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
         // callback.
         base::Bind(&RenderFrameImpl::AreSecureCodecsSupported,
                    base::Unretained(this)),
-        GetCdmFactory(), GetMediaPermission()));
+        GetCdmFactory(), GetMediaPermission(), GetMediaLog()));
   }
   return web_encrypted_media_client_.get();
 }

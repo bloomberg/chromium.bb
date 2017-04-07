@@ -234,7 +234,6 @@ class KeySystemsImpl : public KeySystems {
   typedef base::hash_map<std::string, SupportedCodecs> MimeTypeCodecsMap;
   typedef base::hash_map<std::string, EmeCodec> CodecsMap;
   typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
-  typedef base::hash_map<std::string, std::string> KeySystemNameForUMAMap;
 
   // TODO(sandersd): Separate container enum from codec mask value.
   // http://crbug.com/417440
@@ -249,7 +248,6 @@ class KeySystemsImpl : public KeySystems {
   // This member should only be modified by RegisterMimeType().
   MimeTypeCodecsMap mime_type_to_codec_mask_map_;
   CodecsMap codec_string_map_;
-  KeySystemNameForUMAMap key_system_name_for_uma_map_;
 
   SupportedCodecs audio_codec_mask_;
   SupportedCodecs video_codec_mask_;
@@ -281,8 +279,6 @@ KeySystemsImpl::KeySystemsImpl()
                      kMimeTypeToCodecMasks[i].type);
   }
 
-  InitializeUMAInfo();
-
   // Always update supported key systems during construction.
   UpdateSupportedKeySystems();
 }
@@ -308,24 +304,6 @@ EmeCodec KeySystemsImpl::GetCodecForString(const std::string& codec) const {
   return EME_CODEC_NONE;
 }
 
-void KeySystemsImpl::InitializeUMAInfo() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(key_system_name_for_uma_map_.empty());
-
-  std::vector<KeySystemInfoForUMA> key_systems_info_for_uma;
-  if (GetMediaClient())
-    GetMediaClient()->AddKeySystemsInfoForUMA(&key_systems_info_for_uma);
-
-  for (const KeySystemInfoForUMA& info : key_systems_info_for_uma) {
-    key_system_name_for_uma_map_[info.key_system] =
-        info.key_system_name_for_uma;
-  }
-
-  // Clear Key is always supported.
-  key_system_name_for_uma_map_[kClearKeyKeySystem] =
-      kClearKeyKeySystemNameForUMA;
-}
-
 void KeySystemsImpl::UpdateIfNeeded() {
   if (GetMediaClient() && GetMediaClient()->IsKeySystemsUpdateNeeded())
     UpdateSupportedKeySystems();
@@ -338,8 +316,11 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
   std::vector<std::unique_ptr<KeySystemProperties>> key_systems_properties;
 
   // Add key systems supported by the MediaClient implementation.
-  if (GetMediaClient())
+  if (GetMediaClient()) {
     GetMediaClient()->AddSupportedKeySystems(&key_systems_properties);
+  } else {
+    DVLOG(1) << __func__ << " No media client to provide key systems";
+  }
 
   // Clear Key is always supported.
   key_systems_properties.emplace_back(new ClearKeyProperties());
@@ -443,6 +424,8 @@ void KeySystemsImpl::AddSupportedKeySystems(
     }
 #endif  // defined(OS_ANDROID)
 
+    DVLOG(1) << __func__
+             << " Adding key system:" << properties->GetKeySystemName();
     key_system_properties_map_[properties->GetKeySystemName()] =
         std::move(properties);
   }
@@ -494,12 +477,16 @@ std::string KeySystemsImpl::GetKeySystemNameForUMA(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemNameForUMAMap::const_iterator iter =
-      key_system_name_for_uma_map_.find(key_system);
-  if (iter == key_system_name_for_uma_map_.end())
-    return kUnknownKeySystemNameForUMA;
+  // Here we maintain a short list of known key systems to facilitate UMA
+  // reporting. Mentioned key systems are not necessarily supported by
+  // the current platform.
+  if (key_system == kWidevineKeySystem)
+    return kWidevineKeySystemNameForUMA;
 
-  return iter->second;
+  if (key_system == kClearKeyKeySystem)
+    return kClearKeyKeySystemNameForUMA;
+
+  return kUnknownKeySystemNameForUMA;
 }
 
 bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {

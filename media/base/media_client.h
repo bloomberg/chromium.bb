@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_MEDIA_CLIENT_H_
 #define MEDIA_BASE_MEDIA_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,50 +31,26 @@ MEDIA_EXPORT void SetMediaClient(MediaClient* media_client);
 MEDIA_EXPORT MediaClient* GetMediaClient();
 #endif
 
-struct MEDIA_EXPORT KeySystemInfoForUMA {
-  KeySystemInfoForUMA(const std::string& key_system,
-                      const std::string& key_system_name_for_uma);
-  ~KeySystemInfoForUMA();
-
-  // Concrete key system name;
-  std::string key_system;
-
-  // Display name for UMA reporting. For example, the display name for
-  // "org.w3.clearkey" is "ClearKey". When providing this value, make sure to
-  // update tools/metrics/histograms/histograms.xml.
-  std::string key_system_name_for_uma;
-};
-
 // A client interface for embedders (e.g. content/renderer) to provide
-// customized service.
+// customized key systems and decoders.
 class MEDIA_EXPORT MediaClient {
  public:
   MediaClient();
   virtual ~MediaClient();
 
-  // Provides UMA info for key systems that SHOULD be reported to UMA, no matter
-  // whether a key system is actually supported by this client or not. Only
-  // called once per instance.
-  virtual void AddKeySystemsInfoForUMA(
-      std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) = 0;
-
-  // Returns whether client key systems properties should be updated.
-  virtual bool IsKeySystemsUpdateNeeded() = 0;
-
   // Adds properties for supported key systems.
   virtual void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<KeySystemProperties>>*
-          key_systems_properties) = 0;
+      std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) = 0;
 
-  // Records a domain and registry of a url to a Rappor privacy-preserving
-  // metric. See: https://www.chromium.org/developers/design-documents/rappor
-  virtual void RecordRapporURL(const std::string& metric, const GURL& url) = 0;
+  // Returns whether client key systems properties should be updated.
+  // TODO(chcunningham): Refactor this to a proper change "observer" API that is
+  // less fragile (don't assume AddSupportedKeySystems has just one caller).
+  virtual bool IsKeySystemsUpdateNeeded() = 0;
 
   // Returns true if the given audio config is supported.
   virtual bool IsSupportedAudioConfig(const AudioConfig& config) = 0;
 
-  // Returns true if the given combination of video codec, profile and level is
-  // supported. The |level| value is codec-specific.
+  // Returns true if the given video config is supported.
   virtual bool IsSupportedVideoConfig(const VideoConfig& config) = 0;
 };
 

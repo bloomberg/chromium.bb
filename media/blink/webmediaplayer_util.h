@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_WEBMEDIAPLAYER_UTIL_H_
 #define MEDIA_BLINK_WEBMEDIAPLAYER_UTIL_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/eme_constants.h"
@@ -20,6 +21,8 @@
 
 namespace media {
 
+class MediaLog;
+
 blink::WebTimeRanges MEDIA_BLINK_EXPORT
 ConvertToWebTimeRanges(const Ranges<base::TimeDelta>& ranges);
 
@@ -30,16 +33,14 @@ PipelineErrorToNetworkState(PipelineStatus error);
 void MEDIA_BLINK_EXPORT
 ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
               const GURL& url,
-              const blink::WebSecurityOrigin& security_origin);
+              const blink::WebSecurityOrigin& security_origin,
+              scoped_refptr<MediaLog> media_log);
 
 // Report metrics about pipeline errors.
 void MEDIA_BLINK_EXPORT
 ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
-                    const blink::WebSecurityOrigin& security_origin,
-                    PipelineStatus error);
-
-// Record a RAPPOR metric for the origin of an HLS playback.
-void MEDIA_BLINK_EXPORT RecordOriginOfHLSPlayback(const GURL& origin_url);
+                    PipelineStatus error,
+                    scoped_refptr<MediaLog> media_log);
 
 // TODO(ddorwin): Move this function to an EME-specific file.
 // We may also want to move the next one and pass Blink types to WMPI.

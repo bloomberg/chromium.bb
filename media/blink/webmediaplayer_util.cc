@@ -11,7 +11,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/media_client.h"
+#include "media/base/media_log.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 
@@ -109,7 +109,10 @@ std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
 
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
-                   const blink::WebSecurityOrigin& security_origin) {
+                   const blink::WebSecurityOrigin& security_origin,
+                   scoped_refptr<MediaLog> media_log) {
+  DCHECK(media_log);
+
   // Report URL scheme, such as http, https, file, blob etc.
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url),
                             kMaxURLScheme + 1);
@@ -119,42 +122,27 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                             blink::WebMediaPlayer::LoadTypeMax + 1);
 
   // Report the origin from where the media player is created.
-  if (GetMediaClient()) {
-    GURL security_origin_url(url::Origin(security_origin).GetURL());
+  media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl." +
+                                            LoadTypeToString(load_type));
 
-    GetMediaClient()->RecordRapporURL(
-        "Media.OriginUrl." + LoadTypeToString(load_type), security_origin_url);
-
-    // For MSE, also report usage by secure/insecure origin.
-    if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource) {
-      if (security_origin.isPotentiallyTrustworthy()) {
-        GetMediaClient()->RecordRapporURL("Media.OriginUrl.MSE.Secure",
-                                          security_origin_url);
-      } else {
-        GetMediaClient()->RecordRapporURL("Media.OriginUrl.MSE.Insecure",
-                                          security_origin_url);
-      }
+  // For MSE, also report usage by secure/insecure origin.
+  if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource) {
+    if (security_origin.isPotentiallyTrustworthy()) {
+      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Secure");
+    } else {
+      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Insecure");
     }
   }
 }
 
 void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
-                         const blink::WebSecurityOrigin& security_origin,
-                         PipelineStatus error) {
+                         PipelineStatus error,
+                         scoped_refptr<MediaLog> media_log) {
   DCHECK_NE(PIPELINE_OK, error);
 
   // Report the origin from where the media player is created.
-  if (!GetMediaClient())
-    return;
-
-  GetMediaClient()->RecordRapporURL(
-      "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError",
-      url::Origin(security_origin).GetURL());
-}
-
-void RecordOriginOfHLSPlayback(const GURL& origin_url) {
-  if (media::GetMediaClient())
-    GetMediaClient()->RecordRapporURL("Media.OriginUrl.HLS", origin_url);
+  media_log->RecordRapporWithSecurityOrigin(
+      "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError");
 }
 
 EmeInitDataType ConvertToEmeInitDataType(

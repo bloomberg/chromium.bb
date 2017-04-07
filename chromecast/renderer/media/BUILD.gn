@@ -4,13 +4,22 @@
 
 source_set("media") {
   sources = [
+    "key_systems_cast.cc",
+    "key_systems_cast.h",
     "media_caps_observer_impl.cc",
     "media_caps_observer_impl.h",
   ]
 
   deps = [
+    "//base",
     "//chromecast/common/media:interfaces",
     "//chromecast/media",
+    "//chromecast/media/cdm",
+    "//chromecast/public:public",
+    "//components/cdm/renderer",
+    "//content/public/renderer",
+    "//media",
+    "//third_party/widevine/cdm:headers",
     "//ui/gfx/geometry",
   ]
 }

@@ -5,17 +5,13 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDER_MEDIA_CLIENT_H_
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_CLIENT_H_
 
-#include <memory>
-
-#include "base/threading/thread_checker.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/media_client.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace content {
 
+// RenderMediaClient is purely plumbing to make content embedder customizations
+// visible to the lower media layer.
 class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
  public:
   // Initialize RenderMediaClient and SetMediaClient(). Note that the instance
@@ -23,39 +19,16 @@ class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
   static void Initialize();
 
   // MediaClient implementation.
-  void AddKeySystemsInfoForUMA(
-      std::vector<media::KeySystemInfoForUMA>* key_systems_info_for_uma) final;
-  bool IsKeySystemsUpdateNeeded() final;
   void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<media::KeySystemProperties>>*
-          key_systems_properties) final;
-  void RecordRapporURL(const std::string& metric, const GURL& url) final;
-  bool IsSupportedAudioConfig(const media::AudioConfig& config) override;
-  bool IsSupportedVideoConfig(const media::VideoConfig& config) override;
-
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+      std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
+      final;
+  bool IsKeySystemsUpdateNeeded() final;
+  bool IsSupportedAudioConfig(const media::AudioConfig& config) final;
+  bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
 
  private:
-  friend class RenderMediaClientTest;
-
   RenderMediaClient();
   ~RenderMediaClient() override;
-
-  static RenderMediaClient* GetInstance();
-
-  // Makes sure all methods are called from the same thread.
-  base::ThreadChecker thread_checker_;
-
-  // Whether AddSupportedKeySystems() has ever been called.
-  bool has_updated_;
-
-  // Whether a future update is needed. For example, when some potentially
-  // supported key systems are NOT supported yet. This could happen when the
-  // required component for a key system is not yet available.
-  bool is_update_needed_;
-
-  base::TimeTicks last_update_time_ticks_;
-  std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaClient);
 };

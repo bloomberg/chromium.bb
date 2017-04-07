@@ -18,6 +18,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
+#include "media/base/decode_capabilities.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
@@ -263,10 +264,21 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provide a default image decode color space.
   virtual std::unique_ptr<gfx::ICCProfile> GetImageDecodeColorProfile();
 
-  // Gives the embedder a chance to register the key system(s) it supports by
-  // populating |key_systems|.
+  // Allows embedder to register the key system(s) it supports by populating
+  // |key_systems|.
   virtual void AddSupportedKeySystems(
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems);
+
+  // Signal that embedder has changed key systems.
+  // TODO(chcunningham): Refactor this to a proper change "observer" API that is
+  // less fragile (don't assume AddSupportedKeySystems has just one caller).
+  virtual bool IsKeySystemsUpdateNeeded();
+
+  // Allows embedder to describe customized audio capabilities.
+  virtual bool IsSupportedAudioConfig(const media::AudioConfig& config);
+
+  // Allows embedder to describe customized video capabilities.
+  virtual bool IsSupportedVideoConfig(const media::VideoConfig& config);
 
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-

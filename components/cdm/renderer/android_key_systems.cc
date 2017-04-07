@@ -125,6 +125,7 @@ void AddAndroidWidevine(
           : EmeSessionTypeSupport::NOT_SUPPORTED;
 
   if (response.compositing_codecs != media::EME_CODEC_NONE) {
+    DVLOG(3) << __func__ << " Widevine supported.";
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
         response.compositing_codecs,           // Regular codecs.
         response.non_compositing_codecs,       // Hardware-secure codecs.
@@ -136,6 +137,7 @@ void AddAndroidWidevine(
         EmeFeatureSupport::ALWAYS_ENABLED));   // Distinctive identifier.
   } else {
     // It doesn't make sense to support secure codecs but not regular codecs.
+    DVLOG(3) << __func__ << " Widevine NOT supported.";
     DCHECK(response.non_compositing_codecs == media::EME_CODEC_NONE);
   }
 }

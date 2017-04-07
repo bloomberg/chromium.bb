@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
-#include "media/base/media_client.h"
+#include "media/base/media_log.h"
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
@@ -88,10 +88,12 @@ class WebEncryptedMediaClientImpl::Reporter {
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     base::Callback<bool(void)> are_secure_codecs_supported_cb,
     CdmFactory* cdm_factory,
-    MediaPermission* media_permission)
+    MediaPermission* media_permission,
+    const scoped_refptr<MediaLog>& media_log)
     : are_secure_codecs_supported_cb_(are_secure_codecs_supported_cb),
       cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(), media_permission),
+      media_log_(media_log),
       weak_factory_(this) {
   DCHECK(cdm_factory_);
 }
@@ -103,15 +105,9 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {
   GetReporter(request.keySystem())->ReportRequested();
 
-  if (GetMediaClient()) {
-    GURL security_origin(url::Origin(request.getSecurityOrigin()).GetURL());
-
-    GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME", security_origin);
-
-    if (!request.getSecurityOrigin().isPotentiallyTrustworthy()) {
-      GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME.Insecure",
-                                        security_origin);
-    }
+  media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME");
+  if (!request.getSecurityOrigin().isPotentiallyTrustworthy()) {
+    media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME.Insecure");
   }
 
   key_system_config_selector_.SelectConfig(

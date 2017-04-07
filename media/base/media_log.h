@@ -21,6 +21,7 @@
 #include "media/base/media_log_event.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
+#include "url/gurl.h"
 
 namespace media {
 

@@ -45,6 +45,8 @@ static_library("renderer") {
     "loadtimes_extension_bindings.h",
     "media/chrome_key_systems.cc",
     "media/chrome_key_systems.h",
+    "media/chrome_key_systems_provider.cc",
+    "media/chrome_key_systems_provider.h",
     "net/net_error_helper.cc",
     "net/net_error_helper.h",
     "net/net_error_page_controller.cc",
