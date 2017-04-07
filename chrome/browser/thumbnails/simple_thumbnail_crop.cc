@@ -177,24 +177,6 @@ SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
   // close, and let the caller make it the exact size if desired.
   SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
       clipped_bitmap, desired_size.width(), desired_size.height());
-#if !defined(USE_AURA)
-  // This is a bit subtle. SkBitmaps are refcounted, but the magic
-  // ones in PlatformCanvas can't be assigned to SkBitmap with proper
-  // refcounting.  If the bitmap doesn't change, then the downsampler
-  // will return the input bitmap, which will be the reference to the
-  // weird PlatformCanvas one insetad of a regular one. To get a
-  // regular refcounted bitmap, we need to copy it.
-  //
-  // On Aura, the PlatformCanvas is platform-independent and does not have
-  // any native platform resources that can't be refounted, so this issue does
-  // not occur.
-  //
-  // Note that GetClippedBitmap() does extractSubset() but it won't copy
-  // the pixels, hence we check result size == clipped_bitmap size here.
-  if (clipped_bitmap.width() == result.width() &&
-      clipped_bitmap.height() == result.height())
-    clipped_bitmap.copyTo(&result, kN32_SkColorType);
-#endif
 
   LOCAL_HISTOGRAM_TIMES(kThumbnailHistogramName,
                         base::TimeTicks::Now() - begin_compute_thumbnail);

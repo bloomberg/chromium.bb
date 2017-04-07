@@ -133,19 +133,6 @@ SkBitmap ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
 
   SkBitmap result_bitmap = SkBitmapOperations::DownsampleByTwoUntilSize(
       clipped_bitmap, resize_target.width(), resize_target.height());
-#if !defined(USE_AURA)
-  // If the bitmap has not been indeed resized, it has to be copied. In that
-  // case resampler simply returns a reference to the original bitmap, sitting
-  // in PlatformCanvas. One does not simply assign these 'magic' bitmaps to
-  // SkBitmap. They cannot be refcounted.
-  //
-  // With Aura, this does not happen since PlatformCanvas is platform
-  // idependent.
-  if (clipped_bitmap.width() == result_bitmap.width() &&
-      clipped_bitmap.height() == result_bitmap.height()) {
-    clipped_bitmap.copyTo(&result_bitmap, kN32_SkColorType);
-  }
-#endif
 
   return result_bitmap;
 }
