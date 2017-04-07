@@ -10,15 +10,15 @@ Polymer({
   is: 'settings-certificate-delete-confirmation-dialog',
 
   properties: {
-    /** @private {!settings.CertificatesBrowserProxy} */
-    browserProxy_: Object,
-
     /** @type {!CertificateSubnode} */
     model: Object,
 
     /** @type {!CertificateType} */
     certificateType: String,
   },
+
+  /** @private {?settings.CertificatesBrowserProxy} */
+  browserProxy_: null,
 
   /** @override */
   ready: function() {

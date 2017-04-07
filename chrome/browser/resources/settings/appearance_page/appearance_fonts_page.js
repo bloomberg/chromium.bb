@@ -47,9 +47,6 @@
       /** @private */
       advancedExtensionUrl_: String,
 
-      /** @private {!settings.FontsBrowserProxy} */
-      browserProxy_: Object,
-
       /** @private {!DropdownMenuOptionList} */
       fontOptions_: Object,
 
@@ -91,6 +88,9 @@
     observers: [
       'fontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
     ],
+
+    /** @private {?settings.FontsBrowserProxy} */
+    browserProxy_: null,
 
     /** @override */
     created: function() {

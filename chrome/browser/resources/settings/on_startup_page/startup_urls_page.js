@@ -15,9 +15,6 @@ Polymer({
   properties: {
     prefs: Object,
 
-    /** @type {settings.StartupUrlsPageBrowserProxy} */
-    browserProxy_: Object,
-
     /**
      * Pages to load upon browser startup.
      * @private {!Array<!StartupPageInfo>}
@@ -33,6 +30,9 @@ Polymer({
     /** @private {Object}*/
     lastFocused_: Object,
   },
+
+  /** @private {?settings.StartupUrlsPageBrowserProxy} */
+  browserProxy_: null,
 
   /**
    * The element to return focus to, when the startup-url-dialog is closed.

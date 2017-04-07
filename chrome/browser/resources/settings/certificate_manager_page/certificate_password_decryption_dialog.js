@@ -10,15 +10,15 @@ Polymer({
   is: 'settings-certificate-password-decryption-dialog',
 
   properties: {
-    /** @private {!settings.CertificatesBrowserProxy} */
-    browserProxy_: Object,
-
     /** @private */
     password_: {
       type: String,
       value: '',
     },
   },
+
+  /** @private {?settings.CertificatesBrowserProxy} */
+  browserProxy_: null,
 
   /** @override */
   ready: function() {
