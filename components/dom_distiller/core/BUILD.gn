@@ -59,6 +59,7 @@ static_library("core") {
 
   public_deps = [
     "//components/dom_distiller/core/proto",
+    "//net",
     "//third_party/dom_distiller_js:proto",
   ]
   deps = [
@@ -71,7 +72,6 @@ static_library("core") {
     "//components/strings",
     "//components/sync",
     "//components/variations",
-    "//net",
     "//skia",
     "//third_party/re2",
     "//ui/base",
