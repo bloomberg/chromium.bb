@@ -60,6 +60,8 @@ using ::payment_request_util::GetShippingOptionSelectorTitle;
 // as a link in the UI (see setLabelLinkURL: in CollectionViewFooterCell).
 const char kSettingsURL[] = "settings://card-and-address";
 
+const CGFloat kFooterCellHorizontalPadding = 16;
+
 }  // namespace
 
 NSString* const kPaymentRequestCollectionViewID =
@@ -517,6 +519,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       detailCell.detailTextLabel.font = [MDCTypography body2Font];
       detailCell.detailTextLabel.textColor =
           [[MDCPalette cr_bluePalette] tint700];
+      break;
+    }
+    case ItemTypeFooterText: {
+      CollectionViewFooterCell* footerCell =
+          base::mac::ObjCCastStrict<CollectionViewFooterCell>(cell);
+      footerCell.textLabel.font = [MDCTypography body2Font];
+      footerCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
+      footerCell.textLabel.shadowColor = nil;  // No shadow.
+      footerCell.horizontalPadding = kFooterCellHorizontalPadding;
       break;
     }
     default:
