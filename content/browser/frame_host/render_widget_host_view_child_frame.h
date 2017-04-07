@@ -89,6 +89,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void SetBackgroundColor(SkColor color) override;
+  SkColor background_color() const override;
   gfx::Size GetPhysicalBackingSize() const override;
   bool IsMouseLocked() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
@@ -254,6 +255,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   cc::FrameSinkId parent_frame_sink_id_;
 
   bool has_frame_ = false;
+
+  // The background color of the widget.
+  SkColor background_color_;
 
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);

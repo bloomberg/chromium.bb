@@ -449,6 +449,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
       needs_flush_input_(false),
+      background_color_(SK_ColorWHITE),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -1434,7 +1435,7 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
 
   // Override the compositor background color. See RenderWidgetHostViewAura
   // for more details.
-  SetBackgroundColor(frame.metadata.root_background_color);
+  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
@@ -1642,14 +1643,27 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
-  if (color == background_color_)
-    return;
+  // The renderer will feed its color back to us with the first CompositorFrame.
+  // We short-cut here to show a sensible color before that happens.
+  UpdateBackgroundColorFromRenderer(color);
 
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
-
+  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   if (render_widget_host_)
     render_widget_host_->SetBackgroundOpaque(opaque);
+}
+
+SkColor RenderWidgetHostViewMac::background_color() const {
+  return background_color_;
+}
+
+void RenderWidgetHostViewMac::UpdateBackgroundColorFromRenderer(SkColor color) {
+  if (color == background_color())
+    return;
+  background_color_ = color;
+
+  bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
 
   [cocoa_view_ setOpaque:opaque];
 

@@ -112,6 +112,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsShowing() override;
   gfx::Rect GetViewBounds() const override;
   void SetBackgroundColor(SkColor color) override;
+  SkColor background_color() const override;
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
@@ -463,6 +464,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Tells DelegatedFrameHost whether we need to receive BeginFrames.
   void UpdateNeedsBeginFramesInternal();
 
+  // Applies background color without notifying the RenderWidget about
+  // opaqueness changes.
+  void UpdateBackgroundColorFromRenderer(SkColor color);
+
   // The model object.
   RenderWidgetHostImpl* const host_;
 
@@ -506,6 +511,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Current tooltip text.
   base::string16 tooltip_;
+
+  // The background color of the web content.
+  SkColor background_color_;
 
   // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;

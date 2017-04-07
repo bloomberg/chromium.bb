@@ -277,6 +277,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool IsSpeaking() const override;
   void StopSpeaking() override;
   void SetBackgroundColor(SkColor color) override;
+  SkColor background_color() const override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // Implementation of RenderWidgetHostViewBase.
@@ -404,6 +405,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const gfx::Range& request_range);
 
   WebContents* GetWebContents();
+
+  // Applies background color without notifying the RenderWidget about
+  // opaqueness changes.
+  void UpdateBackgroundColorFromRenderer(SkColor color);
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -551,6 +556,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Whether a request to flush input has been issued.
   bool needs_flush_input_;
+
+  // The background color of the web content.
+  SkColor background_color_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

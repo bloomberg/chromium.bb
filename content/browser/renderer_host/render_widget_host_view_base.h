@@ -92,10 +92,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // RenderWidgetHostView implementation.
   RenderWidgetHost* GetRenderWidgetHost() const override;
-  void SetBackgroundColor(SkColor color) override;
-  SkColor background_color() override;
   void SetBackgroundColorToDefault() final;
-  bool GetBackgroundOpaque() override;
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
@@ -429,9 +426,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
   blink::WebPopupType popup_type_;
-
-  // The background color of the web content.
-  SkColor background_color_;
 
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known

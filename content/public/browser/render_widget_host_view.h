@@ -132,13 +132,14 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual base::string16 GetSelectedText() = 0;
 
   // Subclasses should override this method to set the background color. |color|
-  // could be transparent or opaque.
+  // has to be either SK_ColorTRANSPARENT or opaque. If set to
+  // SK_ColorTRANSPARENT, the renderer's background color will be overridden to
+  // be fully transparent.
   virtual void SetBackgroundColor(SkColor color) = 0;
+  virtual SkColor background_color() const = 0;
   // Convenience method to fill the background layer with the default color by
   // calling |SetBackgroundColor|.
-  virtual SkColor background_color() = 0;
   virtual void SetBackgroundColorToDefault() = 0;
-  virtual bool GetBackgroundOpaque() = 0;
 
   // Return value indicates whether the mouse is locked successfully or not.
   virtual bool LockMouse() = 0;

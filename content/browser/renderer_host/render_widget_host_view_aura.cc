@@ -382,6 +382,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       popup_child_host_view_(nullptr),
       is_loading_(false),
       has_composition_text_(false),
+      background_color_(SK_ColorWHITE),
       needs_begin_frames_(false),
       needs_flush_input_(false),
       added_frame_observer_(false),
@@ -719,11 +720,26 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
 }
 
 void RenderWidgetHostViewAura::SetBackgroundColor(SkColor color) {
+  // The renderer will feed its color back to us with the first CompositorFrame.
+  // We short-cut here to show a sensible color before that happens.
+  UpdateBackgroundColorFromRenderer(color);
+
+  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  host_->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+}
+
+SkColor RenderWidgetHostViewAura::background_color() const {
+  return background_color_;
+}
+
+void RenderWidgetHostViewAura::UpdateBackgroundColorFromRenderer(
+    SkColor color) {
   if (color == background_color())
     return;
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
-  host_->SetBackgroundOpaque(opaque);
+  background_color_ = color;
+
+  bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   window_->layer()->SetFillsBoundsOpaquely(opaque);
   window_->layer()->SetColor(color);
 }
@@ -888,7 +904,7 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   // This allows us to, when navigating to a new page, transfer this color to
   // that page. This allows us to pass this background color to new views on
   // navigation.
-  SetBackgroundColor(frame.metadata.root_background_color);
+  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
 

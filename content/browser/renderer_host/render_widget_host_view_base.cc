@@ -35,7 +35,6 @@ const int kFlushInputRateInUs = 16666;
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : is_fullscreen_(false),
       popup_type_(blink::WebPopupTypeNone),
-      background_color_(SK_ColorWHITE),
       mouse_locked_(false),
       showing_context_menu_(false),
       current_device_scale_factor_(0),
@@ -87,20 +86,8 @@ bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
   return false;
 }
 
-void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
-}
-
-SkColor RenderWidgetHostViewBase::background_color() {
-  return background_color_;
-}
-
 void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
   SetBackgroundColor(SK_ColorWHITE);
-}
-
-bool RenderWidgetHostViewBase::GetBackgroundOpaque() {
-  return SkColorGetA(background_color_) == SK_AlphaOPAQUE;
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {

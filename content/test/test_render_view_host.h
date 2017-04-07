@@ -77,6 +77,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void WasUnOccluded() override;
   void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
+  void SetBackgroundColor(SkColor color) override;
+  SkColor background_color() const override;
 #if defined(OS_MACOSX)
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void SetActive(bool active) override;
@@ -129,6 +131,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool is_occluded_;
   bool did_swap_compositor_frame_;
   bool did_change_compositor_frame_sink_ = false;
+  SkColor background_color_;
   ui::DummyTextInputClient text_input_client_;
 };
 

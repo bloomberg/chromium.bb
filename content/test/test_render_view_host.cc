@@ -58,7 +58,8 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
       is_showing_(false),
       is_occluded_(false),
-      did_swap_compositor_frame_(false) {
+      did_swap_compositor_frame_(false),
+      background_color_(SK_ColorWHITE) {
 #if defined(OS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
@@ -134,6 +135,14 @@ void TestRenderWidgetHostView::Destroy() { delete this; }
 
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
+}
+
+void TestRenderWidgetHostView::SetBackgroundColor(SkColor color) {
+  background_color_ = color;
+}
+
+SkColor TestRenderWidgetHostView::background_color() const {
+  return background_color_;
 }
 
 bool TestRenderWidgetHostView::HasAcceleratedSurface(

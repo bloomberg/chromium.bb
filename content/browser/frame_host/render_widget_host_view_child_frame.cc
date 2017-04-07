@@ -56,6 +56,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       next_surface_sequence_(1u),
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
+      background_color_(SK_ColorWHITE),
       weak_factory_(this) {
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateCompositorFrameSinkSupport();
@@ -211,9 +212,15 @@ RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
-  host_->SetBackgroundOpaque(opaque);
+  background_color_ = color;
+
+  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  host_->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+}
+
+SkColor RenderWidgetHostViewChildFrame::background_color() const {
+  return background_color_;
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {

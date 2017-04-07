@@ -451,6 +451,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_in_vr_(false),
       content_view_core_(nullptr),
       ime_adapter_android_(nullptr),
+      background_color_(SK_ColorWHITE),
       cached_background_color_(SK_ColorWHITE),
       view_(this),
       gesture_provider_(ui::GetGestureProviderConfig(
@@ -1028,9 +1029,16 @@ void RenderWidgetHostViewAndroid::SetTooltipText(
 }
 
 void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  host_->SetBackgroundOpaque(GetBackgroundOpaque());
+  background_color_ = color;
+
+  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  host_->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
   UpdateBackgroundColor(color);
+}
+
+SkColor RenderWidgetHostViewAndroid::background_color() const {
+  return background_color_;
 }
 
 void RenderWidgetHostViewAndroid::CopyFromSurface(
