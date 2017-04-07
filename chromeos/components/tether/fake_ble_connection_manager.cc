@@ -22,7 +22,13 @@ FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
     ~StatusAndRegisteredMessageTypes() {}
 
 FakeBleConnectionManager::FakeBleConnectionManager()
-    : BleConnectionManager(nullptr, nullptr, nullptr, nullptr, nullptr) {}
+    : BleConnectionManager(nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr) {}
 
 FakeBleConnectionManager::~FakeBleConnectionManager() {}
 

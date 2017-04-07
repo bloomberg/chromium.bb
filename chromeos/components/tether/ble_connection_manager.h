@@ -109,6 +109,20 @@ class BleConnectionManager : public BleScanner::Observer {
       cryptauth::RemoteDevice remote_device) override;
 
  protected:
+  class TimerFactory {
+   public:
+    virtual std::unique_ptr<base::Timer> CreateTimer();
+  };
+
+  BleConnectionManager(
+      cryptauth::CryptAuthService* cryptauth_service,
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      std::unique_ptr<BleScanner> ble_scanner,
+      std::unique_ptr<BleAdvertiser> ble_advertiser,
+      std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
+      std::unique_ptr<TimerFactory> timer_factory,
+      cryptauth::BluetoothThrottler* bluetooth_throttler);
+
   void SendMessageReceivedEvent(const cryptauth::RemoteDevice& remote_device,
                                 const std::string& payload);
   void SendSecureChannelStatusChangeEvent(
@@ -170,19 +184,6 @@ class BleConnectionManager : public BleScanner::Observer {
     base::WeakPtrFactory<ConnectionMetadata> weak_ptr_factory_;
   };
 
-  class TimerFactory {
-   public:
-    virtual std::unique_ptr<base::Timer> CreateTimer();
-  };
-
-  BleConnectionManager(
-      cryptauth::CryptAuthService* cryptauth_service,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      std::unique_ptr<BleScanner> ble_scanner,
-      std::unique_ptr<BleAdvertiser> ble_advertiser,
-      std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
-      std::unique_ptr<TimerFactory> timer_factory,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
 
   std::shared_ptr<ConnectionMetadata> GetConnectionMetadata(
       const cryptauth::RemoteDevice& remote_device) const;

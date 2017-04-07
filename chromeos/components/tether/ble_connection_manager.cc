@@ -178,8 +178,7 @@ BleConnectionManager::BleConnectionManager(
     : BleConnectionManager(
           cryptauth_service,
           adapter,
-          // TODO(khorimoto): Inject |adapter| into |BleScanner|.
-          base::MakeUnique<BleScanner>(local_device_data_provider),
+          base::MakeUnique<BleScanner>(adapter, local_device_data_provider),
           base::MakeUnique<BleAdvertiser>(adapter,
                                           local_device_data_provider,
                                           remote_beacon_seed_fetcher),

@@ -93,7 +93,8 @@ class TestObserver : public BleConnectionManager::Observer {
 
 class MockBleScanner : public BleScanner {
  public:
-  MockBleScanner() : BleScanner(nullptr) {}
+  MockBleScanner(scoped_refptr<device::BluetoothAdapter> adapter)
+      : BleScanner(adapter, nullptr) {}
   ~MockBleScanner() override {}
 
   MOCK_METHOD1(RegisterScanFilterForDevice,
@@ -251,7 +252,7 @@ class BleConnectionManagerTest : public testing::Test {
     mock_adapter_ =
         make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
 
-    mock_ble_scanner_ = new MockBleScanner();
+    mock_ble_scanner_ = new MockBleScanner(mock_adapter_);
     ON_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(_))
         .WillByDefault(Return(true));
     ON_CALL(*mock_ble_scanner_, UnregisterScanFilterForDevice(_))
