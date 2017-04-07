@@ -334,6 +334,8 @@ public class NewTabPage
             public void onShown(Tab tab) {
                 // Showing the NTP is only meaningful when the page has been loaded already.
                 if (mIsLoaded) recordNTPShown();
+
+                mNewTabPageView.getTileGroup().onSwitchToForeground();
             }
 
             @Override
