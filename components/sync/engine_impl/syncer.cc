@@ -79,16 +79,17 @@ bool Syncer::ConfigureSyncShare(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
+
+  // It is possible during configuration that datatypes get unregistered from
+  // ModelTypeRegistry before scheduled configure sync cycle gets executed.
+  // This happens either because DataTypeController::LoadModels fail and type
+  // need to be stopped or during shutdown when all datatypes are stopped. When
+  // it happens we should adjust set of types to download to only include
+  // registered types.
+  request_types.RetainAll(cycle->context()->GetEnabledTypes());
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
   HandleCycleBegin(cycle);
   ConfigureGetUpdatesDelegate configure_delegate(source);
-
-  // It is possible during shutdown that datatypes get unregistered from
-  // ModelTypeRegistry before scheduled configure sync cycle gets executed.
-  // When it happens we should adjust set of types to download to only include
-  // registered types.
-  if (cancelation_signal_->IsSignalled())
-    request_types.RetainAll(cycle->context()->GetEnabledTypes());
 
   GetUpdatesProcessor get_updates_processor(
       cycle->context()->model_type_registry()->update_handler_map(),

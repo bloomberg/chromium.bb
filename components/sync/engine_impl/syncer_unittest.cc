@@ -5022,12 +5022,10 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
   mock_server_->ClearUpdatesQueue();
 }
 
-// Tests that, after shutdown initiated, if set of types to download includes
-// unregistered type, DCHECK doesn't get triggered.
-TEST_F(SyncerTest, ConfigureUnregisteredTypesDuringShutdown) {
-  // Signal that shutdown is initiated.
-  cancelation_signal_.Signal();
-
+// Tests that if type is not registered with ModelTypeRegistry (e.g. because
+// type's LoadModels failed), Syncer::ConfigureSyncShare runs without triggering
+// DCHECK.
+TEST_F(SyncerTest, ConfigureFailedUnregisteredType) {
   // Simulate type being unregistered before configuration by including type
   // that isn't registered with ModelTypeRegistry.
   SyncShareConfigureTypes(ModelTypeSet(APPS));
