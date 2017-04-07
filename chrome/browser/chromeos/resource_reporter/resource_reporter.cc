@@ -72,14 +72,7 @@ constexpr char kLastRapporReportTimeKey[] =
 constexpr base::TimeDelta kMinimumTimeBetweenReports =
     base::TimeDelta::FromDays(1);
 
-// Gets the memory usage threshold of a process beyond which the process is
-// considered memory-intensive on the current device it's running on.
-int64_t GetMemoryThresholdForDeviceInBytes() {
-  const int64_t bytes_per_cpu = base::SysInfo::AmountOfPhysicalMemory() /
-                                base::SysInfo::NumberOfProcessors();
-
-  return bytes_per_cpu * 0.6;
-}
+constexpr double kTaskCpuThresholdForReporting = 70.0;
 
 }  // namespace
 
@@ -175,8 +168,8 @@ void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
 
       default:
         // Other tasks types will be reported using Rappor.
-        if (memory_usage < kTaskMemoryThresholdForReporting &&
-            cpu_usage < kTaskCpuThresholdForReporting) {
+        if (memory_usage < GetTaskMemoryThresholdForReporting() &&
+            cpu_usage < GetTaskCpuThresholdForReporting()) {
           // We only care about CPU and memory intensive tasks.
           break;
         }
@@ -205,13 +198,6 @@ void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
       base::Bind(&ResourceReporter::ReportSamples, base::Unretained(this)));
 }
 
-// static
-const double ResourceReporter::kTaskCpuThresholdForReporting = 70.0;
-
-// static
-const int64_t ResourceReporter::kTaskMemoryThresholdForReporting =
-    GetMemoryThresholdForDeviceInBytes();
-
 ResourceReporter::ResourceReporter()
     : TaskManagerObserver(base::TimeDelta::FromSeconds(kRefreshIntervalSeconds),
                           task_manager::REFRESH_TYPE_CPU |
@@ -224,6 +210,19 @@ ResourceReporter::ResourceReporter()
       last_browser_process_memory_(0),
       last_gpu_process_memory_(0),
       is_monitoring_(false) {}
+
+// static
+double ResourceReporter::GetTaskCpuThresholdForReporting() {
+  return kTaskCpuThresholdForReporting;
+}
+
+// static
+int64_t ResourceReporter::GetTaskMemoryThresholdForReporting() {
+  static const int64_t threshold = 0.6 *
+                                   base::SysInfo::AmountOfPhysicalMemory() /
+                                   base::SysInfo::NumberOfProcessors();
+  return threshold;
+}
 
 // static
 std::unique_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(

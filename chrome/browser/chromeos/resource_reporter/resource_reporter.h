@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -132,11 +133,11 @@ class ResourceReporter : public task_manager::TaskManagerObserver,
     NUM_RANGES            = 7,
   };
 
-  // The CPU and memory thresholds beyond which the tasks will be reported.
-  static const double kTaskCpuThresholdForReporting;
-  static const int64_t kTaskMemoryThresholdForReporting;
-
   ResourceReporter();
+
+  // The CPU and memory thresholds beyond which the tasks will be reported.
+  static double GetTaskCpuThresholdForReporting();
+  static int64_t GetTaskMemoryThresholdForReporting();
 
   // Creates a Rappor sample for the given |task_record|.
   static std::unique_ptr<rappor::Sample> CreateRapporSample(

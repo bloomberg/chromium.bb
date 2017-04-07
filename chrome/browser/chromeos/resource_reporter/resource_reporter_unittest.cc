@@ -282,9 +282,9 @@ TEST_F(ResourceReporterTest, TestAll) {
   ASSERT_FALSE(resource_reporter()->task_records_.empty());
   for (const auto& task_record : resource_reporter()->task_records_) {
     EXPECT_TRUE(task_record.cpu_percent >=
-                    ResourceReporter::kTaskCpuThresholdForReporting ||
+                    ResourceReporter::GetTaskCpuThresholdForReporting() ||
                 task_record.memory_bytes >=
-                    ResourceReporter::kTaskMemoryThresholdForReporting);
+                    ResourceReporter::GetTaskMemoryThresholdForReporting());
   }
 
   // Make sure you have the right info about the Browser and GPU process.
