@@ -329,7 +329,7 @@ void MessageService::OpenChannelToExtension(
       !util::IsIncognitoEnabled(target_extension_id, context)) {
     // Give the user a chance to accept an incognito connection from the web if
     // they haven't already, with the conditions:
-    // - Only for spanning-mode incognito. We don't want the complication of
+    // - Only for non-split mode incognito. We don't want the complication of
     //   spinning up an additional process here which might need to do some
     //   setup that we're not expecting.
     // - Only for extensions that can't normally be enabled in incognito, since

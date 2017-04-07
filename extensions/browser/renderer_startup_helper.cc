@@ -9,11 +9,13 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension_messages.h"
@@ -26,6 +28,27 @@
 using content::BrowserContext;
 
 namespace extensions {
+
+namespace {
+
+// Returns whether the |extension| should be loaded in the given
+// |browser_context|.
+bool IsExtensionVisibleToContext(const Extension& extension,
+                                 content::BrowserContext* browser_context) {
+  // Renderers don't need to know about themes.
+  if (extension.is_theme())
+    return false;
+
+  // Only extensions enabled in incognito mode should be loaded in an incognito
+  // renderer. However extensions which can't be enabled in the incognito mode
+  // (e.g. platform apps) should also be loaded in an incognito renderer to
+  // ensure connections from incognito tabs to such extensions work.
+  return !browser_context->IsOffTheRecord() ||
+         !util::CanBeIncognitoEnabled(&extension) ||
+         util::IsIncognitoEnabled(extension.id(), browser_context);
+}
+
+}  // namespace
 
 RendererStartupHelper::RendererStartupHelper(BrowserContext* browser_context)
     : browser_context_(browser_context) {
@@ -102,6 +125,7 @@ void RendererStartupHelper::InitializeProcess(
 
   // Loaded extensions.
   std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
+  BrowserContext* renderer_context = process->GetBrowserContext();
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& ext : extensions) {
@@ -109,18 +133,20 @@ void RendererStartupHelper::InitializeProcess(
     DCHECK(base::ContainsKey(extension_process_map_, ext->id()));
     DCHECK(!base::ContainsKey(extension_process_map_[ext->id()], process));
 
-    // Renderers don't need to know about themes.
-    if (!ext->is_theme()) {
-      // TODO(kalman): Only include tab specific permissions for extension
-      // processes, no other process needs it, so it's mildly wasteful.
-      // I am not sure this is possible to know this here, at such a low
-      // level of the stack. Perhaps site isolation can help.
-      bool include_tab_permissions = true;
-      loaded_extensions.push_back(
-          ExtensionMsg_Loaded_Params(ext.get(), include_tab_permissions));
-      extension_process_map_[ext->id()].insert(process);
-    }
+    if (!IsExtensionVisibleToContext(*ext, renderer_context))
+      continue;
+
+    // TODO(kalman): Only include tab specific permissions for extension
+    // processes, no other process needs it, so it's mildly wasteful.
+    // I am not sure this is possible to know this here, at such a low
+    // level of the stack. Perhaps site isolation can help.
+    bool include_tab_permissions = true;
+    loaded_extensions.push_back(
+        ExtensionMsg_Loaded_Params(ext.get(), include_tab_permissions));
+    extension_process_map_[ext->id()].insert(process);
   }
+
+  // Activate pending extensions.
   process->Send(new ExtensionMsg_Loaded(loaded_extensions));
   auto iter = pending_active_extensions_.find(process);
   if (iter != pending_active_extensions_.end()) {
@@ -165,10 +191,7 @@ void RendererStartupHelper::ActivateExtensionInProcess(
 #endif
   }
 
-  // Renderers don't need to know about themes. We also don't normally
-  // "activate" themes, but this could happen if someone tries to open a tab
-  // to the e.g. theme's manifest.
-  if (extension.is_theme())
+  if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))
     return;
 
   if (base::ContainsKey(initialized_processes_, process)) {
@@ -190,7 +213,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   std::set<content::RenderProcessHost*>& loaded_process_set =
       extension_process_map_[extension.id()];
 
-  // Renderers don't need to know about themes.
+  // IsExtensionVisibleToContext() would filter out themes, but we choose to
+  // return early for performance reasons.
   if (extension.is_theme())
     return;
 
@@ -202,6 +226,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
       1,
       ExtensionMsg_Loaded_Params(&extension, false /* no tab permissions */));
   for (content::RenderProcessHost* process : initialized_processes_) {
+    if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))
+      continue;
     process->Send(new ExtensionMsg_Loaded(params));
     loaded_process_set.insert(process);
   }

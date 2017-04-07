@@ -27,11 +27,10 @@ class Extension;
 // Tracks the web connectability of domains to extensions in incognito mode.
 //
 // The most important functionality is prompting the user to allow or disallow
-// connections from incognito tabs to extensions or apps. Even if an extension
-// hasn't been enabled in incognito mode, it's still useful for web sites to be
-// able to send messages to them, with user constent. For apps, it's essential
-// we have this functionality because there is no way for them to be enabled in
-// incognito.
+// connections from incognito tabs to extensions or apps. Users are not prompted
+// for extensions which can be enabled in incognito mode. However for apps, it's
+// essential we have this functionality because there is no way for them to be
+// enabled in incognito.
 class IncognitoConnectability : public BrowserContextKeyedAPI {
  public:
   // While in scope, immediately either accepts or denies the alerts that show
