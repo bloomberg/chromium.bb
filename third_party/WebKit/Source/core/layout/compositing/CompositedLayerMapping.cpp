@@ -3331,7 +3331,7 @@ void CompositedLayerMapping::paintScrollableArea(
     // scrollbars paint in the space of their containing frame.
     IntPoint scrollCornerAndResizerLocation =
         scrollableArea->scrollCornerAndResizerRect().location();
-    CullRect cullRect(enclosingIntRect(interestRect));
+    CullRect cullRect(interestRect);
     ScrollableAreaPainter(*scrollableArea)
         .paintScrollCorner(builder.context(), -scrollCornerAndResizerLocation,
                            cullRect);
