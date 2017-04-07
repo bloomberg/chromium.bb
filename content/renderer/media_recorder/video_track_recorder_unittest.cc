@@ -121,7 +121,7 @@ class VideoTrackRecorderTest
   void OnError() { video_track_recorder_->OnError(); }
 
   bool CanEncodeAlphaChannel() {
-    return video_track_recorder_->CanEncodeAlphaChannelForTesting();
+    return video_track_recorder_->encoder_->CanEncodeAlphaChannel();
   }
 
   bool HasEncoderInstance() {
