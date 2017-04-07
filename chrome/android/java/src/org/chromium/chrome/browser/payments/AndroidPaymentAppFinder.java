@@ -60,7 +60,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      * Meta data name of an app's supported default payment method name.
      */
     static final String META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME =
-            "org.chromum.default_payment_method_name";
+            "org.chromium.default_payment_method_name";
 
     /** The maximum number of payment method manifests to download. */
     private static final int MAX_NUMBER_OF_MANIFESTS = 10;
