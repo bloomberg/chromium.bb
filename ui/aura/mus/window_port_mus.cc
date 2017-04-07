@@ -44,7 +44,7 @@ WindowPortMus::WindowPortMus(WindowTreeClient* client,
     : WindowMus(window_mus_type), window_tree_client_(client) {}
 
 WindowPortMus::~WindowPortMus() {
-  SetPrimarySurfaceInfo(cc::SurfaceInfo());
+  client_surface_embedder_.reset();
 
   // DESTROY is only scheduled from DestroyFromServer(), meaning if DESTROY is
   // present then the server originated the change.
@@ -328,8 +328,8 @@ void WindowPortMus::SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) {
 
 void WindowPortMus::SetFallbackSurfaceInfo(
     const cc::SurfaceInfo& surface_info) {
-  DCHECK(client_surface_embedder_);
-  client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
+  fallback_surface_info_ = surface_info;
+  UpdateClientSurfaceEmbedder();
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -477,8 +477,6 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
   change_data.visible = visible;
   if (!RemoveChangeByTypeAndData(ServerChangeType::VISIBLE, change_data))
     window_tree_client_->OnWindowMusSetVisible(this, visible);
-  // We should only embed a client if its visible.
-  UpdateClientSurfaceEmbedder();
 }
 
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
@@ -487,6 +485,8 @@ void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
   change_data.bounds_in_dip = new_bounds;
   if (!RemoveChangeByTypeAndData(ServerChangeType::BOUNDS, change_data))
     window_tree_client_->OnWindowMusBoundsChanged(this, old_bounds, new_bounds);
+  if (client_surface_embedder_)
+    client_surface_embedder_->UpdateSizeAndGutters();
 }
 
 std::unique_ptr<ui::PropertyData> WindowPortMus::OnWillChangeProperty(
@@ -536,13 +536,18 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {
-  if (!client_surface_embedder_ && primary_surface_info_.is_valid())
-    client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(window_);
+  bool embeds_surface = window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+                        window_mus_type() == WindowMusType::EMBED_IN_OWNER;
+  if (!embeds_surface)
+    return;
 
-  if (primary_surface_info_.is_valid() && window_->IsVisible())
-    client_surface_embedder_->SetPrimarySurfaceInfo(primary_surface_info_);
-  else
-    client_surface_embedder_.reset();
+  if (!client_surface_embedder_) {
+    client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(
+        window_, window_tree_client_->normal_client_area_insets_);
+  }
+
+  client_surface_embedder_->SetPrimarySurfaceInfo(primary_surface_info_);
+  client_surface_embedder_->SetFallbackSurfaceInfo(fallback_surface_info_);
 }
 
 }  // namespace aura

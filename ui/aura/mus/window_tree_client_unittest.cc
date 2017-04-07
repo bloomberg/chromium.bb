@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/base/switches.h"
 #include "cc/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -23,6 +24,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
@@ -101,6 +103,23 @@ std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
 using WindowTreeClientWmTest = test::AuraMusWmTestBase;
 using WindowTreeClientClientTest = test::AuraMusClientTestBase;
 
+// WindowTreeClientWmTest with --enable-surface-synchronization.
+class WindowTreeClientWmTestSurfaceSync : public WindowTreeClientWmTest {
+ public:
+  WindowTreeClientWmTestSurfaceSync() {}
+  ~WindowTreeClientWmTestSurfaceSync() override {}
+
+  // WindowTreeClientWmTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        cc::switches::kEnableSurfaceSynchronization);
+    WindowTreeClientWmTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientWmTestSurfaceSync);
+};
+
 // WindowTreeClientWmTest with --force-device-scale-factor=2.
 class WindowTreeClientWmTestHighDPI : public WindowTreeClientWmTest {
  public:
@@ -144,46 +163,6 @@ class WindowTreeClientClientTestHighDPI : public WindowTreeClientClientTest {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientClientTestHighDPI);
 };
 
-// Verifies that a ClientSurfaceEmbedder will only be allocated if a window
-// is visible that embeds a WindowTreeClient.
-TEST_F(WindowTreeClientWmTest, ClientSurfaceEmbedderIfVisible) {
-  Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
-  window.Init(ui::LAYER_NOT_DRAWN);
-
-  WindowMus* window_mus = WindowMus::Get(&window);
-  const cc::SurfaceId surface_id(
-      cc::FrameSinkId(1, 1),
-      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
-  constexpr float device_scale_factor = 1.f;
-  constexpr gfx::Size size(100, 100);
-
-  window_mus->SetPrimarySurfaceInfo(
-      cc::SurfaceInfo(surface_id, device_scale_factor, size));
-
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Showing the window results in the creation of a ClientSurfaceEmbedder.
-  window.Show();
-  EXPECT_NE(nullptr, window_port_mus->client_surface_embedder());
-
-  // Hiding it again removes the ClientSurfaceEmbedder.
-  window.Hide();
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Setting an invalid cc::SurfaceInfo also eliminates the
-  // ClientSurfaceEmbedder.
-  window.Show();
-  EXPECT_NE(nullptr, window_port_mus->client_surface_embedder());
-  window_mus->SetPrimarySurfaceInfo(cc::SurfaceInfo());
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-}
-
 // Verifies bounds are reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientWmTest, SetBoundsFailed) {
   Window window(nullptr);
@@ -225,8 +204,9 @@ TEST_F(WindowTreeClientWmTest, SetBoundsFailedLocalSurfaceId) {
 }
 
 // Verifies that a ClientSurfaceEmbedder is created for a window once it has
-// a bounds, a valid FrameSinkId and is visible.
-TEST_F(WindowTreeClientWmTest, ClientSurfaceEmbedderOnValidEmbedding) {
+// a bounds, and a valid FrameSinkId.
+TEST_F(WindowTreeClientWmTestSurfaceSync,
+       ClientSurfaceEmbedderOnValidEmbedding) {
   Window window(nullptr);
   // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
   // when their sizes change.
@@ -234,29 +214,47 @@ TEST_F(WindowTreeClientWmTest, ClientSurfaceEmbedderOnValidEmbedding) {
                      aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
 
+  // The window will allocate a cc::LocalSurfaceId once it has a bounds.
+  WindowMus* window_mus = WindowMus::Get(&window);
+  ASSERT_NE(nullptr, window_mus);
+  EXPECT_FALSE(window_mus->GetLocalSurfaceId().is_valid());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, window.bounds());
   window.SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, window.bounds());
-  WindowMus* window_mus = WindowMus::Get(&window);
-  ASSERT_NE(nullptr, window_mus);
   EXPECT_TRUE(window_mus->GetLocalSurfaceId().is_valid());
 
-  // An ClientSurfaceEmbedder isn't created UNTIL the window is visible and has
+  // An ClientSurfaceEmbedder isn't created UNTIL the window has a bounds and
   // a valid FrameSinkId.
   WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
   ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // The window is now visible, but doesn't yet have a FrameSinkId.
-  window.Show();
   EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
 
   // Now that the window has a valid FrameSinkId, it can embed the client in a
   // CompositorFrame.
   window_tree_client()->OnFrameSinkIdAllocated(server_id(&window),
                                                cc::FrameSinkId(1, 1));
-  EXPECT_NE(nullptr, window_port_mus->client_surface_embedder());
+  ClientSurfaceEmbedder* client_surface_embedder =
+      window_port_mus->client_surface_embedder();
+  ASSERT_NE(nullptr, client_surface_embedder);
+
+  // Until the fallback surface fills the window, we will have gutter.
+  ui::Layer* right_gutter = client_surface_embedder->RightGutterForTesting();
+  ASSERT_NE(nullptr, right_gutter);
+  EXPECT_EQ(gfx::Rect(100, 100), right_gutter->bounds());
+  // We don't have a bottom gutter if the fallback surface size is (0, 0) as the
+  // right gutter will fill the whole area.
+  ASSERT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
+
+  // When a SurfaceInfo arrives from the window server, we use it as the
+  // fallback SurfaceInfo. Here we issue the PrimarySurfaceInfo back to the
+  // client lib. This should cause the gutter to go away, eliminating overdraw.
+  window_tree_client()->OnWindowSurfaceChanged(
+      server_id(&window), window_port_mus->PrimarySurfaceInfoForTesting());
+
+  // The gutter is gone.
+  ASSERT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
+  ASSERT_EQ(nullptr, client_surface_embedder->RightGutterForTesting());
 }
 
 // Verifies that the cc::LocalSurfaceId generated by an embedder changes when

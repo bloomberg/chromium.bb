@@ -5,9 +5,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace cc {
 class SurfaceInfo;
+}
+
+namespace gfx {
+class Insets;
 }
 
 namespace ui {
@@ -23,7 +28,9 @@ class Window;
 // layer, and updating them when the client submits new surfaces.
 class ClientSurfaceEmbedder {
  public:
-  explicit ClientSurfaceEmbedder(Window* window);
+  // TODO(fsamuel): Insets might differ when the window is maximized. We should
+  // deal with that case as well.
+  ClientSurfaceEmbedder(Window* window, const gfx::Insets& client_area_insets);
   ~ClientSurfaceEmbedder();
 
   // Updates the clip layer and primary SurfaceInfo of the surface layer based
@@ -34,6 +41,14 @@ class ClientSurfaceEmbedder {
   // updated.
   void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info);
 
+  // Update the surface layer size and the right and bottom gutter layers for
+  // the current window size.
+  void UpdateSizeAndGutters();
+
+  ui::Layer* RightGutterForTesting() { return right_gutter_.get(); }
+
+  ui::Layer* BottomGutterForTesting() { return bottom_gutter_.get(); }
+
  private:
   // The window which embeds the client.
   Window* window_;
@@ -41,8 +56,11 @@ class ClientSurfaceEmbedder {
   // Contains the client's content.
   std::unique_ptr<ui::Layer> surface_layer_;
 
-  // Used for clipping the surface layer to the window bounds.
-  std::unique_ptr<ui::Layer> clip_layer_;
+  // Used for showing a gutter when the content is not available.
+  std::unique_ptr<ui::Layer> right_gutter_;
+  std::unique_ptr<ui::Layer> bottom_gutter_;
+
+  gfx::Insets client_area_insets_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSurfaceEmbedder);
 };

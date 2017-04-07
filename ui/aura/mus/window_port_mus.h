@@ -54,6 +54,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     return client_surface_embedder_.get();
   }
 
+  const cc::SurfaceInfo& PrimarySurfaceInfoForTesting() const {
+    return primary_surface_info_;
+  }
+
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
@@ -276,6 +280,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   base::Closure pending_compositor_frame_sink_request_;
 
   cc::SurfaceInfo primary_surface_info_;
+  cc::SurfaceInfo fallback_surface_info_;
 
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator local_surface_id_allocator_;

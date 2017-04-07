@@ -303,6 +303,9 @@ class COMPOSITOR_EXPORT Layer
   // display compositor, the fallback surface will be used.
   void SetFallbackSurface(const cc::SurfaceInfo& surface_info);
 
+  // Returns the fallback SurfaceInfo set by SetFallbackSurface.
+  const cc::SurfaceInfo* GetFallbackSurfaceInfo() const;
+
   bool has_external_content() {
     return texture_layer_.get() || surface_layer_.get();
   }

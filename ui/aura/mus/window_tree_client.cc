@@ -1694,6 +1694,7 @@ void WindowTreeClient::OnAccelerator(uint32_t ack_id,
 void WindowTreeClient::SetFrameDecorationValues(
     ui::mojom::FrameDecorationValuesPtr values) {
   if (window_manager_internal_client_) {
+    normal_client_area_insets_ = values->normal_client_area_insets;
     window_manager_internal_client_->WmSetFrameDecorationValues(
         std::move(values));
   }

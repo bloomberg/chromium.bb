@@ -686,6 +686,12 @@ void Layer::SetFallbackSurface(const cc::SurfaceInfo& surface_info) {
     mirror->dest()->SetFallbackSurface(surface_info);
 }
 
+const cc::SurfaceInfo* Layer::GetFallbackSurfaceInfo() const {
+  if (surface_layer_)
+    return &surface_layer_->fallback_surface_info();
+  return nullptr;
+}
+
 void Layer::SetShowSolidColorContent() {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
 
