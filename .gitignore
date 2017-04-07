@@ -184,6 +184,7 @@ vs-chromium-project.txt
 /ios/third_party/material_text_accessibility_ios/src
 /ios/third_party/ochamcrest/src
 /ios_internal
+/libassistant
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
 /media/cdm/api
