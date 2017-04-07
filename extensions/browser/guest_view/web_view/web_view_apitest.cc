@@ -533,17 +533,10 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestExecuteScriptFail) {
   RunTest("testExecuteScriptFail", "web_view/apitest");
 }
 
-// Failes on Linux/CrOS.  https://crbug.com/702918
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged \
-  DISABLED_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged
-#else
-#define MAYBE_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged \
-  TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged
-#endif
+// Flaky and likely not testing the right assertion.  https://crbug.com/702918
 IN_PROC_BROWSER_TEST_F(
     WebViewAPITest,
-    MAYBE_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
+    DISABLED_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
   RunTest("testExecuteScriptIsAbortedWhenWebViewSourceIsChanged",
           "web_view/apitest");
 }
