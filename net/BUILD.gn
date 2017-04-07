@@ -1411,6 +1411,8 @@ component("net") {
       "reporting/reporting_endpoint_manager.h",
       "reporting/reporting_header_parser.cc",
       "reporting/reporting_header_parser.h",
+      "reporting/reporting_observer.cc",
+      "reporting/reporting_observer.h",
       "reporting/reporting_policy.cc",
       "reporting/reporting_policy.h",
       "reporting/reporting_report.cc",

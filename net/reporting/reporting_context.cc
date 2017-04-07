@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -17,6 +18,7 @@
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_endpoint_manager.h"
+#include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_policy.h"
 
 namespace net {
@@ -49,6 +51,21 @@ std::unique_ptr<ReportingContext> ReportingContext::Create(
 }
 
 ReportingContext::~ReportingContext() {}
+
+void ReportingContext::AddObserver(ReportingObserver* observer) {
+  DCHECK(!observers_.HasObserver(observer));
+  observers_.AddObserver(observer);
+}
+
+void ReportingContext::RemoveObserver(ReportingObserver* observer) {
+  DCHECK(observers_.HasObserver(observer));
+  observers_.RemoveObserver(observer);
+}
+
+void ReportingContext::NotifyCacheUpdated() {
+  for (auto& observer : observers_)
+    observer.OnCacheUpdated();
+}
 
 ReportingContext::ReportingContext(const ReportingPolicy& policy,
                                    std::unique_ptr<ReportingDelegate> delegate,

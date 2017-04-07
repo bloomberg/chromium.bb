@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/net_export.h"
@@ -23,6 +24,7 @@ class ReportingCache;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
 class ReportingEndpointManager;
+class ReportingObserver;
 class ReportingUploader;
 class URLRequestContext;
 
@@ -50,6 +52,11 @@ class NET_EXPORT ReportingContext {
   }
   ReportingDeliveryAgent* delivery_agent() { return delivery_agent_.get(); }
 
+  void AddObserver(ReportingObserver* observer);
+  void RemoveObserver(ReportingObserver* observer);
+
+  void NotifyCacheUpdated();
+
  protected:
   ReportingContext(const ReportingPolicy& policy,
                    std::unique_ptr<ReportingDelegate> delegate,
@@ -64,6 +71,8 @@ class NET_EXPORT ReportingContext {
   std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<base::TickClock> tick_clock_;
   std::unique_ptr<ReportingUploader> uploader_;
+
+  base::ObserverList<ReportingObserver, /* check_empty= */ true> observers_;
 
   std::unique_ptr<ReportingCache> cache_;
 
