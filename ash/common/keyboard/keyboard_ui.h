@@ -23,7 +23,6 @@ class ASH_EXPORT KeyboardUI {
 
   static std::unique_ptr<KeyboardUI> Create();
 
-  virtual void Show() = 0;
   virtual void ShowInDisplay(const int64_t display_id) = 0;
   virtual void Hide() = 0;
 

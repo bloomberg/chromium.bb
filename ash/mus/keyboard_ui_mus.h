@@ -32,7 +32,6 @@ class KeyboardUIMus : public KeyboardUI,
 
   // KeyboardUI:
   void Hide() override;
-  void Show() override;
   void ShowInDisplay(const int64_t display_id) override;
   bool IsEnabled() override;
 

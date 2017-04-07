@@ -26,10 +26,6 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
       Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
   }
 
-  // KeyboardUI:
-  void Show() override {
-    keyboard::KeyboardController::GetInstance()->ShowKeyboard(true);
-  }
   void ShowInDisplay(const int64_t display_id) override {
     keyboard::KeyboardController::GetInstance()->ShowKeyboardInDisplay(
         display_id);

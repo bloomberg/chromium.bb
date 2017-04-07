@@ -29,11 +29,6 @@ void KeyboardUIMus::Hide() {
     keyboard_->Hide();
 }
 
-void KeyboardUIMus::Show() {
-  if (keyboard_)
-    keyboard_->Show();
-}
-
 void KeyboardUIMus::ShowInDisplay(const int64_t display_id) {
   // TODO(yhanada): Send display id after adding a display_id argument to
   // |Keyboard::Show()| in keyboard.mojom. See crbug.com/585253.
