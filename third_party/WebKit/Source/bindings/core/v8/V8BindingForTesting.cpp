@@ -29,11 +29,6 @@ ExecutionContext* ScriptStateForTesting::getExecutionContext() const {
   return m_executionContext;
 }
 
-void ScriptStateForTesting::setExecutionContext(
-    ExecutionContext* executionContext) {
-  m_executionContext = executionContext;
-}
-
 V8TestingScope::V8TestingScope()
     : m_holder(DummyPageHolder::create()),
       m_handleScope(isolate()),

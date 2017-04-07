@@ -70,8 +70,4 @@ ExecutionContext* ScriptState::getExecutionContext() const {
   return toExecutionContext(context());
 }
 
-void ScriptState::setExecutionContext(ExecutionContext*) {
-  ASSERT_NOT_REACHED();
-}
-
 }  // namespace blink
