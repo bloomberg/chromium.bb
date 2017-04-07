@@ -50,7 +50,7 @@ class ScreenManagerOzoneInternal
   void SetPrimaryDisplayId(int64_t display_id);
 
   // ScreenManager:
-  void AddInterfaces(service_manager::InterfaceRegistry* registry) override;
+  void AddInterfaces(service_manager::BinderRegistry* registry) override;
   void Init(ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/video_capture/public/interfaces/service.mojom.h"
@@ -25,8 +26,9 @@ class ServiceImpl : public service_manager::Service,
   ~ServiceImpl() override;
 
   // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // service_manager::InterfaceFactory<video_capture::mojom::Service>:
   void Create(const service_manager::Identity& remote_identity,
@@ -40,6 +42,7 @@ class ServiceImpl : public service_manager::Service,
   void LazyInitializeDeviceFactory();
   void LazyInitializeFakeDeviceFactory();
 
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::Service> service_bindings_;
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
   mojo::BindingSet<mojom::DeviceFactory> fake_factory_bindings_;

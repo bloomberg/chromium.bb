@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -101,8 +102,9 @@ class Service
 
   // service_manager::Service:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // WindowServerDelegate:
   void StartDisplayInit() override;
@@ -176,7 +178,7 @@ class Service
   UserIdToUserState user_id_to_user_state_;
 
   // Provides input-device information via Mojo IPC. Registers Mojo interfaces
-  // and must outlive service_manager::InterfaceRegistry.
+  // and must outlive |registry_|.
   InputDeviceServer input_device_server_;
 
   bool test_config_;
@@ -185,7 +187,7 @@ class Service
 #endif
 
   // Manages display hardware and handles display management. May register Mojo
-  // interfaces and must outlive service_manager::InterfaceRegistry.
+  // interfaces and must outlive |registry_|.
   std::unique_ptr<display::ScreenManager> screen_manager_;
 
   IMERegistrarImpl ime_registrar_;
@@ -193,6 +195,8 @@ class Service
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

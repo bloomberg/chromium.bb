@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/window_server_service_test_base.h"
@@ -74,8 +75,9 @@ class WindowServerTestBase
   void TearDown() override;
 
   // WindowServerServiceTestBase:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(
@@ -158,6 +160,8 @@ class WindowServerTestBase
   aura::WindowManagerClient* window_manager_client_ = nullptr;
 
   bool window_tree_client_lost_connection_ = false;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };

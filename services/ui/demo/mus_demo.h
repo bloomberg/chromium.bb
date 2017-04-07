@@ -69,8 +69,6 @@ class MusDemo : public service_manager::Service,
 
   // service_manager::Service:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
 
   // aura::WindowTreeClientDelegate:
   void OnEmbed(

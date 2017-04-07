@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/display/types/display_constants.h"
 
 namespace display {
@@ -21,7 +21,7 @@ ScreenManagerOzoneExternal::ScreenManagerOzoneExternal() {}
 ScreenManagerOzoneExternal::~ScreenManagerOzoneExternal() {}
 
 void ScreenManagerOzoneExternal::AddInterfaces(
-    service_manager::InterfaceRegistry* registry) {}
+    service_manager::BinderRegistry* registry) {}
 
 void ScreenManagerOzoneExternal::Init(ScreenManagerDelegate* delegate) {}
 

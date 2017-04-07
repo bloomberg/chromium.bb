@@ -63,11 +63,9 @@ class TestWM : public service_manager::Service,
     aura_env_->SetWindowTreeClient(window_tree_client_.get());
     window_tree_client_->ConnectAsWindowManager();
   }
-
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    return false;
-  }
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
 
   // aura::WindowTreeClientDelegate:
   void OnEmbed(

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -29,8 +30,9 @@ class TestService
 
  private:
   // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // service_manager::InterfaceFactory<mojom::TestService>:
   void Create(const service_manager::Identity& remote_identity,
@@ -44,6 +46,7 @@ class TestService
   void CreateSharedBuffer(const std::string& message,
                           const CreateSharedBufferCallback& callback) override;
 
+  service_manager::BinderRegistry registry_;
   mojo::Binding<mojom::TestService> service_binding_;
 
   // The name of the app connecting to us.

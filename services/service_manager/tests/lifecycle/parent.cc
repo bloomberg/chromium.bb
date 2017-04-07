@@ -9,9 +9,9 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -28,18 +28,20 @@ class Parent : public service_manager::Service,
                    service_manager::test::mojom::Parent>,
                public service_manager::test::mojom::Parent {
  public:
-  Parent() {}
+  Parent() {
+    registry_.AddInterface<service_manager::test::mojom::Parent>(this);
+  }
   ~Parent() override {
-    child_connection_.reset();
     parent_bindings_.CloseAllBindings();
   }
 
  private:
   // Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<service_manager::test::mojom::Parent>(this);
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<service_manager::test::mojom::Parent>:
@@ -50,10 +52,8 @@ class Parent : public service_manager::Service,
 
   // service_manager::test::mojom::Parent:
   void ConnectToChild(const ConnectToChildCallback& callback) override {
-    child_connection_ =
-        context()->connector()->Connect("lifecycle_unittest_app");
     service_manager::test::mojom::LifecycleControlPtr lifecycle;
-    child_connection_->GetInterface(&lifecycle);
+    context()->connector()->BindInterface("lifecycle_unittest_app", &lifecycle);
     {
       base::RunLoop loop;
       lifecycle->Ping(base::Bind(&QuitLoop, &loop));
@@ -67,7 +67,7 @@ class Parent : public service_manager::Service,
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  std::unique_ptr<service_manager::Connection> child_connection_;
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Parent);

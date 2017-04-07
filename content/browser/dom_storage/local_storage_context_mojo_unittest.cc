@@ -617,14 +617,17 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                               service_manager::mojom::ServiceFactory> {
  public:
   explicit ServiceTestClient(service_manager::test::ServiceTest* test)
-      : service_manager::test::ServiceTestClient(test) {}
+      : service_manager::test::ServiceTestClient(test) {
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+  }
   ~ServiceTestClient() override {}
 
  protected:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   void CreateService(service_manager::mojom::ServiceRequest request,
@@ -644,6 +647,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   }
 
  private:
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   std::unique_ptr<service_manager::ServiceContext> file_service_context_;

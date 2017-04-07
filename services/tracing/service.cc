@@ -14,19 +14,22 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/wait.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_info.h"
 
 namespace tracing {
 
-Service::Service() : collector_binding_(this), tracing_active_(false) {}
+Service::Service() : collector_binding_(this), tracing_active_(false) {
+  registry_.AddInterface<mojom::Factory>(this);
+  registry_.AddInterface<mojom::Collector>(this);
+  registry_.AddInterface<mojom::StartupPerformanceDataCollector>(this);
+}
 Service::~Service() {}
 
-bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Factory>(this);
-  registry->AddInterface<mojom::Collector>(this);
-  registry->AddInterface<mojom::StartupPerformanceDataCollector>(this);
-  return true;
+void Service::OnBindInterface(const service_manager::ServiceInfo& source_info,
+                              const std::string& interface_name,
+                              mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 bool Service::OnServiceManagerConnectionLost() {

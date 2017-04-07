@@ -17,8 +17,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ui_features.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -108,7 +108,7 @@ class OzonePlatformGbm
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return event_factory_ozone_->CreateSystemInputInjector();
   }
-  void AddInterfaces(service_manager::InterfaceRegistry* registry) override {
+  void AddInterfaces(service_manager::BinderRegistry* registry) override {
     registry->AddInterface<ozone::mojom::DeviceCursor>(this);
   }
   // service_manager::InterfaceFactory<ozone::mojom::DeviceCursor>:

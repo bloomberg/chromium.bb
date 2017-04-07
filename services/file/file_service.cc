@@ -13,7 +13,6 @@
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connection.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace file {
@@ -85,7 +84,10 @@ FileService::FileService(
     scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner)
     : file_service_runner_(std::move(file_service_runner)),
-      leveldb_service_runner_(std::move(leveldb_service_runner)) {}
+      leveldb_service_runner_(std::move(leveldb_service_runner)) {
+  registry_.AddInterface<leveldb::mojom::LevelDBService>(this);
+  registry_.AddInterface<mojom::FileSystem>(this);
+}
 
 FileService::~FileService() {
   file_service_runner_->DeleteSoon(FROM_HERE, file_system_objects_.release());
@@ -99,11 +101,12 @@ void FileService::OnStart() {
       new FileService::LevelDBServiceObjects(file_service_runner_));
 }
 
-bool FileService::OnConnect(const service_manager::ServiceInfo& remote_info,
-                            service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<leveldb::mojom::LevelDBService>(this);
-  registry->AddInterface<mojom::FileSystem>(this);
-  return true;
+void FileService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void FileService::Create(const service_manager::Identity& remote_identity,

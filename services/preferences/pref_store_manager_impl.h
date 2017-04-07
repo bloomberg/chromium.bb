@@ -16,6 +16,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -84,8 +85,9 @@ class PrefStoreManagerImpl
 
   // service_manager::Service:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // Called when a PrefStore previously registered using |Register| disconnects.
   void OnPrefStoreDisconnect(PrefValueStore::PrefStoreType type);
@@ -123,6 +125,8 @@ class PrefStoreManagerImpl
   const std::unique_ptr<PrefStoreImpl> defaults_wrapper_;
 
   const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreManagerImpl);
 };

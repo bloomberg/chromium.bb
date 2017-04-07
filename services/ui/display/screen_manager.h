@@ -11,7 +11,7 @@
 #include "services/ui/display/screen_manager_delegate.h"
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace display {
@@ -28,7 +28,7 @@ class ScreenManager {
   static ScreenManager* GetInstance();
 
   // Registers Mojo interfaces provided.
-  virtual void AddInterfaces(service_manager::InterfaceRegistry* registry) = 0;
+  virtual void AddInterfaces(service_manager::BinderRegistry* registry) = 0;
 
   // Triggers initial display configuration to start. On device this will
   // configuration the connected displays. Off device this will create one or

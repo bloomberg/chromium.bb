@@ -504,8 +504,7 @@ class ChromeServiceChromeOS
       public mash::mojom::Launchable,
       public service_manager::InterfaceFactory<mash::mojom::Launchable> {
  public:
-  ChromeServiceChromeOS()
-      : interfaces_(service_manager::mojom::kServiceManager_ConnectorSpec) {
+  ChromeServiceChromeOS() {
     interfaces_.AddInterface<mash::mojom::Launchable>(this);
   }
   ~ChromeServiceChromeOS() override {}
@@ -525,7 +524,7 @@ class ChromeServiceChromeOS
   void OnBindInterface(const service_manager::ServiceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(name, std::move(handle));
+    interfaces_.BindInterface(remote_info.identity, name, std::move(handle));
   }
 
   // mash::mojom::Launchable:
@@ -552,7 +551,7 @@ class ChromeServiceChromeOS
     bindings_.AddBinding(this, std::move(request));
   }
 
-  service_manager::InterfaceRegistry interfaces_;
+  service_manager::BinderRegistry interfaces_;
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);

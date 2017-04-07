@@ -82,11 +82,6 @@ void MusDemo::OnStart() {
   env_->SetWindowTreeClient(window_tree_client_.get());
 }
 
-bool MusDemo::OnConnect(const service_manager::ServiceInfo& remote_info,
-                        service_manager::InterfaceRegistry* registry) {
-  return true;
-}
-
 void MusDemo::OnEmbed(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   NOTREACHED();

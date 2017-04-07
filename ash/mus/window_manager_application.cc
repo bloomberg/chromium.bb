@@ -112,6 +112,9 @@ void WindowManagerApplication::ShutdownComponents() {
 }
 
 void WindowManagerApplication::OnStart() {
+  mojo_interface_factory::RegisterInterfaces(
+      &registry_, base::ThreadTaskRunnerHandle::Get());
+
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
@@ -135,13 +138,12 @@ void WindowManagerApplication::OnStart() {
                     init_network_handler);
 }
 
-bool WindowManagerApplication::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  // Register services used in both classic ash and mash.
-  mojo_interface_factory::RegisterInterfaces(
-      registry, base::ThreadTaskRunnerHandle::Get());
-  return true;
+void WindowManagerApplication::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 }  // namespace mus

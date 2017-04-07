@@ -107,7 +107,6 @@ class ServiceManager::Instance
     : public mojom::Connector,
       public mojom::PIDReceiver,
       public Service,
-      public InterfaceFactory<mojom::ServiceManager>,
       public mojom::ServiceManager,
       public mojom::ServiceControl {
  public:
@@ -279,17 +278,19 @@ class ServiceManager::Instance
   uint32_t id() const { return id_; }
 
   // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
     Instance* source =
-        service_manager_->GetExistingInstance(remote_info.identity);
+        service_manager_->GetExistingInstance(source_info.identity);
     DCHECK(source);
-    if (HasCapability(source->GetConnectionSpec(),
+    if (interface_name == mojom::ServiceManager::Name_ &&
+        HasCapability(source->GetConnectionSpec(),
                       kCapability_ServiceManager)) {
-      registry->AddInterface<mojom::ServiceManager>(this);
-      return true;
+      mojom::ServiceManagerRequest request =
+          mojo::MakeRequest<mojom::ServiceManager>(std::move(interface_pipe));
+      service_manager_bindings_.AddBinding(this, std::move(request));
     }
-    return false;
   }
 
  private:
@@ -374,12 +375,6 @@ class ServiceManager::Instance
   // mojom::PIDReceiver:
   void SetPID(uint32_t pid) override {
     PIDAvailable(pid);
-  }
-
-  // InterfaceFactory<mojom::ServiceManager>:
-  void Create(const Identity& remote_identity,
-              mojom::ServiceManagerRequest request) override {
-    service_manager_bindings_.AddBinding(this, std::move(request));
   }
 
   // mojom::ServiceManager implementation:
@@ -580,22 +575,24 @@ class ServiceManager::ServiceImpl : public Service {
   ~ServiceImpl() override {}
 
   // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
     // The only interface ServiceManager exposes is mojom::ServiceManager, and
     // access to this interface is brokered by a policy specific to each caller,
     // managed by the caller's instance. Here we look to see who's calling,
     // and forward to the caller's instance to continue.
     Instance* instance = nullptr;
     for (const auto& entry : service_manager_->identity_to_instance_) {
-      if (entry.first == remote_info.identity) {
+      if (entry.first == source_info.identity) {
         instance = entry.second;
         break;
       }
     }
 
     DCHECK(instance);
-    return instance->OnConnect(remote_info, registry);
+    instance->OnBindInterface(source_info, interface_name,
+                              std::move(interface_pipe));
   }
 
  private:

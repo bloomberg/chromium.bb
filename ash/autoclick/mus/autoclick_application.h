@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace views {
@@ -39,8 +39,9 @@ class AutoclickApplication
  private:
   // service_manager::Service:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
@@ -65,6 +66,7 @@ class AutoclickApplication
                    const int mouse_event_flags) override;
   void OnAutoclickCanceled() override;
 
+  service_manager::BinderRegistry registry_;
   mojo::Binding<mash::mojom::Launchable> launchable_binding_;
   mojo::Binding<mojom::AutoclickController> autoclick_binding_;
 

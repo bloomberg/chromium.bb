@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 static_assert(
@@ -41,7 +40,9 @@ base::File GetFileForPath(const base::FilePath& path) {
 
 namespace font_service {
 
-FontServiceApp::FontServiceApp() {}
+FontServiceApp::FontServiceApp() {
+  registry_.AddInterface(this);
+}
 
 FontServiceApp::~FontServiceApp() {}
 
@@ -49,10 +50,12 @@ void FontServiceApp::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
 }
 
-bool FontServiceApp::OnConnect(const service_manager::ServiceInfo& remote_info,
-                               service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface(this);
-  return true;
+void FontServiceApp::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void FontServiceApp::Create(

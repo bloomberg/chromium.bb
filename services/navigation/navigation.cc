@@ -38,26 +38,26 @@ std::unique_ptr<service_manager::Service> CreateNavigationService() {
 
 Navigation::Navigation()
     : view_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ref_factory_(base::MessageLoop::QuitWhenIdleClosure()),
-      weak_factory_(this) {
+      ref_factory_(base::MessageLoop::QuitWhenIdleClosure()) {
   bindings_.set_connection_error_handler(
       base::Bind(&Navigation::ViewFactoryLost, base::Unretained(this)));
+  registry_.AddInterface<mojom::ViewFactory>(this);
 }
 Navigation::~Navigation() {}
 
-bool Navigation::OnConnect(const service_manager::ServiceInfo& remote_info,
-                           service_manager::InterfaceRegistry* registry) {
-  std::string remote_user_id = remote_info.identity.user_id();
+void Navigation::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  std::string remote_user_id = source_info.identity.user_id();
   if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
     LOG(ERROR) << "Must have a separate Navigation service instance for "
                << "different BrowserContexts.";
-    return false;
+    return;
   }
   client_user_id_ = remote_user_id;
-
-  registry->AddInterface(
-      base::Bind(&Navigation::CreateViewFactory, weak_factory_.GetWeakPtr()));
-  return true;
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void Navigation::CreateView(mojom::ViewClientPtr client,
@@ -73,7 +73,8 @@ void Navigation::CreateView(mojom::ViewClientPtr client,
                  base::Passed(&context_ref)));
 }
 
-void Navigation::CreateViewFactory(mojom::ViewFactoryRequest request) {
+void Navigation::Create(const service_manager::Identity& remote_identity,
+                        mojom::ViewFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
   refs_.insert(ref_factory_.CreateRef());
 }

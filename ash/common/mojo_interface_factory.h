@@ -14,7 +14,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace ash {
@@ -25,7 +25,7 @@ namespace mojo_interface_factory {
 // (when running ash in-process in chrome) or on the main thread (when running
 // in mash).
 ASH_EXPORT void RegisterInterfaces(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
 }  // namespace mojo_interface_factory

@@ -65,7 +65,7 @@ class TestScreenManager : public display::ScreenManager {
   void RemoveDisplay(int64_t id);
 
   // display::ScreenManager:
-  void AddInterfaces(service_manager::InterfaceRegistry* registry) override {}
+  void AddInterfaces(service_manager::BinderRegistry* registry) override {}
   void Init(display::ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override {}
 

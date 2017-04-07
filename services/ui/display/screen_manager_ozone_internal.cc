@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/system/devicemode.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/display/output_protection.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
@@ -110,7 +110,7 @@ void ScreenManagerOzoneInternal::SetPrimaryDisplayId(int64_t display_id) {
 }
 
 void ScreenManagerOzoneInternal::AddInterfaces(
-    service_manager::InterfaceRegistry* registry) {
+    service_manager::BinderRegistry* registry) {
   registry->AddInterface<mojom::DisplayController>(this);
   registry->AddInterface<mojom::OutputProtection>(this);
   registry->AddInterface<mojom::TestDisplayController>(this);

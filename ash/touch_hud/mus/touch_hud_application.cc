@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -62,7 +61,9 @@ class TouchHudUI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(TouchHudUI);
 };
 
-TouchHudApplication::TouchHudApplication() : binding_(this) {}
+TouchHudApplication::TouchHudApplication() : binding_(this) {
+  registry_.AddInterface<mash::mojom::Launchable>(this);
+}
 TouchHudApplication::~TouchHudApplication() {}
 
 void TouchHudApplication::OnStart() {
@@ -71,11 +72,12 @@ void TouchHudApplication::OnStart() {
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
-bool TouchHudApplication::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mash::mojom::Launchable>(this);
-  return true;
+void TouchHudApplication::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {

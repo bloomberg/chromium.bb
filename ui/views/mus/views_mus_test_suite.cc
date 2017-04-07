@@ -55,10 +55,9 @@ class DefaultService : public service_manager::Service {
   ~DefaultService() override {}
 
   // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    return false;
-  }
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultService);

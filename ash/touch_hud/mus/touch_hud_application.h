@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -32,8 +33,9 @@ class TouchHudApplication
  private:
   // service_manager::Service:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
@@ -42,6 +44,7 @@ class TouchHudApplication
   void Create(const service_manager::Identity& remote_identity,
               mash::mojom::LaunchableRequest request) override;
 
+  service_manager::BinderRegistry registry_;
   mojo::Binding<mash::mojom::Launchable> binding_;
   views::Widget* widget_ = nullptr;
 

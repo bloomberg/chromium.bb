@@ -15,7 +15,7 @@
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace ui {
@@ -39,7 +39,7 @@ class InputDeviceServer
   // connect. You should have already called RegisterAsObserver() to get local
   // input-device event updates and checked it was successful by calling
   // IsRegisteredAsObserver().
-  void AddInterface(service_manager::InterfaceRegistry* registry);
+  void AddInterface(service_manager::BinderRegistry* registry);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;

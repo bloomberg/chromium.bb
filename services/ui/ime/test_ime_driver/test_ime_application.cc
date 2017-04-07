@@ -30,11 +30,5 @@ void TestIMEApplication::OnStart() {
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 
-bool TestIMEApplication::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  return true;
-}
-
 }  // namespace test
 }  // namespace ui

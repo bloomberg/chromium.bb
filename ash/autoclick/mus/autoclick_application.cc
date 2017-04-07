@@ -78,7 +78,10 @@ class AutoclickUI : public views::WidgetDelegateView,
 };
 
 AutoclickApplication::AutoclickApplication()
-    : launchable_binding_(this), autoclick_binding_(this) {}
+    : launchable_binding_(this), autoclick_binding_(this) {
+  registry_.AddInterface<mash::mojom::Launchable>(this);
+  registry_.AddInterface<mojom::AutoclickController>(this);
+}
 
 AutoclickApplication::~AutoclickApplication() {}
 
@@ -90,12 +93,12 @@ void AutoclickApplication::OnStart() {
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }
 
-bool AutoclickApplication::OnConnect(
+void AutoclickApplication::OnBindInterface(
     const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mash::mojom::Launchable>(this);
-  registry->AddInterface<mojom::AutoclickController>(this);
-  return true;
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(remote_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {

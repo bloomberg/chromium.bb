@@ -12,7 +12,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -33,7 +32,9 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 
 }  // namespace
 
-WindowServerTestBase::WindowServerTestBase() {}
+WindowServerTestBase::WindowServerTestBase() {
+  registry_.AddInterface<mojom::WindowTreeClient>(this);
+}
 
 WindowServerTestBase::~WindowServerTestBase() {}
 
@@ -114,11 +115,12 @@ void WindowServerTestBase::TearDown() {
   WindowServerServiceTestBase::TearDown();
 }
 
-bool WindowServerTestBase::OnConnect(
-    const service_manager::Identity& remote_identity,
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::WindowTreeClient>(this);
-  return true;
+void WindowServerTestBase::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void WindowServerTestBase::OnEmbed(

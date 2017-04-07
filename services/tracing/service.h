@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/data_sink.h"
@@ -36,8 +37,9 @@ class Service : public service_manager::Service,
 
  private:
   // service_manager::Service implementation.
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() override;
 
   // service_manager::InterfaceFactory<mojom::Factory>:
@@ -73,6 +75,7 @@ class Service : public service_manager::Service,
 
   void AllDataCollected();
 
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::Factory> bindings_;
   std::unique_ptr<DataSink> sink_;
   std::vector<std::unique_ptr<Recorder>> recorder_impls_;

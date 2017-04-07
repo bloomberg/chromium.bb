@@ -10,8 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -34,17 +34,19 @@ class PackagedApp
         destruct_callback_(destruct_callback) {
     bindings_.set_connection_error_handler(base::Bind(&PackagedApp::BindingLost,
                                                       base::Unretained(this)));
+    registry_.AddInterface<service_manager::test::mojom::LifecycleControl>(
+        this);
   }
 
   ~PackagedApp() override {}
 
  private:
   // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<service_manager::test::mojom::LifecycleControl>(
-        this);
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // service_manager::InterfaceFactory<LifecycleControl>
@@ -87,6 +89,7 @@ class PackagedApp
     }
   }
 
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::test::mojom::LifecycleControl> bindings_;
 
   // Run when this object's connection to the service manager is closed.
@@ -102,15 +105,23 @@ class Package : public service_manager::ForwardingService,
                     service_manager::mojom::ServiceFactory>,
                 public service_manager::mojom::ServiceFactory {
  public:
-  Package() : ForwardingService(&app_client_) {}
+  Package() : ForwardingService(&app_client_) {
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+  }
   ~Package() override {}
 
  private:
   // ForwardingService:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-    return ForwardingService::OnConnect(remote_info, registry);
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    if (registry_.CanBindInterface(interface_name)) {
+      registry_.BindInterface(source_info.identity, interface_name,
+                              std::move(interface_pipe));
+    } else {
+      ForwardingService::OnBindInterface(source_info, interface_name,
+                                         std::move(interface_pipe));
+    }
   }
 
   // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>:
@@ -156,6 +167,7 @@ class Package : public service_manager::ForwardingService,
 
   service_manager::test::AppClient app_client_;
   int service_manager_connection_refcount_ = 0;
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory> bindings_;
 
   using ServiceContextMap =

@@ -83,32 +83,35 @@ DeviceService::~DeviceService() {
 #endif
 }
 
-void DeviceService::OnStart() {}
-
-bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
-                              service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Fingerprint>(this);
-  registry->AddInterface<mojom::LightSensor>(this);
-  registry->AddInterface<mojom::MotionSensor>(this);
-  registry->AddInterface<mojom::OrientationSensor>(this);
-  registry->AddInterface<mojom::OrientationAbsoluteSensor>(this);
-  registry->AddInterface<mojom::PowerMonitor>(this);
-  registry->AddInterface<mojom::ScreenOrientationListener>(this);
-  registry->AddInterface<mojom::TimeZoneMonitor>(this);
-  registry->AddInterface<mojom::WakeLockContextProvider>(this);
+void DeviceService::OnStart() {
+  registry_.AddInterface<mojom::Fingerprint>(this);
+  registry_.AddInterface<mojom::LightSensor>(this);
+  registry_.AddInterface<mojom::MotionSensor>(this);
+  registry_.AddInterface<mojom::OrientationSensor>(this);
+  registry_.AddInterface<mojom::OrientationAbsoluteSensor>(this);
+  registry_.AddInterface<mojom::PowerMonitor>(this);
+  registry_.AddInterface<mojom::ScreenOrientationListener>(this);
+  registry_.AddInterface<mojom::TimeZoneMonitor>(this);
+  registry_.AddInterface<mojom::WakeLockContextProvider>(this);
 
 #if defined(OS_ANDROID)
-  registry->AddInterface(
+  registry_.AddInterface(
       GetJavaInterfaceProvider()->CreateInterfaceFactory<BatteryMonitor>());
-  registry->AddInterface(
+  registry_.AddInterface(
       GetJavaInterfaceProvider()
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
-  registry->AddInterface<BatteryMonitor>(this);
-  registry->AddInterface<mojom::VibrationManager>(this);
+  registry_.AddInterface<BatteryMonitor>(this);
+  registry_.AddInterface<mojom::VibrationManager>(this);
 #endif
+}
 
-  return true;
+void DeviceService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 #if !defined(OS_ANDROID)

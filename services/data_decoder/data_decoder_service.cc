@@ -11,17 +11,11 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace data_decoder {
 
 namespace {
-
-void OnConnectionLost(std::unique_ptr<service_manager::ServiceContextRef> ref) {
-  // No-op. This merely takes ownership of |ref| so it can be destroyed when
-  // this function is invoked.
-}
 
 void OnImageDecoderRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
@@ -45,20 +39,16 @@ std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
 void DataDecoderService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(base::Bind(
       &DataDecoderService::MaybeRequestQuitDelayed, base::Unretained(this))));
+  registry_.AddInterface(
+      base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
 }
 
-bool DataDecoderService::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  // Add a reference to the service and tie it to the lifetime of the
-  // InterfaceRegistry's connection.
-  std::unique_ptr<service_manager::ServiceContextRef> connection_ref =
-      ref_factory_->CreateRef();
-  registry->AddConnectionLostClosure(
-      base::Bind(&OnConnectionLost, base::Passed(&connection_ref)));
-  registry->AddInterface(
-      base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
-  return true;
+void DataDecoderService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void DataDecoderService::MaybeRequestQuitDelayed() {

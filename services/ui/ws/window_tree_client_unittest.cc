@@ -14,8 +14,8 @@
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -678,14 +678,16 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   }
 
   // WindowServerServiceTestBase:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface(client_factory_.get());
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   void SetUp() override {
     client_factory_ = base::MakeUnique<WindowTreeClientFactory>();
+    registry_.AddInterface(client_factory_.get());
 
     WindowServerServiceTestBase::SetUp();
 
@@ -736,6 +738,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   int client_id_1_;
   int client_id_2_;
   Id root_window_id_;
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTest);
 };

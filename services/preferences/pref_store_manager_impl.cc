@@ -16,7 +16,7 @@
 #include "services/preferences/persistent_pref_store_factory.h"
 #include "services/preferences/persistent_pref_store_impl.h"
 #include "services/preferences/public/cpp/pref_store_impl.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_info.h"
 
 namespace prefs {
 namespace {
@@ -124,6 +124,9 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
   // The user store is not actually connected to in the implementation, but
   // accessed directly.
   expected_pref_stores_.erase(PrefValueStore::USER_STORE);
+  registry_.AddInterface<prefs::mojom::PrefStoreConnector>(this);
+  registry_.AddInterface<prefs::mojom::PrefStoreRegistry>(this);
+  registry_.AddInterface<prefs::mojom::PrefServiceControl>(this);
 }
 
 PrefStoreManagerImpl::~PrefStoreManagerImpl() = default;
@@ -208,13 +211,12 @@ void PrefStoreManagerImpl::Init(
 
 void PrefStoreManagerImpl::OnStart() {}
 
-bool PrefStoreManagerImpl::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<prefs::mojom::PrefStoreConnector>(this);
-  registry->AddInterface<prefs::mojom::PrefStoreRegistry>(this);
-  registry->AddInterface<prefs::mojom::PrefServiceControl>(this);
-  return true;
+void PrefStoreManagerImpl::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void PrefStoreManagerImpl::OnPrefStoreDisconnect(

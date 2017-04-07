@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,7 +60,7 @@ void ScreenManagerStubInternal::FixedSizeScreenConfiguration() {
 }
 
 void ScreenManagerStubInternal::AddInterfaces(
-    service_manager::InterfaceRegistry* registry) {}
+    service_manager::BinderRegistry* registry) {}
 
 void ScreenManagerStubInternal::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);

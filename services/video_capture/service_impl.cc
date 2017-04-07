@@ -10,7 +10,7 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_info.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 
 namespace {
@@ -25,14 +25,18 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
 
 namespace video_capture {
 
-ServiceImpl::ServiceImpl() = default;
+ServiceImpl::ServiceImpl() {
+  registry_.AddInterface<mojom::Service>(this);
+}
 
 ServiceImpl::~ServiceImpl() = default;
 
-bool ServiceImpl::OnConnect(const service_manager::ServiceInfo& remote_info,
-                            service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Service>(this);
-  return true;
+void ServiceImpl::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void ServiceImpl::Create(const service_manager::Identity& remote_identity,

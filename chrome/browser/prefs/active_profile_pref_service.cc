@@ -8,9 +8,10 @@
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
-ActiveProfilePrefService::ActiveProfilePrefService() = default;
+ActiveProfilePrefService::ActiveProfilePrefService() {
+  registry_.AddInterface<prefs::mojom::PrefStoreConnector>(this);
+}
 
 ActiveProfilePrefService::~ActiveProfilePrefService() = default;
 
@@ -35,21 +36,23 @@ void ActiveProfilePrefService::Create(
 
 void ActiveProfilePrefService::OnStart() {}
 
-bool ActiveProfilePrefService::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
+void ActiveProfilePrefService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
   // N.B. This check is important as not doing it would allow one user to read
   // another user's prefs.
-  if (remote_info.identity.user_id() != service_manager::mojom::kRootUserID) {
+  // TODO(beng): This should be obsoleted by Service Manager user id routing.
+  if (source_info.identity.user_id() != service_manager::mojom::kRootUserID) {
     LOG(WARNING) << "Blocked service instance="
-                 << remote_info.identity.instance()
-                 << ", name=" << remote_info.identity.name()
-                 << ", user_id=" << remote_info.identity.user_id()
+                 << source_info.identity.instance()
+                 << ", name=" << source_info.identity.name()
+                 << ", user_id=" << source_info.identity.user_id()
                  << " from connecting to the active profile's pref service.";
-    return false;
+    return;
   }
-  registry->AddInterface<prefs::mojom::PrefStoreConnector>(this);
-  return true;
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 void ActiveProfilePrefService::OnConnectError() {

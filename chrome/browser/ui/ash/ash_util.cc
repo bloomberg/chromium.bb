@@ -15,8 +15,9 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #include "ui/aura/window_event_dispatcher.h"
 
@@ -28,8 +29,7 @@ class EmbeddedAshService : public service_manager::Service {
  public:
   explicit EmbeddedAshService(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-      : task_runner_(task_runner),
-        interfaces_(service_manager::mojom::kServiceManager_ConnectorSpec) {}
+      : task_runner_(task_runner) {}
   ~EmbeddedAshService() override {}
 
   // service_manager::Service:
@@ -40,12 +40,13 @@ class EmbeddedAshService : public service_manager::Service {
   void OnBindInterface(const service_manager::ServiceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(interface_name, std::move(handle));
+    interfaces_.BindInterface(remote_info.identity, interface_name,
+                              std::move(handle));
   }
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  service_manager::InterfaceRegistry interfaces_;
+  service_manager::BinderRegistry interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedAshService);
 };

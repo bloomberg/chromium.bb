@@ -5,21 +5,12 @@
 #include "services/shape_detection/shape_detection_service.h"
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/shape_detection/barcode_detection_impl.h"
 #include "services/shape_detection/face_detection_provider_impl.h"
 #include "services/shape_detection/text_detection_impl.h"
 
 namespace shape_detection {
-
-namespace {
-
-void OnConnectionLost(std::unique_ptr<service_manager::ServiceContextRef> ref) {
-  // No-op. This merely takes ownership of |ref| so it can be destroyed when
-  // this function is invoked.
-}
-}
 
 std::unique_ptr<service_manager::Service> ShapeDetectionService::Create() {
   return base::MakeUnique<ShapeDetectionService>();
@@ -33,21 +24,17 @@ void ShapeDetectionService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context()))));
+  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
+  registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
 }
 
-bool ShapeDetectionService::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  // Add a reference to the service and tie it to the lifetime of the
-  // InterfaceRegistry's connection.
-  std::unique_ptr<service_manager::ServiceContextRef> connection_ref =
-      ref_factory_->CreateRef();
-  registry->AddConnectionLostClosure(
-      base::Bind(&OnConnectionLost, base::Passed(&connection_ref)));
-  registry->AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
-  registry->AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
-  registry->AddInterface(base::Bind(&TextDetectionImpl::Create));
-  return true;
+void ShapeDetectionService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 }  // namespace shape_detection

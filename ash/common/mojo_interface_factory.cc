@@ -21,7 +21,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
@@ -93,7 +93,7 @@ void BindWallpaperRequestOnMainThread(
 namespace mojo_interface_factory {
 
 void RegisterInterfaces(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(
       base::Bind(&BindAcceleratorControllerRequestOnMainThread),

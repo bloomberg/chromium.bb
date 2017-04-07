@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -34,7 +34,7 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
 }
 
 void InputDeviceServer::AddInterface(
-    service_manager::InterfaceRegistry* registry) {
+    service_manager::BinderRegistry* registry) {
   DCHECK(IsRegisteredAsObserver());
   registry->AddInterface<mojom::InputDeviceServer>(this);
 }

@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
@@ -26,8 +27,9 @@ class LevelDBApp
  private:
   // |Service| override:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // |InterfaceFactory<mojom::LevelDBService>| implementation:
   void Create(const service_manager::Identity& remote_identity,
@@ -35,6 +37,7 @@ class LevelDBApp
 
   tracing::Provider tracing_;
   std::unique_ptr<mojom::LevelDBService> service_;
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::LevelDBService> bindings_;
 
   base::Thread file_thread_;

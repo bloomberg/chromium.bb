@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace media {
 
@@ -22,6 +21,7 @@ MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client)
     : mojo_media_client_(std::move(mojo_media_client)),
       media_log_(new MediaLog()) {
   DCHECK(mojo_media_client_);
+  registry_.AddInterface<mojom::MediaService>(this);
 }
 
 MediaService::~MediaService() {}
@@ -33,10 +33,12 @@ void MediaService::OnStart() {
   mojo_media_client_->Initialize(context()->connector());
 }
 
-bool MediaService::OnConnect(const service_manager::ServiceInfo& remote_info,
-                             service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::MediaService>(this);
-  return true;
+void MediaService::OnBindInterface(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(source_info.identity, interface_name,
+                          std::move(interface_pipe));
 }
 
 bool MediaService::OnServiceManagerConnectionLost() {

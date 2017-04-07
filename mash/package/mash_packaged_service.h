@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -41,8 +42,9 @@ class MashPackagedService : public service_manager::Service,
   ~MashPackagedService() override;
 
   // service_manager::Service:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // service_manager::InterfaceFactory<ServiceFactory>
   void Create(const service_manager::Identity& remote_identity,
@@ -57,6 +59,7 @@ class MashPackagedService : public service_manager::Service,
       const std::string& name);
 
   std::unique_ptr<service_manager::ServiceContext> context_;
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<ServiceFactory> service_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MashPackagedService);

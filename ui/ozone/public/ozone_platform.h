@@ -24,8 +24,8 @@ class MessageFilter;
 }
 
 namespace service_manager {
+class BinderRegistry;
 class Connector;
-class InterfaceRegistry;
 }
 
 namespace ui {
@@ -118,12 +118,12 @@ class OZONE_EXPORT OzonePlatform {
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo
   // implementations must invoke AddInterfaces with a valid
-  // service_manager::InterfaceRegistry* pointer to export all Mojo interfaces
+  // service_manager::BinderRegistry* pointer to export all Mojo interfaces
   // defined within Ozone.
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(service_manager::InterfaceRegistry* registry);
+  virtual void AddInterfaces(service_manager::BinderRegistry* registry);
 
  private:
   virtual void InitializeUI(const InitParams& params) = 0;

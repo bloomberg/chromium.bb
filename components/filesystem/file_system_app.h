@@ -10,6 +10,7 @@
 #include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
@@ -29,14 +30,17 @@ class FileSystemApp
 
   // |service_manager::Service| override:
   void OnStart() override;
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // |InterfaceFactory<Files>| implementation:
   void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::FileSystem> request) override;
 
   tracing::Provider tracing_;
+
+  service_manager::BinderRegistry registry_;
 
   scoped_refptr<LockTable> lock_table_;
 
