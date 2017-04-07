@@ -24,8 +24,8 @@ test("latency_unittests") {
   deps = [
     ":latency",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -33,11 +33,13 @@ test("latency_unittests") {
   if (!is_ios) {
     sources += [
       "ipc/latency_info_param_traits_unittest.cc",
-      "mojo/struct_traits_unittest",
+      "mojo/struct_traits_unittest.cc",
     ]
     deps += [
       "//ipc:test_support",
+      "//mojo/public/cpp/bindings",
       "//ui/latency/ipc",
+      "//ui/latency/mojo:test_interfaces",
     ]
   }
 }

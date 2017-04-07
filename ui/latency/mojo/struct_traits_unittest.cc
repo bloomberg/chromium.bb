@@ -5,8 +5,8 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/mojo/latency_info_struct_traits.h"
-#include "ui/events/mojo/traits_test_service.mojom.h"
+#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojo/traits_test_service.mojom.h"
 
 namespace ui {
 
