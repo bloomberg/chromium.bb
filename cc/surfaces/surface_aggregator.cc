@@ -369,7 +369,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect));
   dest_pass_list_->push_back(std::move(color_conversion_pass));
 }
 
