@@ -103,6 +103,7 @@ class CSSPropertyParser {
 
   bool consumePlaceContentShorthand(bool important);
   bool consumePlaceItemsShorthand(bool important);
+  bool consumePlaceSelfShorthand(bool important);
 
   bool consumeFont(bool important);
   bool consumeFontVariantShorthand(bool important);

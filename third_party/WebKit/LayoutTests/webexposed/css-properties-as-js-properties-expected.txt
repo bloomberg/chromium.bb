@@ -237,6 +237,7 @@ perspective
 perspectiveOrigin
 placeContent
 placeItems
+placeSelf
 pointerEvents
 position
 quotes

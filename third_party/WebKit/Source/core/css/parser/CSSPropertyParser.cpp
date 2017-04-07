@@ -3302,7 +3302,7 @@ bool CSSPropertyParser::consumePlaceContentShorthand(bool important) {
 
 bool CSSPropertyParser::consumePlaceItemsShorthand(bool important) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceContent).length(),
+  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceItems).length(),
             static_cast<unsigned>(2));
 
   // align-items property does not allow the 'auto' value.
@@ -3327,6 +3327,32 @@ bool CSSPropertyParser::consumePlaceItemsShorthand(bool important) {
               important);
   addProperty(CSSPropertyJustifyItems, CSSPropertyPlaceItems,
               *justifyItemsValue, important);
+  return true;
+}
+
+bool CSSPropertyParser::consumePlaceSelfShorthand(bool important) {
+  DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceSelf).length(),
+            static_cast<unsigned>(2));
+
+  CSSValue* alignSelfValue =
+      CSSPropertyAlignmentUtils::consumeSimplifiedItemPosition(m_range);
+  if (!alignSelfValue)
+    return false;
+  CSSValue* justifySelfValue =
+      m_range.atEnd()
+          ? alignSelfValue
+          : CSSPropertyAlignmentUtils::consumeSimplifiedItemPosition(m_range);
+  if (!justifySelfValue)
+    return false;
+
+  if (!m_range.atEnd())
+    return false;
+
+  addProperty(CSSPropertyAlignSelf, CSSPropertyPlaceSelf, *alignSelfValue,
+              important);
+  addProperty(CSSPropertyJustifySelf, CSSPropertyPlaceSelf, *justifySelfValue,
+              important);
   return true;
 }
 
@@ -3593,6 +3619,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty,
       return consumePlaceContentShorthand(important);
     case CSSPropertyPlaceItems:
       return consumePlaceItemsShorthand(important);
+    case CSSPropertyPlaceSelf:
+      return consumePlaceSelfShorthand(important);
     default:
       return false;
   }

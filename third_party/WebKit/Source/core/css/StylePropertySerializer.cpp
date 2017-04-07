@@ -466,6 +466,8 @@ String StylePropertySerializer::getPropertyValue(
       return getAlignmentShorthandValue(placeContentShorthand());
     case CSSPropertyPlaceItems:
       return getAlignmentShorthandValue(placeItemsShorthand());
+    case CSSPropertyPlaceSelf:
+      return getAlignmentShorthandValue(placeSelfShorthand());
     case CSSPropertyFont:
       return fontValue();
     case CSSPropertyFontVariant:
