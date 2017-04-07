@@ -268,7 +268,7 @@ Polymer({
 
   /** @private */
   onMenuClosed_: function() {
-    this.$$('settings-main').focus();
+    this.$.container.focus();
   },
 
   /** @private */

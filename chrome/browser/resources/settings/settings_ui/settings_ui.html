@@ -105,11 +105,10 @@
       </div>
     </dialog>
     <div id="dropShadow"></div>
-    <div id="container">
+    <div id="container" class="no-outline" tabindex="-1">
       <!-- Used by IntersectionObserver, has a 0px height intentionally -->
       <div id="intersectionProbe"></div>
-      <settings-main id="main" prefs="{{prefs}}" tabindex="-1"
-          class="no-outline"
+      <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           show-android-apps="[[showAndroidApps_]]"
