@@ -46,6 +46,11 @@ class PaymentResponse;
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator;
 
+// Notifies the delegate that the user has selected to go to the card and
+// address options page in Settings.
+- (void)paymentRequestCoordinatorDidSelectSettings:
+    (PaymentRequestCoordinator*)coordinator;
+
 // Notifies the delegate that the user has confirmed the payment request.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
     didConfirmWithPaymentResponse:(web::PaymentResponse)paymentResponse;

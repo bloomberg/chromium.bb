@@ -28,6 +28,11 @@ class PaymentRequest;
 - (void)paymentRequestViewControllerDidConfirm:
     (PaymentRequestViewController*)controller;
 
+// Notifies the delegate that the user has selected to go to the card and
+// address options page in Settings.
+- (void)paymentRequestViewControllerDidSelectSettings:
+    (PaymentRequestViewController*)controller;
+
 // Notifies the delegate that the user has selected the payment summary item.
 - (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
     (PaymentRequestViewController*)controller;

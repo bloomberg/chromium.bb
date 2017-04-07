@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
@@ -277,6 +278,25 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
                         delegate:delegate];
 
   // Make sure the close button is always present, as the Save Passwords screen
+  // isn't just shown from Settings.
+  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  return nc;
+}
+
++ (SettingsNavigationController*)
+newAutofillController:(ios::ChromeBrowserState*)browserState
+             delegate:(id<SettingsNavigationControllerDelegate>)delegate {
+  base::scoped_nsobject<UIViewController> controller(
+      [[AutofillCollectionViewController alloc]
+          initWithBrowserState:browserState]);
+
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                    browserState:browserState
+                        delegate:delegate];
+  [controller navigationItem].rightBarButtonItem = [nc doneButton];
+
+  // Make sure the close button is always present, as the Autofill screen
   // isn't just shown from Settings.
   [controller navigationItem].leftBarButtonItem = [nc closeButton];
   return nc;

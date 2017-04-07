@@ -1521,6 +1521,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_SHOW_ADD_ACCOUNT:
       [self showAddAccount];
       break;
+    case IDC_SHOW_AUTOFILL_SETTINGS:
+      [self showAutofillSettings];
+      break;
     default:
       // Unknown commands get dropped with a warning.
       NOTREACHED() << "Unknown command id " << command;
@@ -2007,6 +2010,18 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   _settingsNavigationController.reset([SettingsNavigationController
       newSavePasswordsController:_mainBrowserState
                         delegate:self]);
+  [[self topPresentedViewController]
+      presentViewController:_settingsNavigationController
+                   animated:YES
+                 completion:nil];
+}
+
+- (void)showAutofillSettings {
+  if (_settingsNavigationController)
+    return;
+  _settingsNavigationController.reset([SettingsNavigationController
+      newAutofillController:_mainBrowserState
+                   delegate:self]);
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES

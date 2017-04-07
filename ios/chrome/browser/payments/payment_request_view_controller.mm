@@ -501,7 +501,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)cell:(CollectionViewFooterCell*)cell didTapLinkURL:(GURL)url {
   DCHECK_EQ(url, GURL(kSettingsURL)) << "Unknown URL tapped";
-  NOTIMPLEMENTED();  // TODO(macourteau): take the user to the right place.
+  [_delegate paymentRequestViewControllerDidSelectSettings:self];
 }
 
 #pragma mark UICollectionViewDataSource

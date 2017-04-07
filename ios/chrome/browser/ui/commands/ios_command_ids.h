@@ -77,6 +77,7 @@
 #define IDC_SHOW_SYNC_PASSPHRASE_SETTINGS              40952
 #define IDC_SHOW_QR_SCANNER                            40953
 #define IDC_SHOW_SUGGESTIONS                           40955
+#define IDC_SHOW_AUTOFILL_SETTINGS                     40956
 // clang-format on
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_IOS_COMMAND_IDS_H_

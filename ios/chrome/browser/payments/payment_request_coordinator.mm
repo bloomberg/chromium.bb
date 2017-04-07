@@ -343,6 +343,11 @@ class FullCardRequester
   [self sendPaymentResponse];
 }
 
+- (void)paymentRequestViewControllerDidSelectSettings:
+    (PaymentRequestViewController*)controller {
+  [_delegate paymentRequestCoordinatorDidSelectSettings:self];
+}
+
 - (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
     (PaymentRequestViewController*)controller {
   _itemsDisplayCoordinator = [[PaymentItemsDisplayCoordinator alloc]

@@ -21,6 +21,9 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_coordinator.h"
 #include "ios/chrome/browser/procedural_block_types.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#import "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -47,6 +50,9 @@ const NSTimeInterval kNoopInterval = 0.1;
 // Time interval before closing the UI if the page has not yet called
 // PaymentResponse.complete().
 const NSTimeInterval kTimeoutInterval = 60.0;
+
+NSString* kAbortMessage = @"The payment request was aborted.";
+NSString* kCancelMessage = @"The payment request was canceled.";
 
 }  // namespace
 
@@ -225,8 +231,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 }
 
 - (void)cancelRequest {
-  [self terminateRequestWithErrorMessage:@"The payment request was canceled."
-                                callback:nil];
+  [self terminateRequestWithErrorMessage:kCancelMessage callback:nil];
 }
 
 - (void)terminateRequestWithErrorMessage:(NSString*)errorMessage
@@ -374,22 +379,13 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   __weak PaymentRequestManager* weakSelf = self;
 
   ProceduralBlockWithBool cancellationCallback = ^(BOOL) {
-    PaymentRequestManager* strongSelf = weakSelf;
-    // Early return if the manager has been deallocated.
-    if (!strongSelf)
-      return;
-    [[strongSelf paymentRequestJsManager]
+    [[weakSelf paymentRequestJsManager]
         resolveAbortPromiseWithCompletionHandler:nil];
   };
 
   ProceduralBlock callback = ^{
-    PaymentRequestManager* strongSelf = weakSelf;
-    // Early return if the manager has been deallocated.
-    if (!strongSelf)
-      return;
-    [strongSelf
-        terminateRequestWithErrorMessage:@"The payment request was aborted."
-                                callback:cancellationCallback];
+    [weakSelf terminateRequestWithErrorMessage:kAbortMessage
+                                      callback:cancellationCallback];
   };
 
   [_paymentRequestCoordinator displayErrorWithCallback:callback];
@@ -406,13 +402,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock callback = ^{
-    PaymentRequestManager* strongSelf = weakSelf;
-    // Early return if the manager has been deallocated.
-    if (!strongSelf)
-      return;
-    [strongSelf
-        terminateRequestWithErrorMessage:@"The payment request was canceled."
-                                callback:nil];
+    [weakSelf terminateRequestWithErrorMessage:kCancelMessage callback:nil];
   };
 
   [_paymentRequestCoordinator displayErrorWithCallback:callback];
@@ -441,12 +431,8 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock callback = ^{
-    PaymentRequestManager* strongSelf = weakSelf;
-    // Early return if the manager has been deallocated.
-    if (!strongSelf)
-      return;
-    [strongSelf dismissUI];
-    [strongSelf.paymentRequestJsManager
+    [weakSelf dismissUI];
+    [weakSelf.paymentRequestJsManager
         resolveResponsePromiseWithCompletionHandler:nil];
   };
 
@@ -535,8 +521,20 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
-  [self terminateRequestWithErrorMessage:@"The payment request was canceled."
-                                callback:nil];
+  [self terminateRequestWithErrorMessage:kCancelMessage callback:nil];
+}
+
+- (void)paymentRequestCoordinatorDidSelectSettings:
+    (PaymentRequestCoordinator*)coordinator {
+  ProceduralBlockWithBool callback = ^(BOOL) {
+    UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
+    DCHECK(mainWindow);
+    GenericChromeCommand* command =
+        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_AUTOFILL_SETTINGS];
+    [mainWindow chromeExecuteCommand:command];
+  };
+
+  [self terminateRequestWithErrorMessage:kCancelMessage callback:callback];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
