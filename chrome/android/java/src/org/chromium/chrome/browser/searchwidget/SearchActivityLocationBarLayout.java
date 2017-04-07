@@ -10,10 +10,9 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
-import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
-public class SearchActivityLocationBarLayout extends LocationBarPhone {
+public class SearchActivityLocationBarLayout extends LocationBarLayout {
     /** Delegates calls out to the containing Activity. */
     public static interface Delegate {
         /** Load a URL in the associated tab. */
@@ -27,7 +26,8 @@ public class SearchActivityLocationBarLayout extends LocationBarPhone {
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        findViewById(R.id.google_g_container).setVisibility(View.GONE);
+        View gContainer = findViewById(R.id.google_g_container);
+        if (gContainer != null) gContainer.setVisibility(View.GONE);
     }
 
     /** Set the {@link Delegate}. */
