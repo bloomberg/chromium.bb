@@ -9,6 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/host_scanner_operation.h"
+#include "chromeos/components/tether/notification_presenter.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
@@ -28,7 +30,9 @@ class HostScanner : public HostScannerOperation::Observer {
  public:
   HostScanner(TetherHostFetcher* tether_host_fetcher,
               BleConnectionManager* connection_manager,
-              HostScanDevicePrioritizer* host_scan_device_prioritizer);
+              HostScanDevicePrioritizer* host_scan_device_prioritizer,
+              NetworkStateHandler* network_state_handler,
+              NotificationPresenter* notification_presenter);
   virtual ~HostScanner();
 
   // Starts a host scan if there is no current scan. If a scan is ongoing, this
@@ -56,6 +60,8 @@ class HostScanner : public HostScannerOperation::Observer {
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+  NetworkStateHandler* network_state_handler_;
+  NotificationPresenter* notification_presenter_;
 
   bool is_fetching_hosts_;
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;
