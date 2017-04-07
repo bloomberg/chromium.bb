@@ -30,7 +30,6 @@
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -60,7 +59,6 @@ V8PerIsolateData::V8PerIsolateData(WebTaskRunner* taskRunner)
           isMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
                          : gin::IsolateHolder::kAllowAtomicsWait),
       m_stringCache(WTF::wrapUnique(new StringCache(isolate()))),
-      m_hiddenValue(V8HiddenValue::create()),
       m_privateProperty(V8PrivateProperty::create()),
       m_constructorMode(ConstructorMode::CreateNewObject),
       m_useCounterDisabled(false),
@@ -124,7 +122,6 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate) {
   if (data->m_scriptRegexpScriptState)
     data->m_scriptRegexpScriptState->disposePerContextData();
   data->m_liveRoot.clear();
-  data->m_hiddenValue.reset();
   data->m_privateProperty.reset();
   data->m_stringCache->dispose();
   data->m_stringCache.reset();

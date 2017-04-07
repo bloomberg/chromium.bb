@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperties.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/wtf/Compiler.h"
@@ -33,7 +34,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
   virtual ~ScriptPromisePropertyBase();
 
   enum Name {
-#define P(Name) Name,
+#define P(Unused, Name) Name,
     SCRIPT_PROMISE_PROPERTIES(P)
 #undef P
   };
@@ -83,8 +84,8 @@ class CORE_EXPORT ScriptPromisePropertyBase
   NEVER_INLINE void checkThis();
   NEVER_INLINE void checkWrappers();
 
-  v8::Local<v8::String> promiseName();
-  v8::Local<v8::String> resolverName();
+  V8PrivateProperty::Symbol promiseSymbol();
+  V8PrivateProperty::Symbol resolverSymbol();
 
   v8::Isolate* m_isolate;
   Name m_name;

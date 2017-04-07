@@ -31,7 +31,6 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "gin/public/isolate_holder.h"
@@ -132,7 +131,6 @@ class CORE_EXPORT V8PerIsolateData {
 
   bool isUseCounterDisabled() const { return m_useCounterDisabled; }
 
-  V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
   V8PrivateProperty* privateProperty() { return m_privateProperty.get(); }
 
   // Accessors to the cache of interface templates.
@@ -251,7 +249,6 @@ class CORE_EXPORT V8PerIsolateData {
   HashMap<const void*, Vector<v8::Eternal<v8::Name>>> m_eternalNameCache;
 
   std::unique_ptr<StringCache> m_stringCache;
-  std::unique_ptr<V8HiddenValue> m_hiddenValue;
   std::unique_ptr<V8PrivateProperty> m_privateProperty;
   ScopedPersistent<v8::Value> m_liveRoot;
   RefPtr<ScriptState> m_scriptRegexpScriptState;

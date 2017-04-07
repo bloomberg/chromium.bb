@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "v8/include/v8.h"

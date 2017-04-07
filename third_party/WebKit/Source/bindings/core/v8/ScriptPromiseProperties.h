@@ -6,13 +6,13 @@
 #define ScriptPromiseProperties_h
 
 // See ScriptPromiseProperty.h
-#define SCRIPT_PROMISE_PROPERTIES(P, ...) \
-  P(Ready##__VA_ARGS__)                   \
-  P(Closed##__VA_ARGS__)                  \
-  P(Finished##__VA_ARGS__)                \
-  P(Loaded##__VA_ARGS__)                  \
-  P(Released##__VA_ARGS__)                \
-  P(UserChoice##__VA_ARGS__)              \
-  P(PreloadResponse##__VA_ARGS__)
+#define SCRIPT_PROMISE_PROPERTIES(P, ...)   \
+  P(ScriptPromise, Ready##__VA_ARGS__)      \
+  P(ScriptPromise, Closed##__VA_ARGS__)     \
+  P(ScriptPromise, Finished##__VA_ARGS__)   \
+  P(ScriptPromise, Loaded##__VA_ARGS__)     \
+  P(ScriptPromise, Released##__VA_ARGS__)   \
+  P(ScriptPromise, UserChoice##__VA_ARGS__) \
+  P(ScriptPromise, PreloadResponse##__VA_ARGS__)
 
 #endif  // ScriptPromiseProperties_h

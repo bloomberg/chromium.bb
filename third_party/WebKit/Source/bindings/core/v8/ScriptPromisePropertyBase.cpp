@@ -40,9 +40,8 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world) {
   v8::Local<v8::Object> wrapper = ensureHolderWrapper(scriptState);
   DCHECK(wrapper->CreationContext() == context);
 
-  v8::Local<v8::Value> cachedPromise =
-      V8HiddenValue::getHiddenValue(scriptState, wrapper, promiseName());
-  if (!cachedPromise.IsEmpty() && cachedPromise->IsPromise())
+  v8::Local<v8::Value> cachedPromise = promiseSymbol().getOrUndefined(wrapper);
+  if (!cachedPromise->IsUndefined() && cachedPromise->IsPromise())
     return ScriptPromise(scriptState, cachedPromise);
 
   // Create and cache the Promise
@@ -50,13 +49,12 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world) {
   if (!v8::Promise::Resolver::New(context).ToLocal(&resolver))
     return ScriptPromise();
   v8::Local<v8::Promise> promise = resolver->GetPromise();
-  V8HiddenValue::setHiddenValue(scriptState, wrapper, promiseName(), promise);
+  promiseSymbol().set(wrapper, promise);
 
   switch (m_state) {
     case Pending:
       // Cache the resolver too
-      V8HiddenValue::setHiddenValue(scriptState, wrapper, resolverName(),
-                                    resolver);
+      resolverSymbol().set(wrapper, resolver);
       break;
     case Resolved:
     case Rejected:
@@ -90,12 +88,12 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState) {
     ScriptState* scriptState = ScriptState::from(wrapper->CreationContext());
     ScriptState::Scope scope(scriptState);
 
+    V8PrivateProperty::Symbol symbol = resolverSymbol();
+    DCHECK(symbol.hasValue(wrapper));
     v8::Local<v8::Promise::Resolver> resolver =
-        V8HiddenValue::getHiddenValue(scriptState, wrapper, resolverName())
-            .As<v8::Promise::Resolver>();
-    DCHECK(!resolver.IsEmpty());
+        symbol.getOrUndefined(wrapper).As<v8::Promise::Resolver>();
 
-    V8HiddenValue::deleteHiddenValue(scriptState, wrapper, resolverName());
+    symbol.deleteProperty(wrapper);
     resolveOrRejectInternal(resolver);
     ++i;
   }
@@ -163,9 +161,9 @@ void ScriptPromisePropertyBase::clearWrappers() {
        i != m_wrappers.end(); ++i) {
     v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
     if (!wrapper.IsEmpty()) {
-      ScriptState* scriptState = ScriptState::from(wrapper->CreationContext());
-      V8HiddenValue::deleteHiddenValue(scriptState, wrapper, resolverName());
-      V8HiddenValue::deleteHiddenValue(scriptState, wrapper, promiseName());
+      resolverSymbol().deleteProperty(wrapper);
+      // TODO(peria): Use deleteProperty() if http://crbug.com/v8/6227 is fixed.
+      promiseSymbol().set(wrapper, v8::Undefined(m_isolate));
     }
   }
   m_wrappers.clear();
@@ -182,32 +180,34 @@ void ScriptPromisePropertyBase::checkWrappers() {
   }
 }
 
-v8::Local<v8::String> ScriptPromisePropertyBase::promiseName() {
+V8PrivateProperty::Symbol ScriptPromisePropertyBase::promiseSymbol() {
   switch (m_name) {
-#define P(Name) \
-  case Name:    \
-    return V8HiddenValue::Name##Promise(m_isolate);
+#define P(Interface, Name)                                     \
+  case Name:                                                   \
+    return V8PrivateProperty::V8_PRIVATE_PROPERTY_GETTER_NAME( \
+        Interface, Name##Promise)(m_isolate);
 
     SCRIPT_PROMISE_PROPERTIES(P)
 
 #undef P
   }
-  ASSERT_NOT_REACHED();
-  return v8::Local<v8::String>();
+  NOTREACHED();
+  return V8PrivateProperty::getSymbol(m_isolate, "noPromise");
 }
 
-v8::Local<v8::String> ScriptPromisePropertyBase::resolverName() {
+V8PrivateProperty::Symbol ScriptPromisePropertyBase::resolverSymbol() {
   switch (m_name) {
-#define P(Name) \
-  case Name:    \
-    return V8HiddenValue::Name##Resolver(m_isolate);
+#define P(Interface, Name)                                     \
+  case Name:                                                   \
+    return V8PrivateProperty::V8_PRIVATE_PROPERTY_GETTER_NAME( \
+        Interface, Name##Resolver)(m_isolate);
 
     SCRIPT_PROMISE_PROPERTIES(P)
 
 #undef P
   }
-  ASSERT_NOT_REACHED();
-  return v8::Local<v8::String>();
+  NOTREACHED();
+  return V8PrivateProperty::getSymbol(m_isolate, "noResolver");
 }
 
 DEFINE_TRACE(ScriptPromisePropertyBase) {

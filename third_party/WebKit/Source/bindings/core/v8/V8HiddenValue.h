@@ -17,26 +17,9 @@
 namespace blink {
 
 class ScriptState;
-class ScriptWrappable;
-
-#define V8_HIDDEN_VALUES(V)                  \
-  SCRIPT_PROMISE_PROPERTIES(V, Promise)      \
-  SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 
 class CORE_EXPORT V8HiddenValue {
-  USING_FAST_MALLOC(V8HiddenValue);
-  WTF_MAKE_NONCOPYABLE(V8HiddenValue);
-
  public:
-  static std::unique_ptr<V8HiddenValue> create() {
-    return WTF::wrapUnique(new V8HiddenValue());
-  }
-
-#define V8_DECLARE_METHOD(name) \
-  static v8::Local<v8::String> name(v8::Isolate* isolate);
-  V8_HIDDEN_VALUES(V8_DECLARE_METHOD);
-#undef V8_DECLARE_METHOD
-
   static v8::Local<v8::Value> getHiddenValue(ScriptState*,
                                              v8::Local<v8::Object>,
                                              v8::Local<v8::String>);
@@ -47,17 +30,6 @@ class CORE_EXPORT V8HiddenValue {
   static bool deleteHiddenValue(ScriptState*,
                                 v8::Local<v8::Object>,
                                 v8::Local<v8::String>);
-  static v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(
-      ScriptState*,
-      ScriptWrappable*,
-      v8::Local<v8::String>);
-
- private:
-  V8HiddenValue() {}
-
-#define V8_DECLARE_FIELD(name) ScopedPersistent<v8::String> m_##name;
-  V8_HIDDEN_VALUES(V8_DECLARE_FIELD);
-#undef V8_DECLARE_FIELD
 };
 
 }  // namespace blink

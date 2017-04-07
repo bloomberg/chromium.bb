@@ -431,6 +431,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext) {
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset) {
+  ScriptState::Scope scope(mainScriptState());
+
   ScriptPromise oldPromise, newPromise;
   ScriptValue oldActual, newActual;
   GarbageCollectedScriptWrappable* oldValue =

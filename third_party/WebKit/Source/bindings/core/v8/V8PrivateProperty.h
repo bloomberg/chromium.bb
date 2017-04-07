@@ -60,7 +60,9 @@ class ScriptWrappable;
   X(SameObject, NotificationData)                     \
   X(SameObject, NotificationVibrate)                  \
   X(SameObject, PerformanceLongTaskTimingAttribution) \
-  X(V8NodeFilterCondition, Filter)
+  X(V8NodeFilterCondition, Filter)                    \
+  SCRIPT_PROMISE_PROPERTIES(X, Promise)               \
+  SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
