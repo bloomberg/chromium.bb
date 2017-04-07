@@ -14,7 +14,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)
@@ -113,7 +112,7 @@ class WebRtcAudioDebugRecordingsBrowserTest
 // there's never a webrtc-internals page opened at all since that's not needed.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordings) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+  if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
@@ -197,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // should be created.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+  if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
@@ -248,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // Same test as CallWithAudioDebugRecordings, but does two parallel calls.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_TwoCallsWithAudioDebugRecordings) {
-  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+  if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }

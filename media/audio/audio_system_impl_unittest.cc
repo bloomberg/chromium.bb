@@ -98,6 +98,11 @@ class AudioSystemImplTest : public testing::TestWithParam<bool> {
     HasInputDevicesCallback(result);
   }
 
+  void OnHasOutputDevices(bool result) {
+    EXPECT_TRUE(thread_checker_.CalledOnValidThread());
+    HasOutputDevicesCallback(result);
+  }
+
   void OnGetDeviceDescriptions(
       const AudioDeviceDescriptions& expected_descriptions,
       AudioDeviceDescriptions descriptions) {
@@ -124,6 +129,7 @@ class AudioSystemImplTest : public testing::TestWithParam<bool> {
   // Mocks to verify that AudioSystem replied with an expected callback.
   MOCK_METHOD0(AudioParametersReceived, void(void));
   MOCK_METHOD1(HasInputDevicesCallback, void(bool));
+  MOCK_METHOD1(HasOutputDevicesCallback, void(bool));
   MOCK_METHOD0(DeviceDescriptionsReceived, void(void));
 
  protected:
@@ -205,6 +211,21 @@ TEST_P(AudioSystemImplTest, HasNoInputDevices) {
   EXPECT_CALL(*this, HasInputDevicesCallback(false));
   audio_system_->HasInputDevices(base::Bind(
       &AudioSystemImplTest::OnHasInputDevices, base::Unretained(this)));
+  WaitForCallback();
+}
+
+TEST_P(AudioSystemImplTest, HasOutputDevices) {
+  EXPECT_CALL(*this, HasOutputDevicesCallback(true));
+  audio_system_->HasOutputDevices(base::Bind(
+      &AudioSystemImplTest::OnHasOutputDevices, base::Unretained(this)));
+  WaitForCallback();
+}
+
+TEST_P(AudioSystemImplTest, HasNoOutputDevices) {
+  audio_manager_->SetHasOutputDevices(false);
+  EXPECT_CALL(*this, HasOutputDevicesCallback(false));
+  audio_system_->HasOutputDevices(base::Bind(
+      &AudioSystemImplTest::OnHasOutputDevices, base::Unretained(this)));
   WaitForCallback();
 }
 

@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -105,6 +106,20 @@ void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
        "optional: []}});",
        function_name, min_width, max_width, min_height, max_height,
        min_frame_rate, max_frame_rate);
+}
+
+// static
+bool WebRtcContentBrowserTestBase::HasAudioOutputDevices() {
+  bool has_devices = false;
+  base::RunLoop run_loop;
+  media::AudioSystem::Get()->HasOutputDevices(base::Bind(
+      [](base::Closure finished_callback, bool* result, bool received) {
+        *result = received;
+        finished_callback.Run();
+      },
+      base::Passed(run_loop.QuitClosure()), &has_devices));
+  run_loop.Run();
+  return has_devices;
 }
 
 }  // namespace content

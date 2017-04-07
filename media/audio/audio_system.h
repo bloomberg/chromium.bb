@@ -56,6 +56,8 @@ class MEDIA_EXPORT AudioSystem {
 
   virtual void HasInputDevices(OnBoolCallback on_has_devices_cb) const = 0;
 
+  virtual void HasOutputDevices(OnBoolCallback on_has_devices_cb) const = 0;
+
   // Replies with device descriptions of input audio devices if |for_input| is
   // true, and of output audio devices otherwise.
   virtual void GetDeviceDescriptions(

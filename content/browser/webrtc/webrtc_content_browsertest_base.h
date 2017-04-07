@@ -45,6 +45,9 @@ class WebRtcContentBrowserTestBase : public ContentBrowserTest {
                                        int max_height,
                                        int min_frame_rate,
                                        int max_frame_rate) const;
+
+  // Synchronously checks if the system has audio output devices.
+  static bool HasAudioOutputDevices();
 };
 
 }  // namespace content

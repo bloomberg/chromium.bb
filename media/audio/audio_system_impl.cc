@@ -121,6 +121,20 @@ void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
       std::move(on_has_devices_cb));
 }
 
+void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) const {
+  if (GetTaskRunner()->BelongsToCurrentThread()) {
+    GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(on_has_devices_cb, audio_manager_->HasAudioOutputDevices()));
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      GetTaskRunner(), FROM_HERE,
+      base::Bind(&AudioManager::HasAudioOutputDevices,
+                 base::Unretained(audio_manager_)),
+      std::move(on_has_devices_cb));
+}
+
 void AudioSystemImpl::GetDeviceDescriptions(
     OnDeviceDescriptionsCallback on_descriptions_cp,
     bool for_input) {
