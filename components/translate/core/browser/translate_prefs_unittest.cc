@@ -16,12 +16,18 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 const char kTestLanguage[] = "en";
+
+#if defined(OS_CHROMEOS)
+const char kPreferredLanguagesPref[] = "settings.language.preferred_languages";
+#else
+const char* kPreferredLanguagesPref = nullptr;
+#endif
+const char kAcceptLanguagesPref[] = "intl.accept_languages";
 
 }  // namespace
 
@@ -31,17 +37,19 @@ class TranslatePrefTest : public testing::Test {
  protected:
   TranslatePrefTest()
       : prefs_(new sync_preferences::TestingPrefServiceSyncable()) {
-#if defined(OS_CHROMEOS)
-    const char* preferred_languages_prefs =
-        "settings.language.preferred_languages";
-#else
-    const char* preferred_languages_prefs = NULL;
-#endif
     translate_prefs_.reset(new translate::TranslatePrefs(
-        prefs_.get(), "intl.accept_languages", preferred_languages_prefs));
+        prefs_.get(), kAcceptLanguagesPref, kPreferredLanguagesPref));
     TranslatePrefs::RegisterProfilePrefs(prefs_->registry());
     now_ = base::Time::Now();
     two_days_ago_ = now_ - base::TimeDelta::FromDays(2);
+  }
+
+  void SetUp() override {
+    prefs_->registry()->RegisterStringPref(kAcceptLanguagesPref, std::string());
+#if defined(OS_CHROMEOS)
+    prefs_->registry()->RegisterStringPref(kPreferredLanguagesPref,
+                                           std::string());
+#endif
   }
 
   void SetLastDeniedTime(const std::string& language, base::Time time) {
@@ -210,6 +218,23 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_SlidingWindow) {
   update.AddDenialTime(now_);
   EXPECT_EQ(update.GetOldestDenialTime(),
             now_ - base::TimeDelta::FromMinutes(2));
+}
+
+TEST_F(TranslatePrefTest, UpdateLanguageList) {
+  // Test with basic set of languages (no country codes).
+  std::vector<std::string> languages{"en", "ja"};
+  translate_prefs_->UpdateLanguageList(languages);
+  EXPECT_EQ("en,ja", prefs_->GetString(kAcceptLanguagesPref));
+
+  // Test with languages that have country codes. Expect accepted languages both
+  // with and without a country code. (See documentation for
+  // ExpandLanguageCodes.)
+  languages = {"en-US", "ja", "en-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ("en-US,ja,en-CA", prefs_->GetString(kPreferredLanguagesPref));
+#endif
+  EXPECT_EQ("en-US,en,ja,en-CA", prefs_->GetString(kAcceptLanguagesPref));
 }
 
 TEST_F(TranslatePrefTest, ULPPrefs) {
