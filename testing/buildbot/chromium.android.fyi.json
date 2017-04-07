@@ -225,6 +225,7 @@
   "Lollipop Low-end Tester": {
     "gtest_tests": [
       {
+        "expiration": 14400,
         "override_compile_targets": [
           "android_webview_test_apk"
         ],
@@ -243,6 +244,7 @@
         "test": "android_webview_test_apk"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "android_webview_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -257,6 +259,7 @@
         "test": "android_webview_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -271,6 +274,7 @@
         "test": "base_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "blink_heap_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -285,6 +289,7 @@
         "test": "blink_heap_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "breakpad_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -299,6 +304,7 @@
         "test": "breakpad_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "capture_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -313,6 +319,7 @@
         "test": "capture_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "cc_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -327,6 +334,7 @@
         "test": "cc_unittests"
       },
       {
+        "expiration": 14400,
         "override_compile_targets": [
           "chrome_public_test_apk"
         ],
@@ -340,11 +348,12 @@
               "device_type": "sprout"
             }
           ],
-          "shards": 3
+          "shards": 6
         },
         "test": "chrome_public_test_apk"
       },
       {
+        "expiration": 14400,
         "override_compile_targets": [
           "chrome_sync_shell_test_apk"
         ],
@@ -357,12 +366,12 @@
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "components_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -377,6 +386,7 @@
         "test": "components_browsertests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "components_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -391,6 +401,7 @@
         "test": "components_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -401,11 +412,12 @@
               "device_type": "sprout"
             }
           ],
-          "shards": 2
+          "shards": 4
         },
         "test": "content_browsertests"
       },
       {
+        "expiration": 14400,
         "override_compile_targets": [
           "content_shell_test_apk"
         ],
@@ -418,12 +430,12 @@
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "content_shell_test_apk"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -438,6 +450,7 @@
         "test": "content_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "device_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -452,6 +465,7 @@
         "test": "device_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "events_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -466,6 +480,7 @@
         "test": "events_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -480,6 +495,7 @@
         "test": "gl_tests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -494,6 +510,7 @@
         "test": "gl_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "gpu_ipc_service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -508,6 +525,7 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -522,6 +540,7 @@
         "test": "gpu_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "ipc_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -536,6 +555,7 @@
         "test": "ipc_tests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "media_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -550,6 +570,7 @@
         "test": "media_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "net_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -564,6 +585,7 @@
         "test": "net_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "sandbox_linux_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -578,6 +600,7 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "sql_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -592,6 +615,7 @@
         "test": "sql_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "storage_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -606,6 +630,7 @@
         "test": "storage_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -620,6 +645,7 @@
         "test": "ui_android_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "ui_base_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -634,6 +660,7 @@
         "test": "ui_base_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "ui_touch_selection_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -648,6 +675,7 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "expiration": 14400,
         "override_isolate_target": "unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
