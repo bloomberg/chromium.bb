@@ -3420,6 +3420,8 @@ TEST_P(ColorTransformPixelTest, Basic) {
   std::vector<uint8_t> input_colors(4 * rect.width() * rect.height(), 0);
   std::vector<SkColor> expected_output_colors(rect.width() * rect.height());
 
+  renderer_->DisableColorChecksForTesting();
+
   // Set the input data to be:
   //   Row 0: Gradient of red from 0 to 255
   //   Row 1: Gradient of green from 0 to 255

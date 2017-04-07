@@ -93,6 +93,10 @@ class CC_EXPORT DirectRenderer {
     DCLayerOverlayList dc_layer_overlay_list;
   };
 
+  void DisableColorChecksForTesting() {
+    disable_color_checks_for_testing_ = true;
+  }
+
  protected:
   friend class BspWalkActionDrawPolygon;
 
@@ -203,6 +207,7 @@ class CC_EXPORT DirectRenderer {
   RenderPassFilterList render_pass_background_filters_;
 
   bool visible_ = false;
+  bool disable_color_checks_for_testing_ = false;
 
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target

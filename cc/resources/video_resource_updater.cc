@@ -316,16 +316,17 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   const bool software_compositor = context_provider_ == NULL;
 
   ResourceFormat output_resource_format;
+  gfx::ColorSpace output_color_space = video_frame->ColorSpace();
   if (input_frame_format == media::PIXEL_FORMAT_Y16) {
     // Unable to display directly as yuv planes so convert it to RGBA for
     // compositing.
     output_resource_format = RGBA_8888;
+    output_color_space = output_color_space.GetAsFullRangeRGB();
   } else {
     // Can be composited directly from yuv planes.
     output_resource_format =
         resource_provider_->YuvResourceFormat(bits_per_channel);
   }
-  gfx::ColorSpace output_color_space = video_frame->ColorSpace();
 
   // If GPU compositing is enabled, but the output resource format
   // returned by the resource provider is RGBA_8888, then a GPU driver
@@ -341,7 +342,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // Obviously, this is suboptimal and should be addressed once ubercompositor
   // starts shaping up.
   if (software_compositor || texture_needs_rgb_conversion) {
-    output_color_space = output_color_space.GetAsFullRangeRGB();
     output_resource_format = kRGBResourceFormat;
     output_plane_count = 1;
     bits_per_channel = 8;
@@ -636,7 +636,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 << media::VideoPixelFormatToString(video_frame->format());
     return external_resources;
   }
-  if (external_resources.type == VideoFrameExternalResources::YUV_RESOURCE)
+  if (external_resources.type == VideoFrameExternalResources::RGB_RESOURCE)
     resource_color_space = resource_color_space.GetAsFullRangeRGB();
 
   const size_t num_planes = media::VideoFrame::NumPlanes(video_frame->format());

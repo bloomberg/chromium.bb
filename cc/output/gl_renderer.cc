@@ -3003,19 +3003,19 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key,
                                const gfx::ColorSpace& src_color_space) {
+  // The source color space for non-YUV draw quads should always be full-range
+  // RGB.
+  if (!disable_color_checks_for_testing_)
+    DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
+
   // Ensure that we do not apply any color conversion unless the color correct
   // rendering flag has been specified. This is because media mailboxes will
   // provide YUV color spaces despite YUV to RGB conversion already having been
   // performed.
-  // TODO(ccameron): Ensure that media mailboxes be accurate.
-  // https://crbug.com/699243
-  // The source color space for non-YUV draw quads should always be full-range
-  // RGB.
   if (settings_->enable_color_correct_rendering) {
     SetUseProgram(program_key, src_color_space,
                   current_frame()->current_render_pass->color_space);
   } else {
-    DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
     SetUseProgram(program_key, gfx::ColorSpace(), gfx::ColorSpace());
   }
 }
