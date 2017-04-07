@@ -21,3 +21,17 @@ source_set("browser") {
     "//media/mojo/interfaces",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "media_drm_storage_impl_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//media/mojo/services",
+    "//testing/gtest",
+  ]
+}
