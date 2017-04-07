@@ -747,9 +747,6 @@ mojom("android_mojo_bindings") {
   visibility_blink = [ ":mojo_bindings_blink" ]
   sources = [
     "platform/modules/document_metadata/copyless_paste.mojom",
-
-    # The following file will be removed once the downstream is updated.
-    "platform/modules/document_metadata/copyless_paste-deprecated.mojom",
     "platform/modules/installation/installation.mojom",
     "platform/modules/installedapp/installed_app_provider.mojom",
     "platform/modules/installedapp/related_application.mojom",

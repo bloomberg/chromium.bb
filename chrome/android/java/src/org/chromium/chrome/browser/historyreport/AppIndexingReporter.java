@@ -29,17 +29,6 @@ public class AppIndexingReporter {
     }
 
     /**
-     * Reports provided entity to on-device index.
-     * Base class does not implement any reporting, and call is a no-op. Child classes should
-     * implement this functionality.
-     *
-     * Deprecated, to be removed in follow-up cl, after downstream change.
-     */
-    public void reportWebPage(org.chromium.blink.mojom.WebPage webpage) {
-        // Overriden by private class. Base class does nothing.
-    }
-
-    /**
      * Clears history of reported entities.
      * Currently, we do not support clearing only a subset of history. Base class does not implement
      * any reporting, and call is a no-op. Child classes should implement this functionality.
