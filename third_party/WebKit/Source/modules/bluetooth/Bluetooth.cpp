@@ -153,7 +153,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
                                        ExceptionState& exceptionState) {
   ExecutionContext* context = scriptState->getExecutionContext();
 
-  // If the incumbent settings object is not a secure context, reject promise
+  // If the Relevant settings object is not a secure context, reject promise
   // with a SecurityError and abort these steps.
   String errorMessage;
   if (!context->isSecureContext(errorMessage)) {
