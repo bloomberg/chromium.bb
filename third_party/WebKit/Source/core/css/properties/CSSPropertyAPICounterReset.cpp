@@ -4,4 +4,15 @@
 
 #include "core/css/properties/CSSPropertyAPICounterReset.h"
 
-namespace blink {}  // namespace blink
+#include "core/css/properties/CSSPropertyCounterUtils.h"
+
+namespace blink {
+
+const CSSValue* CSSPropertyAPICounterReset::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext&) {
+  return CSSPropertyCounterUtils::consumeCounter(
+      range, CSSPropertyCounterUtils::kResetDefaultValue);
+}
+
+}  // namespace blink

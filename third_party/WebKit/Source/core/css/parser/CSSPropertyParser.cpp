@@ -43,7 +43,6 @@
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
-#include "core/css/properties/CSSPropertyCounterUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
@@ -1846,9 +1845,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return CSSPropertyFontUtils::consumeFontFeatureSettings(m_range);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::consumeFontWeight(m_range);
-    case CSSPropertyCounterReset:
-      return CSSPropertyCounterUtils::consumeCounter(
-          m_range, CSSPropertyCounterUtils::kResetDefaultValue);
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(

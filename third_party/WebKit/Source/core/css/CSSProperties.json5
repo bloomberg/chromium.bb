@@ -923,6 +923,7 @@
     {
       name: "counter-reset",
       api_class: true,
+      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
