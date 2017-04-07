@@ -8,6 +8,7 @@
 #include "services/ui/ws/platform_display_default.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/server_window.h"
+#include "ui/base/cursor/image_cursors.h"
 
 namespace ui {
 namespace ws {
@@ -22,7 +23,13 @@ std::unique_ptr<PlatformDisplay> PlatformDisplay::Create(
   if (factory_)
     return factory_->CreatePlatformDisplay(root, metrics);
 
-  return base::MakeUnique<PlatformDisplayDefault>(root, metrics);
+#if defined(OS_ANDROID)
+  return base::MakeUnique<PlatformDisplayDefault>(root, metrics,
+                                                  nullptr /* image_cursors */);
+#else
+  return base::MakeUnique<PlatformDisplayDefault>(
+      root, metrics, base::MakeUnique<ImageCursors>());
+#endif
 }
 
 }  // namespace ws

@@ -37,10 +37,7 @@ void InputMethodBridge::ProcessKeyEvent(
     input_method_chromeos_->DispatchKeyEvent(
         key_event, base::MakeUnique<base::Callback<void(bool)>>(callback));
   } else {
-    // On Linux (include ChromeOS), the mus emulates the WM_CHAR generation
-    // behaviour of Windows. But for ChromeOS, we don't expect those char
-    // events, so we filter them out.
-    const bool handled = true;
+    const bool handled = false;
     callback.Run(handled);
   }
 }

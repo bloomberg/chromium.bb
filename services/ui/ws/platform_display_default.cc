@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/platform_display_default.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"
@@ -31,14 +33,12 @@ namespace ws {
 
 PlatformDisplayDefault::PlatformDisplayDefault(
     ServerWindow* root_window,
-    const display::ViewportMetrics& metrics)
+    const display::ViewportMetrics& metrics,
+    std::unique_ptr<ImageCursors> image_cursors)
     : root_window_(root_window),
-#if !defined(OS_ANDROID)
-      image_cursors_(new ImageCursors),
-#endif
+      image_cursors_(std::move(image_cursors)),
       metrics_(metrics),
-      widget_(gfx::kNullAcceleratedWidget) {
-}
+      widget_(gfx::kNullAcceleratedWidget) {}
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
   // Don't notify the delegate from the destructor.
@@ -56,6 +56,7 @@ EventSink* PlatformDisplayDefault::GetEventSink() {
 }
 
 void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
+  DCHECK(delegate);
   delegate_ = delegate;
 
   const gfx::Rect& bounds = metrics_.bounds_in_pixels;
@@ -70,16 +71,16 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   platform_window_->SetBounds(bounds);
 #elif defined(USE_OZONE)
   platform_window_ =
-      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
+      delegate_->GetOzonePlatform()->CreatePlatformWindow(this, bounds);
 #else
   NOTREACHED() << "Unsupported platform";
 #endif
 
   platform_window_->Show();
-#if !defined(OS_ANDROID)
-  image_cursors_->SetDisplay(delegate_->GetDisplay(),
-                             metrics_.device_scale_factor);
-#endif
+  if (image_cursors_) {
+    image_cursors_->SetDisplay(delegate_->GetDisplay(),
+                               metrics_.device_scale_factor);
+  }
 }
 
 void PlatformDisplayDefault::SetViewportSize(const gfx::Size& size) {
@@ -99,7 +100,9 @@ void PlatformDisplayDefault::ReleaseCapture() {
 }
 
 void PlatformDisplayDefault::SetCursorById(mojom::CursorType cursor_id) {
-#if !defined(OS_ANDROID)
+  if (!image_cursors_)
+    return;
+
   // TODO(erg): This still isn't sufficient, and will only use native cursors
   // that chrome would use, not custom image cursors. For that, we should
   // delegate to the window manager to load images from resource packs.
@@ -108,7 +111,6 @@ void PlatformDisplayDefault::SetCursorById(mojom::CursorType cursor_id) {
   ui::Cursor cursor(static_cast<int32_t>(cursor_id));
   image_cursors_->SetPlatformCursor(&cursor);
   platform_window_->SetCursor(cursor.platform());
-#endif
 }
 
 void PlatformDisplayDefault::UpdateTextInputState(
@@ -193,32 +195,6 @@ void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
   } else {
     SendEventToSink(event);
   }
-
-#if defined(USE_X11) || defined(USE_OZONE)
-  // We want to emulate the WM_CHAR generation behaviour of Windows.
-  //
-  // On Linux, we've previously inserted characters by having
-  // InputMethodAuraLinux take all key down events and send a character event
-  // to the TextInputClient. This causes a mismatch in code that has to be
-  // shared between Windows and Linux, including blink code. Now that we're
-  // trying to have one way of doing things, we need to standardize on and
-  // emulate Windows character events.
-  //
-  // This is equivalent to what we're doing in the current Linux port, but
-  // done once instead of done multiple times in different places.
-  if (event->type() == ui::ET_KEY_PRESSED) {
-    ui::KeyEvent* key_press_event = event->AsKeyEvent();
-    ui::KeyEvent char_event(key_press_event->GetCharacter(),
-                            key_press_event->key_code(),
-                            key_press_event->flags());
-    // We don't check that GetCharacter() is equal because changing a key event
-    // with an accelerator to a character event can change the character, for
-    // example, from 'M' to '^M'.
-    DCHECK_EQ(key_press_event->key_code(), char_event.key_code());
-    DCHECK_EQ(key_press_event->flags(), char_event.flags());
-    SendEventToSink(&char_event);
-  }
-#endif
 }
 
 void PlatformDisplayDefault::OnCloseRequest() {

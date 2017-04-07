@@ -29,6 +29,10 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/screen.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace ui {
 namespace ws {
 
@@ -274,6 +278,14 @@ void Display::OnNativeCaptureLost() {
   WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
   if (display_root)
     display_root->window_manager_state()->SetCapture(nullptr, kInvalidClientId);
+}
+
+OzonePlatform* Display::GetOzonePlatform() {
+#if defined(USE_OZONE)
+  return OzonePlatform::GetInstance();
+#else
+  return nullptr;
+#endif
 }
 
 void Display::OnViewportMetricsChanged(

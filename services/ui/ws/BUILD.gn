@@ -262,6 +262,12 @@ service_test("mus_ws_unittests") {
     sources += [ "window_manager_client_unittest.cc" ]
   }
 
+  # TODO(jamescook): Run this test on non-ozone platforms. This will require
+  # initializing all the platform-specific windowing support.
+  if (use_ozone) {
+    sources += [ "platform_display_default_unittest.cc" ]
+  }
+
   catalog = ":mus_ws_unittests_catalog"
 
   deps = [

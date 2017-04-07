@@ -29,8 +29,10 @@ namespace ws {
 class PlatformDisplayDefault : public PlatformDisplay,
                                public ui::PlatformWindowDelegate {
  public:
+  // |image_cursors| may be null, for example on Android or in tests.
   PlatformDisplayDefault(ServerWindow* root_window,
-                         const display::ViewportMetrics& metrics);
+                         const display::ViewportMetrics& metrics,
+                         std::unique_ptr<ImageCursors> image_cursors);
   ~PlatformDisplayDefault() override;
 
   // EventSource::
@@ -72,9 +74,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
 
   ServerWindow* root_window_;
 
-#if !defined(OS_ANDROID)
   std::unique_ptr<ui::ImageCursors> image_cursors_;
-#endif
 
   PlatformDisplayDelegate* delegate_ = nullptr;
   std::unique_ptr<FrameGenerator> frame_generator_;

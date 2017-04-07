@@ -96,6 +96,10 @@ Service::~Service() {
   // WindowServer (or more correctly its Displays) may have state that needs to
   // be destroyed before GpuState as well.
   window_server_.reset();
+
+#if defined(USE_OZONE)
+  OzonePlatform::Shutdown();
+#endif
 }
 
 void Service::InitializeResources(service_manager::Connector* connector) {

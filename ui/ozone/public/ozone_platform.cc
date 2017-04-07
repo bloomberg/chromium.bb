@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
+#include "ui/ozone/public/ozone_platform.h"
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/ozone/platform_object.h"
 #include "ui/ozone/platform_selection.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -18,7 +17,7 @@ namespace {
 bool g_platform_initialized_ui = false;
 bool g_platform_initialized_gpu = false;
 
-}
+}  // namespace
 
 OzonePlatform::OzonePlatform() {
   DCHECK(!instance_) << "There should only be a single OzonePlatform.";
@@ -60,6 +59,12 @@ void OzonePlatform::InitializeForGPU(const InitParams& args) {
 }
 
 // static
+void OzonePlatform::Shutdown() {
+  delete instance_;
+  // Destructor resets pointer.
+}
+
+// static
 OzonePlatform* OzonePlatform::GetInstance() {
   DCHECK(instance_) << "OzonePlatform is not initialized";
   return instance_;
@@ -83,7 +88,7 @@ OzonePlatform* OzonePlatform::EnsureInstance() {
 }
 
 // static
-OzonePlatform* OzonePlatform::instance_;
+OzonePlatform* OzonePlatform::instance_ = nullptr;
 
 IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {
   return nullptr;
