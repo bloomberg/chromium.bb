@@ -1491,13 +1491,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 // The high level key presses execute the following: Select the first text
 // field, invoke the autofill popup list, select the first profile within the
 // list, and commit to the profile to populate the form.
-// Flakily times out on windows. http://crbug.com/390564
-// Flaky on the official cros-trunk crbug.com/516052
-#if defined(OS_WIN) || defined(OFFICIAL_BUILD)
+// Flakily times out on windows (https://crbug.com/390564), and on CrOS
+// (https://crbug.com/516052).
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_ComparePhoneNumbers DISABLED_ComparePhoneNumbers
 #else
 #define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
-#endif  // defined(OS_WIN) || defined(OFFICIAL_BUILD)
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   AutofillProfile profile;
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
