@@ -56,6 +56,11 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       bool firstLine,
       LineDirectionMode,
       LinePositionMode = PositionOnContainingLine) const override;
+
+  static const StyleContentAlignmentData& contentAlignmentNormalBehavior();
+  static int synthesizedBaselineFromContentBox(const LayoutBox&,
+                                               LineDirectionMode);
+
   int firstLineBoxBaseline() const override;
   int inlineBlockBaseline(LineDirectionMode) const override;
   IntSize originAdjustmentForScrollbars() const override;

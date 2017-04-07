@@ -5,12 +5,13 @@
 #ifndef GridTrackSizingAlgorithm_h
 #define GridTrackSizingAlgorithm_h
 
+#include <memory>
+#include "core/layout/LayoutBox.h"
 #include "core/style/GridPositionsResolver.h"
 #include "core/style/GridTrackSize.h"
 #include "platform/LayoutUnit.h"
 #include "wtf/HashSet.h"
 #include "wtf/Optional.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,6 +20,8 @@ static const int infinity = -1;
 class Grid;
 class GridTrackSizingAlgorithmStrategy;
 class LayoutGrid;
+
+enum MarginDirection;
 
 enum SizingOperation { TrackSizing, IntrinsicSizeComputation };
 
@@ -270,6 +273,29 @@ class GridTrackSizingAlgorithmStrategy {
   void distributeSpaceToTracks(Vector<GridTrack*>& tracks,
                                LayoutUnit& availableLogicalSpace) const;
   const LayoutGrid* layoutGrid() const { return m_algorithm.m_layoutGrid; }
+
+  // Helper functions
+  static LayoutUnit computeMarginLogicalSizeForChild(
+      MarginDirection forDirection,
+      const LayoutGrid*,
+      const LayoutBox& child);
+  static bool hasOverrideContainingBlockContentSizeForChild(
+      const LayoutBox& child,
+      GridTrackSizingDirection);
+  static LayoutUnit overrideContainingBlockContentSizeForChild(
+      const LayoutBox& child,
+      GridTrackSizingDirection);
+  static bool shouldClearOverrideContainingBlockContentSizeForChild(
+      const LayoutBox& child,
+      GridTrackSizingDirection);
+  static void setOverrideContainingBlockContentSizeForChild(
+      LayoutBox& child,
+      GridTrackSizingDirection,
+      LayoutUnit size);
+  static GridTrackSizingDirection flowAwareDirectionForChild(
+      const LayoutGrid*,
+      const LayoutBox& child,
+      GridTrackSizingDirection);
 
   GridTrackSizingAlgorithm& m_algorithm;
 };

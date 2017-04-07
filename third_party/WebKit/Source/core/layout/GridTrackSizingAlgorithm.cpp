@@ -127,9 +127,10 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
 };
 
 // TODO(svillar): Repeated in LayoutGrid.
-static LayoutUnit computeMarginLogicalSizeForChild(MarginDirection forDirection,
-                                                   const LayoutGrid* grid,
-                                                   const LayoutBox& child) {
+LayoutUnit GridTrackSizingAlgorithmStrategy::computeMarginLogicalSizeForChild(
+    MarginDirection forDirection,
+    const LayoutGrid* grid,
+    const LayoutBox& child) {
   if (!child.styleRef().hasMargin())
     return LayoutUnit();
 
@@ -149,15 +150,17 @@ static LayoutUnit computeMarginLogicalSizeForChild(MarginDirection forDirection,
   return marginStart + marginEnd;
 }
 
-static bool hasOverrideContainingBlockContentSizeForChild(
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) {
+bool GridTrackSizingAlgorithmStrategy::
+    hasOverrideContainingBlockContentSizeForChild(
+        const LayoutBox& child,
+        GridTrackSizingDirection direction) {
   return direction == ForColumns
              ? child.hasOverrideContainingBlockLogicalWidth()
              : child.hasOverrideContainingBlockLogicalHeight();
 }
 
-static LayoutUnit overrideContainingBlockContentSizeForChild(
+LayoutUnit
+GridTrackSizingAlgorithmStrategy::overrideContainingBlockContentSizeForChild(
     const LayoutBox& child,
     GridTrackSizingDirection direction) {
   return direction == ForColumns
@@ -165,9 +168,10 @@ static LayoutUnit overrideContainingBlockContentSizeForChild(
              : child.overrideContainingBlockContentLogicalHeight();
 }
 
-static bool shouldClearOverrideContainingBlockContentSizeForChild(
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) {
+bool GridTrackSizingAlgorithmStrategy::
+    shouldClearOverrideContainingBlockContentSizeForChild(
+        const LayoutBox& child,
+        GridTrackSizingDirection direction) {
   if (direction == ForColumns) {
     return child.hasRelativeLogicalWidth() ||
            child.styleRef().logicalWidth().isIntrinsicOrAuto();
@@ -176,17 +180,19 @@ static bool shouldClearOverrideContainingBlockContentSizeForChild(
          child.styleRef().logicalHeight().isIntrinsicOrAuto();
 }
 
-static void setOverrideContainingBlockContentSizeForChild(
-    LayoutBox& child,
-    GridTrackSizingDirection direction,
-    LayoutUnit size) {
+void GridTrackSizingAlgorithmStrategy::
+    setOverrideContainingBlockContentSizeForChild(
+        LayoutBox& child,
+        GridTrackSizingDirection direction,
+        LayoutUnit size) {
   if (direction == ForColumns)
     child.setOverrideContainingBlockContentLogicalWidth(size);
   else
     child.setOverrideContainingBlockContentLogicalHeight(size);
 }
 
-static GridTrackSizingDirection flowAwareDirectionForChild(
+GridTrackSizingDirection
+GridTrackSizingAlgorithmStrategy::flowAwareDirectionForChild(
     const LayoutGrid* layoutGrid,
     const LayoutBox& child,
     GridTrackSizingDirection direction) {

@@ -480,7 +480,7 @@ LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(
   return LayoutUnit();
 }
 
-static LayoutUnit overrideContainingBlockContentSizeForChild(
+LayoutUnit LayoutGrid::overrideContainingBlockContentSizeForChild(
     const LayoutBox& child,
     GridTrackSizingDirection direction) {
   return direction == ForColumns
@@ -1038,7 +1038,7 @@ Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(
   return tracks;
 }
 
-static const StyleContentAlignmentData& contentAlignmentNormalBehavior() {
+const StyleContentAlignmentData& LayoutGrid::contentAlignmentNormalBehavior() {
   static const StyleContentAlignmentData normalBehavior = {
       ContentPositionNormal, ContentDistributionStretch};
   return normalBehavior;
@@ -1599,8 +1599,8 @@ void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
 // refactored somehow.
-static int synthesizedBaselineFromContentBox(const LayoutBox& box,
-                                             LineDirectionMode direction) {
+int LayoutGrid::synthesizedBaselineFromContentBox(const LayoutBox& box,
+                                                  LineDirectionMode direction) {
   if (direction == HorizontalLine) {
     return (box.size().height() - box.borderBottom() - box.paddingBottom() -
             box.horizontalScrollbarHeight())
@@ -1611,8 +1611,8 @@ static int synthesizedBaselineFromContentBox(const LayoutBox& box,
       .toInt();
 }
 
-static int synthesizedBaselineFromBorderBox(const LayoutBox& box,
-                                            LineDirectionMode direction) {
+int LayoutGrid::synthesizedBaselineFromBorderBox(const LayoutBox& box,
+                                                 LineDirectionMode direction) {
   return (direction == HorizontalLine ? box.size().height()
                                       : box.size().width())
       .toInt();

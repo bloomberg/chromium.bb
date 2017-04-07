@@ -164,8 +164,9 @@ float LayoutFlexibleBox::countIntrinsicSizeForAlgorithmChange(
   return maxContentFlexFraction;
 }
 
-static int synthesizedBaselineFromContentBox(const LayoutBox& box,
-                                             LineDirectionMode direction) {
+int LayoutFlexibleBox::synthesizedBaselineFromContentBox(
+    const LayoutBox& box,
+    LineDirectionMode direction) {
   if (direction == HorizontalLine) {
     return (box.size().height() - box.borderBottom() - box.paddingBottom() -
             box.verticalScrollbarWidth())
@@ -188,7 +189,8 @@ int LayoutFlexibleBox::baselinePosition(FontBaseline,
   return beforeMarginInLineDirection(direction) + baseline;
 }
 
-static const StyleContentAlignmentData& contentAlignmentNormalBehavior() {
+const StyleContentAlignmentData&
+LayoutFlexibleBox::contentAlignmentNormalBehavior() {
   // The justify-content property applies along the main axis, but since
   // flexing in the main axis is controlled by flex, stretch behaves as
   // flex-start (ignoring the specified fallback alignment, if any).

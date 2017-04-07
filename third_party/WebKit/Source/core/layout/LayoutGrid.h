@@ -269,6 +269,15 @@ class LayoutGrid final : public LayoutBlock {
 
   size_t numTracks(GridTrackSizingDirection, const Grid&) const;
 
+  static LayoutUnit overrideContainingBlockContentSizeForChild(
+      const LayoutBox& child,
+      GridTrackSizingDirection);
+  static int synthesizedBaselineFromContentBox(const LayoutBox&,
+                                               LineDirectionMode);
+  static int synthesizedBaselineFromBorderBox(const LayoutBox&,
+                                              LineDirectionMode);
+  static const StyleContentAlignmentData& contentAlignmentNormalBehavior();
+
   typedef HashMap<unsigned,
                   std::unique_ptr<BaselineContext>,
                   DefaultHash<unsigned>::Hash,
