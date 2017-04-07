@@ -176,6 +176,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     updateLocalizedContent: function() {
       this.setMDMode_();
+      $('oobe-welcome-md').updateLocalizedContent();
     },
 
     /**

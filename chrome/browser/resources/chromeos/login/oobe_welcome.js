@@ -101,6 +101,13 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.updateLocalizedContent();
+  },
+
+  /**
+   * This is called when UI strings are changed.
+   */
+  updateLocalizedContent: function() {
     CrOncStrings = {
       OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
       OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
