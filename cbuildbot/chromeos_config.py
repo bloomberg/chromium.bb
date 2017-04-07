@@ -418,6 +418,8 @@ _arm_internal_release_boards = frozenset([
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
+    'lasilla-ground',
+    'lasilla-sky',
     'loonix',
     'oak',
     'peach_pi',
@@ -439,6 +441,7 @@ _arm_internal_release_boards = frozenset([
     'veyron_speedy',
     'veyron_tiger',
     'whirlwind',
+    'wooten',
 ])
 
 _arm_external_boards = frozenset([
@@ -622,7 +625,10 @@ _lakitu_boards = frozenset([
 ])
 
 _loonix_boards = frozenset([
+    'lasilla-ground',
+    'lasilla-sky',
     'loonix',
+    'wooten',
 ])
 
 _moblab_boards = frozenset([
