@@ -48,16 +48,8 @@ void SerializeReports(const std::vector<const ReportingReport*>& reports,
 
 }  // namespace
 
-ReportingDeliveryAgent::ReportingDeliveryAgent(
-    base::TickClock* clock,
-    ReportingCache* cache,
-    ReportingUploader* uploader,
-    const BackoffEntry::Policy* endpoint_backoff_policy)
-    : clock_(clock),
-      cache_(cache),
-      uploader_(uploader),
-      endpoint_manager_(clock, cache, endpoint_backoff_policy),
-      weak_factory_(this) {}
+ReportingDeliveryAgent::ReportingDeliveryAgent(ReportingContext* context)
+    : context_(context), weak_factory_(this) {}
 ReportingDeliveryAgent::~ReportingDeliveryAgent() {}
 
 class ReportingDeliveryAgent::Delivery {
@@ -74,7 +66,7 @@ class ReportingDeliveryAgent::Delivery {
 
 void ReportingDeliveryAgent::SendReports() {
   std::vector<const ReportingReport*> reports;
-  cache_->GetReports(&reports);
+  cache()->GetReports(&reports);
 
   // Sort reports into (origin, group) buckets.
   std::map<OriginGroup, std::vector<const ReportingReport*>>
@@ -95,7 +87,7 @@ void ReportingDeliveryAgent::SendReports() {
       continue;
 
     GURL endpoint_url;
-    if (!endpoint_manager_.FindEndpointForOriginAndGroup(
+    if (!endpoint_manager()->FindEndpointForOriginAndGroup(
             origin_group.first, origin_group.second, &endpoint_url)) {
       continue;
     }
@@ -110,13 +102,13 @@ void ReportingDeliveryAgent::SendReports() {
     const GURL& endpoint = it.first;
     const std::vector<const ReportingReport*>& reports = it.second;
 
-    endpoint_manager_.SetEndpointPending(endpoint);
-    cache_->SetReportsPending(reports);
+    endpoint_manager()->SetEndpointPending(endpoint);
+    cache()->SetReportsPending(reports);
 
     std::string json;
-    SerializeReports(reports, clock_->NowTicks(), &json);
+    SerializeReports(reports, tick_clock()->NowTicks(), &json);
 
-    uploader_->StartUpload(
+    uploader()->StartUpload(
         endpoint, json,
         base::Bind(&ReportingDeliveryAgent::OnUploadComplete,
                    weak_factory_.GetWeakPtr(),
@@ -128,23 +120,23 @@ void ReportingDeliveryAgent::OnUploadComplete(
     const std::unique_ptr<Delivery>& delivery,
     ReportingUploader::Outcome outcome) {
   if (outcome == ReportingUploader::Outcome::SUCCESS) {
-    cache_->RemoveReports(delivery->reports);
-    endpoint_manager_.InformOfEndpointRequest(delivery->endpoint, true);
+    cache()->RemoveReports(delivery->reports);
+    endpoint_manager()->InformOfEndpointRequest(delivery->endpoint, true);
   } else {
-    cache_->IncrementReportsAttempts(delivery->reports);
-    endpoint_manager_.InformOfEndpointRequest(delivery->endpoint, false);
+    cache()->IncrementReportsAttempts(delivery->reports);
+    endpoint_manager()->InformOfEndpointRequest(delivery->endpoint, false);
   }
 
   if (outcome == ReportingUploader::Outcome::REMOVE_ENDPOINT)
-    cache_->RemoveClientsForEndpoint(delivery->endpoint);
+    cache()->RemoveClientsForEndpoint(delivery->endpoint);
 
   for (const ReportingReport* report : delivery->reports) {
     pending_origin_groups_.erase(
         OriginGroup(url::Origin(report->url), report->group));
   }
 
-  cache_->ClearReportsPending(delivery->reports);
-  endpoint_manager_.ClearEndpointPending(delivery->endpoint);
+  endpoint_manager()->ClearEndpointPending(delivery->endpoint);
+  cache()->ClearReportsPending(delivery->reports);
 }
 
 }  // namespace net

@@ -19,7 +19,9 @@
 
 namespace net {
 
-ReportingCache::ReportingCache() {}
+ReportingCache::ReportingCache(ReportingContext* context) : context_(context) {
+  DCHECK(context_);
+}
 
 ReportingCache::~ReportingCache() {}
 

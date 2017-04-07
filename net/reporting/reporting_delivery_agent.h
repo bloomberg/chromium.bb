@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/net_export.h"
-#include "net/reporting/reporting_endpoint_manager.h"
+#include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_uploader.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -26,6 +26,7 @@ class TickClock;
 namespace net {
 
 class ReportingCache;
+class ReportingEndpointManager;
 
 // Takes reports from the ReportingCache, assembles reports into deliveries to
 // endpoints, and sends those deliveries using ReportingUploader.
@@ -58,12 +59,8 @@ class ReportingCache;
 // delivery attempt.
 class NET_EXPORT ReportingDeliveryAgent {
  public:
-  // |clock|, |cache|, |uploader|, and |endpoint_backoff_policy| must all
-  // outlive the ReportingDeliveryAgent.
-  ReportingDeliveryAgent(base::TickClock* clock,
-                         ReportingCache* cache,
-                         ReportingUploader* uploader,
-                         const BackoffEntry::Policy* endpoint_backoff_policy);
+  // |context| must outlive the ReportingDeliveryAgent.
+  ReportingDeliveryAgent(ReportingContext* context);
   ~ReportingDeliveryAgent();
 
   // Tries to deliver all of the reports in the cache. Reports that are already
@@ -79,11 +76,14 @@ class NET_EXPORT ReportingDeliveryAgent {
   void OnUploadComplete(const std::unique_ptr<Delivery>& delivery,
                         ReportingUploader::Outcome outcome);
 
-  base::TickClock* clock_;
-  ReportingCache* cache_;
-  ReportingUploader* uploader_;
+  base::TickClock* tick_clock() { return context_->tick_clock(); }
+  ReportingCache* cache() { return context_->cache(); }
+  ReportingUploader* uploader() { return context_->uploader(); }
+  ReportingEndpointManager* endpoint_manager() {
+    return context_->endpoint_manager();
+  }
 
-  ReportingEndpointManager endpoint_manager_;
+  ReportingContext* context_;
 
   // Tracks OriginGroup tuples for which there is a pending delivery running.
   // (Would be an unordered_set, but there's no hash on pair.)
