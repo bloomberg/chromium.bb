@@ -668,7 +668,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
                                               "compositorElementId",
                                               "constructionStack",
                                               "counterDirectives",
-                                              "counterMaps"
+                                              "counterMaps",
                                               "document",
                                               "dragOperation",
                                               "element",
