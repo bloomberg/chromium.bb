@@ -325,6 +325,9 @@ typedef struct {
 #endif
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
+#if CONFIG_LV_MAP
+  TX_TYPE txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+#endif
 
 #if CONFIG_FILTER_INTRA
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;

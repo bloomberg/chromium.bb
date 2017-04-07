@@ -14,6 +14,7 @@
 #include "av1/common/pred_common.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
+#include "av1/encoder/rdopt.h"
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
@@ -704,4 +705,48 @@ void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w) {
 
   for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
     write_txb_probs(w, cpi, tx_size);
+}
+static INLINE int allow_txk_type(MACROBLOCKD *xd, TX_SIZE tx_size, int plane) {
+  if (plane != 0 || tx_size == TX_32X32 ||
+      xd->lossless[xd->mi[0]->mbmi.segment_id])
+    return 0;
+
+  return 1;
+}
+
+int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                            int block, int blk_row, int blk_col,
+                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                            int coeff_ctx, RD_STATS *rd_stats) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  TX_TYPE txk_start = DCT_DCT;
+  TX_TYPE txk_end = TX_TYPES - 1;
+  TX_TYPE best_tx_type = txk_start;
+  int64_t best_rd = INT64_MAX;
+  int best_eob = tx_size_2d[tx_size];
+  if (!allow_txk_type(xd, tx_size, plane)) txk_end = DCT_DCT;
+  TX_TYPE tx_type;
+  for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
+    RD_STATS this_rd_stats;
+    av1_invalid_rd_stats(&this_rd_stats);
+    if (plane == 0) mbmi->txk_type[block] = tx_type;
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    coeff_ctx, AV1_XFORM_QUANT_FP);
+    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
+      av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+    av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
+                   &this_rd_stats.dist, &this_rd_stats.sse, 0);
+    int rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
+    if (rd < best_rd) {
+      best_rd = rd;
+      *rd_stats = this_rd_stats;
+      best_tx_type = tx_type;
+      best_eob = x->plane[plane].eobs[block];
+    }
+  }
+  if (plane == 0) mbmi->txk_type[block] = best_tx_type;
+  x->plane[plane].eobs[block] = best_eob;
+  return best_rd;
 }

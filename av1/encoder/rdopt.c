@@ -1360,15 +1360,10 @@ static int64_t sum_squares_visible(const MACROBLOCKD *xd, int plane,
   return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
 }
 
-typedef enum OUTPUT_STATUS {
-  OUTPUT_HAS_PREDICTED_PIXELS,
-  OUTPUT_HAS_DECODED_PIXELS
-} OUTPUT_STATUS;
-
-static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                       BLOCK_SIZE plane_bsize, int block, int blk_row,
-                       int blk_col, TX_SIZE tx_size, int64_t *out_dist,
-                       int64_t *out_sse, OUTPUT_STATUS output_status) {
+void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                    BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
+                    TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
+                    OUTPUT_STATUS output_status) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -1581,13 +1576,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     struct macroblock_plane *const p = &x->plane[plane];
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                        p->eobs[block]);
-    dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-               tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
-               OUTPUT_HAS_DECODED_PIXELS);
+    av1_dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
+                   tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
+                   OUTPUT_HAS_DECODED_PIXELS);
   } else {
-    dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-               tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
-               OUTPUT_HAS_PREDICTED_PIXELS);
+    av1_dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
+                   tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
+                   OUTPUT_HAS_PREDICTED_PIXELS);
   }
 
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
@@ -3853,7 +3848,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
 
-// TODO(any): Use dist_block to compute distortion
+// TODO(any): Use av1_dist_block to compute distortion
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     rec_buffer = CONVERT_TO_BYTEPTR(rec_buffer16);
@@ -5225,8 +5220,9 @@ static int64_t encode_inter_mb_segment_sub8x8(
                       BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
       if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
         av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-      dist_block(cpi, x, 0, BLOCK_8X8, block, idy + (i >> 1), idx + (i & 0x1),
-                 tx_size, &dist, &ssz, OUTPUT_HAS_PREDICTED_PIXELS);
+      av1_dist_block(cpi, x, 0, BLOCK_8X8, block, idy + (i >> 1),
+                     idx + (i & 0x1), tx_size, &dist, &ssz,
+                     OUTPUT_HAS_PREDICTED_PIXELS);
       thisdistortion += dist;
       thissse += ssz;
 #if !CONFIG_PVQ
