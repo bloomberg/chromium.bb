@@ -310,14 +310,9 @@
 </if>
 
         <template is="dom-if" if="[[profileManagesSupervisedUsers_]]">
-          <div id="manageSupervisedUsersContainer" class="settings-box two-line"
+          <div id="manageSupervisedUsersContainer" class="settings-box"
               on-tap="onManageSupervisedUsers_" actionable>
-            <div class="start">
-              $i18n{manageSupervisedUsers}
-              <div class="secondary" id="manageSupervisedUsersSecondary">
-                $i18n{manageSupervisedUsersDescription}
-              </div>
-            </div>
+            <div class="start">$i18n{manageSupervisedUsers}</div>
             <button class="icon-external" is="paper-icon-button-light"
                 aria-label="$i18n{manageSupervisedUsers}"
                 aria-describedby="manageSupervisedUsersSecondary"></button>
