@@ -352,6 +352,7 @@ class TestImporter(object):
 
         if try_results and self.git_cl.has_failing_try_results(try_results):
             self.fetch_new_expectations_and_baselines()
+            self._upload_patchset('Update test expectations and baselines.')
 
         # Trigger CQ and wait for CQ try jobs to finish.
         self.git_cl.run(['set-commit', '--gerrit'])
@@ -385,6 +386,9 @@ class TestImporter(object):
             '-m',
             description,
         ] + self._cc_part(directory_owners))
+
+    def _upload_patchset(self, message):
+        self.git_cl.run(['upload', '-f', '-t', message, '--gerrit'])
 
     @staticmethod
     def _cc_part(directory_owners):
@@ -435,9 +439,6 @@ class TestImporter(object):
         _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
         expectation_updater = WPTExpectationsUpdater(self.host)
         expectation_updater.run(args=[])
-        message = 'Update test expectations and baselines.'
-        self.check_run(['git', 'commit', '-a', '-m', message])
-        self.git_cl.run(['upload', '-t', message, '--gerrit'])
 
     def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
         """Updates all test expectations files for tests that have been deleted or renamed."""
