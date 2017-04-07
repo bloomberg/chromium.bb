@@ -186,14 +186,6 @@ std::string DevToolsManagerDelegateAndroid::GetTargetType(
       DevToolsAgentHost::kTypeOther;
 }
 
-std::string DevToolsManagerDelegateAndroid::GetTargetTitle(
-    content::RenderFrameHost* host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(host);
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  return tab ? base::UTF16ToUTF8(tab->GetTitle()) : "";
-}
-
 bool DevToolsManagerDelegateAndroid::DiscoverTargets(
       const DevToolsAgentHost::DiscoveryCallback& callback) {
 #if defined(OS_ANDROID)

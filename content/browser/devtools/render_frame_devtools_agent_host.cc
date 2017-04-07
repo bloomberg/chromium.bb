@@ -462,6 +462,13 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
 
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
+
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate()) {
+    type_ = manager->delegate()->GetTargetType(host);
+    title_ = manager->delegate()->GetTargetTitle(host);
+  }
+
   NotifyCreated();
 }
 
@@ -1015,24 +1022,18 @@ std::string RenderFrameDevToolsAgentHost::GetParentId() {
 }
 
 std::string RenderFrameDevToolsAgentHost::GetType() {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && current_) {
-    std::string result = manager->delegate()->GetTargetType(current_->host());
-    if (!result.empty())
-      return result;
-  }
+  if (!type_.empty())
+    return type_;
   if (IsChildFrame())
     return kTypeFrame;
   return kTypePage;
 }
 
 std::string RenderFrameDevToolsAgentHost::GetTitle() {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && current_) {
-    std::string result = manager->delegate()->GetTargetTitle(current_->host());
-    if (!result.empty())
-      return result;
-  }
+  if (!title_.empty())
+    return title_;
+  if (current_ && current_->host()->GetParent())
+    return current_->host()->GetLastCommittedURL().spec();
   content::WebContents* web_contents = GetWebContents();
   if (web_contents)
     return base::UTF16ToUTF8(web_contents->GetTitle());

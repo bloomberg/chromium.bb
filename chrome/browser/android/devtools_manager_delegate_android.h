@@ -27,7 +27,6 @@ class DevToolsManagerDelegateAndroid :
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
   std::string GetTargetType(content::RenderFrameHost* host) override;
-  std::string GetTargetTitle(content::RenderFrameHost* host) override;
   bool DiscoverTargets(
       const content::DevToolsAgentHost::DiscoveryCallback& callback) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(

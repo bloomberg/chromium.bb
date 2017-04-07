@@ -171,6 +171,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
   RenderFrameHostImpl* handlers_frame_host_;
   bool current_frame_crashed_;
+  std::string title_;
+  std::string type_;
 
   // PlzNavigate
 

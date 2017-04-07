@@ -34,9 +34,44 @@ char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] = "background_page";
 char ChromeDevToolsManagerDelegate::kTypeWebView[] = "webview";
 
+namespace {
+
 char kLocationsParam[] = "locations";
 char kHostParam[] = "host";
 char kPortParam[] = "port";
+
+bool GetExtensionInfo(content::RenderFrameHost* host,
+                      std::string* name,
+                      std::string* type) {
+  content::WebContents* wc = content::WebContents::FromRenderFrameHost(host);
+  if (!wc)
+    return false;
+  Profile* profile = Profile::FromBrowserContext(wc->GetBrowserContext());
+  if (!profile)
+    return false;
+  const extensions::Extension* extension =
+      extensions::ProcessManager::Get(profile)->GetExtensionForRenderFrameHost(
+          host);
+  if (!extension)
+    return false;
+  extensions::ExtensionHost* extension_host =
+      extensions::ProcessManager::Get(profile)->GetBackgroundHostForExtension(
+          extension->id());
+  if (extension_host && extension_host->host_contents() == wc) {
+    *name = extension->name();
+    *type = ChromeDevToolsManagerDelegate::kTypeBackgroundPage;
+    return true;
+  } else if (extension->is_hosted_app() ||
+             extension->is_legacy_packaged_app() ||
+             extension->is_platform_app()) {
+    *name = extension->name();
+    *type = ChromeDevToolsManagerDelegate::kTypeApp;
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 class ChromeDevToolsManagerDelegate::HostData {
  public:
@@ -103,47 +138,20 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
       return DevToolsAgentHost::kTypePage;
   }
 
-  const extensions::Extension* extension = extensions::ExtensionRegistry::Get(
-      web_contents->GetBrowserContext())->enabled_extensions().GetByID(
-          host->GetLastCommittedURL().host());
-  if (!extension)
+  std::string extension_name;
+  std::string extension_type;
+  if (!GetExtensionInfo(host, &extension_name, &extension_type))
     return DevToolsAgentHost::kTypeOther;
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return DevToolsAgentHost::kTypeOther;
-
-  extensions::ExtensionHost* extension_host =
-      extensions::ProcessManager::Get(profile)
-          ->GetBackgroundHostForExtension(extension->id());
-  if (extension_host &&
-      extension_host->host_contents() == web_contents) {
-    return kTypeBackgroundPage;
-  } else if (extension->is_hosted_app()
-             || extension->is_legacy_packaged_app()
-             || extension->is_platform_app()) {
-    return kTypeApp;
-  }
-  return DevToolsAgentHost::kTypeOther;
+  return extension_type;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
     content::RenderFrameHost* host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(host);
-  if (host->GetParent())
-    return host->GetLastCommittedURL().spec();
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (*it == web_contents)
-      return base::UTF16ToUTF8(web_contents->GetTitle());
-  }
-  const extensions::Extension* extension = extensions::ExtensionRegistry::Get(
-    web_contents->GetBrowserContext())->enabled_extensions().GetByID(
-          host->GetLastCommittedURL().host());
-  if (extension)
-    return extension->name();
-  return "";
+  std::string extension_name;
+  std::string extension_type;
+  if (!GetExtensionInfo(host, &extension_name, &extension_type))
+    return std::string();
+  return extension_name;
 }
 
 scoped_refptr<DevToolsAgentHost>
