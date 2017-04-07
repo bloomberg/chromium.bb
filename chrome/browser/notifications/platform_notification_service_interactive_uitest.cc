@@ -351,9 +351,11 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("Title", base::UTF16ToUTF8(all_options_notification.title()));
   EXPECT_EQ("Contents", base::UTF16ToUTF8(all_options_notification.message()));
   EXPECT_EQ("replace-id", all_options_notification.tag());
+#if !defined(OS_MACOSX)
   EXPECT_FALSE(all_options_notification.image().IsEmpty());
   EXPECT_EQ(kIconWidth, all_options_notification.image().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.image().Height());
+#endif
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
   EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());

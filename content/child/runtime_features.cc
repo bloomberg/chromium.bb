@@ -68,6 +68,11 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
   WebRuntimeFeatures::enableWebBluetooth(true);
 #endif
+
+// The Notification Center on Mac OS X does not support content images.
+#if defined(OS_MACOSX)
+  WebRuntimeFeatures::enableNotificationContentImage(false);
+#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
