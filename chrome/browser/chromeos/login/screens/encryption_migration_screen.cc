@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -49,6 +51,12 @@ void EncryptionMigrationScreen::SetUserContext(
     const UserContext& user_context) {
   DCHECK(view_);
   view_->SetUserContext(user_context);
+}
+
+void EncryptionMigrationScreen::SetContinueLoginCallback(
+    ContinueLoginCallback callback) {
+  DCHECK(view_);
+  view_->SetContinueLoginCallback(std::move(callback));
 }
 
 }  // namespace chromeos

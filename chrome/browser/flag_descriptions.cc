@@ -2943,6 +2943,13 @@ const char kEnableEhvInputDescription[] =
     "Enable access to emoji, handwriting and voice input form opt-in IME "
     "menu.";
 
+const char kEnableEncryptionMigrationName[] =
+    "Enable encryption migration of user data";
+
+const char kEnableEncryptionMigrationDescription[] =
+    "If enabled and the device supports ARC, the user will be asked to update "
+    "the encryption of user data when the user signs in.";
+
 #endif  // #if defined(OS_CHROMEOS)
 
 }  // namespace flag_descriptions

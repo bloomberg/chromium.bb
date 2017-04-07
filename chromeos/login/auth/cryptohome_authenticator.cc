@@ -174,6 +174,8 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
         kCryptohomeGAIAKeyLabel,
         cryptohome::PRIV_DEFAULT));
   }
+  mount.force_dircrypto_if_available =
+      attempt->user_context.IsForcingDircrypto();
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),

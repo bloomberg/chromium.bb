@@ -18,6 +18,7 @@ UserContext::UserContext(const UserContext& other)
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
       is_using_pin_(other.is_using_pin_),
+      is_forcing_dircrypto_(other.is_forcing_dircrypto_),
       auth_flow_(other.auth_flow_),
       user_type_(other.user_type_),
       public_session_locale_(other.public_session_locale_),
@@ -98,6 +99,10 @@ bool UserContext::IsUsingPin() const {
   return is_using_pin_;
 }
 
+bool UserContext::IsForcingDircrypto() const {
+  return is_forcing_dircrypto_;
+}
+
 UserContext::AuthFlow UserContext::GetAuthFlow() const {
   return auth_flow_;
 }
@@ -157,6 +162,10 @@ void UserContext::SetIsUsingOAuth(bool is_using_oauth) {
 
 void UserContext::SetIsUsingPin(bool is_using_pin) {
   is_using_pin_ = is_using_pin;
+}
+
+void UserContext::SetIsForcingDircrypto(bool is_forcing_dircrypto) {
+  is_forcing_dircrypto_ = is_forcing_dircrypto;
 }
 
 void UserContext::SetAuthFlow(AuthFlow auth_flow) {

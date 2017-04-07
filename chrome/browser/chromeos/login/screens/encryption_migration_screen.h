@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ENCRYPTION_MIGRATION_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ENCRYPTION_MIGRATION_SCREEN_H_
 
+#include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 
@@ -16,6 +17,8 @@ class EncryptionMigrationScreen
     : public BaseScreen,
       public EncryptionMigrationScreenView::Delegate {
  public:
+  using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
+
   EncryptionMigrationScreen(BaseScreenDelegate* base_screen_delegate,
                             EncryptionMigrationScreenView* view);
   ~EncryptionMigrationScreen() override;
@@ -30,6 +33,10 @@ class EncryptionMigrationScreen
 
   // Sets the UserContext for a user whose cryptohome should be migrated.
   void SetUserContext(const UserContext& user_context);
+
+  // Sets a callback, which should be called when the user want to log in to the
+  // session from the migration UI.
+  void SetContinueLoginCallback(ContinueLoginCallback callback);
 
  private:
   EncryptionMigrationScreenView* view_;

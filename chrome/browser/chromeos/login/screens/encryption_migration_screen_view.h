@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ENCRYPTION_MIGRATION_SCREEN_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ENCRYPTION_MIGRATION_SCREEN_VIEW_H_
 
+#include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
@@ -13,6 +14,8 @@ class UserContext;
 
 class EncryptionMigrationScreenView {
  public:
+  using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -34,6 +37,7 @@ class EncryptionMigrationScreenView {
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void SetUserContext(const UserContext& user_context) = 0;
+  virtual void SetContinueLoginCallback(ContinueLoginCallback callback) = 0;
 };
 
 }  // namespace chromeos

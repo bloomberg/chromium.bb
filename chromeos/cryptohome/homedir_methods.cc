@@ -219,6 +219,9 @@ class HomedirMethodsImpl : public HomedirMethods {
         FillKeyProtobuf(request.create_keys[i], create->add_keys());
     }
 
+    if (request.force_dircrypto_if_available)
+      request_proto.set_force_dircrypto_if_available(true);
+
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
         id, auth_proto, request_proto,
         base::Bind(&HomedirMethodsImpl::OnMountExCallback,

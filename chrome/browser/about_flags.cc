@@ -2196,6 +2196,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-native-cups", flag_descriptions::kEnableNativeCupsName,
      flag_descriptions::kEnableNativeCupsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
+    {"enable-encryption-migration",
+     flag_descriptions::kEnableEncryptionMigrationName,
+     flag_descriptions::kEnableEncryptionMigrationDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableEncryptionMigration)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",

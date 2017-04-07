@@ -58,6 +58,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/arc_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -175,6 +176,12 @@ bool CanShowDebuggingFeatures() {
 void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
   UMA_HISTOGRAM_ENUMERATION("Login.PasswordChangeFlow", flow,
                             LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
+}
+
+bool ShouldForceDircrypto() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kEnableEncryptionMigration) &&
+         (arc::IsArcAvailable() || arc::IsArcKioskAvailable());
 }
 
 }  // namespace
@@ -461,11 +468,22 @@ void ExistingUserController::PerformLogin(
       user_manager::kSupervisedUserDomain) {
     login_performer_->LoginAsSupervisedUser(user_context);
   } else {
-    login_performer_->PerformLogin(user_context, auth_mode);
-    RecordPasswordLoginEvent(user_context);
+    // If a regular user log in to a device which supports ARC, we should make
+    // sure that the user's cryptohome is encrypted in ext4 dircrypto to run the
+    // latest Android runtime.
+    UserContext new_user_context = user_context;
+    new_user_context.SetIsForcingDircrypto(ShouldForceDircrypto());
+    login_performer_->PerformLogin(new_user_context, auth_mode);
+    RecordPasswordLoginEvent(new_user_context);
   }
   SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
+}
+
+void ExistingUserController::ContinuePerformLogin(
+    LoginPerformer::AuthorizationMode auth_mode,
+    const UserContext& user_context) {
+  login_performer_->PerformLogin(user_context, auth_mode);
 }
 
 void ExistingUserController::MigrateUserData(const std::string& old_password) {
@@ -607,6 +625,9 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
           host_->GetWizardController()->current_screen());
   DCHECK(migration_screen);
   migration_screen->SetUserContext(user_context);
+  migration_screen->SetContinueLoginCallback(base::BindOnce(
+      &ExistingUserController::ContinuePerformLogin, weak_factory_.GetWeakPtr(),
+      login_performer_->auth_mode()));
 }
 
 void ExistingUserController::ShowTPMError() {

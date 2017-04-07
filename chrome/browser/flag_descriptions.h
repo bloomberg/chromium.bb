@@ -3191,6 +3191,13 @@ extern const char kEnableEhvInputName[];
 // opt-in IME menu.
 extern const char kEnableEhvInputDescription[];
 
+// Name of the about: flag for enabling encryption migratoin, which ensures the
+// user's cryptohome is encrypted by ext4 dircrypto instead of ecryptfs.
+extern const char kEnableEncryptionMigrationName[];
+
+// Description of the about: flag for enabling encryption migratoin.
+extern const char kEnableEncryptionMigrationDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 }  // namespace flag_descriptions

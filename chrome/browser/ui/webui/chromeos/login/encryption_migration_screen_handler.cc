@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 
+#include <string>
+#include <utility>
+
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -15,6 +18,7 @@ constexpr char kJsScreenPath[] = "login.EncryptionMigrationScreen";
 
 // JS API callbacks names.
 constexpr char kJsApiStartMigration[] = "startMigration";
+constexpr char kJsApiSkipMigration[] = "skipMigration";
 constexpr char kJsApiRequestRestart[] = "requestRestart";
 
 }  // namespace
@@ -54,6 +58,11 @@ void EncryptionMigrationScreenHandler::SetUserContext(
   user_context_ = user_context;
 }
 
+void EncryptionMigrationScreenHandler::SetContinueLoginCallback(
+    ContinueLoginCallback callback) {
+  continue_login_callback_ = std::move(callback);
+}
+
 void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
 
@@ -70,12 +79,26 @@ void EncryptionMigrationScreenHandler::Initialize() {
 void EncryptionMigrationScreenHandler::RegisterMessages() {
   AddCallback(kJsApiStartMigration,
               &EncryptionMigrationScreenHandler::HandleStartMigration);
+  AddCallback(kJsApiSkipMigration,
+              &EncryptionMigrationScreenHandler::HandleSkipMigration);
   AddCallback(kJsApiRequestRestart,
               &EncryptionMigrationScreenHandler::HandleRequestRestart);
 }
 
 void EncryptionMigrationScreenHandler::HandleStartMigration() {
   StartMigration();
+}
+
+void EncryptionMigrationScreenHandler::HandleSkipMigration() {
+  // If the user skips migration, we mount the cryptohome without performing the
+  // migration by reusing UserContext and LoginPerformer which were used in the
+  // previous attempt and dropping |is_forcing_dircrypto| flag in UserContext.
+  // In this case, the user can not launch ARC apps in the session, and will be
+  // asked to do the migration again in the next log-in attempt.
+  if (!continue_login_callback_.is_null()) {
+    user_context_.SetIsForcingDircrypto(false);
+    std::move(continue_login_callback_).Run(user_context_);
+  }
 }
 
 void EncryptionMigrationScreenHandler::HandleRequestRestart() {
@@ -117,6 +140,7 @@ void EncryptionMigrationScreenHandler::StartMigration() {
       cryptohome::Authorization(auth_key),
       base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
                  weak_ptr_factory_.GetWeakPtr()));
+  UpdateUIState(UIState::MIGRATING);
 }
 
 void EncryptionMigrationScreenHandler::OnMigrationProgress(

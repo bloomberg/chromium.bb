@@ -21,6 +21,9 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
       encryptionMigration.addEventListener('upgrade', function() {
         chrome.send('startMigration');
       });
+      encryptionMigration.addEventListener('skip', function() {
+        chrome.send('skipMigration');
+      });
       encryptionMigration.addEventListener('restart', function() {
         chrome.send('requestRestart');
       });

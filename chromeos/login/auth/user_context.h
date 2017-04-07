@@ -58,6 +58,7 @@ class CHROMEOS_EXPORT UserContext {
   const std::string& GetUserIDHash() const;
   bool IsUsingOAuth() const;
   bool IsUsingPin() const;
+  bool IsForcingDircrypto() const;
   AuthFlow GetAuthFlow() const;
   user_manager::UserType GetUserType() const;
   const std::string& GetPublicSessionLocale() const;
@@ -75,6 +76,7 @@ class CHROMEOS_EXPORT UserContext {
   void SetUserIDHash(const std::string& user_id_hash);
   void SetIsUsingOAuth(bool is_using_oauth);
   void SetIsUsingPin(bool is_using_pin);
+  void SetIsForcingDircrypto(bool is_forcing_dircrypto);
   void SetAuthFlow(AuthFlow auth_flow);
   void SetUserType(user_manager::UserType user_type);
   void SetPublicSessionLocale(const std::string& locale);
@@ -93,6 +95,7 @@ class CHROMEOS_EXPORT UserContext {
   std::string user_id_hash_;
   bool is_using_oauth_ = true;
   bool is_using_pin_ = false;
+  bool is_forcing_dircrypto_ = false;
   AuthFlow auth_flow_ = AUTH_FLOW_OFFLINE;
   user_manager::UserType user_type_ = user_manager::USER_TYPE_REGULAR;
   std::string public_session_locale_;

@@ -25,6 +25,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;
   void SetUserContext(const UserContext& user_context) override;
+  void SetContinueLoginCallback(ContinueLoginCallback callback) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -46,6 +47,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
 
   // Handlers for JS API callbacks.
   void HandleStartMigration();
+  void HandleSkipMigration();
   void HandleRequestRestart();
 
   // Updates UI state.
@@ -69,6 +71,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // The current user's UserContext, which is used to request the migration to
   // cryptohome.
   UserContext user_context_;
+
+  // The callback which is used to log in to the session from the migration UI.
+  ContinueLoginCallback continue_login_callback_;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
 

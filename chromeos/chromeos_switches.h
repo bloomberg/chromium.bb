@@ -82,6 +82,7 @@ CHROMEOS_EXPORT extern const char kEnableArcOOBEOptIn[];
 CHROMEOS_EXPORT extern const char kEnableChromeVoxArcSupport[];
 CHROMEOS_EXPORT extern const char kEnableConsumerKiosk[];
 CHROMEOS_EXPORT extern const char kEnableDataSaverPrompt[];
+CHROMEOS_EXPORT extern const char kEnableEncryptionMigration[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
