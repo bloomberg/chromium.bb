@@ -40,6 +40,10 @@ suite('CrActionMenu', function() {
     MockInteractions.keyDownOn(menu, 'ArrowDown', [], 'ArrowDown');
   }
 
+  function up() {
+    MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
+  }
+
   test('hidden or disabled items', function() {
     menu.showAt(document.querySelector('#dots'));
     down();
@@ -59,10 +63,6 @@ suite('CrActionMenu', function() {
   });
 
   test('focus after down/up arrow', function() {
-    function up() {
-      MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
-    }
-
     menu.showAt(document.querySelector('#dots'));
 
     // The menu should be focused when shown, but not on any of the items.
@@ -91,6 +91,14 @@ suite('CrActionMenu', function() {
     items[1].disabled = true;
     up();
     assertEquals(items[0], menu.root.activeElement);
+  });
+
+  test('pressing up arrow when no focus will focus last item', function(){
+    menu.showAt(document.querySelector('#dots'));
+    assertEquals(menu, document.activeElement);
+
+    up();
+    assertEquals(items[items.length - 1], menu.root.activeElement);
   });
 
   test('close on resize', function() {

@@ -131,6 +131,10 @@ Polymer({
     var focusedIndex =
         Array.prototype.indexOf.call(this.options_, this.root.activeElement);
 
+    // Handle case where nothing is focused and up is pressed.
+    if (focusedIndex === -1 && step === -1)
+      focusedIndex = 0;
+
     do {
       focusedIndex = (numOptions + focusedIndex + step) % numOptions;
       nextOption = this.options_[focusedIndex];
