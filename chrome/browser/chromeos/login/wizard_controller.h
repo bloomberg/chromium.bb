@@ -241,8 +241,8 @@ class WizardController : public BaseScreenDelegate,
   // ShowCurrentScreen directly forces screen to be shown immediately.
   void SetCurrentScreenSmooth(BaseScreen* screen, bool use_smoothing);
 
-  // Changes status area visibility.
-  void SetStatusAreaVisible(bool visible);
+  // Update the status area visibility for |screen|.
+  void UpdateStatusAreaVisibilityForScreen(OobeScreen screen);
 
   // Changes whether to show the Material Design OOBE or not.
   void SetShowMdOobe(bool show);

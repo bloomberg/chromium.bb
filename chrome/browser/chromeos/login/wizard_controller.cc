@@ -429,10 +429,7 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
 
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
-  // Hide the status area initially; it only appears after OOBE first animates
-  // in. Keep it visible if the user goes back to the existing network screen.
-  SetStatusAreaVisible(
-      screen_manager_->HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 
   // There are two possible screens where we listen to the incoming Bluetooth
@@ -457,7 +454,7 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
   }
   VLOG(1) << "Showing login screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SPECIAL_LOGIN);
   host_->StartSignInScreen(context);
   smooth_show_timer_.Stop();
   login_screen_started_ = true;
@@ -465,7 +462,7 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
 
 void WizardController::ShowUpdateScreen() {
   VLOG(1) << "Showing update screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE));
 }
 
@@ -486,14 +483,14 @@ void WizardController::ShowUserImageScreen() {
   // Status area has been already shown at sign in screen so it
   // doesn't make sense to hide it here and then show again at user session as
   // this produces undesired UX transitions.
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER);
 
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
 void WizardController::ShowEulaScreen() {
   VLOG(1) << "Showing EULA screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_EULA);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_EULA));
 }
 
@@ -507,25 +504,25 @@ void WizardController::ShowEnrollmentScreen() {
 
 void WizardController::ShowResetScreen() {
   VLOG(1) << "Showing reset screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_RESET);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_RESET));
 }
 
 void WizardController::ShowKioskEnableScreen() {
   VLOG(1) << "Showing kiosk enable screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_KIOSK_ENABLE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_KIOSK_ENABLE));
 }
 
 void WizardController::ShowKioskAutolaunchScreen() {
   VLOG(1) << "Showing kiosk autolaunch screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH));
 }
 
 void WizardController::ShowEnableDebuggingScreen() {
   VLOG(1) << "Showing enable developer features screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING));
 }
 
@@ -541,7 +538,7 @@ void WizardController::ShowTermsOfServiceScreen() {
   }
 
   VLOG(1) << "Showing Terms of Service screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE));
 }
 
@@ -568,7 +565,8 @@ void WizardController::ShowArcTermsOfServiceScreen() {
 
   if (show_arc_terms) {
     VLOG(1) << "Showing ARC Terms of Service screen.";
-    SetStatusAreaVisible(true);
+    UpdateStatusAreaVisibilityForScreen(
+        OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
     SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
   } else {
     ShowUserImageScreen();
@@ -577,13 +575,13 @@ void WizardController::ShowArcTermsOfServiceScreen() {
 
 void WizardController::ShowWrongHWIDScreen() {
   VLOG(1) << "Showing wrong HWID screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_WRONG_HWID);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WRONG_HWID));
 }
 
 void WizardController::ShowAutoEnrollmentCheckScreen() {
   VLOG(1) << "Showing Auto-enrollment check screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   AutoEnrollmentCheckScreen* screen =
       AutoEnrollmentCheckScreen::Get(screen_manager());
   if (retry_auto_enrollment_check_)
@@ -594,19 +592,20 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
 
 void WizardController::ShowSupervisedUserCreationScreen() {
   VLOG(1) << "Showing Locally managed user creation screen screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(
+      OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW));
 }
 
 void WizardController::ShowArcKioskSplashScreen() {
   VLOG(1) << "Showing ARC kiosk splash screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ARC_KIOSK_SPLASH);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_KIOSK_SPLASH));
 }
 
 void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION));
   // In HID detection screen, puts the Bluetooth in discoverable mode and waits
   // for the incoming Bluetooth connection request. See the comments in
@@ -616,25 +615,26 @@ void WizardController::ShowHIDDetectionScreen() {
 
 void WizardController::ShowControllerPairingScreen() {
   VLOG(1) << "Showing controller pairing screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(
+      OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING));
 }
 
 void WizardController::ShowHostPairingScreen() {
   VLOG(1) << "Showing host pairing screen.";
-  SetStatusAreaVisible(false);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING));
 }
 
 void WizardController::ShowDeviceDisabledScreen() {
   VLOG(1) << "Showing device disabled screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED));
 }
 
 void WizardController::ShowEncryptionMigrationScreen() {
   VLOG(1) << "Showing encryption migration screen.";
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
 }
 
@@ -971,6 +971,7 @@ void WizardController::ShowCurrentScreen() {
 
   smooth_show_timer_.Stop();
 
+  UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
   current_screen_->Show();
 }
 
@@ -1006,8 +1007,24 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   }
 }
 
-void WizardController::SetStatusAreaVisible(bool visible) {
-  host_->SetStatusAreaVisible(visible);
+void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
+  if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
+    // Hide the status area initially; it only appears after OOBE first animates
+    // in. Keep it visible if the user goes back to the existing network screen.
+    host_->SetStatusAreaVisible(
+        screen_manager_->HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+  } else if (screen == OobeScreen::SCREEN_OOBE_RESET ||
+             screen == OobeScreen::SCREEN_KIOSK_ENABLE ||
+             screen == OobeScreen::SCREEN_KIOSK_AUTOLAUNCH ||
+             screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING ||
+             screen == OobeScreen::SCREEN_WRONG_HWID ||
+             screen == OobeScreen::SCREEN_ARC_KIOSK_SPLASH ||
+             screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING ||
+             screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
+    host_->SetStatusAreaVisible(false);
+  } else {
+    host_->SetStatusAreaVisible(true);
+  }
 }
 
 void WizardController::SetShowMdOobe(bool show) {
@@ -1310,7 +1327,7 @@ void WizardController::AutoLaunchKioskApp() {
     // If the |cros_settings_| are permanently untrusted, show an error message
     // and refuse to auto-launch the kiosk app.
     GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
-    SetStatusAreaVisible(false);
+    host_->SetStatusAreaVisible(false);
     ShowErrorScreen();
     return;
   }
@@ -1362,7 +1379,7 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
     return;
   }
   GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
-  SetStatusAreaVisible(false);
+  host_->SetStatusAreaVisible(false);
   ShowErrorScreen();
 }
 
@@ -1518,7 +1535,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetParameters(effective_config, shark_controller_.get());
-  SetStatusAreaVisible(true);
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
   SetCurrentScreen(screen);
 }
 
