@@ -73,7 +73,7 @@ function test()
     function uiSourceCodeScriptFormatted()
     {
         InspectorTest.addResult("pretty printed location: " + link.textContent);
-        scriptFormatter._discardFormattedUISourceCodeScript(UI.panels.sources.visibleView.uiSourceCode());
+        scriptFormatter._discardFormattedUISourceCodeScript(UI.panels.sources.visibleView.uiSourceCode(), true);
         InspectorTest.addResult("reverted location: " + link.textContent);
 
         var count1 = liveLocationsCount();

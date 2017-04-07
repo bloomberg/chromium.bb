@@ -29,7 +29,7 @@ var test = function()
                 InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
-                
+
             function uiSourceCodeScriptFormatted()
             {
                 formattedSourceFrame = panel.visibleView;
@@ -49,7 +49,7 @@ var test = function()
                     .then(() => InspectorTest.dumpBreakpointSidebarPane("while paused in raw"))
                     .then(() => InspectorTest.resumeExecution(next));
                 InspectorTest.removeBreakpoint(formattedSourceFrame, 3);
-                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode(), true);
             }
         }
     ]);

@@ -78,7 +78,7 @@ var test = function()
             function pausedInF1Again(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode(), true);
                 InspectorTest.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
             }
 
