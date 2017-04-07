@@ -22,6 +22,7 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/network_change_notifier.h"
 
 namespace ntp_snippets {
 
@@ -30,16 +31,23 @@ namespace {
 // The FetchingInterval enum specifies overlapping time intervals that are used
 // for scheduling the next remote suggestion fetch. Therefore a timer is created
 // for each interval. Initially all the timers are started at the same time.
-// Fetches are
-// only performed when certain conditions associated with the intervals are
-// met. If a fetch failed, then only the corresponding timer is reset. The
-// other timers are not touched.
-// TODO(markusheintz): Describe the individual intervals.
+// Fetches are only performed when conditions associated with the intervals are
+// met:
+//   - A "soft" fetch is performed only at a moment when the user actively uses
+//  Chrome after the interval has elapsed and causes a trigger that is currently
+//  enabled while
+//   - a "persistent" fetch is initiated automatically by the OS after the
+//  interval elapses.
+//   - A "wifi" fetch is performed only when the user is on a connection that
+//   the OS classifies as unmetered while
+//   - a "fallback" fetch happens on any connection.
+// If a fetch failed, then only the corresponding timer is reset. The other
+// timers are not touched.
 enum class FetchingInterval {
   PERSISTENT_FALLBACK,
   PERSISTENT_WIFI,
-  SOFT_ON_USAGE_EVENT,
-  SOFT_ON_NTP_OPENED,
+  SOFT_FALLBACK,
+  SOFT_WIFI,
   COUNT
 };
 
@@ -51,7 +59,7 @@ enum class FetchingInterval {
 // the arrays can be overridden using different variation parameters.
 const double kDefaultFetchingIntervalHoursRareNtpUser[] = {48.0, 24.0, 12.0,
                                                            6.0};
-const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {24.0, 6.0, 2.0,
+const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {24.0, 6.0, 4.0,
                                                              2.0};
 const double kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[] = {
     24.0, 6.0, 2.0, 1.0};
@@ -61,18 +69,18 @@ const double kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[] = {
 const char* kFetchingIntervalParamNameRareNtpUser[] = {
     "fetching_interval_hours-fallback-rare_ntp_user",
     "fetching_interval_hours-wifi-rare_ntp_user",
-    "soft_fetching_interval_hours-active-rare_ntp_user",
-    "soft_on_ntp_opened_interval_hours-rare_ntp_user"};
+    "soft_fetching_interval_hours-fallback-rare_ntp_user",
+    "soft_fetching_interval_hours-wifi-rare_ntp_user"};
 const char* kFetchingIntervalParamNameActiveNtpUser[] = {
     "fetching_interval_hours-fallback-active_ntp_user",
     "fetching_interval_hours-wifi-active_ntp_user",
-    "soft_fetching_interval_hours-active-active_ntp_user",
-    "soft_on_ntp_opened_interval_hours-active_ntp_user"};
+    "soft_fetching_interval_hours-fallback-active_ntp_user",
+    "soft_fetching_interval_hours-wifi-active_ntp_user"};
 const char* kFetchingIntervalParamNameActiveSuggestionsConsumer[] = {
     "fetching_interval_hours-fallback-active_suggestions_consumer",
     "fetching_interval_hours-wifi-active_suggestions_consumer",
-    "soft_fetching_interval_hours-active-active_suggestions_consumer",
-    "soft_on_ntp_opened_interval_hours-active_suggestions_consumer"};
+    "soft_fetching_interval_hours-fallback-active_suggestions_consumer",
+    "soft_fetching_interval_hours-wifi-active_suggestions_consumer"};
 
 static_assert(
     static_cast<unsigned int>(FetchingInterval::COUNT) ==
@@ -97,6 +105,11 @@ const char* kTriggerTypesParamName = "scheduler_trigger_types";
 const char* kTriggerTypesParamValueForEmptyList = "-";
 
 const int kBlockBackgroundFetchesMinutesAfterClearingHistory = 30;
+
+const char kSnippetSoftFetchingIntervalOnUsageEventDeprecated[] =
+    "ntp_snippets.soft_fetching_interval_on_usage_event";
+const char kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated[] =
+    "ntp_snippets.soft_fetching_interval_on_ntp_opened";
 
 // Returns the time interval to use for scheduling remote suggestion fetches for
 // the given interval and user_class.
@@ -183,8 +196,8 @@ bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::operator==(
     const FetchingSchedule& other) const {
   return interval_persistent_wifi == other.interval_persistent_wifi &&
          interval_persistent_fallback == other.interval_persistent_fallback &&
-         interval_soft_on_usage_event == other.interval_soft_on_usage_event &&
-         interval_soft_on_ntp_opened == other.interval_soft_on_ntp_opened;
+         interval_soft_wifi == other.interval_soft_wifi &&
+         interval_soft_fallback == other.interval_soft_fallback;
 }
 
 bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::operator!=(
@@ -195,8 +208,7 @@ bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::operator!=(
 bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::is_empty() const {
   return interval_persistent_wifi.is_zero() &&
          interval_persistent_fallback.is_zero() &&
-         interval_soft_on_usage_event.is_zero() &&
-         interval_soft_on_ntp_opened.is_zero();
+         interval_soft_wifi.is_zero() && interval_soft_fallback.is_zero();
 }
 
 // The TriggerType enum specifies values for the events that can trigger
@@ -241,6 +253,10 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
   DCHECK(user_classifier);
   DCHECK(profile_prefs);
 
+  // Cleanup procedure in M59. Remove for M62.
+  profile_prefs_->ClearPref(kSnippetSoftFetchingIntervalOnUsageEventDeprecated);
+  profile_prefs_->ClearPref(kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated);
+
   LoadLastFetchingSchedule();
 }
 
@@ -252,10 +268,14 @@ void RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSnippetPersistentFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetPersistentFetchingIntervalFallback,
                               0);
-  registry->RegisterInt64Pref(prefs::kSnippetSoftFetchingIntervalOnUsageEvent,
-                              0);
+  registry->RegisterInt64Pref(prefs::kSnippetSoftFetchingIntervalWifi, 0);
+  registry->RegisterInt64Pref(prefs::kSnippetSoftFetchingIntervalFallback, 0);
   registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttempt, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetSoftFetchingIntervalOnNtpOpened,
+
+  // Cleanup procedure in M59. Remove for M62.
+  registry->RegisterInt64Pref(
+      kSnippetSoftFetchingIntervalOnUsageEventDeprecated, 0);
+  registry->RegisterInt64Pref(kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated,
                               0);
 }
 
@@ -308,35 +328,26 @@ void RemoteSuggestionsSchedulerImpl::OnInteractiveFetchFinished(
 }
 
 void RemoteSuggestionsSchedulerImpl::OnPersistentSchedulerWakeUp() {
-  RefetchInTheBackgroundIfEnabled(TriggerType::PERSISTENT_SCHEDULER_WAKE_UP);
+  RefetchInTheBackgroundIfAppropriate(
+      TriggerType::PERSISTENT_SCHEDULER_WAKE_UP);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnBrowserForegrounded() {
   // TODO(jkrcal): Consider that this is called whenever we open or return to an
   // Activity. Therefore, keep work light for fast start up calls.
-  if (!ShouldRefetchInTheBackgroundNow(TriggerType::BROWSER_FOREGROUNDED)) {
-    return;
-  }
-
-  RefetchInTheBackgroundIfEnabled(TriggerType::BROWSER_FOREGROUNDED);
+  RefetchInTheBackgroundIfAppropriate(TriggerType::BROWSER_FOREGROUNDED);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnBrowserColdStart() {
-  // TODO(fhorschig|jkrcal): Consider that work here must be kept light for fast
+  // TODO(jkrcal): Consider that work here must be kept light for fast
   // cold start ups.
-  if (!ShouldRefetchInTheBackgroundNow(TriggerType::BROWSER_COLD_START)) {
-    return;
-  }
-
-  RefetchInTheBackgroundIfEnabled(TriggerType::BROWSER_COLD_START);
+  RefetchInTheBackgroundIfAppropriate(TriggerType::BROWSER_COLD_START);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnNTPOpened() {
-  if (!ShouldRefetchInTheBackgroundNow(TriggerType::NTP_OPENED)) {
-    return;
-  }
-
-  RefetchInTheBackgroundIfEnabled(TriggerType::NTP_OPENED);
+  // TODO(jkrcal): Consider that this is called whenever we open an NTP.
+  // Therefore, keep work light for fast start up calls.
+  RefetchInTheBackgroundIfAppropriate(TriggerType::NTP_OPENED);
 }
 
 void RemoteSuggestionsSchedulerImpl::StartScheduling() {
@@ -384,10 +395,10 @@ RemoteSuggestionsSchedulerImpl::GetDesiredFetchingSchedule() const {
       GetDesiredFetchingInterval(FetchingInterval::PERSISTENT_WIFI, user_class);
   schedule.interval_persistent_fallback = GetDesiredFetchingInterval(
       FetchingInterval::PERSISTENT_FALLBACK, user_class);
-  schedule.interval_soft_on_usage_event = GetDesiredFetchingInterval(
-      FetchingInterval::SOFT_ON_USAGE_EVENT, user_class);
-  schedule.interval_soft_on_ntp_opened = GetDesiredFetchingInterval(
-      FetchingInterval::SOFT_ON_NTP_OPENED, user_class);
+  schedule.interval_soft_wifi =
+      GetDesiredFetchingInterval(FetchingInterval::SOFT_WIFI, user_class);
+  schedule.interval_soft_fallback =
+      GetDesiredFetchingInterval(FetchingInterval::SOFT_FALLBACK, user_class);
 
   return schedule;
 }
@@ -398,11 +409,10 @@ void RemoteSuggestionsSchedulerImpl::LoadLastFetchingSchedule() {
   schedule_.interval_persistent_fallback =
       base::TimeDelta::FromInternalValue(profile_prefs_->GetInt64(
           prefs::kSnippetPersistentFetchingIntervalFallback));
-  schedule_.interval_soft_on_usage_event =
-      base::TimeDelta::FromInternalValue(profile_prefs_->GetInt64(
-          prefs::kSnippetSoftFetchingIntervalOnUsageEvent));
-  schedule_.interval_soft_on_ntp_opened = base::TimeDelta::FromInternalValue(
-      profile_prefs_->GetInt64(prefs::kSnippetSoftFetchingIntervalOnNtpOpened));
+  schedule_.interval_soft_wifi = base::TimeDelta::FromInternalValue(
+      profile_prefs_->GetInt64(prefs::kSnippetSoftFetchingIntervalWifi));
+  schedule_.interval_soft_fallback = base::TimeDelta::FromInternalValue(
+      profile_prefs_->GetInt64(prefs::kSnippetSoftFetchingIntervalFallback));
 }
 
 void RemoteSuggestionsSchedulerImpl::StoreFetchingSchedule() {
@@ -412,29 +422,24 @@ void RemoteSuggestionsSchedulerImpl::StoreFetchingSchedule() {
   profile_prefs_->SetInt64(
       prefs::kSnippetPersistentFetchingIntervalFallback,
       schedule_.interval_persistent_fallback.ToInternalValue());
-  profile_prefs_->SetInt64(
-      prefs::kSnippetSoftFetchingIntervalOnUsageEvent,
-      schedule_.interval_soft_on_usage_event.ToInternalValue());
-  profile_prefs_->SetInt64(
-      prefs::kSnippetSoftFetchingIntervalOnNtpOpened,
-      schedule_.interval_soft_on_ntp_opened.ToInternalValue());
+  profile_prefs_->SetInt64(prefs::kSnippetSoftFetchingIntervalWifi,
+                           schedule_.interval_soft_wifi.ToInternalValue());
+  profile_prefs_->SetInt64(prefs::kSnippetSoftFetchingIntervalFallback,
+                           schedule_.interval_soft_fallback.ToInternalValue());
 }
 
-void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfEnabled(
+void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
     TriggerType trigger) {
+  if (background_fetch_in_progress_) {
+    return;
+  }
+
   if (BackgroundFetchesDisabled(trigger)) {
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.ContentSuggestions.BackgroundFetchTrigger",
-      static_cast<int>(trigger), static_cast<int>(TriggerType::COUNT));
-
-  RefetchInTheBackground();
-}
-
-void RemoteSuggestionsSchedulerImpl::RefetchInTheBackground() {
-  if (background_fetch_in_progress_) {
+  if (trigger != TriggerType::PERSISTENT_SCHEDULER_WAKE_UP &&
+      !ShouldRefetchInTheBackgroundNow()) {
     return;
   }
 
@@ -442,34 +447,30 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackground() {
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.ContentSuggestions.BackgroundFetchTrigger",
+      static_cast<int>(trigger), static_cast<int>(TriggerType::COUNT));
+
   background_fetch_in_progress_ = true;
   provider_->RefetchInTheBackground(base::Bind(
       &RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished,
       base::Unretained(this)));
 }
 
-bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow(
-    TriggerType trigger) {
+bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow() {
   const base::Time last_fetch_attempt_time = base::Time::FromInternalValue(
       profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttempt));
-  base::Time first_allowed_fetch_time;
-  switch (trigger) {
-    case TriggerType::NTP_OPENED:
-      first_allowed_fetch_time =
-          last_fetch_attempt_time + schedule_.interval_soft_on_ntp_opened;
-      break;
-    case TriggerType::BROWSER_FOREGROUNDED:
-    case TriggerType::BROWSER_COLD_START:
-      first_allowed_fetch_time =
-          last_fetch_attempt_time + schedule_.interval_soft_on_usage_event;
-      break;
-    case TriggerType::PERSISTENT_SCHEDULER_WAKE_UP:
-    case TriggerType::COUNT:
-      NOTREACHED();
-      break;
-  }
-  base::Time now = clock_->Now();
 
+  // If we have no persistent scheduler to ask, err on the side of caution.
+  bool wifi = false;
+  if (persistent_scheduler_) {
+    wifi = persistent_scheduler_->IsOnUnmeteredConnection();
+  }
+
+  base::Time first_allowed_fetch_time =
+      last_fetch_attempt_time +
+      (wifi ? schedule_.interval_soft_wifi : schedule_.interval_soft_fallback);
+  base::Time now = clock_->Now();
   return background_fetches_allowed_after_ <= now &&
          first_allowed_fetch_time <= now;
 }

@@ -39,6 +39,13 @@ bool NTPSnippetsLauncher::Unschedule() {
   return Java_SnippetsLauncher_unschedule(env, java_launcher_);
 }
 
+bool NTPSnippetsLauncher::IsOnUnmeteredConnection() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_SnippetsLauncher_isOnUnmeteredConnection(env, java_launcher_);
+}
+
 NTPSnippetsLauncher::NTPSnippetsLauncher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

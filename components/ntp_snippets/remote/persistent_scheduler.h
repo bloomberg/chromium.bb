@@ -35,6 +35,10 @@ class PersistentScheduler {
   // the scheduling was successful.
   virtual bool Unschedule() = 0;
 
+  // TODO(jkrcal): Get this information exposed in the platform-independent
+  // net::NetworkChangeNotifier and remove this function.
+  virtual bool IsOnUnmeteredConnection() = 0;
+
  protected:
   PersistentScheduler() = default;
 

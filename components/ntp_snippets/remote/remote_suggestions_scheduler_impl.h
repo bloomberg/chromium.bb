@@ -61,7 +61,8 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   void OnNTPOpened() override;
 
  private:
-  // Abstract description of the fetching schedule.
+  // Abstract description of the fetching schedule. See the enum
+  // FetchingInterval for more documentation.
   struct FetchingSchedule {
     static FetchingSchedule Empty();
     bool operator==(const FetchingSchedule& other) const;
@@ -70,8 +71,8 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
 
     base::TimeDelta interval_persistent_wifi;
     base::TimeDelta interval_persistent_fallback;
-    base::TimeDelta interval_soft_on_usage_event;
-    base::TimeDelta interval_soft_on_ntp_opened;
+    base::TimeDelta interval_soft_wifi;
+    base::TimeDelta interval_soft_fallback;
   };
 
   enum class TriggerType;
@@ -86,15 +87,13 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   // schedule.
   void StopScheduling();
 
-  // Trigger a background refetch for the given |trigger| if enabled.
-  void RefetchInTheBackgroundIfEnabled(TriggerType trigger);
-
-  // Trigger the background refetch.
-  void RefetchInTheBackground();
+  // Trigger a background refetch for the given |trigger| if enabled and if the
+  // timing is appropriate for another fetch.
+  void RefetchInTheBackgroundIfAppropriate(TriggerType trigger);
 
   // Checks whether it is time to perform a soft background fetch, according to
   // |schedule|.
-  bool ShouldRefetchInTheBackgroundNow(TriggerType trigger);
+  bool ShouldRefetchInTheBackgroundNow();
 
   // Returns whether background fetching (for the given |trigger|) is disabled.
   bool BackgroundFetchesDisabled(TriggerType trigger) const;

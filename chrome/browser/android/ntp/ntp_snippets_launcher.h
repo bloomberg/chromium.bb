@@ -22,6 +22,7 @@ class NTPSnippetsLauncher : public ntp_snippets::PersistentScheduler {
   bool Schedule(base::TimeDelta period_wifi,
                 base::TimeDelta period_fallback) override;
   bool Unschedule() override;
+  bool IsOnUnmeteredConnection() override;
 
  private:
   friend struct base::LazyInstanceTraitsBase<NTPSnippetsLauncher>;

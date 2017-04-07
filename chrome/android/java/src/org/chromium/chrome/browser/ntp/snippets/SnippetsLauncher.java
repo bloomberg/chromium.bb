@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -163,6 +166,14 @@ public class SnippetsLauncher {
         if (!mGCMEnabled) return false;
         Log.i(TAG, "Unscheduling");
         return schedule(0, 0);
+    }
+
+    @CalledByNative
+    public boolean isOnUnmeteredConnection() {
+        Context context = ContextUtils.getApplicationContext();
+        ConnectivityManager manager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return !manager.isActiveNetworkMetered();
     }
 
     public static boolean shouldRescheduleTasksOnUpgrade() {

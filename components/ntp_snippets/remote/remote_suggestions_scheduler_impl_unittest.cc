@@ -32,6 +32,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_params_manager.h"
 #include "components/web_resource/web_resource_pref_names.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,6 +66,7 @@ class MockPersistentScheduler : public PersistentScheduler {
                bool(base::TimeDelta period_wifi,
                     base::TimeDelta period_fallback));
   MOCK_METHOD0(Unschedule, bool());
+  MOCK_METHOD0(IsOnUnmeteredConnection, bool());
 };
 
 // TODO(jkrcal): Move into its own library to reuse in other unit-tests?
@@ -118,6 +120,9 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
     // registers this pref and replace the call in browser_process_impl.cc & in
     // eula_accepted_notifier_unittest.cc with the new static function.
     local_state_.registry()->RegisterBooleanPref(::prefs::kEulaAccepted, false);
+    // By default pretend we are on WiFi.
+    EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
+        .WillRepeatedly(Return(true));
     ResetProvider();
   }
 
@@ -473,7 +478,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
         .WillOnce(SaveArg<0>(&signal_fetch_done));
     // Rescheduling after a succesful fetch.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    // The second call to NTPOpened 2hrs later again results in a fetch.
+    // The second call to NTPOpened 4hrs later again results in a fetch.
     EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
 
@@ -482,8 +487,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   // Make the first soft fetch successful.
   scheduler()->OnBrowserForegrounded();
   signal_fetch_done.Run(Status::Success());
-  // Open NTP again after 2hrs.
-  test_clock()->Advance(base::TimeDelta::FromHours(2));
+  // Open NTP again after 4hrs.
+  test_clock()->Advance(base::TimeDelta::FromHours(4));
   scheduler()->OnBrowserForegrounded();
 }
 
@@ -568,7 +573,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldUnscheduleOnlyOnce) {
   DeactivateProvider();
 }
 
-TEST_F(RemoteSuggestionsSchedulerImplTest, ReschedulesWhenWifiParamChanges) {
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ReschedulesWhenPersistentWifiParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
@@ -581,7 +587,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, ReschedulesWhenWifiParamChanges) {
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       ReschedulesWhenFallbackParamChanges) {
+       ReschedulesWhenPersistentFallbackParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
@@ -595,13 +601,13 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       ReschedulesWhenOnUsageEventParamChanges) {
+       ReschedulesWhenSoftWifiParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the on usage interval for this class.
-  SetVariationParameter("soft_fetching_interval_hours-active-active_ntp_user",
+  SetVariationParameter("soft_fetching_interval_hours-wifi-active_ntp_user",
                         "1.5");
 
   // Schedule() should get called for the second time after params have changed.
@@ -609,85 +615,143 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       ReschedulesWhenOnNtpOpenedParamChanges) {
+       ReschedulesWhenSoftFallbackParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
   ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the fallback interval for this class.
-  SetVariationParameter("soft_on_ntp_opened_interval_hours-active_ntp_user",
+  SetVariationParameter("soft_fetching_interval_hours-fallback-active_ntp_user",
                         "1.5");
 
   // Schedule() should get called for the second time after params have changed.
   ActivateProvider();
 }
 
-TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForNtpOpenedTrigger) {
-  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  {
-    InSequence s;
-    // Initial scheduling after being enabled.
-    EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
-        .WillOnce(SaveArg<0>(&signal_fetch_done));
-    // Rescheduling after a succesful fetch.
-    EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    // The third call to NTPOpened 35min later again results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
-  }
+TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForSoftTriggerOnWifi) {
+  // Pretend we are on WiFi (already done in ctor, we make it explicit here).
+  EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
+      .WillRepeatedly(Return(true));
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 2h time
+  // interval by default for soft background fetches on WiFi.
 
+  // Initial scheduling after being enabled.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ActivateProvider();
 
+  // The first call to NTPOpened results in a fetch.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArg<0>(&signal_fetch_done));
   scheduler()->OnNTPOpened();
+  // Rescheduling after a succesful fetch.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   signal_fetch_done.Run(Status::Success());
 
-  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 2h time
-  // interval by default for soft backgroudn fetches on ntp open events.
-
-  // Open NTP again after 20min. This time no fetch is executed.
+  // Open NTP again after too short delay. This time no fetch is executed.
   test_clock()->Advance(base::TimeDelta::FromMinutes(20));
   scheduler()->OnNTPOpened();
 
-  // Open NTP again after 101min (121min since first opened). Since the default
-  // time interval has passed refetch again.
-  test_clock()->Advance(base::TimeDelta::FromMinutes(101));
+  // Open NTP after another delay, now together long enough to issue a fetch.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(100));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnNTPOpened();
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
-       OverrideFetchIntervalForNtpOpenedTrigger) {
+       OverrideFetchIntervalForSoftTriggerOnWifi) {
+  // Pretend we are on WiFi (already done in ctor, we make it explicit here).
+  EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
+      .WillRepeatedly(Return(true));
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the on usage interval for this class from 2h to 30min.
-  SetVariationParameter("soft_on_ntp_opened_interval_hours-active_ntp_user",
+  SetVariationParameter("soft_fetching_interval_hours-wifi-active_ntp_user",
                         "0.5");
 
-  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  {
-    InSequence s;
-    // Initial scheduling after being enabled.
-    EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
-        .WillOnce(SaveArg<0>(&signal_fetch_done));
-    // Rescheduling after a succesful fetch.
-    EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    // The third call to NTPOpened 35min later again results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
-  }
-
+  // Initial scheduling after being enabled.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ActivateProvider();
 
+  // The first call to NTPOpened results in a fetch.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArg<0>(&signal_fetch_done));
   scheduler()->OnNTPOpened();
+  // Rescheduling after a succesful fetch.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   signal_fetch_done.Run(Status::Success());
 
-  // Open NTP again after 20min. No fetch request is issues since the 30 min
-  // time interval has not passed yet.
+  // Open NTP again after too short delay. This time no fetch is executed.
   test_clock()->Advance(base::TimeDelta::FromMinutes(20));
   scheduler()->OnNTPOpened();
 
-  // Open NTP again after 15min (35min since first opened)
-  test_clock()->Advance(base::TimeDelta::FromMinutes(15));
+  // Open NTP after another delay, now together long enough to issue a fetch.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(10));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnNTPOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       FetchIntervalForSoftTriggerOnFallback) {
+  // Pretend we are not on wifi -> fallback connection.
+  EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
+      .WillRepeatedly(Return(false));
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 4h time
+  // interval by default for soft background fetches not on WiFi.
+
+  // Initial scheduling after being enabled.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  ActivateProvider();
+
+  // The first call to NTPOpened results in a fetch.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArg<0>(&signal_fetch_done));
+  scheduler()->OnNTPOpened();
+  // Rescheduling after a succesful fetch.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  signal_fetch_done.Run(Status::Success());
+
+  // Open NTP again after too short delay. This time no fetch is executed.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(180));
+  scheduler()->OnNTPOpened();
+
+  // Open NTP after another delay, now together long enough to issue a fetch.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(60));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnNTPOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       OverrideFetchIntervalForSoftTriggerOnFallback) {
+  // Pretend we are not on wifi -> fallback connection.
+  EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
+      .WillRepeatedly(Return(false));
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
+  // null. Change the on usage interval for this class from 4h to 30min.
+  SetVariationParameter("soft_fetching_interval_hours-fallback-active_ntp_user",
+                        "0.5");
+
+  // Initial scheduling after being enabled.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  ActivateProvider();
+
+  // The first call to NTPOpened results in a fetch.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArg<0>(&signal_fetch_done));
+  scheduler()->OnNTPOpened();
+  // Rescheduling after a succesful fetch.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  signal_fetch_done.Run(Status::Success());
+
+  // Open NTP again after too short delay. This time no fetch is executed.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(20));
+  scheduler()->OnNTPOpened();
+
+  // Open NTP after another delay, now together long enough to issue a fetch.
+  test_clock()->Advance(base::TimeDelta::FromMinutes(10));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnNTPOpened();
 }
 
