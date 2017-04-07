@@ -104,15 +104,14 @@ int Canvas::DefaultCanvasTextAlignment() {
 }
 
 ImageSkiaRep Canvas::ExtractImageRep() const {
-  // Make a bitmap to return, and a canvas to draw into it. We don't just want
-  // to call extractSubset or the copy constructor, since we want an actual copy
-  // of the bitmap.
-  const SkISize size = canvas_->getBaseLayerSize();
-  SkBitmap result;
-  result.allocN32Pixels(size.width(), size.height());
-
-  canvas_->readPixels(&result, 0, 0);
-  return ImageSkiaRep(result, image_scale_);
+  DCHECK(bitmap_);
+  SkBitmap bitmap_copy;
+  // copyTo() will perform a deep copy, which is what we want.
+  bool result = bitmap_->copyTo(&bitmap_copy);
+  // This should succeed since the destination bitmap is empty to begin with.
+  // The only failure is an allocation failure, which we want to DCHECK anyway.
+  DCHECK(result);
+  return ImageSkiaRep(bitmap_copy, image_scale_);
 }
 
 void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {

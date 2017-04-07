@@ -42,23 +42,6 @@ SkISize SkiaPaintCanvas::getBaseLayerSize() const {
   return canvas_->getBaseLayerSize();
 }
 
-bool SkiaPaintCanvas::readPixels(const SkImageInfo& dest_info,
-                                 void* dest_pixels,
-                                 size_t dest_row_bytes,
-                                 int src_x,
-                                 int src_y) {
-  return canvas_->readPixels(dest_info, dest_pixels, dest_row_bytes, src_x,
-                             src_y);
-}
-
-bool SkiaPaintCanvas::readPixels(SkBitmap* bitmap, int src_x, int src_y) {
-  return canvas_->readPixels(bitmap, src_x, src_y);
-}
-
-bool SkiaPaintCanvas::readPixels(const SkIRect& srcRect, SkBitmap* bitmap) {
-  return canvas_->readPixels(srcRect, bitmap);
-}
-
 bool SkiaPaintCanvas::writePixels(const SkImageInfo& info,
                                   const void* pixels,
                                   size_t row_bytes,

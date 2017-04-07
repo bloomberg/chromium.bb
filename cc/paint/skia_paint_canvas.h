@@ -39,13 +39,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void flush() override;
 
   SkISize getBaseLayerSize() const override;
-  bool readPixels(const SkImageInfo& dest_info,
-                  void* dest_pixels,
-                  size_t dest_row_bytes,
-                  int src_x,
-                  int src_y) override;
-  bool readPixels(SkBitmap* bitmap, int src_x, int src_y) override;
-  bool readPixels(const SkIRect& srcRect, SkBitmap* bitmap) override;
   bool writePixels(const SkImageInfo& info,
                    const void* pixels,
                    size_t row_bytes,

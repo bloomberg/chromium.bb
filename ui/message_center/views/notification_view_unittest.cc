@@ -132,10 +132,7 @@ class NotificationViewTest : public views::ViewsTestBase,
     canvas.DrawColor(SK_ColorBLACK);
     view->OnPaint(&canvas);
 
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(canvas_size.width(), canvas_size.height());
-    canvas.sk_canvas()->readPixels(&bitmap, 0, 0);
-
+    SkBitmap bitmap = canvas.GetBitmap();
     // Incrementally inset each edge at its midpoint to find the bounds of the
     // rect containing the image's color. This assumes that the image is
     // centered in the canvas.

@@ -568,7 +568,7 @@ void LaserPointerView::UpdateBuffer() {
         gfx::ScaleToEnclosingRect(update_rect, scale_factor_);
     uint8_t* data = static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
     int stride = gpu_memory_buffer_->stride(0);
-    canvas.sk_canvas()->readPixels(
+    canvas.GetBitmap().readPixels(
         SkImageInfo::MakeN32Premul(pixel_rect.width(), pixel_rect.height()),
         data + pixel_rect.y() * stride + pixel_rect.x() * 4, stride, 0, 0);
   }

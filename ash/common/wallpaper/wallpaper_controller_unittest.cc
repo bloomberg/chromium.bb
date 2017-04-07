@@ -165,18 +165,15 @@ class WallpaperControllerTest : public test::AshTestBase {
     gfx::Canvas canvas(size, device_scale_factor, true);
     view->OnPaint(&canvas);
 
-    int canvas_width = canvas.sk_canvas()->imageInfo().width();
-    int canvas_height = canvas.sk_canvas()->imageInfo().height();
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(canvas_width, canvas_height);
-    canvas.sk_canvas()->readPixels(&bitmap, 0, 0);
-
-    for (int i = 0; i < canvas_width; i++) {
-      for (int j = 0; j < canvas_height; j++) {
-        if (i >= (canvas_width - image_width) / 2 &&
-            i < (canvas_width + image_width) / 2 &&
-            j >= (canvas_height - image_height) / 2 &&
-            j < (canvas_height + image_height) / 2) {
+    SkBitmap bitmap = canvas.GetBitmap();
+    int bitmap_width = bitmap.width();
+    int bitmap_height = bitmap.height();
+    for (int i = 0; i < bitmap_width; i++) {
+      for (int j = 0; j < bitmap_height; j++) {
+        if (i >= (bitmap_width - image_width) / 2 &&
+            i < (bitmap_width + image_width) / 2 &&
+            j >= (bitmap_height - image_height) / 2 &&
+            j < (bitmap_height + image_height) / 2) {
           EXPECT_EQ(color, bitmap.getColor(i, j));
         } else {
           EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(i, j));

@@ -34,13 +34,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void flush() = 0;
 
   virtual SkISize getBaseLayerSize() const = 0;
-  virtual bool readPixels(const SkImageInfo& dest_info,
-                          void* dest_pixels,
-                          size_t dest_row_bytes,
-                          int src_x,
-                          int src_y) = 0;
-  virtual bool readPixels(SkBitmap* bitmap, int src_x, int src_y) = 0;
-  virtual bool readPixels(const SkIRect& srcRect, SkBitmap* bitmap) = 0;
   virtual bool writePixels(const SkImageInfo& info,
                            const void* pixels,
                            size_t row_bytes,
