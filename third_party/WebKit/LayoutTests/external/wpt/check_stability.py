@@ -394,27 +394,42 @@ def get_branch_point(user):
     git = get_git_cmd(wpt_root)
     if os.environ.get("TRAVIS_PULL_REQUEST", "false") != "false":
         # This is a PR, so the base branch is in TRAVIS_BRANCH
-        branch_point = os.environ.get("TRAVIS_COMMIT_RANGE").split(".", 1)[0]
-        branch_point = git("rev-parse", branch_point)
+        travis_branch = os.environ.get("TRAVIS_BRANCH")
+        assert travis_branch, "TRAVIS_BRANCH environment variable is defined"
+        branch_point = git("rev-parse", travis_branch)
     else:
         # Otherwise we aren't on a PR, so we try to find commits that are only in the
         # current branch c.f.
         # http://stackoverflow.com/questions/13460152/find-first-ancestor-commit-in-another-branch
         head = git("rev-parse", "HEAD")
         # To do this we need all the commits in the local copy
-        fetch_wpt(user, "--unshallow", "+refs/heads/*:refs/remotes/origin/*")
+        fetch_args = [user, "+refs/heads/*:refs/remotes/origin/*"]
+        if os.path.exists(os.path.join(wpt_root, ".git", "shallow")):
+            fetch_args.insert(1, "--unshallow")
+        fetch_wpt(*fetch_args)
         not_heads = [item for item in git("rev-parse", "--not", "--all").split("\n")
-                     if not head in item]
+                     if item.strip() and not head in item]
         commits = git("rev-list", "HEAD", *not_heads).split("\n")
-        first_commit = commits[-1]
-        branch_point = git("rev-parse", first_commit + "^")
-        # The above can produce a too-early commit if we are e.g. on master and there are
-        # preceding changes that were rebased and so aren't on any other branch. To avoid
-        # this issue we check for the later of the above branch point and the merge-base
-        # with master
+        branch_point = None
+        if len(commits):
+            first_commit = commits[-1]
+            if first_commit:
+                branch_point = git("rev-parse", first_commit + "^")
+
+        # The above heuristic will fail in the following cases:
+        #
+        # - The current branch has fallen behind the version retrieved via the above
+        #   `fetch` invocation
+        # - Changes on the current branch were rebased and therefore do not exist on any
+        #   other branch. This will result in the selection of a commit that is earlier
+        #   in the history than desired (as determined by calculating the later of the
+        #   branch point and the merge base)
+        #
+        # In either case, fall back to using the merge base as the branch point.
         merge_base = git("merge-base", "HEAD", "origin/master")
-        if (branch_point != merge_base and
-            not git("log", "--oneline", "%s..%s" % (merge_base, branch_point)).strip()):
+        if (branch_point is None or
+            (branch_point != merge_base and
+             not git("log", "--oneline", "%s..%s" % (merge_base, branch_point)).strip())):
             logger.debug("Using merge-base as the branch point")
             branch_point = merge_base
         else:
@@ -428,7 +443,7 @@ def get_files_changed(branch_point):
     """Get and return files changed since current branch diverged from master."""
     root = os.path.abspath(os.curdir)
     git = get_git_cmd(wpt_root)
-    files = git("diff", "--name-only", "-z", "%s.." % branch_point)
+    files = git("diff", "--name-only", "-z", "%s..." % branch_point)
     if not files:
         return []
     assert files[-1] == "\0"

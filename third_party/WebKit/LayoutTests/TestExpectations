@@ -1862,6 +1862,8 @@ crbug.com/626703 external/wpt/mixed-content/blockable/no-opt-in/same-host-http/i
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/626703 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/offline/browser-state/navigator_online_event-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/offline/manifest_main_empty-manual.html [ Skip ]
