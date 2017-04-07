@@ -96,6 +96,22 @@ bool DefaultAccessibilityDelegate::IsFocusHighlightEnabled() const {
   return focus_highligh_enabled_;
 }
 
+void DefaultAccessibilityDelegate::SetStickyKeysEnabled(bool enabled) {
+  sticky_keys_enabled_ = enabled;
+}
+
+bool DefaultAccessibilityDelegate::IsStickyKeysEnabled() const {
+  return sticky_keys_enabled_;
+}
+
+void DefaultAccessibilityDelegate::SetTapDraggingEnabled(bool enabled) {
+  tap_dragging_enabled_ = enabled;
+}
+
+bool DefaultAccessibilityDelegate::IsTapDraggingEnabled() const {
+  return tap_dragging_enabled_;
+}
+
 void DefaultAccessibilityDelegate::SetSelectToSpeakEnabled(bool enabled) {
   select_to_speak_enabled_ = enabled;
 }

@@ -84,6 +84,18 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns if focus highlighting is enabled.
   virtual bool IsFocusHighlightEnabled() const = 0;
 
+  // Invoked to enable or disable sticky keys.
+  virtual void SetStickyKeysEnabled(bool enabled) = 0;
+
+  // Returns if sticky keys is enabled.
+  virtual bool IsStickyKeysEnabled() const = 0;
+
+  // Invoked to enable or disable tap dragging.
+  virtual void SetTapDraggingEnabled(bool enabled) = 0;
+
+  // Returns if tap dragging is enabled.
+  virtual bool IsTapDraggingEnabled() const = 0;
+
   // Invoked to enable or disable select-to-speak.
   virtual void SetSelectToSpeakEnabled(bool enabled) = 0;
 

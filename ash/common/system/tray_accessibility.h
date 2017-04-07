@@ -103,6 +103,8 @@ class AccessibilityDetailedView : public TrayDetailsView,
   views::View* caret_highlight_view_ = nullptr;
   views::View* highlight_mouse_cursor_view_ = nullptr;
   views::View* highlight_keyboard_focus_view_ = nullptr;
+  views::View* sticky_keys_view_ = nullptr;
+  views::View* tap_dragging_view_ = nullptr;
 
   bool spoken_feedback_enabled_ = false;
   bool high_contrast_enabled_ = false;
@@ -114,6 +116,8 @@ class AccessibilityDetailedView : public TrayDetailsView,
   bool caret_highlight_enabled_ = false;
   bool highlight_mouse_cursor_enabled_ = false;
   bool highlight_keyboard_focus_enabled_ = false;
+  bool sticky_keys_enabled_ = false;
+  bool tap_dragging_enabled_ = false;
   LoginStatus login_;
 
   friend class chromeos::TrayAccessibilityTest;

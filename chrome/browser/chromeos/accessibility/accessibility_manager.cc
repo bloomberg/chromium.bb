@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -236,6 +237,7 @@ AccessibilityManager* AccessibilityManager::Get() {
 AccessibilityManager::AccessibilityManager()
     : profile_(NULL),
       large_cursor_pref_handler_(prefs::kAccessibilityLargeCursorEnabled),
+      sticky_keys_pref_handler_(prefs::kAccessibilityStickyKeysEnabled),
       spoken_feedback_pref_handler_(prefs::kAccessibilitySpokenFeedbackEnabled),
       high_contrast_pref_handler_(prefs::kAccessibilityHighContrastEnabled),
       autoclick_pref_handler_(prefs::kAccessibilityAutoclickEnabled),
@@ -247,6 +249,7 @@ AccessibilityManager::AccessibilityManager()
       cursor_highlight_pref_handler_(
           prefs::kAccessibilityCursorHighlightEnabled),
       focus_highlight_pref_handler_(prefs::kAccessibilityFocusHighlightEnabled),
+      tap_dragging_pref_handler_(prefs::kTapDraggingEnabled),
       select_to_speak_pref_handler_(prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(prefs::kAccessibilitySwitchAccessEnabled),
       large_cursor_enabled_(false),
@@ -261,6 +264,7 @@ AccessibilityManager::AccessibilityManager()
       caret_highlight_enabled_(false),
       cursor_highlight_enabled_(false),
       focus_highlight_enabled_(false),
+      tap_dragging_enabled_(false),
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
@@ -359,7 +363,8 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         pref_service->GetBoolean(prefs::kAccessibilityMonoAudioEnabled) ||
         pref_service->GetBoolean(prefs::kAccessibilityCaretHighlightEnabled) ||
         pref_service->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled) ||
-        pref_service->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled))
+        pref_service->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled) ||
+        pref_service->GetBoolean(prefs::kTapDraggingEnabled))
       return true;
   }
   return false;
@@ -457,6 +462,10 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
     return;
 
   sticky_keys_enabled_ = enabled;
+
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_STICKY_KEYS,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
   ash::Shell::Get()->sticky_keys_controller()->Enable(enabled);
 }
 
@@ -902,6 +911,38 @@ void AccessibilityManager::UpdateFocusHighlightFromPref() {
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
+void AccessibilityManager::EnableTapDragging(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kTapDraggingEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsTapDraggingEnabled() {
+  return tap_dragging_enabled_;
+}
+
+void AccessibilityManager::UpdateTapDraggingFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kTapDraggingEnabled);
+
+  if (tap_dragging_enabled_ == enabled)
+    return;
+  tap_dragging_enabled_ = enabled;
+
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_TAP_DRAGGING,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
+
+  system::TouchpadSettings touchpad_settings;
+  touchpad_settings.SetTapDragging(enabled);
+}
+
 void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1125,6 +1166,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::UpdateFocusHighlightFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
+        prefs::kTapDraggingEnabled,
+        base::Bind(&AccessibilityManager::UpdateTapDraggingFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
         prefs::kAccessibilitySelectToSpeakEnabled,
         base::Bind(&AccessibilityManager::UpdateSelectToSpeakFromPref,
                    base::Unretained(this)));
@@ -1154,6 +1199,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   large_cursor_pref_handler_.HandleProfileChanged(profile_, profile);
   spoken_feedback_pref_handler_.HandleProfileChanged(profile_, profile);
   high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
+  sticky_keys_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
   virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
@@ -1161,6 +1207,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   caret_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   cursor_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   focus_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
+  tap_dragging_pref_handler_.HandleProfileChanged(profile_, profile);
   select_to_speak_pref_handler_.HandleProfileChanged(profile_, profile);
   switch_access_pref_handler_.HandleProfileChanged(profile_, profile);
 
@@ -1182,6 +1229,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateFocusHighlightFromPref();
+  UpdateTapDraggingFromPref();
   UpdateSelectToSpeakFromPref();
   UpdateSwitchAccessFromPref();
 

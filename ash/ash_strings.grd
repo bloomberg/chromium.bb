@@ -342,6 +342,12 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off highlight keyboard focus.">
         Highlight object with keyboard focus
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off sticky keys.">
+        Sticky keys
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TAP_DRAGGING" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off tap dragging.">
+        Tap dragging
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label used in the accessibility menu of system tray to open accessibility setting page.">
         Accessibility settings
       </message>

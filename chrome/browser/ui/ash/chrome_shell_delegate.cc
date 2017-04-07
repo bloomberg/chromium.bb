@@ -221,6 +221,26 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return AccessibilityManager::Get()->IsFocusHighlightEnabled();
   }
 
+  void SetStickyKeysEnabled(bool enabled) override {
+    DCHECK(AccessibilityManager::Get());
+    return AccessibilityManager::Get()->EnableStickyKeys(enabled);
+  }
+
+  bool IsStickyKeysEnabled() const override {
+    DCHECK(AccessibilityManager::Get());
+    return AccessibilityManager::Get()->IsStickyKeysEnabled();
+  }
+
+  void SetTapDraggingEnabled(bool enabled) override {
+    DCHECK(AccessibilityManager::Get());
+    return AccessibilityManager::Get()->EnableTapDragging(enabled);
+  }
+
+  bool IsTapDraggingEnabled() const override {
+    DCHECK(AccessibilityManager::Get());
+    return AccessibilityManager::Get()->IsTapDraggingEnabled();
+  }
+
   void SetSelectToSpeakEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->SetSelectToSpeakEnabled(enabled);

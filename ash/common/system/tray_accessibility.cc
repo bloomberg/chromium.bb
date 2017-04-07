@@ -54,6 +54,8 @@ enum AccessibilityState {
   A11Y_CARET_HIGHLIGHT = 1 << 8,
   A11Y_HIGHLIGHT_MOUSE_CURSOR = 1 << 9,
   A11Y_HIGHLIGHT_KEYBOARD_FOCUS = 1 << 10,
+  A11Y_STICKY_KEYS = 1 << 11,
+  A11Y_TAP_DRAGGING = 1 << 12,
 };
 
 uint32_t GetAccessibilityState() {
@@ -81,6 +83,10 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_HIGHLIGHT_MOUSE_CURSOR;
   if (delegate->IsFocusHighlightEnabled())
     state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
+  if (delegate->IsStickyKeysEnabled())
+    state |= A11Y_STICKY_KEYS;
+  if (delegate->IsTapDraggingEnabled())
+    state |= A11Y_TAP_DRAGGING;
   return state;
 }
 
@@ -291,6 +297,16 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS),
         highlight_keyboard_focus_enabled_);
   }
+
+  sticky_keys_enabled_ = delegate->IsStickyKeysEnabled();
+  sticky_keys_view_ = AddScrollListItemWithoutIcon(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS),
+      sticky_keys_enabled_);
+
+  tap_dragging_enabled_ = delegate->IsTapDraggingEnabled();
+  tap_dragging_view_ = AddScrollListItemWithoutIcon(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TAP_DRAGGING),
+      tap_dragging_enabled_);
 }
 
 HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
@@ -386,6 +402,16 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                       ? ash::UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS
                       : ash::UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS;
     delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
+  } else if (sticky_keys_view_ && view == sticky_keys_view_) {
+    user_action = delegate->IsStickyKeysEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_STICKY_KEYS
+                      : ash::UMA_STATUS_AREA_ENABLE_STICKY_KEYS;
+    delegate->SetStickyKeysEnabled(!delegate->IsStickyKeysEnabled());
+  } else if (tap_dragging_view_ && view == tap_dragging_view_) {
+    user_action = delegate->IsTapDraggingEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_TAP_DRAGGING
+                      : ash::UMA_STATUS_AREA_ENABLE_TAP_DRAGGING;
+    delegate->SetTapDraggingEnabled(!delegate->IsTapDraggingEnabled());
   } else {
     return;
   }

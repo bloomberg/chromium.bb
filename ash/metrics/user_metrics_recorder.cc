@@ -407,6 +407,12 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK:
       RecordAction(UserMetricsAction("StatusArea_SpokenFeedbackDisabled"));
       break;
+    case UMA_STATUS_AREA_DISABLE_STICKY_KEYS:
+      RecordAction(UserMetricsAction("StatusArea_StickyKeysDisabled"));
+      break;
+    case UMA_STATUS_AREA_DISABLE_TAP_DRAGGING:
+      RecordAction(UserMetricsAction("StatusArea_TapDraggingDisabled"));
+      break;
     case UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD:
       RecordAction(UserMetricsAction("StatusArea_VirtualKeyboardDisabled"));
       break;
@@ -465,6 +471,12 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK:
       RecordAction(UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
+      break;
+    case UMA_STATUS_AREA_ENABLE_STICKY_KEYS:
+      RecordAction(UserMetricsAction("StatusArea_StickyKeysEnabled"));
+      break;
+    case UMA_STATUS_AREA_ENABLE_TAP_DRAGGING:
+      RecordAction(UserMetricsAction("StatusArea_TapDraggingEnabled"));
       break;
     case UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD:
       RecordAction(UserMetricsAction("StatusArea_VirtualKeyboardEnabled"));

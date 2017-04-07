@@ -15628,6 +15628,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_StickyKeysDisabled">
+  <owner>minch@chromium.org</owner>
+  <description>Ash system menu: Accessibility: Disable sticky keys</description>
+</action>
+
+<action name="StatusArea_StickyKeysEnabled">
+  <owner>minch@chromium.org</owner>
+  <description>Ash system menu: Accessibility: Enable sticky keys</description>
+</action>
+
+<action name="StatusArea_TapDraggingDisabled">
+  <owner>minch@chromium.org</owner>
+  <description>
+    Ash system menu: Accessibility: Disable tap dragging
+  </description>
+</action>
+
+<action name="StatusArea_TapDraggingEnabled">
+  <owner>minch@chromium.org</owner>
+  <description>Ash system menu: Accessibility: Enable tap dragging</description>
+</action>
+
 <action name="StatusArea_Tracing_Default_Selected">
   <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>

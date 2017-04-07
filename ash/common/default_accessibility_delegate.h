@@ -38,6 +38,10 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool IsCursorHighlightEnabled() const override;
   void SetFocusHighlightEnabled(bool enabled) override;
   bool IsFocusHighlightEnabled() const override;
+  void SetStickyKeysEnabled(bool enabled) override;
+  bool IsStickyKeysEnabled() const override;
+  void SetTapDraggingEnabled(bool enabled) override;
+  bool IsTapDraggingEnabled() const override;
   void SetSelectToSpeakEnabled(bool enabled) override;
   bool IsSelectToSpeakEnabled() const override;
   void SetSwitchAccessEnabled(bool enabled) override;
@@ -70,6 +74,8 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool caret_highlight_enabled_ = false;
   bool cursor_highlight_enabled_ = false;
   bool focus_highligh_enabled_ = false;
+  bool sticky_keys_enabled_ = false;
+  bool tap_dragging_enabled_ = false;
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
   AccessibilityAlert accessibility_alert_ = A11Y_ALERT_NONE;
