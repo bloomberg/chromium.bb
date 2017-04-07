@@ -374,6 +374,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   SurfaceId id(FrameSinkId(1234, 4321),
                LocalSurfaceId(5678, base::UnguessableToken::Create()));
   referenced_surfaces.push_back(id);
+  uint32_t frame_token = 0xdeadbeef;
 
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
@@ -396,6 +397,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.selection = selection;
   input.latency_info = latency_infos;
   input.referenced_surfaces = referenced_surfaces;
+  input.frame_token = frame_token;
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CompositorFrameMetadata output;
@@ -427,6 +429,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
   for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
     EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);
+  EXPECT_EQ(frame_token, output.frame_token);
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
