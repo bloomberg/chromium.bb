@@ -99,7 +99,7 @@ class RasterTaskImpl : public TileTask {
         raster_source_(std::move(raster_source)),
         content_rect_(tile->content_rect()),
         invalid_content_rect_(invalidated_rect),
-        raster_scale_(tile->contents_scale()),
+        raster_transform_(tile->raster_transform()),
         playback_settings_(playback_settings),
         tile_resolution_(tile_resolution),
         layer_id_(tile->layer_id()),
@@ -127,10 +127,9 @@ class RasterTaskImpl : public TileTask {
 
     DCHECK(raster_source_);
 
-    raster_buffer_->Playback(
-        raster_source_.get(), content_rect_, invalid_content_rect_,
-        new_content_id_, gfx::AxisTransform2d(raster_scale_, gfx::Vector2dF()),
-        playback_settings_);
+    raster_buffer_->Playback(raster_source_.get(), content_rect_,
+                             invalid_content_rect_, new_content_id_,
+                             raster_transform_, playback_settings_);
   }
 
   // Overridden from TileTask:
@@ -164,7 +163,7 @@ class RasterTaskImpl : public TileTask {
   scoped_refptr<RasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
-  float raster_scale_;
+  gfx::AxisTransform2d raster_transform_;
   RasterSource::PlaybackSettings playback_settings_;
   TileResolution tile_resolution_;
   int layer_id_;
@@ -666,9 +665,11 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
       // canvas which is reset between tiles.
       tile->set_solid_color_analysis_performed(true);
       SkColor color = SK_ColorTRANSPARENT;
+      gfx::RectF layer_rect = tile->raster_transform().InverseMapRect(
+          gfx::RectF(tile->content_rect()));
       bool is_solid_color =
           prioritized_tile.raster_source()->PerformSolidColorAnalysis(
-              tile->content_rect(), tile->contents_scale(), &color);
+              gfx::ToEnclosingRect(layer_rect), 1.f, &color);
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
         client_->NotifyTileStateChanged(tile);
@@ -865,7 +866,7 @@ void TileManager::ScheduleTasks(
     // the CheckerImageTracker as well. See crbug.com/691087.
     std::vector<DrawImage> images;
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->contents_scale(),
+        tile->enclosing_layer_rect(), tile->raster_transform().scale(),
         raster_color_space, &images);
     new_locked_images.insert(new_locked_images.end(), images.begin(),
                              images.end());
@@ -970,8 +971,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   images.clear();
   if (!playback_settings.skip_images) {
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->contents_scale(), color_space,
-        &images);
+        tile->enclosing_layer_rect(), tile->raster_transform().scale(),
+        color_space, &images);
     checker_image_tracker_.FilterImagesForCheckeringForTile(
         &images, &images_to_skip, prioritized_tile.tile()->tiling()->tree());
   }
@@ -1384,7 +1385,7 @@ TileManager::ActivationStateAsValue() {
 
     value->SetInteger("id", tile->id());
     value->SetString("content_rect", tile->content_rect().ToString());
-    value->SetDouble("contents_scale", tile->contents_scale());
+    value->SetDouble("contents_scale", tile->contents_scale_key());
     value->SetBoolean("is_ready_to_draw", tile->draw_info().IsReadyToDraw());
     value->SetString("resolution", TileResolutionToString(priority.resolution));
     value->SetString("priority_bin",

@@ -179,7 +179,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
           settings.max_preraster_distance_in_screen_pixels);
 
   PictureLayerTiling* tiling =
-      tiling_set->AddTiling(1.f, layer->GetRasterSource());
+      tiling_set->AddTiling(gfx::AxisTransform2d(), layer->GetRasterSource());
   tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
   RasterSource* raster_source = tiling->raster_source().get();
@@ -189,7 +189,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     DCHECK(*it);
 
     gfx::Rect content_rect = (*it)->content_rect();
-    float contents_scale = (*it)->contents_scale();
+    float contents_scale = (*it)->raster_transform().scale();
 
     base::TimeDelta min_time;
     bool is_solid_color = false;

@@ -11332,7 +11332,7 @@ TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   layer->SetBounds(gfx::Size(10, 10));
   layer->set_gpu_raster_max_texture_size(host_impl_->device_viewport_size());
   layer->SetDrawsContent(true);
-  layer->tilings()->AddTiling(1.0f, raster_source_with_tiles);
+  layer->tilings()->AddTiling(gfx::AxisTransform2d(), raster_source_with_tiles);
   layer->UpdateRasterSource(raster_source_with_tiles, &empty_invalidation,
                             nullptr);
   layer->tilings()->tiling_at(0)->set_resolution(

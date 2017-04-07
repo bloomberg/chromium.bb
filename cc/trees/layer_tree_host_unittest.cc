@@ -6033,14 +6033,15 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       // On frame 3, we will have a lower res tile complete for the pinch-out
       // gesture even though it's not displayed. We wait for it here to prevent
       // flakiness.
-      EXPECT_EQ(0.75f, tile->contents_scale());
+      EXPECT_EQ(gfx::AxisTransform2d(0.75f, gfx::Vector2dF()),
+                tile->raster_transform());
       PostNextAfterDraw(host_impl);
     }
     // On frame_ == 4, we are preventing texture uploads from completing,
     // so this verifies they are not completing before frame_ == 5.
     // Flaky failures here indicate we're failing to prevent uploads from
     // completing.
-    EXPECT_NE(4, frame_) << tile->contents_scale();
+    EXPECT_NE(4, frame_) << tile->contents_scale_key();
   }
 
   void AfterTest() override {}
