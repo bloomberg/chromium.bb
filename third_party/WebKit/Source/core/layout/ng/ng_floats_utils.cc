@@ -127,9 +127,19 @@ NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
       toNGPhysicalBoxFragment(floating_object->fragment.get()));
 
   // Find a layout opportunity that will fit our float.
-  const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
+  NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
       new_parent_space, float_fragment, floating_object);
-  DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
+
+  // TODO(glebl): This should check for infinite opportunity instead.
+  if (opportunity.IsEmpty()) {
+    // Because of the implementation specific of the layout opportunity iterator
+    // an empty opportunity can mean 2 things:
+    // - search for layout opportunities is exhausted.
+    // - opportunity has an infinite size. That's because CS is infinite.
+    opportunity = NGLayoutOpportunity(
+        NGLogicalOffset(),
+        NGLogicalSize(float_fragment.InlineSize(), float_fragment.BlockSize()));
+  }
 
   // Calculate the float offset if needed.
   LayoutUnit float_offset;

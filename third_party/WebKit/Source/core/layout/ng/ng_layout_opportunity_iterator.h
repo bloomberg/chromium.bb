@@ -35,8 +35,9 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
       const WTF::Optional<NGLogicalOffset>& opt_offset = WTF::nullopt,
       const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::nullopt);
 
-  // Gets the next Layout Opportunity or nullptr if the search is exhausted.
+  // Gets the next Layout Opportunity or empty one if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
+  // TODO(glebl): Refactor the iterator to return unique_ptr here.
   const NGLayoutOpportunity Next();
 
   // Offset that specifies the starting point to search layout opportunities.
