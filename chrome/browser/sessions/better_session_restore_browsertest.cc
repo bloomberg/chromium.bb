@@ -594,9 +594,16 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   CheckFormRestored(new_browser, false, false);
 }
 
+// Flaky on Mac: https://crbug.com/709504
+#if defined(OS_MACOSX)
+#define MAYBE_SessionCookiesCloseAllBrowsers \
+  DISABLED_SessionCookiesCloseAllBrowsers
+#else
+#define MAYBE_SessionCookiesCloseAllBrowsers SessionCookiesCloseAllBrowsers
+#endif
 // Check that session cookies are cleared on a wrench menu quit.
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       SessionCookiesCloseAllBrowsers) {
+                       MAYBE_SessionCookiesCloseAllBrowsers) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   StoreDataWithPage("session_cookies.html");
