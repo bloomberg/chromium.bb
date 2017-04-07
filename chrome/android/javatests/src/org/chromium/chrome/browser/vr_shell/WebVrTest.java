@@ -12,6 +12,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
+import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -327,7 +328,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         mockChecker.setMockReturnValue(checkerReturnValue);
         VrShellDelegate.getInstanceForTesting().overrideVrCoreVersionCheckerForTesting(mockChecker);
         String testName = "generic_webvr_page";
-        loadUrl(getHtmlTestFile(testName), 10);
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         String displayFound = "VRDisplay Found";
         String barPresent = "InfoBar present";
         if (checkerReturnValue == VrCoreVersionChecker.VR_READY) {
@@ -405,5 +406,18 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
         infoBarTestHelper(VrCoreVersionChecker.VR_NOT_SUPPORTED);
+    }
+
+    /**
+     * Tests that the reported WebVR capabilities match expectations on the
+     * devices the WebVR tests are run on continuously.
+     */
+    @MediumTest
+    public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
+        String testName = "test_device_capabilities_match_expectations";
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
+        assertTrue("VRDisplayFound", vrDisplayFound(mWebContents));
+        executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')", mWebContents);
+        endTest(mWebContents);
     }
 }
