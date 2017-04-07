@@ -91,7 +91,6 @@ class TaskTracker;
 }
 
 class SequencedWorkerPool;
-class SimpleThread;
 class Thread;
 class ThreadTestHelper;
 
@@ -190,7 +189,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ui::WindowResizeHelperMac;
   friend class MessagePumpDefault;
   friend class SequencedWorkerPool;
-  friend class SimpleThread;
   friend class Thread;
   friend class ThreadTestHelper;
   friend class PlatformThread;

@@ -109,7 +109,7 @@ class DeadlockThread : public SimpleThread {
 
   // Terminates the thread.
   bool Terminate() {
-    ScopedHandle thread_handle(::OpenThread(THREAD_TERMINATE, FALSE, tid()));
+    ScopedHandle thread_handle(::OpenThread(THREAD_TERMINATE, FALSE, GetTid()));
     return ::TerminateThread(thread_handle.Get(), 0);
   }
 
@@ -261,7 +261,7 @@ TEST(WaitChainTest, Deadlock) {
 
   WaitChainNodeVector wait_chain;
   bool is_deadlock;
-  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_2->tid(), &wait_chain,
+  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_2->GetTid(), &wait_chain,
                                  &is_deadlock, nullptr, nullptr));
 
   EXPECT_EQ(9U, wait_chain.size());
@@ -300,7 +300,7 @@ TEST(WaitChainTest, CrossProcess) {
 
   WaitChainNodeVector wait_chain;
   bool is_deadlock;
-  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_3->tid(), &wait_chain,
+  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_3->GetTid(), &wait_chain,
                                  &is_deadlock, nullptr, nullptr));
 
   EXPECT_EQ(7U, wait_chain.size());
