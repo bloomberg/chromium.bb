@@ -102,19 +102,9 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // SecurityOrigin. For example, call this function before allowing
   // script from one security origin to read or write objects from
   // another SecurityOrigin.
-  bool canAccess(const SecurityOrigin*) const;
-
-  // Same as canAccess, except that it adds an additional check to make sure
-  // that the SecurityOrigins have the same suborigin name. If you're not
-  // familiar with Suborigins, you probably want canAccess() for now.
-  // Suborigins is a spec in progress, and where it should be enforced is
-  // still in flux. See https://crbug.com/336894 for more details.
   //
-  // TODO(jww): Once the Suborigin spec has become more settled, and we are
-  // confident in the correctness of our implementation, canAccess should be
-  // made to check the suborigin and this should be turned into
-  // canAccessBypassSuborigin check, which should be the exceptional case.
-  bool canAccessCheckSuborigins(const SecurityOrigin*) const;
+  // This takes suborigins into account.
+  bool canAccess(const SecurityOrigin*) const;
 
   // Returns true if this SecurityOrigin can read content retrieved from
   // the given URL. For example, call this function before issuing
@@ -122,11 +112,10 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool canRequest(const KURL&) const;
 
   // Same as canRequest, except that it adds an additional check to make sure
-  // that the SecurityOrigin does not have a suborigin name. Like with
-  // canAccessCheckSuborigins() above, if you're not familiar with
-  // Suborigins, you probably want canRequest() for now. Suborigins is a spec
-  // in progress, and where it should be enforced is still in flux. See
-  // https://crbug.com/336894 for more details.
+  // that the SecurityOrigin does not have a suborigin name. If you're not
+  // familiar with Suborigins, you probably want canRequest() for now.
+  // Suborigins is a spec in progress, and where it should be enforced is still
+  // in flux. See https://crbug.com/336894 for more details.
   //
   // TODO(jww): Once the Suborigin spec has become more settled, and we are
   // confident in the correctness of our implementation, canRequest should be

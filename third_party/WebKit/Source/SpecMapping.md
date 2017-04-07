@@ -28,9 +28,9 @@ domain](https://html.spec.whatwg.org/multipage/browsers.html#same-origin-domain)
 using `SecurityOrigin::isSameSchemeHostPort`.
 
 The [Suborigins spec](https://w3c.github.io/webappsec-suborigins/) extends
-HTML's definition of origins. To check for same-origin and same-origin domain
-use `SecurityOrigin::canAccessCheckSuborigins` and
-`SecurityOrigin::isSameSchemeHostPortAndSuborigin`.
+HTML's definition of origins. To check for same-origin corresponds to
+`SecurityOrigin::isSameSchemeHostPortAndSuborigin` while the check for same-origin
+domain already takes the suborigin into account.
 
 ### [Window object](https://html.spec.whatwg.org/#window)
 

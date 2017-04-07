@@ -334,17 +334,16 @@ TEST_F(SecurityOriginTest, CanAccess) {
 
   struct TestCase {
     bool canAccess;
-    bool canAccessCheckSuborigins;
     const char* origin1;
     const char* origin2;
   };
 
   TestCase tests[] = {
-      {true, true, "https://foobar.com", "https://foobar.com"},
-      {false, false, "https://foobar.com", "https://bazbar.com"},
-      {true, false, "https://foobar.com", "https-so://name.foobar.com"},
-      {true, false, "https-so://name.foobar.com", "https://foobar.com"},
-      {true, true, "https-so://name.foobar.com", "https-so://name.foobar.com"},
+      {true, "https://foobar.com", "https://foobar.com"},
+      {false, "https://foobar.com", "https://bazbar.com"},
+      {false, "https://foobar.com", "https-so://name.foobar.com"},
+      {false, "https-so://name.foobar.com", "https://foobar.com"},
+      {true, "https-so://name.foobar.com", "https-so://name.foobar.com"},
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
@@ -353,8 +352,6 @@ TEST_F(SecurityOriginTest, CanAccess) {
     RefPtr<SecurityOrigin> origin2 =
         SecurityOrigin::createFromString(tests[i].origin2);
     EXPECT_EQ(tests[i].canAccess, origin1->canAccess(origin2.get()));
-    EXPECT_EQ(tests[i].canAccessCheckSuborigins,
-              origin1->canAccessCheckSuborigins(origin2.get()));
   }
 }
 

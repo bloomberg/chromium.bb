@@ -256,10 +256,10 @@ bool CSSStyleSheet::canAccessRules() const {
     return true;
   if (document->getSecurityOrigin()->canRequestNoSuborigin(baseURL))
     return true;
-  if (m_allowRuleAccessFromOrigin &&
-      document->getSecurityOrigin()->canAccessCheckSuborigins(
-          m_allowRuleAccessFromOrigin.get()))
+  if (m_allowRuleAccessFromOrigin && document->getSecurityOrigin()->canAccess(
+                                         m_allowRuleAccessFromOrigin.get())) {
     return true;
+  }
   return false;
 }
 

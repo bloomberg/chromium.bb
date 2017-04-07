@@ -137,9 +137,10 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
     // FIXME: The name canAccess seems to be a roundabout way to ask "can
     // execute script".  Can we name the SecurityOrigin function better to make
     // this more clear?
-    if (callingWindow.document()->getSecurityOrigin()->canAccessCheckSuborigins(
-            frame()->securityContext()->getSecurityOrigin()))
+    if (callingWindow.document()->getSecurityOrigin()->canAccess(
+            frame()->securityContext()->getSecurityOrigin())) {
       return false;
+    }
   }
 
   callingWindow.printErrorMessage(
@@ -270,8 +271,7 @@ String DOMWindow::crossDomainAccessErrorMessage(
   // It's possible for a remote frame to be same origin with respect to a
   // local frame, but it must still be treated as a disallowed cross-domain
   // access. See https://crbug.com/601629.
-  ASSERT(frame()->isRemoteFrame() ||
-         !activeOrigin->canAccessCheckSuborigins(targetOrigin));
+  DCHECK(frame()->isRemoteFrame() || !activeOrigin->canAccess(targetOrigin));
 
   String message = "Blocked a frame with origin \"" + activeOrigin->toString() +
                    "\" from accessing a frame with origin \"" +

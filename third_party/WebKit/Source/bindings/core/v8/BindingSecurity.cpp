@@ -60,7 +60,7 @@ bool canAccessFrameInternal(const LocalDOMWindow* accessingWindow,
 
   const SecurityOrigin* accessingOrigin =
       accessingWindow->document()->getSecurityOrigin();
-  if (!accessingOrigin->canAccessCheckSuborigins(targetFrameOrigin))
+  if (!accessingOrigin->canAccess(targetFrameOrigin))
     return false;
 
   // Notify the loader's client if the initial document has been accessed.
@@ -241,7 +241,7 @@ bool BindingSecurity::shouldAllowNamedAccessTo(const DOMWindow* accessingWindow,
   SECURITY_CHECK(!(targetWindow && targetWindow->frame()) ||
                  targetWindow == targetWindow->frame()->domWindow());
 
-  if (!accessingOrigin->canAccessCheckSuborigins(targetOrigin))
+  if (!accessingOrigin->canAccess(targetOrigin))
     return false;
 
   // Note that there is no need to call back

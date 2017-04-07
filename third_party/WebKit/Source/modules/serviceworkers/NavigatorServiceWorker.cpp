@@ -57,7 +57,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
     ExceptionState& exceptionState) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(!navigator.frame() ||
-         executionContext->getSecurityOrigin()->canAccessCheckSuborigins(
+         executionContext->getSecurityOrigin()->canAccess(
              navigator.frame()->securityContext()->getSecurityOrigin()));
   return NavigatorServiceWorker::from(navigator).serviceWorker(
       navigator.frame(), exceptionState);
@@ -69,7 +69,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
     String& errorMessage) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   DCHECK(!navigator.frame() ||
-         executionContext->getSecurityOrigin()->canAccessCheckSuborigins(
+         executionContext->getSecurityOrigin()->canAccess(
              navigator.frame()->securityContext()->getSecurityOrigin()));
   return NavigatorServiceWorker::from(navigator).serviceWorker(
       navigator.frame(), errorMessage);

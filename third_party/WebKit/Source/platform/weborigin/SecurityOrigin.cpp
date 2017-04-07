@@ -231,6 +231,12 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const {
   if (isUnique() || other->isUnique())
     return false;
 
+  if (hasSuborigin() != other->hasSuborigin())
+    return false;
+
+  if (hasSuborigin() && suborigin()->name() != other->suborigin()->name())
+    return false;
+
   // document.domain handling, as per
   // https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
   //
@@ -255,17 +261,6 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const {
     canAccess = passesFileCheck(other);
 
   return canAccess;
-}
-
-bool SecurityOrigin::canAccessCheckSuborigins(
-    const SecurityOrigin* other) const {
-  if (hasSuborigin() != other->hasSuborigin())
-    return false;
-
-  if (hasSuborigin() && suborigin()->name() != other->suborigin()->name())
-    return false;
-
-  return canAccess(other);
 }
 
 bool SecurityOrigin::passesFileCheck(const SecurityOrigin* other) const {
