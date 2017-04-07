@@ -1882,7 +1882,8 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
 #if CONFIG_CB4X4
   x->skip_chroma_rd =
-      (bsize < BLOCK_8X8) && !is_chroma_reference(mi_row, mi_col);
+      !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                           xd->plane[1].subsampling_y);
 #endif
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -5550,10 +5551,10 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 }
 
-static void sum_intra_stats(FRAME_COUNTS *counts, const MODE_INFO *mi,
-                            const MODE_INFO *above_mi, const MODE_INFO *left_mi,
-                            const int intraonly, const int mi_row,
-                            const int mi_col) {
+static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
+                            const MODE_INFO *mi, const MODE_INFO *above_mi,
+                            const MODE_INFO *left_mi, const int intraonly,
+                            const int mi_row, const int mi_col) {
   const PREDICTION_MODE y_mode = mi->mbmi.mode;
   const PREDICTION_MODE uv_mode = mi->mbmi.uv_mode;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
@@ -5586,10 +5587,13 @@ static void sum_intra_stats(FRAME_COUNTS *counts, const MODE_INFO *mi,
   }
 
 #if CONFIG_CB4X4
-  if (bsize < BLOCK_8X8 && !is_chroma_reference(mi_row, mi_col)) return;
+  if (!is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                           xd->plane[1].subsampling_y))
+    return;
 #else
   (void)mi_row;
   (void)mi_col;
+  (void)xd;
 #endif
   ++counts->uv_mode[y_mode][uv_mode];
 }
@@ -5755,7 +5759,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
                                    mi_row, mi_col);
     if (!dry_run)
-      sum_intra_stats(td->counts, mi, xd->above_mi, xd->left_mi,
+      sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
 
     // TODO(huisu): move this into sum_intra_stats().

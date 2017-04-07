@@ -1692,7 +1692,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     }
 #if CONFIG_CB4X4
-    if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+    if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                            xd->plane[1].subsampling_y))
       write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
 #else  // !CONFIG_CB4X4
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
@@ -2042,7 +2043,8 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
 #if CONFIG_CB4X4
-  if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+  if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
 #else  // !CONFIG_CB4X4
   write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
@@ -2322,8 +2324,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 
 #if CONFIG_CB4X4
-      if (mbmi->sb_type < BLOCK_8X8 && plane &&
-          !is_chroma_reference(mi_row, mi_col)) {
+      if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
+                               xd->plane[plane].subsampling_x,
+                               xd->plane[plane].subsampling_y)) {
         (*tok)++;
         continue;
       }

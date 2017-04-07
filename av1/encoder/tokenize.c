@@ -711,7 +711,9 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
-    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col)) {
+    if (!is_chroma_reference(mi_row, mi_col, bsize,
+                             xd->plane[plane].subsampling_x,
+                             xd->plane[plane].subsampling_y)) {
 #if !CONFIG_PVQ
       if (!dry_run) {
         (*t)->token = EOSB_TOKEN;
@@ -781,7 +783,9 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     td->counts->skip[ctx][0] += skip_inc;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
-      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col)) {
+      if (!is_chroma_reference(mi_row, mi_col, bsize,
+                               xd->plane[plane].subsampling_x,
+                               xd->plane[plane].subsampling_y)) {
 #if !CONFIG_PVQ
         (*t)->token = EOSB_TOKEN;
         (*t)++;
@@ -806,7 +810,9 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
-      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      if (!is_chroma_reference(mi_row, mi_col, bsize,
+                               xd->plane[plane].subsampling_x,
+                               xd->plane[plane].subsampling_y))
         continue;
 #else
       (void)mi_row;
@@ -819,7 +825,9 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
-      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      if (!is_chroma_reference(mi_row, mi_col, bsize,
+                               xd->plane[plane].subsampling_x,
+                               xd->plane[plane].subsampling_y))
         continue;
 #else
       (void)mi_row;

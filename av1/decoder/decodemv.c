@@ -968,7 +968,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
 
 #if CONFIG_CB4X4
-  if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+  if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
     mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
@@ -1299,7 +1300,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #endif
 
 #if CONFIG_CB4X4
-  if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+  if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
     mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);

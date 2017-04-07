@@ -1684,7 +1684,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
 #if CONFIG_CB4X4
-      if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                               pd->subsampling_y))
         continue;
 #endif
 
@@ -1779,7 +1780,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         int row, col;
 
 #if CONFIG_CB4X4
-        if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+        if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                                 pd->subsampling_y))
           continue;
 #endif
 

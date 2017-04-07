@@ -2182,7 +2182,14 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
 
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   // force 4x4 chroma component block size.
-  if (plane && bsize < BLOCK_8X8) bsize = BLOCK_8X8;
+  if (plane && bsize < BLOCK_8X8) {
+    if (pd->subsampling_x == 1 && pd->subsampling_y == 1)
+      bsize = BLOCK_8X8;
+    else if (pd->subsampling_x == 1)
+      bsize = BLOCK_8X4;
+    else if (pd->subsampling_y == 1)
+      bsize = BLOCK_4X8;
+  }
 #endif
 
   const int have_right =

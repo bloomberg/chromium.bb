@@ -722,11 +722,19 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 }
 
 #if CONFIG_CB4X4
-static INLINE int is_chroma_reference(const int mi_row, const int mi_col) {
+static INLINE int is_chroma_reference(const int mi_row, const int mi_col,
+                                      const BLOCK_SIZE bsize,
+                                      const int subsampling_x,
+                                      const int subsampling_y) {
 #if CONFIG_CHROMA_2X2
   return 1;
 #endif
-  return !((mi_row & 0x01) || (mi_col & 0x01));
+  int ref_pos = !(((mi_row & 0x01) && subsampling_y) ||
+                  ((mi_col & 0x01) && subsampling_x));
+
+  if (bsize >= BLOCK_8X8) ref_pos = 1;
+
+  return ref_pos;
 }
 #endif
 

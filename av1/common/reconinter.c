@@ -1198,7 +1198,8 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
     const int bh = pd->height;
 
 #if CONFIG_CB4X4
-    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+    if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                             pd->subsampling_y))
       continue;
 #endif
 

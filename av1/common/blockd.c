@@ -165,7 +165,9 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
-    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+    if (!is_chroma_reference(mi_row, mi_col, bsize,
+                             xd->plane[plane].subsampling_x,
+                             xd->plane[plane].subsampling_y))
       continue;
 #else
     (void)mi_row;
