@@ -1428,6 +1428,11 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, FocusAndVisibility) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusSimple) {
+#if defined(OS_LINUX)
+  // Flaky timeouts on Linux. https://crbug.com/709202
+  if (GetParam())
+    return;
+#endif  // defined(OS_LINUX)
   TestHelper("testKeyboardFocusSimple", "web_view/focus", NO_TEST_SERVER);
 
   EXPECT_EQ(embedder_web_contents()->GetFocusedFrame(),
