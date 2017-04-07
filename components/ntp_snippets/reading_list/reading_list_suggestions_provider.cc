@@ -18,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
 
@@ -75,7 +76,8 @@ void ReadingListSuggestionsProvider::DismissSuggestion(
 void ReadingListSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  // TODO(crbug.com/702241): Implement this method.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
 void ReadingListSuggestionsProvider::Fetch(
