@@ -64,8 +64,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   void GpuChannelEstablished();
 
-  static void AddFilterOnIO(int gpu_host_id,
-                            scoped_refptr<IPC::MessageFilter> filter);
   static void InitializeShaderDiskCacheOnIO(int gpu_client_id,
                                             const base::FilePath& cache_dir);
 

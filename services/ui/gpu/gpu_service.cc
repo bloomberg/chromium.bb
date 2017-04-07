@@ -232,8 +232,7 @@ void GpuService::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               id, client_id, sync_token));
     return;
   }
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
+  gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 void GpuService::GetVideoMemoryUsageStats(
@@ -246,10 +245,8 @@ void GpuService::GetVideoMemoryUsageStats(
     return;
   }
   gpu::VideoMemoryUsageStats video_memory_usage_stats;
-  if (gpu_channel_manager_) {
-    gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
-        &video_memory_usage_stats);
-  }
+  gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
+      &video_memory_usage_stats);
   callback.Run(video_memory_usage_stats);
 }
 
@@ -384,11 +381,6 @@ void GpuService::EstablishGpuChannel(
     return;
   }
 
-  if (!gpu_channel_manager_) {
-    callback.Run(mojo::ScopedMessagePipeHandle());
-    return;
-  }
-
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
       client_id, client_tracing_id, is_gpu_host);
 
@@ -407,8 +399,6 @@ void GpuService::CloseChannel(int32_t client_id) {
         FROM_HERE, base::Bind(&GpuService::CloseChannel, weak_ptr_, client_id));
     return;
   }
-  if (!gpu_channel_manager_)
-    return;
   gpu_channel_manager_->RemoveChannel(client_id);
 }
 
@@ -418,8 +408,6 @@ void GpuService::LoadedShader(const std::string& data) {
         FROM_HERE, base::Bind(&GpuService::LoadedShader, weak_ptr_, data));
     return;
   }
-  if (!gpu_channel_manager_)
-    return;
   gpu_channel_manager_->PopulateShaderCache(data);
 }
 
@@ -449,8 +437,6 @@ void GpuService::WakeUpGpu() {
     return;
   }
 #if defined(OS_ANDROID)
-  if (!gpu_channel_manager_)
-    return;
   gpu_channel_manager_->WakeUpGpu();
 #else
   NOTREACHED() << "WakeUpGpu() not supported on this platform.";
@@ -469,8 +455,6 @@ void GpuService::DestroyAllChannels() {
         FROM_HERE, base::Bind(&GpuService::DestroyAllChannels, weak_ptr_));
     return;
   }
-  if (!gpu_channel_manager_)
-    return;
   DVLOG(1) << "GPU: Removing all contexts";
   gpu_channel_manager_->DestroyAllChannels();
 }

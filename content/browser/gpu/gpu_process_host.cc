@@ -34,8 +34,6 @@
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -44,8 +42,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -198,15 +194,14 @@ void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
 }
 
 #if defined(USE_OZONE)
-void SendGpuProcessMessageByHostId(int host_id, IPC::Message* message) {
-  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-  if (host) {
+void SendGpuProcessMessage(base::WeakPtr<GpuProcessHost> host,
+                           IPC::Message* message) {
+  if (host)
     host->Send(message);
-  } else {
+  else
     delete message;
-  }
 }
-#endif
+#endif  // defined(USE_OZONE)
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class GpuSandboxedProcessLauncherDelegate
@@ -310,14 +305,6 @@ class GpuSandboxedProcessLauncherDelegate
   base::CommandLine cmd_line_;
 #endif  // OS_WIN
 };
-
-void HostLoadedShader(int host_id,
-                      const std::string& key,
-                      const std::string& data) {
-  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-  if (host)
-    host->LoadedShader(key, data);
-}
 
 }  // anonymous namespace
 
@@ -631,8 +618,8 @@ bool GpuProcessHost::Init() {
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
       ->OnGpuProcessLaunched(
-          host_id_, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          base::Bind(&SendGpuProcessMessageByHostId, host_id_));
+          host_id_, base::ThreadTaskRunnerHandle::Get(),
+          base::Bind(&SendGpuProcessMessage, weak_ptr_factory_.GetWeakPtr()));
 #endif
 
   return true;
@@ -660,11 +647,6 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     SendOutstandingReplies();
   }
   return result;
-}
-
-void GpuProcessHost::AddFilter(IPC::MessageFilter* filter) {
-  DCHECK(CalledOnValidThread());
-  process_->GetHost()->AddFilter(filter);
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
@@ -1193,7 +1175,8 @@ void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   if (!cache.get())
     return;
 
-  cache->set_shader_loaded_callback(base::Bind(&HostLoadedShader, host_id_));
+  cache->set_shader_loaded_callback(base::Bind(&GpuProcessHost::LoadedShader,
+                                               weak_ptr_factory_.GetWeakPtr()));
 
   client_id_to_shader_cache_[client_id] = cache;
 }

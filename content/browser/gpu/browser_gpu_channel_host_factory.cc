@@ -365,17 +365,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
 }
 
 // static
-void BrowserGpuChannelHostFactory::AddFilterOnIO(
-    int host_id,
-    scoped_refptr<IPC::MessageFilter> filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-  if (host)
-    host->AddFilter(filter.get());
-}
-
-// static
 void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {

@@ -165,7 +165,6 @@ void GpuChildThread::CreateGpuService(
     ui::mojom::GpuHostPtr gpu_host,
     const gpu::GpuPreferences& gpu_preferences,
     mojo::ScopedSharedBufferHandle activity_flags) {
-  gpu_service_->Bind(std::move(request));
   gpu_service_->UpdateGPUInfoFromPreferences(gpu_preferences);
   for (const LogMessage& log : deferred_messages_)
     gpu_host->RecordLogMessage(log.severity, log.header, log.message);
@@ -179,6 +178,10 @@ void GpuChildThread::CreateGpuService(
     return;
   }
 
+  // Bind should happen only if initialization succeeds (i.e. not dead on
+  // arrival), because otherwise, it can receive requests from the host while in
+  // an uninitialized state.
+  gpu_service_->Bind(std::move(request));
   gpu::SyncPointManager* sync_point_manager = nullptr;
   // Note SyncPointManager from ContentGpuClient cannot be owned by this.
   if (GetContentClient()->gpu())
