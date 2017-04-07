@@ -18,13 +18,10 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y">
       <neon-animatable route-path="default">
-        <div class="settings-box first">
-          <div id="optionsInMenuLabel" class="start">
-            $i18n{optionsInMenuLabel}
-          </div>
+        <div class="settings-box">
           <settings-toggle-button id="optionsInMenuToggle"
-              pref="{{prefs.settings.a11y.enable_menu}}"
-              aria-labelledby="optionsInMenuLabel">
+              label="$i18n{optionsInMenuLabel}"
+              pref="{{prefs.settings.a11y.enable_menu}}">
           </settings-toggle-button>
         </div>
         <div id="subpage-trigger" class="settings-box two-line"
