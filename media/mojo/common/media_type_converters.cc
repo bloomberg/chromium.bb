@@ -218,6 +218,7 @@ TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
   config->extra_data = input.extra_data();
   config->encryption_scheme =
       media::mojom::EncryptionScheme::From(input.encryption_scheme());
+  config->color_space_info = input.color_space_info();
   return config;
 }
 
@@ -230,6 +231,7 @@ TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
                     input->color_space, input->coded_size, input->visible_rect,
                     input->natural_size, input->extra_data,
                     input->encryption_scheme.To<media::EncryptionScheme>());
+  config.set_color_space_info(input->color_space_info);
   return config;
 }
 

@@ -347,6 +347,19 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Encrypted) {
   EXPECT_TRUE(result.Matches(config));
 }
 
+TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_ColorSpaceInfo) {
+  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
+                            kNaturalSize, EmptyExtraData(), Unencrypted());
+  config.set_color_space_info(VideoColorSpace(
+      VideoColorSpace::PrimaryID::BT2020,
+      VideoColorSpace::TransferID::SMPTEST2084,
+      VideoColorSpace::MatrixID::BT2020_CL, gfx::ColorSpace::RangeID::LIMITED));
+  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
+  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
+  EXPECT_TRUE(result.Matches(config));
+}
+
 TEST(MediaTypeConvertersTest, ConvertCdmConfig) {
   CdmConfig config;
   config.allow_distinctive_identifier = true;

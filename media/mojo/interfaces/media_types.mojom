@@ -65,6 +65,27 @@ struct EncryptionScheme {
   Pattern pattern;
 };
 
+// This defines a mojo transport format for media::VideoColorSpace.
+// See media/base/video_color_space.h for description.
+struct VideoColorSpace {
+  [Native]
+  enum PrimaryID;
+
+  [Native]
+  enum TransferID;
+
+  [Native]
+  enum MatrixID;
+
+  [Native]
+  enum RangeID;
+
+  PrimaryID primaries;
+  TransferID transfer;
+  MatrixID matrix;
+  RangeID range;
+};
+
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
@@ -90,6 +111,7 @@ struct VideoDecoderConfig {
   gfx.mojom.Size natural_size;
   array<uint8> extra_data;
   EncryptionScheme encryption_scheme;
+  VideoColorSpace color_space_info;
 };
 
 // Native struct media::SubsampleEntry;

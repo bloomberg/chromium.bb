@@ -9,4 +9,5 @@ typemaps = [
   "//media/mojo/interfaces/demuxer_stream.typemap",
   "//media/mojo/interfaces/media_types.typemap",
   "//media/mojo/interfaces/pipeline_statistics.typemap",
+  "//media/mojo/interfaces/video_color_space.typemap",
 ]
