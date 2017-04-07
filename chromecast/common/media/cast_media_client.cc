@@ -75,6 +75,15 @@ bool CastMediaClient::IsSupportedVideoConfig(
 bool CastMediaClient::IsSupportedAudioConfig(
     const ::media::AudioConfig& config) {
 #if defined(OS_ANDROID)
+  AudioCodec codec = ToCastAudioCodec(config.codec);
+
+  // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
+  // device.
+  if (codec == kCodecEAC3)
+    return MediaCapabilities::HdmiSinkSupportsEAC3();
+  if (codec == kCodecAC3)
+    return MediaCapabilities::HdmiSinkSupportsAC3();
+
   // TODO(sanfin): Implement this for Android.
   return true;
 #else
