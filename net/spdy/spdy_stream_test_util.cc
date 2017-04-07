@@ -160,6 +160,6 @@ void StreamDelegateCloseOnHeaders::OnHeadersReceived(
   stream()->Cancel();
 }
 
-} // namespace test
+}  // namespace test
 
-} // namespace net
+}  // namespace net

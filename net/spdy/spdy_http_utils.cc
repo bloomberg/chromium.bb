@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_http_utils.h"
 
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -36,7 +38,7 @@ void AddSpdyHeader(const SpdyString& name,
   }
 }
 
-} // namespace
+}  // namespace
 
 bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
                                HttpResponseInfo* response) {

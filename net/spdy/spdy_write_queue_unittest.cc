@@ -50,7 +50,7 @@ std::unique_ptr<SpdyBufferProducer> IntToProducer(int i) {
 // SpdyWriteQueue upon destruction.
 class RequeingBufferProducer : public SpdyBufferProducer {
  public:
-  RequeingBufferProducer(SpdyWriteQueue* queue) {
+  explicit RequeingBufferProducer(SpdyWriteQueue* queue) {
     buffer_.reset(new SpdyBuffer(kOriginal, arraysize(kOriginal)));
     buffer_->AddConsumeCallback(
         base::Bind(RequeingBufferProducer::ConsumeCallback, queue));

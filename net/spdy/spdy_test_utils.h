@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <memory>
+
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 #include "net/spdy/server_push_delegate.h"
@@ -90,7 +93,7 @@ class TestHeadersHandler : public SpdyHeadersHandlerInterface {
 // request and provides a interface to cancel the push given url.
 class TestServerPushDelegate : public ServerPushDelegate {
  public:
-  explicit TestServerPushDelegate();
+  TestServerPushDelegate();
   ~TestServerPushDelegate() override;
 
   void OnPush(std::unique_ptr<ServerPushHelper> push_helper,

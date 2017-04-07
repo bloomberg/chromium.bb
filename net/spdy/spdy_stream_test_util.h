@@ -133,8 +133,8 @@ class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
 };
 
-} // namespace test
+}  // namespace test
 
-} // namespace net
+}  // namespace net
 
-#endif // NET_SPDY_SPDY_STREAM_TEST_UTIL_H_
+#endif  // NET_SPDY_SPDY_STREAM_TEST_UTIL_H_

@@ -25,7 +25,7 @@ namespace net {
 // header fields.
 class NET_EXPORT_PRIVATE HpackOutputStream {
  public:
-  explicit HpackOutputStream();
+  HpackOutputStream();
   ~HpackOutputStream();
 
   // Appends the lower |bit_size| bits of |bits| to the internal buffer.

@@ -6,6 +6,7 @@
 #define NET_SPDY_PLATFORM_IMPL_SPDY_STRING_UTILS_IMPL_H_
 
 #include <sstream>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
