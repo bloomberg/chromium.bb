@@ -6,5 +6,6 @@
 goog.provide('__crWeb.webBundle');
 
 goog.require('__crWeb.console');
+goog.require('__crWeb.contextMenu');
 goog.require('__crWeb.core');
 goog.require('__crWeb.dialogOverrides');
