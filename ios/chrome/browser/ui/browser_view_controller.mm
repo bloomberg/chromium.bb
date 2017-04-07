@@ -2973,9 +2973,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (BOOL)hasControllerForURL:(const GURL&)url {
   std::string host(url.host());
+  if (host == kChromeUIOfflineHost) {
+    // Only allow offline URL that are fully specified.
+    return reading_list::IsOfflineURLValid(
+        url, ReadingListModelFactory::GetForBrowserState(_browserState));
+  }
 
   return host == kChromeUINewTabHost || host == kChromeUIBookmarksHost ||
-         host == kChromeUITermsHost || host == kChromeUIOfflineHost;
+         host == kChromeUITermsHost;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
@@ -3028,7 +3033,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
-  } else if (url_host == kChromeUIOfflineHost) {
+  } else if (url_host == kChromeUIOfflineHost &&
+             [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =
         [[[OfflinePageNativeContent alloc] initWithLoader:self
                                              browserState:_browserState

@@ -11,23 +11,26 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
+class ReadingListModel;
+
 namespace reading_list {
 
 // The distilled URL chrome://offline/... that will load the file at |path|.
 // |entry_url| is the URL of the ReadingListEntry.
 // |virtual_url| is the URL to display in the omnibox. This can be different
-// from |entry_url| is the distillation was done after a redirection.
-// |entry_url| and |virtual_url| are optionnal.
+// from |entry_url| if the distillation was done after a redirection.
+// |distilled_path|, |entry_url| and |virtual_url| are required and must not be
+// empty or invalid.
 GURL OfflineURLForPath(const base::FilePath& distilled_path,
                        const GURL& entry_url,
                        const GURL& virtual_url);
 
 // If |offline_url| has a "entryURL" query params that is a URL, returns it.
-// If not, return |offline_url|
+// If not, return GURL::EmptyURL().
 GURL EntryURLForOfflineURL(const GURL& offline_url);
 
 // If |offline_url| has a "virtualURL" query params that is a URL, returns it.
-// If not, return |EntryURLForOfflineURL(|offline_url|)|
+// If not, return GURL::EmptyURL().
 GURL VirtualURLForOfflineURL(const GURL& offline_url);
 
 // The file URL pointing to the local file to load to display |distilled_url|.
@@ -40,6 +43,12 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
 
 // Returns whether the URL points to a chrome offline URL.
 bool IsOfflineURL(const GURL& url);
+
+// Returns whether the URL points to a valid chrome offline URL that can be
+// displayed by a |OfflinePageNativeContent|.
+// Returns false if |model| is null, not loaded or does not contain entry
+// pointed by |url|.
+bool IsOfflineURLValid(const GURL& url, ReadingListModel* model);
 
 }  // namespace reading_list
 

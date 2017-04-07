@@ -7,18 +7,14 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/time/default_clock.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-// Checks the distilled URL for the page is chrome://offline/MD5/page.html;
-TEST(OfflineURLUtilsTest, DistilledURLForPathTest) {
-  base::FilePath page_path("MD5/page.html");
-  GURL distilled_url =
-      reading_list::OfflineURLForPath(page_path, GURL(), GURL());
-  EXPECT_EQ("chrome://offline/MD5/page.html", distilled_url.spec());
-}
 
 // Checks the distilled URL for the page with an onlineURL is
 // chrome://offline/MD5/page.html?entryURL=...&virtualURL=...
@@ -36,26 +32,26 @@ TEST(OfflineURLUtilsTest, OfflineURLForPathWithEntryURLAndVirtualURLTest) {
 }
 
 // Checks the parsing of offline URL chrome://offline/MD5/page.html.
-// As entryURL and virtualURL are absent, they should return the offline URL.
+// As entryURL and virtualURL are absent, they should be invalid.
 TEST(OfflineURLUtilsTest, ParseOfflineURLTest) {
   GURL distilled_url("chrome://offline/MD5/page.html");
   GURL entry_url = reading_list::EntryURLForOfflineURL(distilled_url);
-  EXPECT_EQ("chrome://offline/MD5/page.html", entry_url.spec());
+  EXPECT_TRUE(entry_url.is_empty());
   GURL virtual_url = reading_list::VirtualURLForOfflineURL(distilled_url);
-  EXPECT_EQ("chrome://offline/MD5/page.html", virtual_url.spec());
+  EXPECT_TRUE(virtual_url.is_empty());
 }
 
 // Checks the parsing of offline URL
 // chrome://offline/MD5/page.html?entryURL=encorded%20URL
 // As entryURL is present, it should be returned correctly.
-// As virtualURL is absent, it should return the entryURL.
+// As virtualURL is absent, it should return GURL::EmptyGURL().
 TEST(OfflineURLUtilsTest, ParseOfflineURLWithEntryURLTest) {
   GURL offline_url(
       "chrome://offline/MD5/page.html?entryURL=http%3A%2F%2Ffoo.bar%2F");
   GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
   EXPECT_EQ("http://foo.bar/", entry_url.spec());
   GURL virtual_url = reading_list::VirtualURLForOfflineURL(offline_url);
-  EXPECT_EQ("http://foo.bar/", virtual_url.spec());
+  EXPECT_TRUE(virtual_url.is_empty());
 }
 
 // Checks the parsing of offline URL
@@ -66,7 +62,7 @@ TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
   GURL offline_url(
       "chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F");
   GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
-  EXPECT_EQ(offline_url, entry_url);
+  EXPECT_TRUE(entry_url.is_empty());
   GURL virtual_url = reading_list::VirtualURLForOfflineURL(offline_url);
   EXPECT_EQ("http://foo.bar/", virtual_url.spec());
 }
@@ -125,3 +121,48 @@ TEST(OfflineURLUtilsTest, IsOfflineURL) {
       reading_list::IsOfflineURL(GURL("chrome://offline/foobar?foo=bar")));
 }
 
+// Checks that the offline URLs are correctly detected by |IsOfflineURL|.
+TEST(OfflineURLUtilsTest, IsOfflineURLValid) {
+  auto reading_list_model = base::MakeUnique<ReadingListModelImpl>(
+      nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
+  GURL entry_url("http://entry_url.com");
+  base::FilePath distilled_path("distilled/page.html");
+  GURL distilled_url("http://distilled_url.com");
+  reading_list_model->AddEntry(entry_url, "title",
+                               reading_list::ADDED_VIA_CURRENT_APP);
+  reading_list_model->SetEntryDistilledInfo(
+      entry_url, distilled_path, distilled_url, 10, base::Time::Now());
+
+  EXPECT_FALSE(
+      reading_list::IsOfflineURLValid(GURL(), reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("chrome://"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("chrome://offline-foobar"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("http://offline/"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("http://chrome://offline/"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("chrome://offline"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("chrome://offline/"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(GURL("chrome://offline/foobar"),
+                                               reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(
+      GURL("chrome://offline/foobar?foo=bar"), reading_list_model.get()));
+  EXPECT_TRUE(reading_list::IsOfflineURLValid(
+      reading_list::OfflineURLForPath(distilled_path, entry_url, distilled_url),
+      reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(
+      reading_list::OfflineURLForPath(distilled_path, entry_url, entry_url),
+      reading_list_model.get()));
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(
+      reading_list::OfflineURLForPath(base::FilePath("not_distilled_path"),
+                                      entry_url, distilled_url),
+      reading_list_model.get()));
+  reading_list_model->RemoveEntryByURL(entry_url);
+  EXPECT_FALSE(reading_list::IsOfflineURLValid(
+      reading_list::OfflineURLForPath(distilled_path, entry_url, distilled_url),
+      reading_list_model.get()));
+}

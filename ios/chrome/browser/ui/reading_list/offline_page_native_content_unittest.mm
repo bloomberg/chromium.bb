@@ -49,23 +49,6 @@ TEST_F(OfflinePageNativeContentTest, BasicOfflinePageTest) {
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
 }
 
-// Checks the OfflinePageNativeContent without virtual URL is correctly
-// initialized
-TEST_F(OfflinePageNativeContentTest, BasicOfflinePageTestWithoutVirtualURL) {
-  GURL url = reading_list::OfflineURLForPath(
-      base::FilePath("offline_id/page.html"), GURL(), GURL());
-  id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  base::scoped_nsobject<OfflinePageNativeContent> content(
-      [[OfflinePageNativeContent alloc]
-          initWithLoader:loader
-            browserState:chrome_browser_state_.get()
-                webState:web_state()
-                     URL:url]);
-  ASSERT_EQ(url, [content url]);
-  ASSERT_EQ(url, [content virtualURL]);
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
-}
-
 // Checks that dismissing offline page restores EntryURL.
 TEST_F(OfflinePageNativeContentTest, DismissOfflineContent) {
   GURL offline_url("http://foo.bar/offline");

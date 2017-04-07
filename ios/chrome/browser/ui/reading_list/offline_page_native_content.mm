@@ -86,6 +86,11 @@
 }
 
 - (void)reload {
+  if (!_entryURL.is_valid()) {
+    // If entryURL is not valid, the restoreOnlineURL will fail and the |reload|
+    // will be called in a loop. Early return here.
+    return;
+  }
   [self restoreOnlineURL];
   _webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
                                             false /*check_for_repost*/);

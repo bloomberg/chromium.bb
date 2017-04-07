@@ -10,6 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/reading_list/core/offline_url_utils.h"
+#include "components/reading_list/core/reading_list_entry.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "net/base/url_util.h"
 
@@ -23,21 +25,19 @@ namespace reading_list {
 GURL OfflineURLForPath(const base::FilePath& distilled_path,
                        const GURL& entry_url,
                        const GURL& virtual_url) {
-  if (distilled_path.empty()) {
-    return GURL();
-  }
+  DCHECK(!distilled_path.empty());
+  DCHECK(entry_url.is_valid());
+  DCHECK(virtual_url.is_valid());
   GURL page_url(kChromeUIOfflineURL);
   GURL::Replacements replacements;
   replacements.SetPathStr(distilled_path.value());
   page_url = page_url.ReplaceComponents(replacements);
-  if (entry_url.is_valid()) {
-    page_url = net::AppendQueryParameter(page_url, kEntryURLQueryParam,
-                                         entry_url.spec());
-  }
-  if (virtual_url.is_valid()) {
-    page_url = net::AppendQueryParameter(page_url, kVirtualURLQueryParam,
-                                         virtual_url.spec());
-  }
+  page_url = net::AppendQueryParameter(page_url, kEntryURLQueryParam,
+                                       entry_url.spec());
+
+  page_url = net::AppendQueryParameter(page_url, kVirtualURLQueryParam,
+                                       virtual_url.spec());
+
   return page_url;
 }
 
@@ -50,7 +50,7 @@ GURL EntryURLForOfflineURL(const GURL& offline_url) {
       return entry_url;
     }
   }
-  return offline_url;
+  return GURL::EmptyGURL();
 }
 
 GURL VirtualURLForOfflineURL(const GURL& offline_url) {
@@ -62,7 +62,7 @@ GURL VirtualURLForOfflineURL(const GURL& offline_url) {
       return virtual_url;
     }
   }
-  return EntryURLForOfflineURL(offline_url);
+  return GURL::EmptyGURL();
 }
 
 GURL FileURLForDistilledURL(const GURL& distilled_url,
@@ -83,5 +83,25 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
 
 bool IsOfflineURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
+}
+
+bool IsOfflineURLValid(const GURL& url, ReadingListModel* model) {
+  if (!IsOfflineURL(url)) {
+    return false;
+  }
+  GURL entry_url = EntryURLForOfflineURL(url);
+  if (!entry_url.is_valid() || !model || !model->loaded()) {
+    return false;
+  }
+  const ReadingListEntry* entry = model->GetEntryByURL(entry_url);
+  if (!entry || entry->DistilledState() != ReadingListEntry::PROCESSED) {
+    return false;
+  }
+  // It is possible (unlikely) for a user to type directly a URL that passes all
+  // the tests above but still is not exactly the one returned by
+  // |OfflineURLForPath|. Make a final test to check it.
+  return url == reading_list::OfflineURLForPath(entry->DistilledPath(),
+                                                entry->URL(),
+                                                entry->DistilledURL());
 }
 }
