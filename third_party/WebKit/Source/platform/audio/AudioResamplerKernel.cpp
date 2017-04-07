@@ -46,7 +46,7 @@ AudioResamplerKernel::AudioResamplerKernel(AudioResampler* resampler)
 float* AudioResamplerKernel::getSourcePointer(
     size_t framesToProcess,
     size_t* numberOfSourceFramesNeededP) {
-  ASSERT(framesToProcess <= MaxFramesToProcess);
+  DCHECK_LE(framesToProcess, MaxFramesToProcess);
 
   // Calculate the next "virtual" index.  After process() is called,
   // m_virtualReadIndex will equal this value.
@@ -75,7 +75,7 @@ float* AudioResamplerKernel::getSourcePointer(
 }
 
 void AudioResamplerKernel::process(float* destination, size_t framesToProcess) {
-  ASSERT(framesToProcess <= MaxFramesToProcess);
+  DCHECK_LE(framesToProcess, MaxFramesToProcess);
 
   float* source = m_sourceBuffer.data();
 
@@ -92,11 +92,11 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess) {
   double virtualReadIndex = m_virtualReadIndex;
 
   // Sanity check source buffer access.
-  ASSERT(framesToProcess > 0);
-  ASSERT(virtualReadIndex >= 0 &&
-         1 + static_cast<unsigned>(virtualReadIndex +
-                                   (framesToProcess - 1) * rate) <
-             m_sourceBuffer.size());
+  DCHECK_GT(framesToProcess, 0u);
+  DCHECK_GE(virtualReadIndex, 0);
+  DCHECK_LT(1 + static_cast<unsigned>(virtualReadIndex +
+                                      (framesToProcess - 1) * rate),
+            m_sourceBuffer.size());
 
   // Do the linear interpolation.
   int n = framesToProcess;

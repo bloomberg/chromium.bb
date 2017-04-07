@@ -35,9 +35,7 @@
 
 namespace blink {
 
-#if DCHECK_IS_ON()
 const unsigned kMaxFFTPow2Size = 15;
-#endif
 
 // Normal constructor: allocates for a given fftSize.
 FFTFrame::FFTFrame(unsigned fftSize)
@@ -49,7 +47,7 @@ FFTFrame::FFTFrame(unsigned fftSize)
       m_inverseContext(nullptr),
       m_complexData(fftSize) {
   // We only allow power of two.
-  ASSERT(1UL << m_log2FFTSize == m_FFTSize);
+  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
 
   m_forwardContext = contextForSize(m_log2FFTSize);
   m_inverseContext = contextForSize(m_log2FFTSize);
@@ -143,7 +141,7 @@ void FFTFrame::doInverseFFT(float* data) {
 
 OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize) {
   DCHECK(log2FFTSize);
-  ASSERT(log2FFTSize <= kMaxFFTPow2Size);
+  DCHECK_LE(log2FFTSize, kMaxFFTPow2Size);
   int bufSize;
   OMXResult status = omxSP_FFTGetBufSize_R_F32(log2FFTSize, &bufSize);
 

@@ -61,7 +61,7 @@ ReverbConvolverStage::ReverbConvolverStage(
     m_fftConvolver = WTF::makeUnique<FFTConvolver>(fftSize);
   } else {
     DCHECK(!stageOffset);
-    ASSERT(stageLength <= fftSize / 2);
+    DCHECK_LE(stageLength, fftSize / 2);
 
     m_directKernel = WTF::wrapUnique(new AudioFloatArray(fftSize / 2));
     m_directKernel->copyToRange(impulseResponse, 0, stageLength);
@@ -77,7 +77,7 @@ ReverbConvolverStage::ReverbConvolverStage(
   // this out...
   size_t halfSize = fftSize / 2;
   if (!m_directMode) {
-    ASSERT(totalDelay >= halfSize);
+    DCHECK_GE(totalDelay, halfSize);
     if (totalDelay >= halfSize)
       totalDelay -= halfSize;
   }
@@ -177,7 +177,7 @@ void ReverbConvolverStage::process(const float* source,
     memcpy(preDelayedDestination, source, sizeof(float) * framesToProcess);
     m_preReadWriteIndex += framesToProcess;
 
-    ASSERT(m_preReadWriteIndex <= m_preDelayLength);
+    DCHECK_LE(m_preReadWriteIndex, m_preDelayLength);
     if (m_preReadWriteIndex >= m_preDelayLength)
       m_preReadWriteIndex = 0;
   }

@@ -50,13 +50,13 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
                               const float* sourceP,
                               float* destP,
                               size_t framesToProcess) {
-  ASSERT(framesToProcess == m_inputBlockSize);
+  DCHECK_EQ(framesToProcess, m_inputBlockSize);
   if (framesToProcess != m_inputBlockSize)
     return;
 
   // Only support kernelSize <= m_inputBlockSize
   size_t kernelSize = convolutionKernel->size();
-  ASSERT(kernelSize <= m_inputBlockSize);
+  DCHECK_LE(kernelSize, m_inputBlockSize);
   if (kernelSize > m_inputBlockSize)
     return;
 

@@ -51,7 +51,7 @@ DynamicsCompressor::DynamicsCompressor(float sampleRate,
 }
 
 void DynamicsCompressor::setParameterValue(unsigned parameterID, float value) {
-  ASSERT(parameterID < ParamLast);
+  DCHECK_LT(parameterID, static_cast<unsigned>(ParamLast));
   if (parameterID < ParamLast)
     m_parameters[parameterID] = value;
 }
@@ -84,7 +84,7 @@ void DynamicsCompressor::initializeParameters() {
 }
 
 float DynamicsCompressor::parameterValue(unsigned parameterID) {
-  ASSERT(parameterID < ParamLast);
+  DCHECK_LT(parameterID, static_cast<unsigned>(ParamLast));
   return m_parameters[parameterID];
 }
 
@@ -100,7 +100,8 @@ void DynamicsCompressor::process(const AudioBus* sourceBus,
   unsigned numberOfChannels = destinationBus->numberOfChannels();
   unsigned numberOfSourceChannels = sourceBus->numberOfChannels();
 
-  ASSERT(numberOfChannels == m_numberOfChannels && numberOfSourceChannels);
+  DCHECK_EQ(numberOfChannels, m_numberOfChannels);
+  DCHECK(numberOfSourceChannels);
 
   if (numberOfChannels != m_numberOfChannels || !numberOfSourceChannels) {
     destinationBus->zero();
