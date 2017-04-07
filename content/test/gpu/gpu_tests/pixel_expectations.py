@@ -55,6 +55,9 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(jbauman): Times out on Pixel C.
     self.Fail('Pixel_Video_VP9', ['android', 'nvidia'], bug=704389)
 
+    # TODO(jbauman): Re-enable when references images created.
+    self.Fail('Pixel_DirectComposition_Video_*', ['win'], bug=704389)
+
     # TODO(xlai): Remove this after test dimension is shrunk
     # Intended to skip only Nexus 5
     self.Skip('Pixel_OffscreenCanvasAccelerated2D',

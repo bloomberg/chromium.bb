@@ -487,3 +487,21 @@ def MacSpecificPages(base_name):
       tolerance=10,
       browser_args=['--disable-mac-overlays']),
   ]
+
+def DirectCompositionPages(base_name):
+  browser_args = ['--enable-direct-composition-layers']
+  return [
+    PixelTestPage(
+      'pixel_video_mp4.html',
+      base_name + '_DirectComposition_Video_MP4',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_video_vp9.html',
+      base_name + '_DirectComposition_Video_VP9',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+  ]

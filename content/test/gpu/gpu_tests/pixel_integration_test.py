@@ -122,6 +122,8 @@ class PixelIntegrationTest(
     pages += pixel_test_pages.ExperimentalCanvasFeaturesPages(name)
     if sys.platform.startswith('darwin'):
       pages += pixel_test_pages.MacSpecificPages(name)
+    if sys.platform.startswith('win'):
+      pages += pixel_test_pages.DirectCompositionPages(name)
     for p in pages:
       yield(p.name, gpu_relative_path + p.url, (p))
 
