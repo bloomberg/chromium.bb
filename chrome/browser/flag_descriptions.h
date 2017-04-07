@@ -2478,6 +2478,12 @@ extern const char kEnableTouchSupportForScreenMagnifierName[];
 // Description of the touch support for screen magnifier flag.
 extern const char kEnableTouchSupportForScreenMagnifierDescription[];
 
+// Name of zip archiver on files app flag.
+extern const char kEnableZipArchiverOnFileManagerName[];
+
+// Description of zip archiver on files app flag.
+extern const char kEnableZipArchiverOnFileManagerDescription[];
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

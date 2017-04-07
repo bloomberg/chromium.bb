@@ -2601,6 +2601,15 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableSmoothScreenRotation)},
 #endif  // defined(USE_ASH)
 
+#if defined(OS_CHROMEOS)
+    {"enable-zip-archiver-on-file-manager",
+     flag_descriptions::kEnableZipArchiverOnFileManagerName,
+     flag_descriptions::kEnableZipArchiverOnFileManagerDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         chromeos::switches::kEnableZipArchiverOnFileManager)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

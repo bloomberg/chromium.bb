@@ -2279,6 +2279,12 @@ const char kEnableTouchSupportForScreenMagnifierName[] =
 const char kEnableTouchSupportForScreenMagnifierDescription[] =
     "Enables touch support for screen magnifier";
 
+const char kEnableZipArchiverOnFileManagerName[] =
+    "ZIP archiver for Drive";
+
+const char kEnableZipArchiverOnFileManagerDescription[] =
+    "Enable the ability to archive and unpack files on Drive in the Files app";
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
