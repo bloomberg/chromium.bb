@@ -26,7 +26,7 @@ class PermissionMenuButton;
 }
 
 namespace test {
-class PageInfoPopupViewTestApi;
+class PageInfoBubbleViewTestApi;
 }
 
 namespace views {
@@ -55,7 +55,7 @@ class PermissionSelectorRow {
   void PermissionChanged(const PageInfoUI::PermissionInfo& permission);
 
  private:
-  friend class test::PageInfoPopupViewTestApi;
+  friend class test::PageInfoBubbleViewTestApi;
 
   void InitializeMenuButtonView(views::GridLayout* layout,
                                 const PageInfoUI::PermissionInfo& permission);

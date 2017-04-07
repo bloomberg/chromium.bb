@@ -337,7 +337,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 
   // This is technically redundant given the histogram above, but putting the
   // total count of permission changes in another histogram makes it easier to
-  // compare it against other kinds of actions in PageInfo[PopupView].
+  // compare it against other kinds of actions in Page Info.
   RecordPageInfoAction(PAGE_INFO_CHANGED_PERMISSION);
 
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
@@ -407,7 +407,7 @@ void PageInfo::Init(const GURL& url,
                     const security_state::SecurityInfo& security_info) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // On desktop, internal URLs aren't handled by this class. Instead, a
-  // custom and simpler popup is shown.
+  // custom and simpler bubble is shown.
   DCHECK(!url.SchemeIs(content::kChromeUIScheme) &&
          !url.SchemeIs(content::kChromeDevToolsScheme) &&
          !url.SchemeIs(content::kViewSourceScheme) &&

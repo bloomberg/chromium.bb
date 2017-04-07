@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
@@ -30,17 +30,18 @@ void ShowPageInfoBubbleViewsAtPoint(
   // Don't show the bubble again if it's already showing. A second click on the
   // location icon in the omnibox will dismiss an open bubble. This behaviour is
   // consistent with the non-Mac views implementation.
-  // Note that when the browser is toolkit-views, IsPopupShowing() is checked
-  // earlier because the popup is shown on mouse release (but dismissed on
+  // Note that when the browser is toolkit-views, IsBubbleShowing() is checked
+  // earlier because the bubble is shown on mouse release (but dismissed on
   // mouse pressed). A Cocoa browser does both on mouse pressed, so a check
   // when showing is sufficient.
-  if (PageInfoPopupView::GetShownPopupType() != PageInfoPopupView::POPUP_NONE) {
+  if (PageInfoBubbleView::GetShownBubbleType() !=
+      PageInfoBubbleView::BUBBLE_NONE) {
     return;
   }
 
-  PageInfoPopupView::ShowPopup(nullptr, gfx::Rect(anchor_point, gfx::Size()),
-                               profile, web_contents, virtual_url,
-                               security_info);
+  PageInfoBubbleView::ShowBubble(nullptr, gfx::Rect(anchor_point, gfx::Size()),
+                                 profile, web_contents, virtual_url,
+                                 security_info);
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,

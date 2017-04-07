@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -14,7 +14,7 @@
 
 namespace {
 
-typedef InProcessBrowserTest PageInfoPopupViewBrowserTest;
+typedef InProcessBrowserTest PageInfoBubbleViewBrowserTest;
 
 // Clicks the location icon to open the page info bubble.
 void ClickAndWait(Browser* browser) {
@@ -31,41 +31,41 @@ void ClickAndWait(Browser* browser) {
   runner->Run();
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoPopupViewBrowserTest, ShowPopup) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ShowBubble) {
   ClickAndWait(browser());
-  EXPECT_EQ(PageInfoPopupView::POPUP_PAGE_INFO,
-            PageInfoPopupView::GetShownPopupType());
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
+            PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoPopupViewBrowserTest, ChromeURL) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeURL) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
   ClickAndWait(browser());
-  EXPECT_EQ(PageInfoPopupView::POPUP_INTERNAL_PAGE,
-            PageInfoPopupView::GetShownPopupType());
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
+            PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoPopupViewBrowserTest, ChromeExtensionURL) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeExtensionURL) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome-extension://extension-id/options.html"));
   ClickAndWait(browser());
-  EXPECT_EQ(PageInfoPopupView::POPUP_INTERNAL_PAGE,
-            PageInfoPopupView::GetShownPopupType());
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
+            PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoPopupViewBrowserTest, ChromeDevtoolsURL) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeDevtoolsURL) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome-devtools://devtools/bundled/inspector.html"));
   ClickAndWait(browser());
-  EXPECT_EQ(PageInfoPopupView::POPUP_INTERNAL_PAGE,
-            PageInfoPopupView::GetShownPopupType());
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
+            PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoPopupViewBrowserTest, ViewSourceURL) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ViewSourceURL) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   chrome::ViewSelectedSource(browser());
   ClickAndWait(browser());
-  EXPECT_EQ(PageInfoPopupView::POPUP_INTERNAL_PAGE,
-            PageInfoPopupView::GetShownPopupType());
+  EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
+            PageInfoBubbleView::GetShownBubbleType());
 }
 
 }  // namespace

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 
 #include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"

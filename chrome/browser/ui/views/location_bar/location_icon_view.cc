@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
@@ -54,8 +54,8 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
       model->PasteAndGo(text);
   }
 
-  suppress_mouse_released_action_ =
-      PageInfoPopupView::GetShownPopupType() != PageInfoPopupView::POPUP_NONE;
+  suppress_mouse_released_action_ = PageInfoBubbleView::GetShownBubbleType() !=
+                                    PageInfoBubbleView::BUBBLE_NONE;
   return true;
 }
 

@@ -81,7 +81,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1295,7 +1295,7 @@ void BrowserView::ShowPageInfo(
     content::WebContents* web_contents,
     const GURL& virtual_url,
     const security_state::SecurityInfo& security_info) {
-  PageInfoPopupView::ShowPopup(
+  PageInfoBubbleView::ShowBubble(
       GetLocationBarView()->GetSecurityBubbleAnchorView(), gfx::Rect(), profile,
       web_contents, virtual_url, security_info);
 }

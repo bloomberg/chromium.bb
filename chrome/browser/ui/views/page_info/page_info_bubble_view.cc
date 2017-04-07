@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include <stddef.h>
 
@@ -63,22 +63,24 @@
 namespace {
 
 // NOTE(jdonnelly): This use of this process-wide variable assumes that there's
-// never more than one page info popup shown and that it's associated
+// never more than one page info bubble shown and that it's associated
 // with the current window. If this assumption fails in the future, we'll need
-// to return a weak pointer from ShowPopup so callers can associate it with the
-// current window (or other context) and check if the popup they care about is
+// to return a weak pointer from ShowBubble so callers can associate it with the
+// current window (or other context) and check if the bubble they care about is
 // showing.
-PageInfoPopupView::PopupType g_shown_popup_type = PageInfoPopupView::POPUP_NONE;
+PageInfoBubbleView::BubbleType g_shown_bubble_type =
+    PageInfoBubbleView::BUBBLE_NONE;
 
 // General constants -----------------------------------------------------------
 
-// Popup width constraints.
-const int kMinPopupWidth = 320;
-const int kMaxPopupWidth = 1000;
+// Bubble width constraints.
+const int kMinBubbleWidth = 320;
+const int kMaxBubbleWidth = 1000;
 
-// Security Section (PopupHeaderView) ------------------------------------------
+// Security Section (BubbleHeaderView)
+// ------------------------------------------
 
-// Margin and padding values for the |PopupHeaderView|.
+// Margin and padding values for the |BubbleHeaderView|.
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 13;
 
@@ -122,15 +124,15 @@ void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
 
 }  // namespace
 
-// |PopupHeaderView| is the UI element (view) that represents the header of the
-// |PageInfoPopupView|. The header shows the status of the site's
+// |BubbleHeaderView| is the UI element (view) that represents the header of the
+// |PageInfoBubbleView|. The header shows the status of the site's
 // identity check and the name of the site's identity.
-class PopupHeaderView : public views::View {
+class BubbleHeaderView : public views::View {
  public:
-  PopupHeaderView(views::ButtonListener* button_listener,
-                  views::StyledLabelListener* styled_label_listener,
-                  int side_margin);
-  ~PopupHeaderView() override;
+  BubbleHeaderView(views::ButtonListener* button_listener,
+                   views::StyledLabelListener* styled_label_listener,
+                   int side_margin);
+  ~BubbleHeaderView() override;
 
   // Sets the security summary for the current page.
   void SetSummary(const base::string16& summary_text);
@@ -155,39 +157,39 @@ class PopupHeaderView : public views::View {
   views::View* reset_decisions_label_container_;
   views::StyledLabel* reset_decisions_label_;
 
-  DISALLOW_COPY_AND_ASSIGN(PopupHeaderView);
+  DISALLOW_COPY_AND_ASSIGN(BubbleHeaderView);
 };
 
-// The regular PageInfoPopupView is not supported for internal Chrome pages and
-// extension pages. Instead of the |PageInfoPopupView|, the
-// |InternalPageInfoPopupView| is displayed.
-class InternalPageInfoPopupView : public views::BubbleDialogDelegateView {
+// The regular PageInfoBubbleView is not supported for internal Chrome pages and
+// extension pages. Instead of the |PageInfoBubbleView|, the
+// |InternalPageInfoBubbleView| is displayed.
+class InternalPageInfoBubbleView : public views::BubbleDialogDelegateView {
  public:
   // If |anchor_view| is nullptr, or has no Widget, |parent_window| may be
   // provided to ensure this bubble is closed when the parent closes.
-  InternalPageInfoPopupView(views::View* anchor_view,
-                            gfx::NativeView parent_window,
-                            const GURL& url);
-  ~InternalPageInfoPopupView() override;
+  InternalPageInfoBubbleView(views::View* anchor_view,
+                             gfx::NativeView parent_window,
+                             const GURL& url);
+  ~InternalPageInfoBubbleView() override;
 
   // views::BubbleDialogDelegateView:
   void OnWidgetDestroying(views::Widget* widget) override;
   int GetDialogButtons() const override;
 
  private:
-  friend class PageInfoPopupView;
+  friend class PageInfoBubbleView;
 
   // Used around icon and inside bubble border.
   static constexpr int kSpacing = 12;
 
-  DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
+  DISALLOW_COPY_AND_ASSIGN(InternalPageInfoBubbleView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Popup Header
+// Bubble Header
 ////////////////////////////////////////////////////////////////////////////////
 
-PopupHeaderView::PopupHeaderView(
+BubbleHeaderView::BubbleHeaderView(
     views::ButtonListener* button_listener,
     views::StyledLabelListener* styled_label_listener,
     int side_margin)
@@ -219,9 +221,9 @@ PopupHeaderView::PopupHeaderView(
   layout->AddPaddingRow(1, kHeaderPaddingBottom);
 }
 
-PopupHeaderView::~PopupHeaderView() {}
+BubbleHeaderView::~BubbleHeaderView() {}
 
-void PopupHeaderView::SetDetails(const base::string16& details_text) {
+void BubbleHeaderView::SetDetails(const base::string16& details_text) {
   std::vector<base::string16> subst;
   subst.push_back(details_text);
   subst.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
@@ -242,7 +244,7 @@ void PopupHeaderView::SetDetails(const base::string16& details_text) {
   details_label_->AddStyleRange(details_range, link_style);
 }
 
-void PopupHeaderView::AddResetDecisionsLabel() {
+void BubbleHeaderView::AddResetDecisionsLabel() {
   std::vector<base::string16> subst;
   subst.push_back(
       l10n_util::GetStringUTF16(IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION));
@@ -276,15 +278,15 @@ void PopupHeaderView::AddResetDecisionsLabel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// InternalPageInfoPopupView
+// InternalPageInfoBubbleView
 ////////////////////////////////////////////////////////////////////////////////
 
-InternalPageInfoPopupView::InternalPageInfoPopupView(
+InternalPageInfoBubbleView::InternalPageInfoBubbleView(
     views::View* anchor_view,
     gfx::NativeView parent_window,
     const GURL& url)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
-  g_shown_popup_type = PageInfoPopupView::POPUP_INTERNAL_PAGE;
+  g_shown_bubble_type = PageInfoBubbleView::BUBBLE_INTERNAL_PAGE;
   set_parent_window(parent_window);
 
   int text = IDS_PAGE_INFO_INTERNAL_PAGE;
@@ -324,24 +326,24 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   views::BubbleDialogDelegateView::CreateBubble(this);
 }
 
-InternalPageInfoPopupView::~InternalPageInfoPopupView() {}
+InternalPageInfoBubbleView::~InternalPageInfoBubbleView() {}
 
-void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
-  g_shown_popup_type = PageInfoPopupView::POPUP_NONE;
+void InternalPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
+  g_shown_bubble_type = PageInfoBubbleView::BUBBLE_NONE;
 }
 
-int InternalPageInfoPopupView::GetDialogButtons() const {
+int InternalPageInfoBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PageInfoPopupView
+// PageInfoBubbleView
 ////////////////////////////////////////////////////////////////////////////////
 
-PageInfoPopupView::~PageInfoPopupView() {}
+PageInfoBubbleView::~PageInfoBubbleView() {}
 
 // static
-void PageInfoPopupView::ShowPopup(
+void PageInfoBubbleView::ShowBubble(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
     Profile* profile,
@@ -355,26 +357,26 @@ void PageInfoPopupView::ShowPopup(
       url.SchemeIs(extensions::kExtensionScheme) ||
       url.SchemeIs(content::kViewSourceScheme)) {
     // Use the concrete type so that |SetAnchorRect| can be called as a friend.
-    InternalPageInfoPopupView* popup =
-        new InternalPageInfoPopupView(anchor_view, parent_window, url);
+    InternalPageInfoBubbleView* bubble =
+        new InternalPageInfoBubbleView(anchor_view, parent_window, url);
     if (!anchor_view)
-      popup->SetAnchorRect(anchor_rect);
-    popup->GetWidget()->Show();
+      bubble->SetAnchorRect(anchor_rect);
+    bubble->GetWidget()->Show();
     return;
   }
-  PageInfoPopupView* popup = new PageInfoPopupView(
+  PageInfoBubbleView* bubble = new PageInfoBubbleView(
       anchor_view, parent_window, profile, web_contents, url, security_info);
   if (!anchor_view)
-    popup->SetAnchorRect(anchor_rect);
-  popup->GetWidget()->Show();
+    bubble->SetAnchorRect(anchor_rect);
+  bubble->GetWidget()->Show();
 }
 
 // static
-PageInfoPopupView::PopupType PageInfoPopupView::GetShownPopupType() {
-  return g_shown_popup_type;
+PageInfoBubbleView::BubbleType PageInfoBubbleView::GetShownBubbleType() {
+  return g_shown_bubble_type;
 }
 
-PageInfoPopupView::PageInfoPopupView(
+PageInfoBubbleView::PageInfoBubbleView(
     views::View* anchor_view,
     gfx::NativeView parent_window,
     Profile* profile,
@@ -391,7 +393,7 @@ PageInfoPopupView::PageInfoPopupView(
       cookie_dialog_link_(nullptr),
       permissions_view_(nullptr),
       weak_factory_(this) {
-  g_shown_popup_type = POPUP_PAGE_INFO;
+  g_shown_bubble_type = BUBBLE_PAGE_INFO;
   set_parent_window(parent_window);
 
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -418,7 +420,7 @@ PageInfoPopupView::PageInfoPopupView(
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  header_ = new PopupHeaderView(this, this, side_margin);
+  header_ = new BubbleHeaderView(this, this, side_margin);
   layout->StartRow(1, content_column);
   layout->AddView(header_);
 
@@ -447,17 +449,17 @@ PageInfoPopupView::PageInfoPopupView(
       web_contents, url, security_info));
 }
 
-void PageInfoPopupView::RenderFrameDeleted(
+void PageInfoBubbleView::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host == web_contents()->GetMainFrame())
     GetWidget()->Close();
 }
 
-void PageInfoPopupView::WebContentsDestroyed() {
+void PageInfoBubbleView::WebContentsDestroyed() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void PageInfoPopupView::OnPermissionChanged(
+void PageInfoBubbleView::OnPermissionChanged(
     const PageInfoUI::PermissionInfo& permission) {
   presenter_->OnSitePermissionChanged(permission.type, permission.setting);
   // The menu buttons for the permissions might have longer strings now, so we
@@ -466,50 +468,50 @@ void PageInfoPopupView::OnPermissionChanged(
   SizeToContents();
 }
 
-void PageInfoPopupView::OnChosenObjectDeleted(
+void PageInfoBubbleView::OnChosenObjectDeleted(
     const PageInfoUI::ChosenObjectInfo& info) {
   presenter_->OnSiteChosenObjectDeleted(info.ui_info, *info.object);
 }
 
-base::string16 PageInfoPopupView::GetWindowTitle() const {
+base::string16 PageInfoBubbleView::GetWindowTitle() const {
   return summary_text_;
 }
 
-bool PageInfoPopupView::ShouldShowCloseButton() const {
+bool PageInfoBubbleView::ShouldShowCloseButton() const {
   return true;
 }
 
-void PageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
-  g_shown_popup_type = POPUP_NONE;
+void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
+  g_shown_bubble_type = BUBBLE_NONE;
   presenter_->OnUIClosing();
 }
 
-int PageInfoPopupView::GetDialogButtons() const {
+int PageInfoBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-const gfx::FontList& PageInfoPopupView::GetTitleFontList() const {
+const gfx::FontList& PageInfoBubbleView::GetTitleFontList() const {
   return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
       kSummaryFontSizeDelta);
 }
 
-void PageInfoPopupView::ButtonPressed(views::Button* button,
-                                      const ui::Event& event) {
+void PageInfoBubbleView::ButtonPressed(views::Button* button,
+                                       const ui::Event& event) {
   DCHECK_EQ(BUTTON_CLOSE, button->id());
   GetWidget()->Close();
 }
 
-void PageInfoPopupView::LinkClicked(views::Link* source, int event_flags) {
-  // The popup closes automatically when the collected cookies dialog or the
+void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
+  // The bubble closes automatically when the collected cookies dialog or the
   // certificate viewer opens. So delay handling of the link clicked to avoid
   // a crash in the base class which needs to complete the mouse event handling.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&PageInfoPopupView::HandleLinkClickedAsync,
+      base::Bind(&PageInfoBubbleView::HandleLinkClickedAsync,
                  weak_factory_.GetWeakPtr(), source));
 }
 
-gfx::Size PageInfoPopupView::GetPreferredSize() const {
+gfx::Size PageInfoBubbleView::GetPreferredSize() const {
   if (header_ == nullptr && site_settings_view_ == nullptr)
     return views::View::GetPreferredSize();
 
@@ -522,14 +524,14 @@ gfx::Size PageInfoPopupView::GetPreferredSize() const {
   if (site_settings_view_)
     height += site_settings_view_->GetPreferredSize().height();
 
-  int width = kMinPopupWidth;
+  int width = kMinBubbleWidth;
   if (site_settings_view_)
     width = std::max(width, site_settings_view_->GetPreferredSize().width());
-  width = std::min(width, kMaxPopupWidth);
+  width = std::min(width, kMaxBubbleWidth);
   return gfx::Size(width, height);
 }
 
-void PageInfoPopupView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
+void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   // |cookie_info_list| should only ever have 2 items: first- and third-party
   // cookies.
   DCHECK_EQ(cookie_info_list.size(), 2u);
@@ -596,7 +598,7 @@ void PageInfoPopupView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   SizeToContents();
 }
 
-void PageInfoPopupView::SetPermissionInfo(
+void PageInfoBubbleView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {
   // When a permission is changed, PageInfo::OnSitePermissionChanged()
@@ -669,7 +671,7 @@ void PageInfoPopupView::SetPermissionInfo(
   SizeToContents();
 }
 
-void PageInfoPopupView::SetIdentityInfo(const IdentityInfo& identity_info) {
+void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       identity_info.GetSecurityDescription();
 
@@ -689,7 +691,7 @@ void PageInfoPopupView::SetIdentityInfo(const IdentityInfo& identity_info) {
   SizeToContents();
 }
 
-views::View* PageInfoPopupView::CreateSiteSettingsView(int side_margin) {
+views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
   views::View* site_settings_view = new views::View();
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, side_margin, 0, 0);
@@ -704,7 +706,7 @@ views::View* PageInfoPopupView::CreateSiteSettingsView(int side_margin) {
   return site_settings_view;
 }
 
-void PageInfoPopupView::HandleLinkClickedAsync(views::Link* source) {
+void PageInfoBubbleView::HandleLinkClickedAsync(views::Link* source) {
   // Both switch cases require accessing web_contents(), so we check it here.
   if (web_contents() == nullptr || web_contents()->IsBeingDestroyed())
     return;
@@ -732,9 +734,9 @@ void PageInfoPopupView::HandleLinkClickedAsync(views::Link* source) {
   }
 }
 
-void PageInfoPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                               const gfx::Range& range,
-                                               int event_flags) {
+void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
   switch (label->id()) {
     case STYLED_LABEL_SECURITY_DETAILS:
       web_contents()->OpenURL(content::OpenURLParams(

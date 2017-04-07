@@ -115,9 +115,9 @@ const CGFloat kInternalPageImageSpacing = 10;
 // -----------------------------------------------------------------------------
 
 // NOTE: This assumes that there will never be more than one page info
-// popup shown, and that the one that is shown is associated with the current
-// window. This matches the behaviour in views: see PageInfoPopupView.
-bool g_is_popup_showing = false;
+// bubble shown, and that the one that is shown is associated with the current
+// window. This matches the behaviour in Views: see PageInfoBubbleView.
+bool g_is_bubble_showing = false;
 
 // Takes in the parent window, which should be a BrowserWindow, and gets the
 // proper anchor point for the bubble. The returned point is in screen
@@ -1145,13 +1145,13 @@ PageInfoUIBridge::PageInfoUIBridge(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
       bubble_controller_(nil) {
-  DCHECK(!g_is_popup_showing);
-  g_is_popup_showing = true;
+  DCHECK(!g_is_bubble_showing);
+  g_is_bubble_showing = true;
 }
 
 PageInfoUIBridge::~PageInfoUIBridge() {
-  DCHECK(g_is_popup_showing);
-  g_is_popup_showing = false;
+  DCHECK(g_is_bubble_showing);
+  g_is_bubble_showing = false;
 }
 
 void PageInfoUIBridge::set_bubble_controller(
@@ -1171,17 +1171,17 @@ void PageInfoUIBridge::Show(gfx::NativeWindow parent,
     return;
   }
 
-  // Don't show the popup if it's already being shown. Since this method is
-  // called each time the location icon is clicked, each click toggles the popup
-  // in and out.
-  if (g_is_popup_showing)
+  // Don't show the bubble if it's already being shown. Since this method is
+  // called each time the location icon is clicked, each click toggles the
+  // bubble in and out.
+  if (g_is_bubble_showing)
     return;
 
   // Create the bridge. This will be owned by the bubble controller.
   PageInfoUIBridge* bridge = new PageInfoUIBridge(web_contents);
 
   // Create the bubble controller. It will dealloc itself when it closes,
-  // resetting |g_is_popup_showing|.
+  // resetting |g_is_bubble_showing|.
   PageInfoBubbleController* bubble_controller =
       [[PageInfoBubbleController alloc] initWithParentWindow:parent
                                             pageInfoUIBridge:bridge

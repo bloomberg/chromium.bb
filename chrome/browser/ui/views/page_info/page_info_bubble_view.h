@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_POPUP_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_POPUP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_
 
 #include <memory>
 
@@ -22,7 +22,7 @@
 #include "ui/views/controls/styled_label_listener.h"
 
 class GURL;
-class PopupHeaderView;
+class BubbleHeaderView;
 class Profile;
 
 namespace content {
@@ -38,7 +38,7 @@ struct SecurityInfo;
 }  // namespace security_state
 
 namespace test {
-class PageInfoPopupViewTestApi;
+class PageInfoBubbleViewTestApi;
 }
 
 namespace views {
@@ -54,46 +54,46 @@ enum : int {
 };
 
 // The views implementation of the page info UI.
-class PageInfoPopupView : public content::WebContentsObserver,
-                          public PermissionSelectorRowObserver,
-                          public ChosenObjectRowObserver,
-                          public views::BubbleDialogDelegateView,
-                          public views::ButtonListener,
-                          public views::LinkListener,
-                          public views::StyledLabelListener,
-                          public PageInfoUI {
+class PageInfoBubbleView : public content::WebContentsObserver,
+                           public PermissionSelectorRowObserver,
+                           public ChosenObjectRowObserver,
+                           public views::BubbleDialogDelegateView,
+                           public views::ButtonListener,
+                           public views::LinkListener,
+                           public views::StyledLabelListener,
+                           public PageInfoUI {
  public:
-  ~PageInfoPopupView() override;
+  ~PageInfoBubbleView() override;
 
-  // Type of the popup being displayed.
-  enum PopupType {
-    POPUP_NONE,
+  // Type of the bubble being displayed.
+  enum BubbleType {
+    BUBBLE_NONE,
     // Usual page info bubble for websites.
-    POPUP_PAGE_INFO,
+    BUBBLE_PAGE_INFO,
     // Custom bubble for internal pages like chrome:// and chrome-extensions://.
-    POPUP_INTERNAL_PAGE
+    BUBBLE_INTERNAL_PAGE
   };
 
   // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
-  static void ShowPopup(views::View* anchor_view,
-                        const gfx::Rect& anchor_rect,
-                        Profile* profile,
-                        content::WebContents* web_contents,
-                        const GURL& url,
-                        const security_state::SecurityInfo& security_info);
+  static void ShowBubble(views::View* anchor_view,
+                         const gfx::Rect& anchor_rect,
+                         Profile* profile,
+                         content::WebContents* web_contents,
+                         const GURL& url,
+                         const security_state::SecurityInfo& security_info);
 
-  // Returns the type of the popup bubble being shown.
-  static PopupType GetShownPopupType();
+  // Returns the type of the bubble being shown.
+  static BubbleType GetShownBubbleType();
 
  private:
-  friend class test::PageInfoPopupViewTestApi;
+  friend class test::PageInfoBubbleViewTestApi;
 
-  PageInfoPopupView(views::View* anchor_view,
-                    gfx::NativeView parent_window,
-                    Profile* profile,
-                    content::WebContents* web_contents,
-                    const GURL& url,
-                    const security_state::SecurityInfo& security_info);
+  PageInfoBubbleView(views::View* anchor_view,
+                     gfx::NativeView parent_window,
+                     Profile* profile,
+                     content::WebContents* web_contents,
+                     const GURL& url,
+                     const security_state::SecurityInfo& security_info);
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
@@ -151,7 +151,7 @@ class PageInfoPopupView : public content::WebContentsObserver,
   Profile* profile_;
 
   // The header section (containing security-related information).
-  PopupHeaderView* header_;
+  BubbleHeaderView* header_;
 
   // The security summary for the current page.
   base::string16 summary_text_;
@@ -177,9 +177,9 @@ class PageInfoPopupView : public content::WebContentsObserver,
   // |Permission| changes.
   std::vector<std::unique_ptr<PermissionSelectorRow>> selector_rows_;
 
-  base::WeakPtrFactory<PageInfoPopupView> weak_factory_;
+  base::WeakPtrFactory<PageInfoBubbleView> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageInfoPopupView);
+  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_POPUP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_

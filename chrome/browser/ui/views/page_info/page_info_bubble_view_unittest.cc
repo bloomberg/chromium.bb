@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_info/page_info_popup_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,11 +29,11 @@ const char* kUrl = "http://www.example.com/index.html";
 
 namespace test {
 
-class PageInfoPopupViewTestApi {
+class PageInfoBubbleViewTestApi {
  public:
-  PageInfoPopupViewTestApi(gfx::NativeView parent,
-                           Profile* profile,
-                           content::WebContents* web_contents)
+  PageInfoBubbleViewTestApi(gfx::NativeView parent,
+                            Profile* profile,
+                            content::WebContents* web_contents)
       : view_(nullptr),
         parent_(parent),
         profile_(profile),
@@ -47,11 +47,11 @@ class PageInfoPopupViewTestApi {
 
     security_state::SecurityInfo security_info;
     views::View* anchor_view = nullptr;
-    view_ = new PageInfoPopupView(anchor_view, parent_, profile_, web_contents_,
-                                  GURL(kUrl), security_info);
+    view_ = new PageInfoBubbleView(anchor_view, parent_, profile_,
+                                   web_contents_, GURL(kUrl), security_info);
   }
 
-  PageInfoPopupView* view() { return view_; }
+  PageInfoBubbleView* view() { return view_; }
   views::View* permissions_view() { return view_->permissions_view_; }
 
   PermissionSelectorRow* GetPermissionSelectorAt(int index) {
@@ -83,20 +83,20 @@ class PageInfoPopupViewTestApi {
 
   // Simulates recreating the dialog with a new PermissionInfoList.
   void SetPermissionInfo(const PermissionInfoList& list) {
-    for (const PageInfoPopupView::PermissionInfo& info : list)
+    for (const PageInfoBubbleView::PermissionInfo& info : list)
       view_->presenter_->OnSitePermissionChanged(info.type, info.setting);
     CreateView();
   }
 
  private:
-  PageInfoPopupView* view_;  // Weak. Owned by its Widget.
+  PageInfoBubbleView* view_;  // Weak. Owned by its Widget.
 
   // For recreating the view.
   gfx::NativeView parent_;
   Profile* profile_;
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageInfoPopupViewTestApi);
+  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTestApi);
 };
 
 }  // namespace test
@@ -124,9 +124,9 @@ class ScopedWebContentsTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ScopedWebContentsTestHelper);
 };
 
-class PageInfoPopupViewTest : public testing::Test {
+class PageInfoBubbleViewTest : public testing::Test {
  public:
-  PageInfoPopupViewTest() {}
+  PageInfoBubbleViewTest() {}
 
   // testing::Test:
   void SetUp() override {
@@ -137,7 +137,7 @@ class PageInfoPopupViewTest : public testing::Test {
 
     content::WebContents* web_contents = web_contents_helper_.web_contents();
     TabSpecificContentSettings::CreateForWebContents(web_contents);
-    api_.reset(new test::PageInfoPopupViewTestApi(
+    api_.reset(new test::PageInfoBubbleViewTestApi(
         parent_window_->GetNativeView(), web_contents_helper_.profile(),
         web_contents));
   }
@@ -150,10 +150,10 @@ class PageInfoPopupViewTest : public testing::Test {
   views::ScopedViewsTestHelper views_helper_;
 
   views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.
-  std::unique_ptr<test::PageInfoPopupViewTestApi> api_;
+  std::unique_ptr<test::PageInfoBubbleViewTestApi> api_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PageInfoPopupViewTest);
+  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTest);
 };
 
 }  // namespace
@@ -176,8 +176,8 @@ class PageInfoPopupViewTest : public testing::Test {
 constexpr int kViewsPerPermissionRow = 3;
 
 // Test UI construction and reconstruction via
-// PageInfoPopupView::SetPermissionInfo().
-TEST_F(PageInfoPopupViewTest, MAYBE_SetPermissionInfo) {
+// PageInfoBubbleView::SetPermissionInfo().
+TEST_F(PageInfoBubbleViewTest, MAYBE_SetPermissionInfo) {
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
   list.back().source = content_settings::SETTING_SOURCE_USER;
@@ -225,7 +225,7 @@ TEST_F(PageInfoPopupViewTest, MAYBE_SetPermissionInfo) {
 }
 
 // Test UI construction and reconstruction with USB devices.
-TEST_F(PageInfoPopupViewTest, SetPermissionInfoWithUsbDevice) {
+TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   const int kExpectedChildren =
       kViewsPerPermissionRow *
       (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13);
