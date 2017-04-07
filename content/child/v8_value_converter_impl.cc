@@ -358,7 +358,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     return nullptr;
 
   if (val->IsNull())
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
 
   if (val->IsBoolean())
     return base::MakeUnique<base::Value>(val->ToBoolean(isolate)->Value());
@@ -442,7 +442,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
     v8::Isolate* isolate) const {
   ScopedUniquenessGuard uniqueness_guard(state, val);
   if (!uniqueness_guard.is_valid())
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
 
   std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -475,7 +475,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
     }
 
     if (!val->HasRealIndexedProperty(i)) {
-      result->Append(base::Value::CreateNullValue());
+      result->Append(base::MakeUnique<base::Value>());
       continue;
     }
 
@@ -486,7 +486,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
     else
       // JSON.stringify puts null in places where values don't serialize, for
       // example undefined and functions. Emulate that behavior.
-      result->Append(base::Value::CreateNullValue());
+      result->Append(base::MakeUnique<base::Value>());
   }
   return std::move(result);
 }
@@ -522,7 +522,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Object(
     v8::Isolate* isolate) const {
   ScopedUniquenessGuard uniqueness_guard(state, val);
   if (!uniqueness_guard.is_valid())
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
 
   std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to

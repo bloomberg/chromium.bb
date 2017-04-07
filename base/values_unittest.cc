@@ -583,8 +583,8 @@ TEST(ValuesTest, DictionaryRemoval) {
 
 TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   DictionaryValue dict;
-  dict.Set("this.is.expanded", Value::CreateNullValue());
-  dict.SetWithoutPathExpansion("this.isnt.expanded", Value::CreateNullValue());
+  dict.Set("this.is.expanded", MakeUnique<Value>());
+  dict.SetWithoutPathExpansion("this.isnt.expanded", MakeUnique<Value>());
 
   EXPECT_FALSE(dict.HasKey("this.is.expanded"));
   EXPECT_TRUE(dict.HasKey("this"));
@@ -607,8 +607,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
 // TODO(estade): remove.
 TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   DictionaryValue dict;
-  dict.Set("this.is.expanded", Value::CreateNullValue());
-  dict.SetWithoutPathExpansion("this.isnt.expanded", Value::CreateNullValue());
+  dict.Set("this.is.expanded", MakeUnique<Value>());
+  dict.SetWithoutPathExpansion("this.isnt.expanded", MakeUnique<Value>());
 
   EXPECT_FALSE(dict.HasKey("this.is.expanded"));
   EXPECT_TRUE(dict.HasKey("this"));
@@ -654,7 +654,7 @@ TEST(ValuesTest, DictionaryRemovePath) {
 
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
-  std::unique_ptr<Value> scoped_null = Value::CreateNullValue();
+  auto scoped_null = MakeUnique<Value>();
   Value* original_null = scoped_null.get();
   original_dict.Set("null", std::move(scoped_null));
   std::unique_ptr<Value> scoped_bool(new Value(true));
@@ -802,8 +802,8 @@ TEST(ValuesTest, DeepCopy) {
 }
 
 TEST(ValuesTest, Equals) {
-  std::unique_ptr<Value> null1(Value::CreateNullValue());
-  std::unique_ptr<Value> null2(Value::CreateNullValue());
+  auto null1 = MakeUnique<Value>();
+  auto null2 = MakeUnique<Value>();
   EXPECT_NE(null1.get(), null2.get());
   EXPECT_EQ(*null1, *null2);
 
@@ -816,14 +816,14 @@ TEST(ValuesTest, Equals) {
   dv.SetDouble("c", 2.5);
   dv.SetString("d1", "string");
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
-  dv.Set("e", Value::CreateNullValue());
+  dv.Set("e", MakeUnique<Value>());
 
   auto copy = MakeUnique<DictionaryValue>(dv);
   EXPECT_EQ(dv, *copy);
 
   std::unique_ptr<ListValue> list(new ListValue);
   ListValue* original_list = list.get();
-  list->Append(Value::CreateNullValue());
+  list->Append(MakeUnique<Value>());
   list->Append(WrapUnique(new DictionaryValue));
   auto list_copy = MakeUnique<Value>(*list);
 
@@ -844,8 +844,8 @@ TEST(ValuesTest, Equals) {
 }
 
 TEST(ValuesTest, StaticEquals) {
-  std::unique_ptr<Value> null1(Value::CreateNullValue());
-  std::unique_ptr<Value> null2(Value::CreateNullValue());
+  auto null1 = MakeUnique<Value>();
+  auto null2 = MakeUnique<Value>();
   EXPECT_TRUE(Value::Equals(null1.get(), null2.get()));
   EXPECT_TRUE(Value::Equals(NULL, NULL));
 
@@ -859,7 +859,7 @@ TEST(ValuesTest, StaticEquals) {
   EXPECT_FALSE(Value::Equals(i42.get(), NULL));
   EXPECT_FALSE(Value::Equals(NULL, i42.get()));
 
-  // NULL and Value::CreateNullValue() are intentionally different: We need
+  // NULL and MakeUnique<Value>() are intentionally different: We need
   // support for NULL as a return value for "undefined" without caring for
   // ownership of the pointer.
   EXPECT_FALSE(Value::Equals(null1.get(), NULL));
@@ -988,7 +988,7 @@ TEST(ValuesTest, Comparisons) {
 
 TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   DictionaryValue original_dict;
-  std::unique_ptr<Value> scoped_null(Value::CreateNullValue());
+  auto scoped_null = MakeUnique<Value>();
   Value* original_null = scoped_null.get();
   original_dict.Set("null", std::move(scoped_null));
   std::unique_ptr<Value> scoped_bool(new Value(true));

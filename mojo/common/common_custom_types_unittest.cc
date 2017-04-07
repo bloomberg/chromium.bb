@@ -274,7 +274,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   ASSERT_TRUE(ptr->BounceValue(nullptr, &output));
   EXPECT_FALSE(output);
 
-  std::unique_ptr<base::Value> input = base::Value::CreateNullValue();
+  auto input = base::MakeUnique<base::Value>();
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
   EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
 
@@ -306,7 +306,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   dict->SetInteger("nested.int", 9);
   dict->Set("some_binary",
             base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
-  dict->Set("null_value", base::Value::CreateNullValue());
+  dict->Set("null_value", base::MakeUnique<base::Value>());
   dict->SetIntegerWithoutPathExpansion("non_nested.int", 10);
   {
     std::unique_ptr<base::ListValue> dict_list(new base::ListValue());
@@ -328,7 +328,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   list->AppendDouble(42.1);
   list->AppendBoolean(true);
   list->Append(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
-  list->Append(base::Value::CreateNullValue());
+  list->Append(base::MakeUnique<base::Value>());
   {
     std::unique_ptr<base::DictionaryValue> list_dict(
         new base::DictionaryValue());

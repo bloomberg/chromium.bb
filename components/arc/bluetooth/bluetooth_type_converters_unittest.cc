@@ -114,7 +114,7 @@ TEST(BluetoothTypeConvertorTest, ConvertMojoValueAttributeToBlueZAttribute) {
   nulltypeAttributeMojo->type =
       bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
   nulltypeAttributeMojo->type_size = 0;
-  nulltypeAttributeMojo->value.Append(base::Value::CreateNullValue());
+  nulltypeAttributeMojo->value.Append(base::MakeUnique<base::Value>());
 
   auto nulltypeAttributeBlueZ =
       nulltypeAttributeMojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
@@ -287,7 +287,7 @@ TEST(BluetoothTypeConvertorTest,
   auto sequenceNoData = arc::mojom::BluetoothSdpAttribute::New();
   sequenceNoData->type = bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE;
   sequenceNoData->type_size = 0;
-  sequenceNoData->value.Append(base::Value::CreateNullValue());
+  sequenceNoData->value.Append(base::MakeUnique<base::Value>());
 
   auto sequenceNoDataBlueZ =
       sequenceNoData.To<bluez::BluetoothServiceAttributeValueBlueZ>();

@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -539,7 +540,7 @@ TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetValue(key, base::Value::CreateNullValue());
+    metadata.SetValue(key, base::MakeUnique<base::Value>());
     EXPECT_TRUE(metadata.HasKey(key));
     const base::Value* const null_value = metadata.GetValue(key);
     EXPECT_TRUE(null_value);

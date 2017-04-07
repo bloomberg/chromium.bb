@@ -58,7 +58,7 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
          std::unique_ptr<base::Value>* value_out) {
   switch (data.tag()) {
     case common::mojom::ValueDataView::Tag::NULL_VALUE: {
-      *value_out = base::Value::CreateNullValue();
+      *value_out = base::MakeUnique<base::Value>();
       return true;
     }
     case common::mojom::ValueDataView::Tag::BOOL_VALUE: {

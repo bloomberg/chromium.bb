@@ -1195,9 +1195,9 @@ void CertificateManagerHandler::ShowError(const std::string& title,
   auto error_value = base::MakeUnique<base::Value>(error);
   auto ok_title_value =
       base::MakeUnique<base::Value>(l10n_util::GetStringUTF8(IDS_OK));
-  auto cancel_title_value = base::Value::CreateNullValue();
-  auto ok_callback_value = base::Value::CreateNullValue();
-  auto cancel_callback_value = base::Value::CreateNullValue();
+  auto cancel_title_value = base::MakeUnique<base::Value>();
+  auto ok_callback_value = base::MakeUnique<base::Value>();
+  auto cancel_callback_value = base::MakeUnique<base::Value>();
   std::vector<const base::Value*> args = {
       title_value.get(),       error_value.get(),
       ok_title_value.get(),    cancel_title_value.get(),

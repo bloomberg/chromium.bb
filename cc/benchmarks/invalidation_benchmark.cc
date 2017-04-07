@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
@@ -123,7 +124,7 @@ bool InvalidationBenchmark::ProcessMessage(std::unique_ptr<base::Value> value) {
   if (message->HasKey("notify_done")) {
     message->GetBoolean("notify_done", &notify_done);
     if (notify_done)
-      NotifyDone(base::Value::CreateNullValue());
+      NotifyDone(base::MakeUnique<base::Value>());
     return true;
   }
   return false;

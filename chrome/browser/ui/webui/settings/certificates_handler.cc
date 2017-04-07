@@ -458,7 +458,7 @@ void CertificatesHandler::FileSelectionCanceled(void* params) {
     case IMPORT_SERVER_FILE_SELECTED:
     case IMPORT_CA_FILE_SELECTED:
       ImportExportCleanup();
-      RejectCallback(*base::Value::CreateNullValue());
+      RejectCallback(base::Value());
       break;
     default:
       NOTREACHED();
@@ -541,7 +541,7 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
         l10n_util::GetStringUTF8(
             IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else {
-    ResolveCallback(*base::Value::CreateNullValue());
+    ResolveCallback(base::Value());
   }
 }
 
@@ -573,7 +573,7 @@ void CertificatesHandler::HandleExportPersonal(const base::ListValue* args) {
 void CertificatesHandler::ExportPersonalFileSelected(
     const base::FilePath& path) {
   file_path_ = path;
-  ResolveCallback(*base::Value::CreateNullValue());
+  ResolveCallback(base::Value());
 }
 
 void CertificatesHandler::HandleExportPersonalPasswordSelected(
@@ -627,7 +627,7 @@ void CertificatesHandler::ExportPersonalFileWritten(const int* write_errno,
             IDS_SETTINGS_CERTIFICATE_MANAGER_WRITE_ERROR_FORMAT,
             UTF8ToUTF16(base::safe_strerror(*write_errno))));
   } else {
-    ResolveCallback(*base::Value::CreateNullValue());
+    ResolveCallback(base::Value());
   }
 }
 
@@ -743,7 +743,7 @@ void CertificatesHandler::ImportPersonalSlotUnlocked() {
   int string_id;
   switch (result) {
     case net::OK:
-      ResolveCallback(*base::Value::CreateNullValue());
+      ResolveCallback(base::Value());
       return;
     case net::ERR_PKCS12_IMPORT_BAD_PASSWORD:
       // TODO(mattm): if the error was a bad password, we should reshow the
@@ -850,7 +850,7 @@ void CertificatesHandler::ImportServerFileRead(const int* read_errno,
             IDS_SETTINGS_CERTIFICATE_MANAGER_SERVER_IMPORT_ERROR_TITLE),
         not_imported);
   } else {
-    ResolveCallback(*base::Value::CreateNullValue());
+    ResolveCallback(base::Value());
   }
   ImportExportCleanup();
 }
@@ -942,7 +942,7 @@ void CertificatesHandler::HandleImportCATrustSelected(
             IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE),
         not_imported);
   } else {
-    ResolveCallback(*base::Value::CreateNullValue());
+    ResolveCallback(base::Value());
   }
   ImportExportCleanup();
 }
@@ -972,7 +972,7 @@ void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
         l10n_util::GetStringUTF8(
             IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else {
-    ResolveCallback(*base::Value::CreateNullValue());
+    ResolveCallback(base::Value());
   }
 }
 

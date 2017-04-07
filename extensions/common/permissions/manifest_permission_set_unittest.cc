@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/permissions/manifest_permission_set.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/values.h"
 #include "extensions/common/permissions/manifest_permission.h"
-#include "extensions/common/permissions/manifest_permission_set.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +28,7 @@ class MockManifestPermission : public ManifestPermission {
   bool FromValue(const base::Value* value) override { return true; }
 
   std::unique_ptr<base::Value> ToValue() const override {
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
   }
 
   ManifestPermission* Diff(const ManifestPermission* rhs) const override {

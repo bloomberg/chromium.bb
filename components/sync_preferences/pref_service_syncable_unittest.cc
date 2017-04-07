@@ -539,7 +539,7 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
 
   InitWithNoSyncData();
 
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(1, kStringPrefName, *null_value,
                                   SyncChange::ACTION_DELETE));

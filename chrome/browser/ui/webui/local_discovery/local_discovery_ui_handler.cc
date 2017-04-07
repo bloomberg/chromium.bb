@@ -361,7 +361,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
   } else {
-    std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+    auto null_value = base::MakeUnique<base::Value>();
 
     web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
@@ -370,7 +370,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 
 void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   device_descriptions_.erase(name);
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   base::Value name_value(kKeyPrefixMDns + name);
 
   web_ui()->CallJavascriptFunctionUnsafe(

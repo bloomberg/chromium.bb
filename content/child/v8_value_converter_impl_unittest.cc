@@ -814,7 +814,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
   // The first repetition should be trimmed and replaced by a null value.
   base::ListValue expected_list;
-  expected_list.Append(base::Value::CreateNullValue());
+  expected_list.Append(base::MakeUnique<base::Value>());
 
   // The actual result.
   std::unique_ptr<base::Value> actual_list(
@@ -835,7 +835,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
   // The first repetition should be trimmed and replaced by a null value.
   base::DictionaryValue expected_dictionary;
-  expected_dictionary.Set(key, base::Value::CreateNullValue());
+  expected_dictionary.Set(key, base::MakeUnique<base::Value>());
 
   // The actual result.
   std::unique_ptr<base::Value> actual_dictionary(

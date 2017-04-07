@@ -127,7 +127,7 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
 
   switch (result->type) {
     case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
-      result->value.Append(base::Value::CreateNullValue());
+      result->value.Append(base::MakeUnique<base::Value>());
       break;
     case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
     case bluez::BluetoothServiceAttributeValueBlueZ::INT:
@@ -142,7 +142,7 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth) {
         result->type = bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
         result->type_size = 0;
-        result->value.Append(base::Value::CreateNullValue());
+        result->value.Append(base::MakeUnique<base::Value>());
         return result;
       }
       for (const auto& child : attr_bluez.sequence()) {
@@ -177,7 +177,7 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
       if (attr->value.GetSize() != 1) {
         return bluez::BluetoothServiceAttributeValueBlueZ(
             bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-            base::Value::CreateNullValue());
+            base::MakeUnique<base::Value>());
       }
 
       std::unique_ptr<base::Value> value;
@@ -190,7 +190,7 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth || attr->sequence.empty()) {
         return bluez::BluetoothServiceAttributeValueBlueZ(
             bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-            base::Value::CreateNullValue());
+            base::MakeUnique<base::Value>());
       }
 
       auto bluez_sequence = base::MakeUnique<
@@ -207,7 +207,7 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
   }
   return bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-      base::Value::CreateNullValue());
+      base::MakeUnique<base::Value>());
 }
 
 // static

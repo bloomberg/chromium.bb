@@ -658,7 +658,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       !browser_context()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if extension itself works in non-incognito
     // profile and CanCrossIncognito isn't allowed.
-    result = base::Value::CreateNullValue();
+    result = base::MakeUnique<base::Value>();
   } else {
     result = controller->CreateWindowValueWithTabs(extension());
   }

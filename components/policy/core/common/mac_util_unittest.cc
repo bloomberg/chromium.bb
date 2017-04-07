@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,7 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   base::DictionaryValue root;
 
   // base::Value::Type::NONE
-  root.Set("null", base::Value::CreateNullValue());
+  root.Set("null", base::MakeUnique<base::Value>());
 
   // base::Value::Type::BOOLEAN
   root.SetBoolean("false", false);

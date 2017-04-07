@@ -129,7 +129,7 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
     if (message_dict.GetDictionary("result", &result_dict)) {
       callback.callback_with_result.Run(*result_dict);
     } else if (message_dict.GetDictionary("error", &result_dict)) {
-      std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+      auto null_value = base::MakeUnique<base::Value>();
       DLOG(ERROR) << "Error in method call result: " << *result_dict;
       callback.callback_with_result.Run(*null_value);
     } else {

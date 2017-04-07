@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -291,7 +292,7 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::unique_ptr<base::Value> dummy = base::Value::CreateNullValue();
+  auto dummy = base::MakeUnique<base::Value>();
   {
     DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();

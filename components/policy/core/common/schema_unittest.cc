@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/schema_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -640,7 +641,7 @@ TEST(SchemaTest, Validate) {
   bundle.Clear();
   bundle.SetBoolean("Boolean", true);
   bundle.SetInteger("Integer", 123);
-  bundle.Set("Null", base::Value::CreateNullValue());
+  bundle.Set("Null", base::MakeUnique<base::Value>());
   bundle.Set("Number", new base::Value(3.14));
   bundle.SetString("String", "omg");
 

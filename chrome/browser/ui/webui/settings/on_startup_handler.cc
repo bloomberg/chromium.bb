@@ -41,7 +41,7 @@ void OnStartupHandler::HandleGetNtpExtension(const base::ListValue* args) {
       extensions::GetExtensionOverridingNewTabPage(profile);
 
   if (!ntp_extension) {
-    ResolveJavascriptCallback(*callback_id, *base::Value::CreateNullValue());
+    ResolveJavascriptCallback(*callback_id, base::Value());
     return;
   }
 

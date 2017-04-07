@@ -76,7 +76,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
   int int_value = 0;
   switch (schema.type()) {
     case base::Value::Type::NONE: {
-      return base::Value::CreateNullValue();
+      return base::MakeUnique<base::Value>();
     }
     case base::Value::Type::BOOLEAN: {
       // Accept booleans encoded as either string or integer.

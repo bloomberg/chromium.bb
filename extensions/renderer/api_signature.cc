@@ -132,7 +132,7 @@ class BaseValueArgumentParser : public ArgumentParser {
 
  private:
   void AddNull() override {
-    list_value_->Append(base::Value::CreateNullValue());
+    list_value_->Append(base::MakeUnique<base::Value>());
   }
   void AddNullCallback() override {
     // The base::Value conversion doesn't include the callback directly, so we

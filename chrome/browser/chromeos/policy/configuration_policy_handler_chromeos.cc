@@ -266,7 +266,7 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   std::unique_ptr<base::Value> sanitized_config =
       SanitizeNetworkConfig(entry->value.get());
   if (!sanitized_config)
-    sanitized_config = base::Value::CreateNullValue();
+    sanitized_config = base::MakeUnique<base::Value>();
 
   policies->Set(policy_name(), entry->level, entry->scope, entry->source,
                 std::move(sanitized_config), nullptr);

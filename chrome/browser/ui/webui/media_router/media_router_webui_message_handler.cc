@@ -286,9 +286,9 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
                                            base::Value(sink_id), *route_value,
                                            base::Value(route->for_display()));
   } else {
-    web_ui()->CallJavascriptFunctionUnsafe(
-        kOnCreateRouteResponseReceived, base::Value(sink_id),
-        *base::Value::CreateNullValue(), base::Value(false));
+    web_ui()->CallJavascriptFunctionUnsafe(kOnCreateRouteResponseReceived,
+                                           base::Value(sink_id), base::Value(),
+                                           base::Value(false));
   }
 }
 
@@ -306,8 +306,7 @@ void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue& issue) {
 
 void MediaRouterWebUIMessageHandler::ClearIssue() {
   DVLOG(2) << "ClearIssue";
-  web_ui()->CallJavascriptFunctionUnsafe(kSetIssue,
-                                         *base::Value::CreateNullValue());
+  web_ui()->CallJavascriptFunctionUnsafe(kSetIssue, base::Value());
 }
 
 void MediaRouterWebUIMessageHandler::UpdateMaxDialogHeight(int height) {

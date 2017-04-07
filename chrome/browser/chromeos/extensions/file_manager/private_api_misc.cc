@@ -336,7 +336,7 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
                   "CWS OAuth token fetch failed. OAuth2TokenService can't "
                   "be retrieved.");
     }
-    SetResult(base::Value::CreateNullValue());
+    SetResult(base::MakeUnique<base::Value>());
     return false;
   }
 
@@ -373,7 +373,7 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
                   "CWS OAuth token fetch failed. (DriveApiErrorCode: %s)",
                   google_apis::DriveApiErrorCodeToString(code).c_str());
     }
-    SetResult(base::Value::CreateNullValue());
+    SetResult(base::MakeUnique<base::Value>());
     SendResponse(false);
   }
 }

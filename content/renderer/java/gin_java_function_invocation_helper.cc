@@ -4,6 +4,7 @@
 
 #include "content/renderer/java/gin_java_function_invocation_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/public/child/v8_value_converter.h"
@@ -65,7 +66,7 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
       if (arg.get()) {
         arguments.Append(arg.release());
       } else {
-        arguments.Append(base::Value::CreateNullValue());
+        arguments.Append(base::MakeUnique<base::Value>());
       }
     }
   }

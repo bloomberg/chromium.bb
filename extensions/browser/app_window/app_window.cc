@@ -81,7 +81,7 @@ void SetConstraintProperty(const std::string& name,
   if (value != SizeConstraints::kUnboundedSize)
     bounds_properties->SetInteger(name, value);
   else
-    bounds_properties->Set(name, base::Value::CreateNullValue());
+    bounds_properties->Set(name, base::MakeUnique<base::Value>());
 }
 
 void SetBoundsProperties(const gfx::Rect& bounds,

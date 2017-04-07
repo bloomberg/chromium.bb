@@ -74,7 +74,7 @@ std::unique_ptr<base::Value> toBaseValue(
   if (!value || !depth)
     return nullptr;
   if (value->type() == protocol::Value::TypeNull)
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
   if (value->type() == protocol::Value::TypeBoolean) {
     bool inner;
     value->asBoolean(&inner);

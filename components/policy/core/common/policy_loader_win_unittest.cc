@@ -902,7 +902,7 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
       "}"));
 
   base::DictionaryValue policy;
-  policy.Set("null", base::Value::CreateNullValue());
+  policy.Set("null", base::MakeUnique<base::Value>());
   policy.SetBoolean("bool", true);
   policy.SetInteger("int", -123);
   policy.SetDouble("double", 456.78e9);

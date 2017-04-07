@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -102,7 +103,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
 
   base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Set(kId, base::Value::CreateNullValue());
+    args.Set(kId, base::MakeUnique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent_node));
   args.SetInteger(kStart, start);
@@ -123,7 +124,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
 
   base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Set(kId, base::Value::CreateNullValue());
+    args.Set(kId, base::MakeUnique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
   args.SetInteger(kStart, start);
@@ -197,8 +198,7 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
       cookies_tree_model_->GetRoot(), base::UTF8ToUTF16(site));
 
   if (!node) {
-    RejectJavascriptCallback(base::Value(callback_id_),
-                             *base::Value::CreateNullValue());
+    RejectJavascriptCallback(base::Value(callback_id_), base::Value());
     callback_id_.clear();
     return;
   }
@@ -255,7 +255,7 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Set(kId, base::Value::CreateNullValue());
+    args.Set(kId, base::MakeUnique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));
@@ -275,7 +275,7 @@ void CookiesViewHandler::SendCookieDetails(const CookieTreeNode* parent) {
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Set(kId, base::Value::CreateNullValue());
+    args.Set(kId, base::MakeUnique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));

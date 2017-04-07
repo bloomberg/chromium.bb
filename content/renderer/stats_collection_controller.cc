@@ -5,6 +5,7 @@
 #include "content/renderer/stats_collection_controller.h"
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
@@ -55,13 +56,13 @@ void ConvertLoadTimeToJSON(
   base::DictionaryValue item;
 
   if (load_start_time.is_null()) {
-    item.Set("load_start_ms", base::Value::CreateNullValue());
+    item.Set("load_start_ms", base::MakeUnique<base::Value>());
   } else {
     item.SetDouble("load_start_ms", (load_start_time - base::Time::UnixEpoch())
                    .InMillisecondsF());
   }
   if (load_start_time.is_null() || load_stop_time.is_null()) {
-    item.Set("load_duration_ms", base::Value::CreateNullValue());
+    item.Set("load_duration_ms", base::MakeUnique<base::Value>());
   } else {
     item.SetDouble("load_duration_ms",
         (load_stop_time - load_start_time).InMillisecondsF());

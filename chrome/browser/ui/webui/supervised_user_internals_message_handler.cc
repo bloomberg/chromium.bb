@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -245,7 +246,7 @@ void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
     const base::DictionaryValue* settings) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveUserSettings",
-      *(settings ? settings : base::Value::CreateNullValue().get()));
+      *(settings ? settings : base::MakeUnique<base::Value>().get()));
 }
 
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(

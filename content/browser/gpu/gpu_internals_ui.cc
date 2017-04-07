@@ -247,7 +247,7 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  std::unique_ptr<base::Value> dx_info = base::Value::CreateNullValue();
+  auto dx_info = base::MakeUnique<base::Value>();
   if (gpu_info.dx_diagnostics.children.size())
     dx_info.reset(DxDiagNodeToList(gpu_info.dx_diagnostics));
   info->Set("diagnostics", std::move(dx_info));

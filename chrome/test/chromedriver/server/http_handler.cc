@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -756,7 +757,7 @@ std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareLegacyResponse(
     value.reset(error.release());
   }
   if (!value)
-    value = base::Value::CreateNullValue();
+    value = base::MakeUnique<base::Value>();
 
   base::DictionaryValue body_params;
   body_params.SetInteger("status", status.code());
@@ -819,7 +820,7 @@ HttpHandler::PrepareStandardResponse(
   }
 
   if (!value)
-    value = base::Value::CreateNullValue();
+    value = base::MakeUnique<base::Value>();
 
   base::DictionaryValue body_params;
   if (status.IsError()){

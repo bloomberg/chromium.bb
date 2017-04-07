@@ -166,7 +166,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
   map.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(1), nullptr);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::Value::CreateNullValue(), nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(), nullptr);
   map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(1.2), nullptr);
   base::DictionaryValue dict;

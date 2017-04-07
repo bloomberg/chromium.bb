@@ -1311,7 +1311,7 @@ void PrintPreviewHandler::SendPrinterSetup(
     std::unique_ptr<base::DictionaryValue> destination_info) {
   auto response = base::MakeUnique<base::DictionaryValue>();
   bool success = true;
-  auto caps_value = base::Value::CreateNullValue();
+  auto caps_value = base::MakeUnique<base::Value>();
   auto caps = base::MakeUnique<base::DictionaryValue>();
   if (destination_info &&
       destination_info->Remove(printing::kPrinterCapabilities, &caps_value) &&

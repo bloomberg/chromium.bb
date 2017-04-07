@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -36,7 +37,7 @@ std::unique_ptr<base::Value> SettingsPrivateDelegate::GetPref(
   std::unique_ptr<api::settings_private::PrefObject> pref =
       prefs_util_->GetPref(name);
   if (!pref)
-    return base::Value::CreateNullValue();
+    return base::MakeUnique<base::Value>();
   return pref->ToValue();
 }
 

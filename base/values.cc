@@ -76,11 +76,6 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 }  // namespace
 
 // static
-std::unique_ptr<Value> Value::CreateNullValue() {
-  return WrapUnique(new Value(Type::NONE));
-}
-
-// static
 std::unique_ptr<BinaryValue> BinaryValue::CreateWithCopiedBuffer(
     const char* buffer,
     size_t size) {
@@ -1091,7 +1086,7 @@ bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
   if (index >= list_->size()) {
     // Pad out any intermediate indexes with null settings
     while (index > list_->size())
-      Append(CreateNullValue());
+      Append(MakeUnique<Value>());
     Append(std::move(in_value));
   } else {
     // TODO(dcheng): remove this DCHECK once the raw pointer version is removed?

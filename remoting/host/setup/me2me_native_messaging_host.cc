@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
@@ -457,7 +458,7 @@ void Me2MeNativeMessagingHost::SendConfigResponse(
   if (config) {
     response->Set("config", config.release());
   } else {
-    response->Set("config", base::Value::CreateNullValue());
+    response->Set("config", base::MakeUnique<base::Value>());
   }
   SendMessageToClient(std::move(response));
 }

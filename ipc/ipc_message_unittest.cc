@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -67,7 +68,7 @@ TEST(IPCMessageTest, ListValue) {
   base::ListValue input;
   input.Set(0, new base::Value(42.42));
   input.Set(1, new base::Value("forty"));
-  input.Set(2, base::Value::CreateNullValue());
+  input.Set(2, base::MakeUnique<base::Value>());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
@@ -87,7 +88,7 @@ TEST(IPCMessageTest, ListValue) {
 
 TEST(IPCMessageTest, DictionaryValue) {
   base::DictionaryValue input;
-  input.Set("null", base::Value::CreateNullValue());
+  input.Set("null", base::MakeUnique<base::Value>());
   input.Set("bool", new base::Value(true));
   input.Set("int", new base::Value(42));
   input.SetWithoutPathExpansion("int.with.dot", new base::Value(43));

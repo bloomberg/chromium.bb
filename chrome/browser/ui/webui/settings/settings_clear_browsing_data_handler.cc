@@ -262,9 +262,7 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   for (const auto& counter : counters_)
     counter->Restart();
 
-  ResolveJavascriptCallback(
-      *callback_id,
-      *base::Value::CreateNullValue() /* Promise<void> */);
+  ResolveJavascriptCallback(*callback_id, base::Value() /* Promise<void> */);
 }
 
 void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {

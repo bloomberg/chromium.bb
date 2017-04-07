@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -258,7 +259,7 @@ void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
 
   // The cookie doesn't exist; return null.
   if (!results_)
-    SetResult(base::Value::CreateNullValue());
+    SetResult(base::MakeUnique<base::Value>());
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

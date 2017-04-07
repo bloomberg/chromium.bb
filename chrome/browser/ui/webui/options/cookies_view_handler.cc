@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -159,7 +160,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
 
   base::ListValue args;
   if (parent == tree_model->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Append(base::MakeUnique<base::Value>());
   else
     args.AppendString(model_util_->GetTreeNodeId(parent_node));
   args.AppendInteger(start);
@@ -179,7 +180,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
 
   base::ListValue args;
   if (parent == tree_model->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Append(base::MakeUnique<base::Value>());
   else
     args.AppendString(model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
   args.AppendInteger(start);
@@ -279,7 +280,7 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
 
   base::ListValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Append(base::MakeUnique<base::Value>());
   else
     args.AppendString(model_util_->GetTreeNodeId(parent));
   args.Append(std::move(children));

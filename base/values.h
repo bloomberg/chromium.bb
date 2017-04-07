@@ -63,8 +63,6 @@ class BASE_EXPORT Value {
     // Note: Do not add more types. See the file-level comment above for why.
   };
 
-  static std::unique_ptr<Value> CreateNullValue();
-
   // For situations where you want to keep ownership of your buffer, this
   // factory method creates a new BinaryValue by copying the contents of the
   // buffer that's passed in.
@@ -178,7 +176,7 @@ class BASE_EXPORT Value {
   bool Equals(const Value* other) const;
 
   // Compares if two Value objects have equal contents. Can handle NULLs.
-  // NULLs are considered equal but different from Value::CreateNullValue().
+  // NULLs are considered equal but different from Value(Value::Type::NONE).
   // DEPRECATED, use operator==(const Value& lhs, const Value& rhs) instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   static bool Equals(const Value* a, const Value* b);

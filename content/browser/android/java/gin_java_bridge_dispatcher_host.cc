@@ -330,7 +330,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   DCHECK(routing_id != MSG_ROUTING_NONE);
   scoped_refptr<GinJavaBoundObject> object = FindObject(object_id);
   if (!object.get()) {
-    wrapped_result->Append(base::Value::CreateNullValue());
+    wrapped_result->Append(base::MakeUnique<base::Value>());
     *error_code = kGinJavaBridgeUnknownObjectId;
     return;
   }
@@ -360,7 +360,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
         GinJavaBridgeValue::CreateObjectIDValue(
             returned_object_id).release());
   } else {
-    wrapped_result->Append(base::Value::CreateNullValue());
+    wrapped_result->Append(base::MakeUnique<base::Value>());
   }
 }
 

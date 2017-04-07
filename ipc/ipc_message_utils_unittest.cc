@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/unguessable_token.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -100,7 +101,7 @@ TEST(IPCMessageUtilsTest, ValueSize) {
   value->SetWithoutPathExpansion("foo", new base::Value(42));
   value->SetWithoutPathExpansion("bar", new base::Value(3.14));
   value->SetWithoutPathExpansion("baz", new base::Value("hello"));
-  value->SetWithoutPathExpansion("qux", base::Value::CreateNullValue());
+  value->SetWithoutPathExpansion("qux", base::MakeUnique<base::Value>());
 
   std::unique_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);
   nested_dict->SetWithoutPathExpansion("foobar", new base::Value(5));

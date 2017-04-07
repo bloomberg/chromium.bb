@@ -113,7 +113,7 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
 
   switch (schema.type()) {
     case base::Value::Type::NONE:
-      return base::Value::CreateNullValue();
+      return base::MakeUnique<base::Value>();
 
     case base::Value::Type::BOOLEAN: {
       std::string string_value;

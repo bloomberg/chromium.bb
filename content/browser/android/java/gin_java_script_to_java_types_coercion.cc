@@ -11,6 +11,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -465,7 +466,7 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   for (jsize i = 0; i < length; ++i) {
     const base::Value* value_element = null_value.get();
     list_value->Get(i, &value_element);
@@ -537,7 +538,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   for (jsize i = 0; i < length; ++i) {
     const std::string key(base::IntToString(i));
     const base::Value* value_element = null_value.get();

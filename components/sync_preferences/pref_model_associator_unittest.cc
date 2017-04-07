@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -133,7 +134,7 @@ TEST_F(ListPreferenceMergeTest, LocalEmpty) {
 }
 
 TEST_F(ListPreferenceMergeTest, ServerNull) {
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   {
     ListPrefUpdate update(pref_service_.get(), kListPrefName);
     base::ListValue* local_list_value = update.Get();
@@ -255,7 +256,7 @@ TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ServerNull) {
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   {
     DictionaryPrefUpdate update(pref_service_.get(), kDictionaryPrefName);
     base::DictionaryValue* local_dict_value = update.Get();

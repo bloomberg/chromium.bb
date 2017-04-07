@@ -11,6 +11,7 @@
 #include "base/android/event_log.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/android/java/gin_java_script_to_java_types_coercion.h"
 #include "content/browser/android/java/java_method.h"
 #include "content/browser/android/java/jni_helper.h"
@@ -325,7 +326,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       }
       ScopedJavaLocalRef<jobject> scoped_java_object(env, java_object);
       if (!scoped_java_object.obj()) {
-        result_wrapper.Append(base::Value::CreateNullValue());
+        result_wrapper.Append(base::MakeUnique<base::Value>());
         break;
       }
       SetObjectResult(scoped_java_object, object_->GetSafeAnnotationClass());

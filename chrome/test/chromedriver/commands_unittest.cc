@@ -372,7 +372,7 @@ class FindElementWebView : public StubWebView {
       }
       case kElementNotExistsQueryOnce: {
         if (only_one_)
-          result_ = base::Value::CreateNullValue();
+          result_ = base::MakeUnique<base::Value>();
         else
           result_.reset(new base::ListValue());
         break;
@@ -407,7 +407,7 @@ class FindElementWebView : public StubWebView {
         (scenario_ == kElementExistsQueryTwice && current_count_ == 1)) {
         // Always return empty result when testing timeout.
         if (only_one_)
-          *result = base::Value::CreateNullValue();
+          *result = base::MakeUnique<base::Value>();
         else
           result->reset(new base::ListValue());
     } else {

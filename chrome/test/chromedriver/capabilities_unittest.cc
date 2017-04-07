@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/capabilities.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -304,8 +305,8 @@ TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
   base::DictionaryValue proxy;
   proxy.SetString("proxyType", "manual");
   proxy.SetString("ftpProxy", "localhost:9001");
-  proxy.Set("sslProxy", base::Value::CreateNullValue());
-  proxy.Set("noProxy", base::Value::CreateNullValue());
+  proxy.Set("sslProxy", base::MakeUnique<base::Value>());
+  proxy.Set("noProxy", base::MakeUnique<base::Value>());
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
   Status status = capabilities.Parse(caps);

@@ -76,7 +76,7 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
   static const char kDeviceId[] = "test_device_id1";
 
-  std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
+  auto null_value = base::MakeUnique<base::Value>();
   std::unique_ptr<base::Value> bool_value(new base::Value(false));
   std::unique_ptr<base::Value> int_value(new base::Value(1234567890));
   std::unique_ptr<base::Value> double_value(new base::Value(123.0987654321));

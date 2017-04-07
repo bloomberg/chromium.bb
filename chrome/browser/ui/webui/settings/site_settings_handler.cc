@@ -576,7 +576,7 @@ void SiteSettingsHandler::HandleGetSiteDetails(
   }
 
   if (!exceptions->GetSize()) {
-    RejectJavascriptCallback(*callback_id, *base::Value::CreateNullValue());
+    RejectJavascriptCallback(*callback_id, base::Value());
     return;
   }
 

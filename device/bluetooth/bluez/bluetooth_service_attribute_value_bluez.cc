@@ -12,7 +12,7 @@
 namespace bluez {
 
 BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ()
-    : type_(NULLTYPE), size_(0), value_(base::Value::CreateNullValue()) {}
+    : type_(NULLTYPE), size_(0), value_(base::MakeUnique<base::Value>()) {}
 
 BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ(
     Type type,

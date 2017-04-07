@@ -262,8 +262,8 @@ bool ReadValue(const base::Pickle* m,
 
   switch (static_cast<base::Value::Type>(type)) {
     case base::Value::Type::NONE:
-      *value = base::Value::CreateNullValue().release();
-    break;
+      *value = new base::Value();
+      break;
     case base::Value::Type::BOOLEAN: {
       bool val;
       if (!ReadParam(m, iter, &val))

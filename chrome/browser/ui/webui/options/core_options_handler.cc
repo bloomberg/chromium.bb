@@ -372,7 +372,7 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
       pref_service->FindPreference(pref_name);
   if (!pref) {
     NOTREACHED();
-    return base::Value::CreateNullValue().release();
+    return new base::Value();
   }
   const PrefService::Preference* controlling_pref =
       pref_service->FindPreference(controlling_pref_name);

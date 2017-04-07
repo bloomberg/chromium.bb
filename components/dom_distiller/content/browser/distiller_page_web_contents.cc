@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
@@ -168,7 +169,7 @@ void DistillerPageWebContents::DidFailLoad(
     content::WebContentsObserver::Observe(NULL);
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;
-    std::unique_ptr<base::Value> empty = base::Value::CreateNullValue();
+    auto empty = base::MakeUnique<base::Value>();
     OnWebContentsDistillationDone(GURL(), base::TimeTicks(), empty.get());
   }
 }

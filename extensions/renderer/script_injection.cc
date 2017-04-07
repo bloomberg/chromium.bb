@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -363,7 +364,7 @@ void ScriptInjection::OnJsInjectionCompleted(
       execution_result_ = v8_converter->FromV8Value(results[0], context);
     }
     if (!execution_result_.get())
-      execution_result_ = base::Value::CreateNullValue();
+      execution_result_ = base::MakeUnique<base::Value>();
   }
   did_inject_js_ = true;
 

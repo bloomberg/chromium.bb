@@ -2064,10 +2064,10 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::completed(
         std::unique_ptr<base::Value> result_value(
             converter.FromV8Value(value, context));
         list.Append(result_value ? std::move(result_value)
-                                 : base::Value::CreateNullValue());
+                                 : base::MakeUnique<base::Value>());
       }
     } else {
-      list.Set(0, base::Value::CreateNullValue());
+      list.Set(0, base::MakeUnique<base::Value>());
     }
     render_frame_impl_.get()->Send(
         new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id_, list));
@@ -2092,9 +2092,9 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
       std::unique_ptr<base::Value> result_value(
           converter.FromV8Value(result, context));
       list.Set(0, result_value ? std::move(result_value)
-                               : base::Value::CreateNullValue());
+                               : base::MakeUnique<base::Value>());
     } else {
-      list.Set(0, base::Value::CreateNullValue());
+      list.Set(0, base::MakeUnique<base::Value>());
     }
     Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
   }
