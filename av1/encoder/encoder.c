@@ -187,13 +187,15 @@ int av1_set_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
     unsigned char *const active_map_8x8 = cpi->active_map.map;
     const int mi_rows = cpi->common.mi_rows;
     const int mi_cols = cpi->common.mi_cols;
+    const int row_scale = mi_size_high[BLOCK_16X16] == 2 ? 1 : 2;
+    const int col_scale = mi_size_wide[BLOCK_16X16] == 2 ? 1 : 2;
     cpi->active_map.update = 1;
     if (new_map_16x16) {
       int r, c;
       for (r = 0; r < mi_rows; ++r) {
         for (c = 0; c < mi_cols; ++c) {
           active_map_8x8[r * mi_cols + c] =
-              new_map_16x16[(r >> 1) * cols + (c >> 1)]
+              new_map_16x16[(r >> row_scale) * cols + (c >> col_scale)]
                   ? AM_SEGMENT_ID_ACTIVE
                   : AM_SEGMENT_ID_INACTIVE;
         }
@@ -215,6 +217,9 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
     unsigned char *const seg_map_8x8 = cpi->segmentation_map;
     const int mi_rows = cpi->common.mi_rows;
     const int mi_cols = cpi->common.mi_cols;
+    const int row_scale = mi_size_high[BLOCK_16X16] == 2 ? 1 : 2;
+    const int col_scale = mi_size_wide[BLOCK_16X16] == 2 ? 1 : 2;
+
     memset(new_map_16x16, !cpi->active_map.enabled, rows * cols);
     if (cpi->active_map.enabled) {
       int r, c;
@@ -222,7 +227,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
         for (c = 0; c < mi_cols; ++c) {
           // Cyclic refresh segments are considered active despite not having
           // AM_SEGMENT_ID_ACTIVE
-          new_map_16x16[(r >> 1) * cols + (c >> 1)] |=
+          new_map_16x16[(r >> row_scale) * cols + (c >> col_scale)] |=
               seg_map_8x8[r * mi_cols + c] != AM_SEGMENT_ID_INACTIVE;
         }
       }
