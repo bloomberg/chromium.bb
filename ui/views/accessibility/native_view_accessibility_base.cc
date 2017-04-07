@@ -111,8 +111,8 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
   return nullptr;
 }
 
-gfx::Vector2d NativeViewAccessibilityBase::GetGlobalCoordinateOffset() {
-  return gfx::Vector2d(0, 0);  // location is already in screen coordinates.
+gfx::Rect NativeViewAccessibilityBase::GetScreenBoundsRect() const {
+  return view_->GetBoundsInScreen();
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,

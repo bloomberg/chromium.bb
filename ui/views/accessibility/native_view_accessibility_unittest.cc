@@ -93,8 +93,10 @@ TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
 TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
   gfx::Rect bounds =
       gfx::ToEnclosingRect(button_accessibility()->GetData().location);
-  bounds.Offset(button_accessibility()->GetGlobalCoordinateOffset());
+  gfx::Rect screen_bounds = button_accessibility()->GetScreenBoundsRect();
+
   EXPECT_EQ(button_->GetBoundsInScreen(), bounds);
+  EXPECT_EQ(screen_bounds, bounds);
 }
 
 TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {

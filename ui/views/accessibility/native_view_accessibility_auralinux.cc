@@ -91,9 +91,7 @@ class AuraLinuxApplication
     return widget->GetRootView()->GetNativeViewAccessible();
   }
 
-  gfx::Vector2d GetGlobalCoordinateOffset() override {
-    return gfx::Vector2d();
-  }
+  gfx::Rect GetScreenBoundsRect() const override { return gfx::Rect(); }
 
   gfx::NativeViewAccessible HitTestSync(int x, int y) override {
     return nullptr;

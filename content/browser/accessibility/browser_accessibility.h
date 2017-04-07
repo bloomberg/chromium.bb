@@ -151,9 +151,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // page (specifically, the top-left corner of the topmost web contents).
   gfx::Rect GetPageBoundsRect() const;
 
-  // Returns the bounds of this object in screen coordinates.
-  gfx::Rect GetScreenBoundsRect() const;
-
   // Returns the bounds of the given range in coordinates relative to the
   // top-left corner of the overall web area. Only valid when the
   // role is WebAXRoleStaticText.
@@ -419,7 +416,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
-  gfx::Vector2d GetGlobalCoordinateOffset() override;
+  gfx::Rect GetScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;

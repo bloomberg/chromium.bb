@@ -263,10 +263,9 @@ HRESULT AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
 STDMETHODIMP AXPlatformNodeWin::accLocation(
     LONG* x_left, LONG* y_top, LONG* width, LONG* height, VARIANT var_id) {
   COM_OBJECT_VALIDATE_VAR_ID_4_ARGS(var_id, x_left, y_top, width, height);
-  gfx::Rect bounds = gfx::ToEnclosingRect(GetData().location);
-  bounds += delegate_->GetGlobalCoordinateOffset();
+  gfx::Rect bounds = delegate_->GetScreenBoundsRect();
   *x_left = bounds.x();
-  *y_top  = bounds.y();
+  *y_top = bounds.y();
   *width  = bounds.width();
   *height = bounds.height();
 

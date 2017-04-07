@@ -49,8 +49,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
-  // Get the offset to convert local coordinates to screen global coordinates.
-  virtual gfx::Vector2d GetGlobalCoordinateOffset() = 0;
+  // Get the bounds of this node in screen coordinates.
+  virtual gfx::Rect GetScreenBoundsRect() const = 0;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's

@@ -5,6 +5,7 @@
 #include "base/containers/hash_tables.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
 
@@ -100,8 +101,10 @@ gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
       nullptr;
 }
 
-gfx::Vector2d TestAXNodeWrapper::GetGlobalCoordinateOffset() {
-  return g_offset;
+gfx::Rect TestAXNodeWrapper::GetScreenBoundsRect() const {
+  gfx::RectF bounds = GetData().location;
+  bounds.Offset(g_offset);
+  return gfx::ToEnclosingRect(bounds);
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {

@@ -23,6 +23,7 @@
 #include "third_party/isimpledom/ISimpleDOMDocument.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "third_party/isimpledom/ISimpleDOMText.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
 enum TextBoundaryDirection;

@@ -23,9 +23,7 @@ const AXNodeData& AXPlatformNodeBase::GetData() const {
 
 gfx::Rect AXPlatformNodeBase::GetBoundsInScreen() const {
   CHECK(delegate_);
-  gfx::Rect bounds = gfx::ToEnclosingRect(GetData().location);
-  bounds.Offset(delegate_->GetGlobalCoordinateOffset());
-  return bounds;
+  return delegate_->GetScreenBoundsRect();
 }
 
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {

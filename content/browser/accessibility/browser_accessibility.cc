@@ -375,16 +375,6 @@ gfx::Rect BrowserAccessibility::GetPageBoundsRect() const {
   return RelativeToAbsoluteBounds(bounds, false);
 }
 
-gfx::Rect BrowserAccessibility::GetScreenBoundsRect() const {
-  gfx::Rect bounds = GetPageBoundsRect();
-
-  // Adjust the bounds by the top left corner of the containing view's bounds
-  // in screen coordinates.
-  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
-
-  return bounds;
-}
-
 gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
     const {
   DCHECK_GE(start, 0);
@@ -1363,9 +1353,14 @@ gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::Vector2d BrowserAccessibility::GetGlobalCoordinateOffset() {
-  NOTREACHED();
-  return gfx::Vector2d();
+gfx::Rect BrowserAccessibility::GetScreenBoundsRect() const {
+  gfx::Rect bounds = GetPageBoundsRect();
+
+  // Adjust the bounds by the top left corner of the containing view's bounds
+  // in screen coordinates.
+  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
+
+  return bounds;
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
