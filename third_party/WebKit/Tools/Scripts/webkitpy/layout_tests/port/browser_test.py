@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from webkitpy.common import exit_codes
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import browser_test_driver
 from webkitpy.layout_tests.port import linux
@@ -62,7 +63,7 @@ class BrowserTestPortOverrides(object):
         """This function is meant to be a no-op since we don't want to actually
         check for system dependencies.
         """
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def driver_name(self):
         return 'browser_tests'

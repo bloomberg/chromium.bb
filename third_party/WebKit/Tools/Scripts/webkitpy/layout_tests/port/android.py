@@ -36,6 +36,7 @@ import time
 
 from multiprocessing.pool import ThreadPool
 
+from webkitpy.common import exit_codes
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderAndroid
 from webkitpy.layout_tests.models import test_run_results
@@ -355,7 +356,7 @@ class AndroidPort(base.Port):
     def default_child_processes(self):
         usable_devices = self._devices.usable_devices(self._executive)
         if not usable_devices:
-            raise test_run_results.TestRunException(test_run_results.NO_DEVICES_EXIT_STATUS,
+            raise test_run_results.TestRunException(exit_codes.NO_DEVICES_EXIT_STATUS,
                                                     'Unable to find any attached Android devices.')
         return len(usable_devices)
 
@@ -419,8 +420,8 @@ class AndroidPort(base.Port):
 
         if not self._devices.prepared_devices():
             _log.error('Could not prepare any devices for testing.')
-            return test_run_results.NO_DEVICES_EXIT_STATUS
-        return test_run_results.OK_EXIT_STATUS
+            return exit_codes.NO_DEVICES_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def setup_test_run(self):
         super(AndroidPort, self).setup_test_run()
@@ -447,8 +448,8 @@ class AndroidPort(base.Port):
             if not exists:
                 _log.error('You are missing %s under %s. Try installing %s. See build instructions.',
                            font_file, font_dirs, package)
-                return test_run_results.SYS_DEPS_EXIT_STATUS
-        return test_run_results.OK_EXIT_STATUS
+                return exit_codes.SYS_DEPS_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def requires_http_server(self):
         """Chromium Android runs tests on devices, and uses the HTTP server to

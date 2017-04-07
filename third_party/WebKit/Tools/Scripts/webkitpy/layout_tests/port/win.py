@@ -38,6 +38,7 @@ try:
 except ImportError:
     _winreg = None  # pylint: disable=invalid-name
 
+from webkitpy.common import exit_codes
 from webkitpy.layout_tests.breakpad.dump_reader_win import DumpReaderWin
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
@@ -172,7 +173,7 @@ class WinPort(base.Port):
 
         self._crash_service_available = self._check_crash_service_available()
         if not self._crash_service_available:
-            result = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+            result = exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         if result:
             _log.error('For complete Windows build requirements, please see:')

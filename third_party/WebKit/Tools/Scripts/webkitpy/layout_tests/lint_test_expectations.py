@@ -32,17 +32,11 @@ import optparse
 import signal
 import traceback
 
+from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port.factory import platform_options
 
-
-# This mirrors what the shell normally does.
-INTERRUPTED_EXIT_STATUS = signal.SIGINT + 128
-
-# This is a randomly chosen exit code that can be tested against to
-# indicate that an unexpected exception occurred.
-EXCEPTIONAL_EXIT_STATUS = 254
 
 _log = logging.getLogger(__name__)
 
@@ -142,10 +136,10 @@ def main(argv, _, stderr):
     try:
         exit_status = run_checks(host, options, stderr)
     except KeyboardInterrupt:
-        exit_status = INTERRUPTED_EXIT_STATUS
+        exit_status = exit_codes.INTERRUPTED_EXIT_STATUS
     except Exception as error:  # pylint: disable=broad-except
         print >> stderr, '\n%s raised: %s' % (error.__class__.__name__, error)
         traceback.print_exc(file=stderr)
-        exit_status = EXCEPTIONAL_EXIT_STATUS
+        exit_status = exit_codes.EXCEPTIONAL_EXIT_STATUS
 
     return exit_status

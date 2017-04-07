@@ -43,6 +43,7 @@ import random
 import sys
 import time
 
+from webkitpy.common import exit_codes
 from webkitpy.common.net.file_uploader import FileUploader
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.controllers.layout_test_finder import LayoutTestFinder
@@ -106,7 +107,7 @@ class Manager(object):
             paths, all_test_names, running_all_tests = self._collect_tests(args)
         except IOError:
             # This is raised if --test-list doesn't exist
-            return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
+            return test_run_results.RunDetails(exit_code=exit_codes.NO_TESTS_EXIT_STATUS)
 
         # Create a sorted list of test files so the subset chunk,
         # if used, contains alphabetically consecutive tests.
@@ -132,7 +133,7 @@ class Manager(object):
         # Check to make sure we're not skipping every test.
         if not tests_to_run:
             _log.critical('No tests to run.')
-            return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
+            return test_run_results.RunDetails(exit_code=exit_codes.NO_TESTS_EXIT_STATUS)
 
         exit_code = self._set_up_run(tests_to_run)
         if exit_code:
@@ -204,10 +205,10 @@ class Manager(object):
             enabled_pixel_tests_in_retry, only_include_failing=True)
 
         exit_code = summarized_failing_results['num_regressions']
-        if exit_code > test_run_results.MAX_FAILURES_EXIT_STATUS:
+        if exit_code > exit_codes.MAX_FAILURES_EXIT_STATUS:
             _log.warning('num regressions (%d) exceeds max exit status (%d)',
-                         exit_code, test_run_results.MAX_FAILURES_EXIT_STATUS)
-            exit_code = test_run_results.MAX_FAILURES_EXIT_STATUS
+                         exit_code, exit_codes.MAX_FAILURES_EXIT_STATUS)
+            exit_code = exit_codes.MAX_FAILURES_EXIT_STATUS
 
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results, running_all_tests)
@@ -221,10 +222,10 @@ class Manager(object):
             results_path = self._filesystem.join(self._results_directory, "results.html")
             self._copy_results_html_file(results_path)
             if initial_results.keyboard_interrupted:
-                exit_code = test_run_results.INTERRUPTED_EXIT_STATUS
+                exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
             else:
                 if initial_results.interrupted:
-                    exit_code = test_run_results.EARLY_EXIT_STATUS
+                    exit_code = exit_codes.EARLY_EXIT_STATUS
                 if self._options.show_results and (
                         exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)
@@ -353,7 +354,7 @@ class Manager(object):
         self._port.host.filesystem.maybe_make_directory(self._results_directory)
 
         self._port.setup_test_run()
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations,
                    num_workers, retry_attempt=0):

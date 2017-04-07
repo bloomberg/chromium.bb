@@ -33,6 +33,7 @@ import errno
 import optparse
 import socket
 
+from webkitpy.common import exit_codes
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.common.system.system_host import SystemHost
@@ -78,7 +79,7 @@ class PortTestCase(LoggingTestCase):
         port._check_driver_build_up_to_date = lambda config: True
         port.check_httpd = lambda: True
         self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
-                         test_run_results.OK_EXIT_STATUS)
+                         exit_codes.OK_EXIT_STATUS)
         # We should get a warning about PrettyPatch being missing,
         # but not the driver itself.
         logs = ''.join(self.logMessages())
@@ -95,7 +96,7 @@ class PortTestCase(LoggingTestCase):
         port._check_file_exists = lambda path, desc: False
         port._check_driver_build_up_to_date = lambda config: False
         self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
-                         test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+                         exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
         # And, here we should get warnings about both.
         logs = ''.join(self.logMessages())
         self.assertIn('pretty patches', logs)
@@ -240,9 +241,9 @@ class PortTestCase(LoggingTestCase):
     def test_check_sys_deps(self):
         port = self.make_port()
         port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
+        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.OK_EXIT_STATUS)
         port._executive = MockExecutive(exit_code=1, output='testing output failure')  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.SYS_DEPS_EXIT_STATUS)
+        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.SYS_DEPS_EXIT_STATUS)
 
     def test_expectations_ordering(self):
         port = self.make_port()

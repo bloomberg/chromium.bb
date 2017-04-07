@@ -28,6 +28,7 @@
 
 import optparse
 
+from webkitpy.common import exit_codes
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import browser_test
@@ -40,7 +41,7 @@ class _BrowserTestTestCaseMixin(object):
     def test_check_sys_deps(self):
         port = self.make_port()
         port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
+        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.OK_EXIT_STATUS)
 
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith(self.driver_name_endswith))

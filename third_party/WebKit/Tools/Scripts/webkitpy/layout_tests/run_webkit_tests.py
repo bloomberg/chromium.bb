@@ -33,6 +33,7 @@ import optparse
 import sys
 import traceback
 
+from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.generate_results_dashboard import DashBoardGenerator
@@ -61,14 +62,14 @@ def main(argv, stdout, stderr):
     except (NotImplementedError, ValueError) as error:
         # FIXME: is this the best way to handle unsupported port names?
         print >> stderr, str(error)
-        return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+        return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
     try:
         return run(port, options, args, stderr, stdout).exit_code
 
     # We need to still handle KeyboardInterrupt, at least for webkitpy unittest cases.
     except KeyboardInterrupt:
-        return test_run_results.INTERRUPTED_EXIT_STATUS
+        return exit_codes.INTERRUPTED_EXIT_STATUS
     except test_run_results.TestRunException as error:
         print >> stderr, error.msg
         return error.code
@@ -76,7 +77,7 @@ def main(argv, stdout, stderr):
         if isinstance(error, Exception):
             print >> stderr, '\n%s raised: %s' % (error.__class__.__name__, error)
             traceback.print_exc(file=stderr)
-        return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+        return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
 
 def parse_args(args):
@@ -579,8 +580,8 @@ def run(port, options, args, logging_stream, stdout):
         printer.flush()
 
         if (not options.dry_run and
-                (run_details.exit_code not in test_run_results.ERROR_CODES or
-                 run_details.exit_code == test_run_results.EARLY_EXIT_STATUS) and
+                (run_details.exit_code not in exit_codes.ERROR_CODES or
+                 run_details.exit_code == exit_codes.EARLY_EXIT_STATUS) and
                 not run_details.initial_results.keyboard_interrupted):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)

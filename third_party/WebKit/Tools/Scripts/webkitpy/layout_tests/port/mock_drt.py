@@ -47,6 +47,7 @@ script_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.
 if script_dir not in sys.path:
     sys.path.append(script_dir)
 
+from webkitpy.common import exit_codes
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.layout_tests.models import test_run_results
@@ -70,10 +71,10 @@ class MockDRTPort(object):
         return getattr(self.__delegate, name)
 
     def check_build(self, needs_http, printer):
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def check_sys_deps(self, needs_http):
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def _driver_class(self, delegate):
         return self._mocked_driver_maker

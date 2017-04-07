@@ -30,6 +30,7 @@ import StringIO
 import optparse
 import unittest
 
+from webkitpy.common import exit_codes
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests import lint_test_expectations
 
@@ -216,11 +217,11 @@ class MainTest(unittest.TestCase):
 
         lint_test_expectations.lint = interrupting_lint
         res = lint_test_expectations.main([], self.stdout, self.stderr)
-        self.assertEqual(res, lint_test_expectations.INTERRUPTED_EXIT_STATUS)
+        self.assertEqual(res, exit_codes.INTERRUPTED_EXIT_STATUS)
 
     def test_exception(self):
         def exception_raising_lint(host, options):
             assert False
         lint_test_expectations.lint = exception_raising_lint
         res = lint_test_expectations.main([], self.stdout, self.stderr)
-        self.assertEqual(res, lint_test_expectations.EXCEPTIONAL_EXIT_STATUS)
+        self.assertEqual(res, exit_codes.EXCEPTIONAL_EXIT_STATUS)

@@ -41,6 +41,7 @@ import optparse
 import re
 import sys
 
+from webkitpy.common import exit_codes
 from webkitpy.common import find_files
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.memoized import memoized
@@ -329,7 +330,7 @@ class Port(object):
         if needs_http:
             result = self.check_httpd() and result
 
-        return test_run_results.OK_EXIT_STATUS if result else test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS if result else exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
     def _check_driver(self):
         driver_path = self._path_to_driver()
@@ -365,8 +366,8 @@ class Port(object):
                 _log.error('')
                 _log.error('For complete build requirements, please see:')
                 _log.error(self.BUILD_REQUIREMENTS_URL)
-            return test_run_results.SYS_DEPS_EXIT_STATUS
-        return test_run_results.OK_EXIT_STATUS
+            return exit_codes.SYS_DEPS_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def check_image_diff(self):
         """Checks whether image_diff binary exists."""

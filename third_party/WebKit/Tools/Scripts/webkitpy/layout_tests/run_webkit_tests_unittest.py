@@ -34,6 +34,7 @@ import StringIO
 import sys
 import unittest
 
+from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.path import abspath_to_uri
@@ -284,7 +285,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Note that this also tests running a test marked as SKIP if
         # you specify it explicitly.
         details, _, _ = logging_run(['failures/expected/keyboard.html', '--child-processes', '1'], tests_included=True)
-        self.assertEqual(details.exit_code, test_run_results.INTERRUPTED_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.INTERRUPTED_EXIT_STATUS)
 
         _, regular_output, _ = logging_run(
             ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'],
@@ -293,17 +294,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_no_tests_found(self):
         details, err, _ = logging_run(['resources'], tests_included=True)
-        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.NO_TESTS_EXIT_STATUS)
         self.assert_contains(err, 'No tests to run.\n')
 
     def test_no_tests_found_2(self):
         details, err, _ = logging_run(['foo'], tests_included=True)
-        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.NO_TESTS_EXIT_STATUS)
         self.assert_contains(err, 'No tests to run.\n')
 
     def test_no_tests_found_3(self):
         details, err, _ = logging_run(['--shard-index', '4', '--total-shards', '400', 'foo/bar.html'], tests_included=True)
-        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.NO_TESTS_EXIT_STATUS)
         self.assert_contains(err, 'No tests to run.\n')
 
     def test_natural_order(self):
@@ -488,7 +489,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(['passes/text.html'], tests_run)
         host.filesystem.remove(filename)
         details, err, _ = logging_run(['--test-list=%s' % filename], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.NO_TESTS_EXIT_STATUS)
         self.assert_not_empty(err)
 
     def test_test_list_with_prefix(self):
@@ -644,7 +645,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # By returning False, we know that the incremental results were generated and then deleted.
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/incremental_results.json'))
 
-        self.assertEqual(details.exit_code, test_run_results.EARLY_EXIT_STATUS)
+        self.assertEqual(details.exit_code, exit_codes.EARLY_EXIT_STATUS)
 
         # This checks that passes/text.html is considered Skip-ped.
         self.assertIn('"skipped":1', host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
@@ -966,7 +967,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         stderr = StringIO.StringIO()
         res = run_webkit_tests.main(['--platform', 'foo'], stdout, stderr)
 
-        self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+        self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
         self.assertEqual(stdout.getvalue(), '')
         self.assertTrue('unsupported platform' in stderr.getvalue())
 
@@ -979,7 +980,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         out = StringIO.StringIO()
         err = StringIO.StringIO()
         self.assertEqual(run_webkit_tests.main(
-            ['--platform', port_name, 'fast/harness/results.html'], out, err), test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+            ['--platform', port_name, 'fast/harness/results.html'], out, err), exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
 
     def test_verbose_in_child_processes(self):
         # When we actually run multiple processes, we may have to reconfigure logging in the
@@ -1021,7 +1022,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                                      'failures/unexpected/missing_text.html',
                                      'failures/unexpected/missing_image.html'],
                                     stdout, stderr)
-        self.assertEqual(res, test_run_results.EARLY_EXIT_STATUS)
+        self.assertEqual(res, exit_codes.EARLY_EXIT_STATUS)
         self.assertEqual(stdout.getvalue(),
                          ('\n'
                           'Regressions: Unexpected missing results (1)\n'
@@ -1177,7 +1178,7 @@ class MainTest(unittest.TestCase):
         def successful_run(port, options, args, printer):
 
             class FakeRunDetails(object):
-                exit_code = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+                exit_code = exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
             return FakeRunDetails()
 
@@ -1189,14 +1190,14 @@ class MainTest(unittest.TestCase):
         try:
             run_webkit_tests._run_tests = interrupting_run
             res = run_webkit_tests.main([], stdout, stderr)
-            self.assertEqual(res, test_run_results.INTERRUPTED_EXIT_STATUS)
+            self.assertEqual(res, exit_codes.INTERRUPTED_EXIT_STATUS)
 
             run_webkit_tests._run_tests = successful_run
             res = run_webkit_tests.main(['--platform', 'test'], stdout, stderr)
-            self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+            self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
 
             run_webkit_tests._run_tests = exception_raising_run
             res = run_webkit_tests.main([], stdout, stderr)
-            self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+            self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
             run_webkit_tests._run_tests = orig_run_fn

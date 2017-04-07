@@ -29,6 +29,7 @@
 import base64
 import time
 
+from webkitpy.common import exit_codes
 from webkitpy.common.system.crash_logs import CrashLogs
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
@@ -439,10 +440,10 @@ class TestPort(Port):
         return 1
 
     def check_build(self, needs_http, printer):
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def check_sys_deps(self, needs_http):
-        return test_run_results.OK_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def default_configuration(self):
         return 'Release'
