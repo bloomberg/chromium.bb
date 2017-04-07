@@ -1445,6 +1445,20 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   wm->wmmat[1] = ROUND_POWER_OF_TWO_SIGNED(v, 3);
 
   wm->wmmat[6] = wm->wmmat[7] = 0;
+
+  // Clamp values
+  wm->wmmat[0] = clamp(wm->wmmat[0], -WARPEDMODEL_TRANS_CLAMP,
+                       WARPEDMODEL_TRANS_CLAMP - 1);
+  wm->wmmat[1] = clamp(wm->wmmat[1], -WARPEDMODEL_TRANS_CLAMP,
+                       WARPEDMODEL_TRANS_CLAMP - 1);
+  wm->wmmat[2] = clamp(wm->wmmat[2], -WARPEDMODEL_DIAGAFFINE_CLAMP,
+                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
+  wm->wmmat[5] = clamp(wm->wmmat[5], -WARPEDMODEL_DIAGAFFINE_CLAMP,
+                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
+  wm->wmmat[3] = clamp(wm->wmmat[3], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
+                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  wm->wmmat[4] = clamp(wm->wmmat[4], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
+                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
   return 0;
 }
 
@@ -1587,6 +1601,20 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   off = (uy << WARPEDMODEL_PREC_BITS) - ux * wm->wmmat[4] - uy * wm->wmmat[5];
   wm->wmmat[1] += ROUND_POWER_OF_TWO_SIGNED(off, 3);
   wm->wmmat[6] = wm->wmmat[7] = 0;
+
+  // Clamp values
+  wm->wmmat[0] = clamp(wm->wmmat[0], -WARPEDMODEL_TRANS_CLAMP,
+                       WARPEDMODEL_TRANS_CLAMP - 1);
+  wm->wmmat[1] = clamp(wm->wmmat[1], -WARPEDMODEL_TRANS_CLAMP,
+                       WARPEDMODEL_TRANS_CLAMP - 1);
+  wm->wmmat[2] = clamp(wm->wmmat[2], -WARPEDMODEL_DIAGAFFINE_CLAMP,
+                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
+  wm->wmmat[5] = clamp(wm->wmmat[5], -WARPEDMODEL_DIAGAFFINE_CLAMP,
+                       WARPEDMODEL_DIAGAFFINE_CLAMP - 1);
+  wm->wmmat[3] = clamp(wm->wmmat[3], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
+                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
+  wm->wmmat[4] = clamp(wm->wmmat[4], -WARPEDMODEL_NONDIAGAFFINE_CLAMP,
+                       WARPEDMODEL_NONDIAGAFFINE_CLAMP - 1);
 
   return 0;
 }
