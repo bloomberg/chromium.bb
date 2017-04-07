@@ -352,9 +352,11 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   // See http://crbug.com/687647.
   NSPoint origin = sourceWindowFrame_.origin;
   origin.x += (thisPoint.x - dragOrigin_.x);
-  origin.y +=
-      (thisPoint.y - dragOrigin_.y) +
-      ([sourceController_ menubarOffset] + [sourceController_ menubarHeight]);
+  origin.y += (thisPoint.y - dragOrigin_.y);
+  if ([sourceController_ isInAnyFullscreenMode]) {
+    origin.y +=
+        [sourceController_ menubarOffset] + [sourceController_ menubarHeight];
+  }
 
   if (tearProgress < 1) {
     // If the tear animation is not complete, call back to ourself with the

@@ -1899,10 +1899,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return NO;
 }
 
-- (BOOL)isInAnyFullscreenMode {
-  return [self isInImmersiveFullscreen] || [self isInAppKitFullscreen];
-}
-
 - (BOOL)isInImmersiveFullscreen {
   return fullscreenWindow_.get() != nil || enteringImmersiveFullscreen_;
 }
@@ -1912,6 +1908,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
          (([[self window] styleMask] & NSFullScreenWindowMask) ==
               NSFullScreenWindowMask ||
           enteringAppKitFullscreen_);
+}
+
+- (BOOL)isInAnyFullscreenMode {
+  return [self isInImmersiveFullscreen] || [self isInAppKitFullscreen];
 }
 
 - (NSView*)avatarView {

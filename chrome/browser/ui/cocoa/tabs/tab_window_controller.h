@@ -166,6 +166,9 @@
 // The height of the menubar.
 - (CGFloat)menubarHeight;
 
+// Returns YES if the browser window is in or entering any fullscreen mode.
+- (BOOL)isInAnyFullscreenMode;
+
 // Returns the view of the avatar button.
 - (NSView*)avatarView;
 
