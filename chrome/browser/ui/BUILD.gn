@@ -2113,7 +2113,7 @@ split_static_library("ui") {
       "views/desktop_capture/desktop_media_source_view.cc",
       "views/desktop_capture/desktop_media_source_view.h",
       "views/dropdown_bar_host_aura.cc",
-      "views/frame/browser_non_client_frame_view_factory_views.cc",
+      "views/frame/browser_non_client_frame_view_factory_chromeos.cc",
       "views/ime/ime_window_frame_view.cc",
       "views/ime/ime_window_frame_view.h",
       "views/ime/ime_window_view.cc",
@@ -2137,6 +2137,7 @@ split_static_library("ui") {
     ]
     if (!is_chromeos) {
       sources += [
+        "views/frame/browser_non_client_frame_view_factory_views.cc",
         "views/frame/desktop_browser_frame_aura.cc",
         "views/frame/desktop_browser_frame_aura.h",
         "views/message_center/message_center_frame_view.cc",

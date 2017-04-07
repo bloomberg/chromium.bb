@@ -41,6 +41,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_settings.h"
@@ -251,7 +252,7 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
   aura::Window* window = new aura::Window(nullptr, ui::wm::WINDOW_TYPE_UNKNOWN);
   window->Init(ui::LAYER_NOT_DRAWN);
-  if (WmShell::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::CLASSIC) {
     aura::WindowPortMus::Get(window)->SetEventTargetingPolicy(
         ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   }
