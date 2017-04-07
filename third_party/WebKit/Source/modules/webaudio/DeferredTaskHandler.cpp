@@ -65,11 +65,15 @@ void DeferredTaskHandler::offlineLock() {
   m_contextGraphMutex.lock();
 }
 
-#if DCHECK_IS_ON()
 bool DeferredTaskHandler::isGraphOwner() {
+#if DCHECK_IS_ON()
   return m_contextGraphMutex.locked();
-}
+#else
+  // The method is only used inside of DCHECK() so it must be no-op in the
+  // release build. Returning false so we can catch when it happens.
+  return false;
 #endif
+}
 
 void DeferredTaskHandler::addDeferredBreakConnection(AudioHandler& node) {
   DCHECK(isAudioThread());

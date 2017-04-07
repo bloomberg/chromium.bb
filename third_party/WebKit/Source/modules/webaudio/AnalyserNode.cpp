@@ -141,9 +141,7 @@ void AnalyserHandler::setSmoothingTimeConstant(double k,
 }
 
 void AnalyserHandler::updatePullStatus() {
-#if DCHECK_IS_ON()
   DCHECK(context()->isGraphOwner());
-#endif
 
   if (output(0).isConnected()) {
     // When an AudioBasicInspectorNode is connected to a downstream node, it

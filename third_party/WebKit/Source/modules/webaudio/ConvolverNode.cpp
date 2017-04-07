@@ -224,9 +224,7 @@ void ConvolverHandler::setChannelCountMode(const String& mode,
 
 void ConvolverHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(context()->isAudioThread());
-#if DCHECK_IS_ON()
   DCHECK(context()->isGraphOwner());
-#endif
 
   DCHECK(input);
   DCHECK_EQ(input, &this->input(0));
