@@ -22,9 +22,9 @@ extern "C" {
 
 #define RANSAC_NUM_MOTIONS 1
 
-extern const double gm_advantage_thresh[TRANS_TYPES];
-
 void convert_model_to_params(const double *params, WarpedMotionParams *model);
+
+int is_enough_erroradvantage(double erroradv, int params_cost);
 
 // Adds some offset to a global motion parameter and handles
 // all of the necessary precision shifts, clamping, and

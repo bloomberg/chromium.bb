@@ -5183,30 +5183,32 @@ static void encode_frame_internal(AV1_COMP *cpi) {
               }
             }
           }
-          // If the best error advantage found doesn't meet the threshold for
-          // this motion type, revert to IDENTITY.
-          if (best_erroradvantage >
-              gm_advantage_thresh[cm->global_motion[frame].wmtype]) {
-            set_default_gmparams(&cm->global_motion[frame]);
-          }
-
           if (cm->global_motion[frame].wmtype <= AFFINE)
             if (!get_shear_params(&cm->global_motion[frame]))
               set_default_gmparams(&cm->global_motion[frame]);
 
-          if (cm->global_motion[frame].wmtype != IDENTITY) {
-            if (cm->global_motion[frame].wmtype == TRANSLATION) {
-              cm->global_motion[frame].wmmat[0] =
-                  convert_to_trans_prec(cm->allow_high_precision_mv,
-                                        cm->global_motion[frame].wmmat[0]) *
-                  GM_TRANS_ONLY_DECODE_FACTOR;
-              cm->global_motion[frame].wmmat[1] =
-                  convert_to_trans_prec(cm->allow_high_precision_mv,
-                                        cm->global_motion[frame].wmmat[1]) *
-                  GM_TRANS_ONLY_DECODE_FACTOR;
-            }
-            break;
+          if (cm->global_motion[frame].wmtype == TRANSLATION) {
+            cm->global_motion[frame].wmmat[0] =
+                convert_to_trans_prec(cm->allow_high_precision_mv,
+                                      cm->global_motion[frame].wmmat[0]) *
+                GM_TRANS_ONLY_DECODE_FACTOR;
+            cm->global_motion[frame].wmmat[1] =
+                convert_to_trans_prec(cm->allow_high_precision_mv,
+                                      cm->global_motion[frame].wmmat[1]) *
+                GM_TRANS_ONLY_DECODE_FACTOR;
           }
+
+          // If the best error advantage found doesn't meet the threshold for
+          // this motion type, revert to IDENTITY.
+          if (!is_enough_erroradvantage(
+                  best_erroradvantage,
+                  gm_get_params_cost(&cm->global_motion[frame],
+                                     &cm->prev_frame->global_motion[frame],
+                                     cm->allow_high_precision_mv))) {
+            set_default_gmparams(&cm->global_motion[frame]);
+          }
+
+          if (cm->global_motion[frame].wmtype != IDENTITY) break;
         }
         aom_clear_system_state();
       }

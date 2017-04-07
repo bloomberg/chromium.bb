@@ -32,15 +32,13 @@
 // Border over which to compute the global motion
 #define ERRORADV_BORDER 0
 
-const double gm_advantage_thresh[TRANS_TYPES] = {
-  1.00,  // Identity (not used)
-  0.85,  // Translation
-  0.75,  // Rot zoom
-  0.65,  // Affine
-  0.65,  // Hor Trapezoid
-  0.65,  // Ver Trapezoid
-  0.50,  // Homography
-};
+#define ERRORADV_MAX_THRESH 0.995
+#define ERRORADV_COST_PRODUCT_THRESH 26000
+
+int is_enough_erroradvantage(double best_erroradvantage, int params_cost) {
+  return best_erroradvantage < ERRORADV_MAX_THRESH &&
+         best_erroradvantage * params_cost < ERRORADV_COST_PRODUCT_THRESH;
+}
 
 void convert_to_params(const double *params, int32_t *model) {
   int i;
