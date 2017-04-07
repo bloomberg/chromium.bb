@@ -42,6 +42,7 @@ struct PhotoCapabilities {
 
   Range zoom;
 
+  bool supports_torch;
   bool torch;
 
   // https://w3c.github.io/mediacapture-image/##photocapabilities-section

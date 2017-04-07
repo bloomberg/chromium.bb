@@ -94,8 +94,7 @@ async_test(function(t) {
 
       assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
 
-      // TODO(mcasas): do |torch| when the mojom interface is updated,
-      // https://crbug.com/700607.
+      assert_equals(constraints.advanced[0].torch, settings.torch, 'torch');
 
       t.done();
     })

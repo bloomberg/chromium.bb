@@ -36,6 +36,7 @@ class PhotoCapabilities {
     public final double stepExposureCompensation;
     public final int whiteBalanceMode;
     public final int[] fillLightModes;
+    public final boolean supportsTorch;
     public final boolean torch;
     public final boolean redEyeReduction;
     public final int maxColorTemperature;
@@ -49,7 +50,7 @@ class PhotoCapabilities {
             double stepZoom, int focusMode, int exposureMode, double maxExposureCompensation,
             double minExposureCompensation, double currentExposureCompensation,
             double stepExposureCompensation, int whiteBalanceMode, int[] fillLightModes,
-            boolean torch, boolean redEyeReduction, int maxColorTemperature,
+            boolean supportsTorch, boolean torch, boolean redEyeReduction, int maxColorTemperature,
             int minColorTemperature, int currentColorTemperature, int stepColorTemperature) {
         this.maxIso = maxIso;
         this.minIso = minIso;
@@ -75,6 +76,7 @@ class PhotoCapabilities {
         this.stepExposureCompensation = stepExposureCompensation;
         this.whiteBalanceMode = whiteBalanceMode;
         this.fillLightModes = fillLightModes;
+        this.supportsTorch = supportsTorch;
         this.torch = torch;
         this.redEyeReduction = redEyeReduction;
         this.maxColorTemperature = maxColorTemperature;
@@ -204,6 +206,11 @@ class PhotoCapabilities {
     }
 
     @CalledByNative
+    public boolean getSupportsTorch() {
+        return supportsTorch;
+    }
+
+    @CalledByNative
     public boolean getTorch() {
         return torch;
     }
@@ -258,6 +265,7 @@ class PhotoCapabilities {
         public double stepExposureCompensation;
         public int whiteBalanceMode;
         public int[] fillLightModes;
+        public boolean supportsTorch;
         public boolean torch;
         public boolean redEyeReduction;
         public int maxColorTemperature;
@@ -387,6 +395,11 @@ class PhotoCapabilities {
             return this;
         }
 
+        public Builder setSupportsTorch(boolean supportsTorch) {
+            this.supportsTorch = supportsTorch;
+            return this;
+        }
+
         public Builder setTorch(boolean torch) {
             this.torch = torch;
             return this;
@@ -422,8 +435,8 @@ class PhotoCapabilities {
                     currentHeight, stepHeight, maxWidth, minWidth, currentWidth, stepWidth, maxZoom,
                     minZoom, currentZoom, stepZoom, focusMode, exposureMode,
                     maxExposureCompensation, minExposureCompensation, currentExposureCompensation,
-                    stepExposureCompensation, whiteBalanceMode, fillLightModes, torch,
-                    redEyeReduction, maxColorTemperature, minColorTemperature,
+                    stepExposureCompensation, whiteBalanceMode, fillLightModes, supportsTorch,
+                    torch, redEyeReduction, maxColorTemperature, minColorTemperature,
                     currentColorTemperature, stepColorTemperature);
         }
     }

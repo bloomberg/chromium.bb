@@ -797,12 +797,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
         builder.setStepColorTemperature(1);
 
         if (!cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
-            builder.setTorch(false);
+            builder.setSupportsTorch(false);
             builder.setRedEyeReduction(false);
         } else {
             // There's no way to query if torch and/or red eye reduction modes are available using
             // Camera2 API but since there's a Flash unit, we assume so.
-            builder.setTorch(true);
+            builder.setSupportsTorch(true);
+            builder.setTorch(mPreviewRequest.get(CaptureRequest.FLASH_MODE)
+                    == CameraMetadata.FLASH_MODE_TORCH);
+
             builder.setRedEyeReduction(true);
 
             final int[] flashModes =

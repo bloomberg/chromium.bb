@@ -65,6 +65,7 @@ class PhotoCapabilities {
   double getStepExposureCompensation() const;
   AndroidMeteringMode getWhiteBalanceMode() const;
   std::vector<AndroidFillLightMode> getFillLightModes() const;
+  bool getSupportsTorch() const;
   bool getTorch() const;
   bool getRedEyeReduction() const;
   int getMinColorTemperature() const;

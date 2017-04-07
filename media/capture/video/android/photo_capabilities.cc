@@ -165,6 +165,12 @@ PhotoCapabilities::getFillLightModes() const {
   return modes;
 }
 
+bool PhotoCapabilities::getSupportsTorch() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getSupportsTorch(AttachCurrentThread(),
+                                                 object_);
+}
+
 bool PhotoCapabilities::getTorch() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getTorch(AttachCurrentThread(), object_);

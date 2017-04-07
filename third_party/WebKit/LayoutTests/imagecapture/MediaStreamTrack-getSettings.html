@@ -70,8 +70,7 @@ async_test(function(t) {
 
         assert_equals(settings.zoom, mock_settings.zoom.current);
 
-        // TODO(mcasas): do |torch| when the mojom interface is updated,
-        // https://crbug.com/700607.
+        assert_equals(settings.torch, mock_settings.torch, 'torch');
 
         t.done();
       }, 100);

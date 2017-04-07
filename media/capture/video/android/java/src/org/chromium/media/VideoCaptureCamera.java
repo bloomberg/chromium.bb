@@ -542,8 +542,11 @@ public class VideoCaptureCamera
 
         final List<String> flashModes = parameters.getSupportedFlashModes();
         if (flashModes != null) {
-            builder.setTorch(
+            builder.setSupportsTorch(
                     flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_TORCH));
+            builder.setTorch(parameters.getFlashMode()
+                    == android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
+
             builder.setRedEyeReduction(
                     flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE));
 

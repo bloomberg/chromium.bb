@@ -26,6 +26,7 @@ let mockImageCaptureReady = define(
           fill_light_mode : [ imageCapture.FillLightMode.AUTO,
                               imageCapture.FillLightMode.FLASH],
           red_eye_reduction : imageCapture.RedEyeReduction.CONTROLLABLE,
+          supports_torch : true,
           torch : false,
           color_temperature :
               { min : 2500.0, max : 6500.0, current : 6000.0, step : 1000.0 },

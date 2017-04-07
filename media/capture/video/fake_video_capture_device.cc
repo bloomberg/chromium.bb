@@ -472,6 +472,7 @@ void FakePhotoDevice::GetPhotoCapabilities(
   photo_capabilities->zoom->min = kMinZoom;
   photo_capabilities->zoom->step = kZoomStep;
 
+  photo_capabilities->supports_torch = false;
   photo_capabilities->torch = false;
 
   photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;

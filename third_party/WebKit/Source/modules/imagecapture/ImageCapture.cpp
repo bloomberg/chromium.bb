@@ -600,10 +600,9 @@ void ImageCapture::onCapabilitiesUpdateInternal(
     m_settings.setZoom(capabilities.zoom->current);
   }
 
-  m_capabilities.setTorch(capabilities.torch);
-
-  // TODO(mcasas): do |torch| when the mojom interface is updated,
-  // https://crbug.com/700607.
+  m_capabilities.setTorch(capabilities.supports_torch);
+  if (capabilities.supports_torch)
+    m_settings.setTorch(capabilities.torch);
 }
 
 void ImageCapture::onServiceConnectionError() {

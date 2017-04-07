@@ -542,6 +542,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->zoom->min = caps.getMinZoom();
   photo_capabilities->zoom->step = caps.getStepZoom();
 
+  photo_capabilities->supports_torch = caps.getSupportsTorch();
   photo_capabilities->torch = caps.getTorch();
 
   photo_capabilities->red_eye_reduction =

@@ -459,6 +459,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, capabilities->sharpness->current);
   EXPECT_EQ(0, capabilities->sharpness->step);
 
+  EXPECT_FALSE(capabilities->supports_torch);
   EXPECT_FALSE(capabilities->torch);
 
   EXPECT_EQ(mojom::RedEyeReduction::NEVER, capabilities->red_eye_reduction);
