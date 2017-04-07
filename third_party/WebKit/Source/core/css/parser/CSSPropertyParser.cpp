@@ -552,15 +552,14 @@ bool CSSPropertyParser::consumeAnimationShorthand(
 
 static CSSShadowValue* parseSingleShadow(CSSParserTokenRange& range,
                                          CSSParserMode cssParserMode,
-                                         bool allowInset,
-                                         bool allowSpread) {
+                                         bool allowInsetAndSpread) {
   CSSIdentifierValue* style = nullptr;
   CSSValue* color = nullptr;
 
   if (range.atEnd())
     return nullptr;
   if (range.peek().id() == CSSValueInset) {
-    if (!allowInset)
+    if (!allowInsetAndSpread)
       return nullptr;
     style = consumeIdent(range);
   }
@@ -583,7 +582,7 @@ static CSSShadowValue* parseSingleShadow(CSSParserTokenRange& range,
     // Blur radius must be non-negative.
     if (blurRadius->getDoubleValue() < 0)
       return nullptr;
-    if (allowSpread)
+    if (allowInsetAndSpread)
       spreadDistance = consumeLength(range, cssParserMode, ValueRangeAll);
   }
 
@@ -591,7 +590,7 @@ static CSSShadowValue* parseSingleShadow(CSSParserTokenRange& range,
     if (!color)
       color = consumeColor(range, cssParserMode);
     if (range.peek().id() == CSSValueInset) {
-      if (!allowInset || style)
+      if (!allowInsetAndSpread || style)
         return nullptr;
       style = consumeIdent(range);
     }
@@ -602,14 +601,14 @@ static CSSShadowValue* parseSingleShadow(CSSParserTokenRange& range,
 
 static CSSValue* consumeShadow(CSSParserTokenRange& range,
                                CSSParserMode cssParserMode,
-                               bool isBoxShadowProperty) {
+                               bool allowInsetAndSpread) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
 
   CSSValueList* shadowValueList = CSSValueList::createCommaSeparated();
   do {
-    if (CSSShadowValue* shadowValue = parseSingleShadow(
-            range, cssParserMode, isBoxShadowProperty, isBoxShadowProperty))
+    if (CSSShadowValue* shadowValue =
+            parseSingleShadow(range, cssParserMode, allowInsetAndSpread))
       shadowValueList->append(*shadowValue);
     else
       return nullptr;
@@ -628,7 +627,7 @@ static CSSFunctionValue* consumeFilterFunction(
   CSSValue* parsedValue = nullptr;
 
   if (filterType == CSSValueDropShadow) {
-    parsedValue = parseSingleShadow(args, context->mode(), false, false);
+    parsedValue = parseSingleShadow(args, context->mode(), false);
   } else {
     if (args.atEnd()) {
       context->count(UseCounter::CSSFilterFunctionNoArguments);
@@ -1925,9 +1924,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeBorderWidth(m_range, m_context->mode(), unitless);
     }
     case CSSPropertyTextShadow:
+      return consumeShadow(m_range, m_context->mode(), false);
     case CSSPropertyBoxShadow:
-      return consumeShadow(m_range, m_context->mode(),
-                           property == CSSPropertyBoxShadow);
+      return consumeShadow(m_range, m_context->mode(), true);
     case CSSPropertyFilter:
     case CSSPropertyBackdropFilter:
       return consumeFilter(m_range, m_context);
