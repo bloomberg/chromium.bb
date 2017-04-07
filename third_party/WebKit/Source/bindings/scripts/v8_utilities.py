@@ -423,6 +423,12 @@ def origin_trial_enabled_function_name(definition_or_member):
                         'not be specified on the same definition: %s'
                         % definition_or_member.name)
 
+    if is_feature_policy_enabled and 'SecureContext' in extended_attributes:
+        raise Exception('[FeaturePolicy] and [SecureContext] must '
+                        'not be specified on the same definition '
+                        '(see https://crbug.com/695123 for workaround): %s'
+                        % definition_or_member.name)
+
     if is_feature_policy_enabled:
         includes.add('bindings/core/v8/ScriptState.h')
         includes.add('platform/feature_policy/FeaturePolicy.h')
