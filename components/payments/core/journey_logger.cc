@@ -175,7 +175,7 @@ void JourneyLogger::RecordCanMakePaymentEffectOnShow() {
   if (was_show_called_)
     effect_on_show |= CMP_SHOW_DID_SHOW;
   if (could_make_payment_)
-    effect_on_show |= CMP_SHOW_COULD_MAKE_PAYMENT_;
+    effect_on_show |= CMP_SHOW_COULD_MAKE_PAYMENT;
 
   UMA_HISTOGRAM_ENUMERATION("PaymentRequest.CanMakePayment.Used.EffectOnShow",
                             effect_on_show, CMP_SHOW_MAX);

@@ -50,7 +50,7 @@ class JourneyLogger {
   // Payment Request is shown to the user.
   static const int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
   static const int CMP_SHOW_DID_SHOW = 1 << 0;
-  static const int CMP_SHOW_COULD_MAKE_PAYMENT_ = 1 << 1;
+  static const int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
   static const int CMP_SHOW_MAX = 4;
 
   explicit JourneyLogger(bool is_incognito);
