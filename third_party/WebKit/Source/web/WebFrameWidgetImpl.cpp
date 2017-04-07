@@ -203,9 +203,11 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint() {
 
 void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize) {
   // TODO(alexmos, kenrb): resizing behavior such as this should be changed
-  // to use Page messages.  https://crbug.com/599688.
-  page()->visualViewport().setSize(newSize);
-  page()->visualViewport().clampToBoundaries();
+  // to use Page messages.  This uses the visual viewport size to set size on
+  // both the WebViewImpl size and the Page's VisualViewport. If there are
+  // multiple OOPIFs on a page, this will currently be set redundantly by
+  // each of them. See https://crbug.com/599688.
+  view()->resize(newSize);
 
   view()->didUpdateFullscreenSize();
 }
