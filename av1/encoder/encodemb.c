@@ -1218,7 +1218,6 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
                                    hbd_downshift),  // scale/quantizer
                     plane,
                     tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
-                    OD_ROBUST_STREAM,
                     0,  // is_keyframe,
                     daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
                     speed,  // speed
@@ -1227,7 +1226,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {
     generic_encode(&daala_enc->w, &daala_enc->state.adapt->model_dc[plane],
-                   abs(out_int32[0]) - has_dc_skip, -1,
+                   abs(out_int32[0]) - has_dc_skip,
                    &daala_enc->state.adapt->ex_dc[plane][tx_size][0], 2);
   }
   if (out_int32[0]) {
@@ -1267,10 +1266,9 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
   return ac_dc_coded;
 }
 
-void av1_store_pvq_enc_info(PVQ_INFO *pvq_info, int *qg, int *theta,
-                            int *max_theta, int *k, od_coeff *y, int nb_bands,
-                            const int *off, int *size, int skip_rest,
-                            int skip_dir,
+void av1_store_pvq_enc_info(PVQ_INFO *pvq_info, int *qg, int *theta, int *k,
+                            od_coeff *y, int nb_bands, const int *off,
+                            int *size, int skip_rest, int skip_dir,
                             int bs) {  // block size in log_2 -2
   int i;
   const int tx_blk_size = tx_size_wide[bs];
@@ -1278,7 +1276,6 @@ void av1_store_pvq_enc_info(PVQ_INFO *pvq_info, int *qg, int *theta,
   for (i = 0; i < nb_bands; i++) {
     pvq_info->qg[i] = qg[i];
     pvq_info->theta[i] = theta[i];
-    pvq_info->max_theta[i] = max_theta[i];
     pvq_info->k[i] = k[i];
     pvq_info->off[i] = off[i];
     pvq_info->size[i] = size[i];

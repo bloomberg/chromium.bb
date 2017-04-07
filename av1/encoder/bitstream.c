@@ -1035,7 +1035,6 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
       const int is_keyframe = 0;
       const int encode_flip = 0;
       const int flip = 0;
-      const int nodesync = 1;
       int i;
       const int has_dc_skip = 1;
       int *exg = &adapt->pvq.pvq_exg[plane][tx_size][0];
@@ -1055,9 +1054,8 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
           if (i == 0 ||
               (!pvq->skip_rest && !(pvq->skip_dir & (1 << ((i - 1) % 3))))) {
             pvq_encode_partition(
-                w, pvq->qg[i], pvq->theta[i], pvq->max_theta[i],
-                pvq->y + pvq->off[i], pvq->size[i], pvq->k[i], model, adapt,
-                exg + i, ext + i, nodesync || is_keyframe,
+                w, pvq->qg[i], pvq->theta[i], pvq->y + pvq->off[i],
+                pvq->size[i], pvq->k[i], model, adapt, exg + i, ext + i,
                 (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
                     pvq->bs * PVQ_MAX_PARTITIONS + i,
                 is_keyframe, i == 0 && (i < pvq->nb_bands - 1), pvq->skip_rest,
@@ -1075,7 +1073,7 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
       // Encode residue of DC coeff, if exist.
       if (!has_dc_skip || (pvq->ac_dc_coded & DC_CODED)) {
         generic_encode(w, &adapt->model_dc[plane],
-                       abs(pvq->dq_dc_residue) - has_dc_skip, -1,
+                       abs(pvq->dq_dc_residue) - has_dc_skip,
                        &adapt->ex_dc[plane][pvq->bs][0], 2);
       }
       if ((pvq->ac_dc_coded & DC_CODED)) {

@@ -78,20 +78,17 @@ void aom_encode_cdf_adapt(aom_writer *w, int val, uint16_t *cdf, int n,
  * @param [in,out] w     multi-symbol entropy encoder
  * @param [in,out] model generic probability model
  * @param [in]     x     variable being encoded
- * @param [in]     max   largest value possible
  * @param [in,out] ExQ16 expectation of x (adapted)
  * @param [in]     integration integration period of ExQ16 (leaky average over
  * 1<<integration samples)
  */
-void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
+void generic_encode(aom_writer *w, generic_encoder *model, int x,
  int *ex_q16, int integration) {
   int lg_q1;
   int shift;
   int id;
   uint16_t *cdf;
   int xs;
-  int ms;
-  if (max == 0) return;
   lg_q1 = log_ex(*ex_q16);
   OD_LOG((OD_LOG_ENTROPY_CODER, OD_LOG_DEBUG,
    "%d %d", *ex_q16, lg_q1));
@@ -103,12 +100,7 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   xs = (x + (1 << shift >> 1)) >> shift;
-  ms = (max + (1 << shift >> 1)) >> shift;
-  OD_ASSERT(max == -1 || xs <= ms);
-  if (max == -1) aom_write_symbol_pvq(w, OD_MINI(15, xs), cdf, 16);
-  else {
-    aom_write_symbol_pvq(w, OD_MINI(15, xs), cdf, OD_MINI(ms + 1, 16));
-  }
+  aom_write_symbol_pvq(w, OD_MINI(15, xs), cdf, 16);
   if (xs >= 15) {
     int e;
     unsigned decay;
@@ -120,7 +112,7 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
     /* Encode the tail of the distribution assuming exponential decay. */
-    aom_laplace_encode_special(w, xs - 15, decay, (max == -1) ? -1 : ms - 15);
+    aom_laplace_encode_special(w, xs - 15, decay);
   }
   if (shift != 0) {
     int special;
@@ -141,20 +133,16 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
  *
  * @param [in,out] model generic probability model
  * @param [in]     x     variable being encoded
- * @param [in]     max   largest value possible
  * @param [in,out] ExQ16 expectation of x (adapted)
  * @return number of bits (approximation)
  */
-double generic_encode_cost(generic_encoder *model, int x, int max,
- int *ex_q16) {
+double generic_encode_cost(generic_encoder *model, int x, int *ex_q16) {
   int lg_q1;
   int shift;
   int id;
   uint16_t *cdf;
   int xs;
-  int ms;
   int extra;
-  if (max == 0) return 0;
   lg_q1 = log_ex(*ex_q16);
   /* If expectation is too large, shift x to ensure that
        all we have past xs=15 is the exponentially decaying tail
@@ -164,21 +152,13 @@ double generic_encode_cost(generic_encoder *model, int x, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   xs = (x + (1 << shift >> 1)) >> shift;
-  ms = (max + (1 << shift >> 1)) >> shift;
-  OD_ASSERT(max == -1 || xs <= ms);
   extra = 0;
   if (shift) extra = shift - (xs == 0);
   xs = OD_MINI(15, xs);
   /* Shortcut: assume it's going to cost 2 bits for the Laplace coder. */
   if (xs == 15) extra += 2;
-  if (max == -1) {
-    return extra - OD_LOG2((double)(cdf[xs] - (xs == 0 ? 0 : cdf[xs - 1]))/
-     cdf[15]);
-  }
-  else {
-    return extra - OD_LOG2((double)(cdf[xs] - (xs == 0 ? 0 : cdf[xs - 1]))/
-     cdf[OD_MINI(ms, 15)]);
-  }
+  return
+      extra - OD_LOG2((double)(cdf[xs] - (xs == 0 ? 0 : cdf[xs - 1]))/cdf[15]);
 }
 
 /*Estimates the cost of encoding a value with a given CDF.*/

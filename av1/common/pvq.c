@@ -792,16 +792,14 @@ od_val32 od_pvq_compute_theta(int t, int max_theta) {
  *
  * @param [in]      qcg        quantized companded gain value
  * @param [in]      itheta     quantized PVQ error angle theta
- * @param [in]      theta      PVQ error angle theta
  * @param [in]      noref      indicates present or lack of reference
  *                             (prediction)
  * @param [in]      n          number of elements to be coded
  * @param [in]      beta       activity masking beta param
- * @param [in]      nodesync   do not use info that depends on the reference
  * @return                     number of pulses to use for coding
  */
-int od_pvq_compute_k(od_val32 qcg, int itheta, od_val32 theta, int noref, int n,
- od_val16 beta, int nodesync) {
+int od_pvq_compute_k(od_val32 qcg, int itheta, int noref, int n,
+    od_val16 beta) {
 #if !defined(OD_FLOAT_PVQ)
   /*Lookup table for sqrt(n+3/2) and sqrt(n+2/2) in Q10.
     Real max values are 32792 and 32784, but clamped to stay within 16 bits.
@@ -839,24 +837,17 @@ int od_pvq_compute_k(od_val32 qcg, int itheta, od_val32 theta, int noref, int n,
        approximation for the fact that the coefficients aren't identically
        distributed within a band so at low gain the number of dimensions that
        are likely to have a pulse is less than n. */
-    if (nodesync) {
 #if defined(OD_FLOAT_PVQ)
-      return OD_MAXI(1, (int)floor(.5 + (itheta - .2)*sqrt((n + 2)/2)));
+    return OD_MAXI(1, (int)floor(.5 + (itheta - .2)*sqrt((n + 2)/2)));
 #else
-      od_val16 rt;
-      OD_ASSERT(OD_ILOG(n + 1) < 13);
-      rt = od_sqrt_table[0][OD_ILOG(n + 1)];
-      /*FIXME: get rid of 64-bit mul.*/
-      return OD_MAXI(1, OD_VSHR_ROUND(((OD_SHL(itheta, OD_ITHETA_SHIFT)
-       - OD_QCONST32(.2, OD_ITHETA_SHIFT)))*(int64_t)rt,
-       OD_SQRT_TBL_SHIFT + OD_ITHETA_SHIFT));
+    od_val16 rt;
+    OD_ASSERT(OD_ILOG(n + 1) < 13);
+    rt = od_sqrt_table[0][OD_ILOG(n + 1)];
+    /*FIXME: get rid of 64-bit mul.*/
+    return OD_MAXI(1, OD_VSHR_ROUND(((OD_SHL(itheta, OD_ITHETA_SHIFT)
+     - OD_QCONST32(.2, OD_ITHETA_SHIFT)))*(int64_t)rt,
+     OD_SQRT_TBL_SHIFT + OD_ITHETA_SHIFT));
 #endif
-    }
-    else {
-      return OD_MAXI(1, (int)floor(.5 + (qcg*OD_CGAIN_SCALE_1*
-       od_pvq_sin(theta)*OD_TRIG_SCALE_1 - .2)*sqrt((n
-       + 2)/2)/(beta*OD_BETA_SCALE_1)));
-    }
   }
 }
 

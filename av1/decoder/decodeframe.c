@@ -388,14 +388,14 @@ static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
   od_pvq_decode(dec, ref_int32, out_int32,
                 OD_MAXI(1, quant[1] << (OD_COEFF_SHIFT - 3) >> hbd_downshift),
                 pli, bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
-                OD_ROBUST_STREAM, is_keyframe, &flags, ac_dc_coded,
-                dec->state.qm + off, dec->state.qm_inv + off);
+                is_keyframe, &flags, ac_dc_coded, dec->state.qm + off,
+                dec->state.qm_inv + off);
 
   if (!has_dc_skip || out_int32[0]) {
     out_int32[0] =
         has_dc_skip + generic_decode(dec->r, &dec->state.adapt->model_dc[pli],
-                                     -1, &dec->state.adapt->ex_dc[pli][bs][0],
-                                     2, "dc:mag");
+                                     &dec->state.adapt->ex_dc[pli][bs][0], 2,
+                                     "dc:mag");
     if (out_int32[0]) out_int32[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
   }
   out_int32[0] = out_int32[0] * pvq_dc_quant + ref_int32[0];

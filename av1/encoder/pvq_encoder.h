@@ -25,12 +25,11 @@ void aom_write_symbol_pvq(aom_writer *w, int symb, aom_cdf_prob *cdf,
 void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 
-void aom_laplace_encode_special(aom_writer *w, int x, unsigned decay, int max);
+void aom_laplace_encode_special(aom_writer *w, int x, unsigned decay);
 
 void pvq_encode_partition(aom_writer *w,
                                  int qg,
                                  int theta,
-                                 int max_theta,
                                  const od_coeff *in,
                                  int n,
                                  int k,
@@ -38,7 +37,6 @@ void pvq_encode_partition(aom_writer *w,
                                  od_adapt_ctx *adapt,
                                  int *exg,
                                  int *ext,
-                                 int nodesync,
                                  int cdf_ctx,
                                  int is_keyframe,
                                  int code_skip,
@@ -48,7 +46,7 @@ void pvq_encode_partition(aom_writer *w,
 
 PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc, od_coeff *ref,
     const od_coeff *in, od_coeff *out, int q_dc, int q_ac, int pli, int bs,
-    const od_val16 *beta, int nodesync, int is_keyframe,
+    const od_val16 *beta, int is_keyframe,
     const int16_t *qm, const int16_t *qm_inv, int speed,
     PVQ_INFO *pvq_info);
 

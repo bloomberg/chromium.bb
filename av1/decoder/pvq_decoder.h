@@ -27,14 +27,13 @@ int aom_read_symbol_pvq_(aom_reader *r, aom_cdf_prob *cdf, int nsymbs
 void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level);
 
-#define aom_laplace_decode_special(r, decay, max, ACCT_STR_NAME) \
-  aom_laplace_decode_special_(r, decay, max ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_laplace_decode_special(r, decay, ACCT_STR_NAME) \
+  aom_laplace_decode_special_(r, decay ACCT_STR_ARG(ACCT_STR_NAME))
 
-int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
- int max ACCT_STR_PARAM);
+int aom_laplace_decode_special_(aom_reader *r, unsigned decay ACCT_STR_PARAM);
 
 void od_pvq_decode(daala_dec_ctx *dec, od_coeff *ref, od_coeff *out, int q0,
-    int pli, int bs, const od_val16 *beta, int nodesync, int is_keyframe,
+    int pli, int bs, const od_val16 *beta, int is_keyframe,
     unsigned int *flags, PVQ_SKIP_TYPE ac_dc_coded, const int16_t *qm,
     const int16_t *qm_inv);
 

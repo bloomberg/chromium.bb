@@ -87,7 +87,6 @@ static INLINE int is_inter_mode(PREDICTION_MODE mode) {
 #if CONFIG_PVQ
 typedef struct PVQ_INFO {
   int theta[PVQ_MAX_PARTITIONS];
-  int max_theta[PVQ_MAX_PARTITIONS];
   int qg[PVQ_MAX_PARTITIONS];
   int k[PVQ_MAX_PARTITIONS];
   od_coeff y[OD_TXSIZE_MAX * OD_TXSIZE_MAX];

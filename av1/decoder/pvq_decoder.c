@@ -108,7 +108,6 @@ typedef struct {
  * @param [out]    out         decoded partition
  * @param [out]    noref       boolean indicating absence of reference
  * @param [in]     beta        per-band activity masking beta param
- * @param [in]     nodesync    stream is robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [in]     pli         plane index
  * @param [in]     cdf_ctx     selects which cdf context to use
@@ -130,7 +129,6 @@ static void pvq_decode_partition(aom_reader *r,
                                  od_coeff *out,
                                  int *noref,
                                  od_val16 beta,
-                                 int nodesync,
                                  int is_keyframe,
                                  int pli,
                                  int cdf_ctx,
@@ -143,7 +141,6 @@ static void pvq_decode_partition(aom_reader *r,
                                  const int16_t *qm_inv) {
   int k;
   od_val32 qcg;
-  int max_theta;
   int itheta;
   od_val32 theta;
   od_val32 gr;
@@ -171,8 +168,7 @@ static void pvq_decode_partition(aom_reader *r,
   }
   else {
     /* Jointly decode gain, itheta and noref for small values. Then we handle
-       larger gain. We need to wait for itheta because in the !nodesync case
-       it depends on max_theta, which depends on the gain. */
+       larger gain. */
     id = aom_read_symbol_pvq(r, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
      8 + 7*has_skip, "pvq:gaintheta");
     if (!is_keyframe && id >= 10) id++;
@@ -197,7 +193,7 @@ static void pvq_decode_partition(aom_reader *r,
   if (qg > 0) {
     int tmp;
     tmp = *exg;
-    qg = 1 + generic_decode(r, &model[!*noref], -1, &tmp, 2, "pvq:gain");
+    qg = 1 + generic_decode(r, &model[!*noref], &tmp, 2, "pvq:gain");
     OD_IIR_DIADIC(*exg, qg << 16, 2);
   }
   *skip = 0;
@@ -239,15 +235,13 @@ static void pvq_decode_partition(aom_reader *r,
     gain_offset = cgr - OD_SHL(icgr, OD_CGAIN_SHIFT);
     qcg = OD_SHL(qg, OD_CGAIN_SHIFT) + gain_offset;
     /* read and decode first-stage PVQ error theta */
-    max_theta = od_pvq_compute_max_theta(qcg, beta);
-    if (itheta > 1 && (nodesync || max_theta > 3)) {
+    if (itheta > 1) {
       int tmp;
       tmp = *ext;
-      itheta = 2 + generic_decode(r, &model[2],
-       nodesync ? -1 : max_theta - 3, &tmp, 2, "pvq:theta");
+      itheta = 2 + generic_decode(r, &model[2], &tmp, 2, "pvq:theta");
       OD_IIR_DIADIC(*ext, itheta << 16, 2);
     }
-    theta = od_pvq_compute_theta(itheta, max_theta);
+    theta = od_pvq_compute_theta(itheta, od_pvq_compute_max_theta(qcg, beta));
   }
   else{
     itheta = 0;
@@ -256,7 +250,7 @@ static void pvq_decode_partition(aom_reader *r,
     if (qg == 0) *skip = OD_PVQ_SKIP_ZERO;
   }
 
-  k = od_pvq_compute_k(qcg, itheta, theta, *noref, n, beta, nodesync);
+  k = od_pvq_compute_k(qcg, itheta, *noref, n, beta);
   if (k != 0) {
     /* when noref==0, y is actually size n-1 */
     aom_decode_pvq_codeword(r, &adapt->pvq.pvq_codeword_ctx, y,
@@ -287,7 +281,6 @@ static void pvq_decode_partition(aom_reader *r,
  * @param [in]     pli         plane index
  * @param [in]     bs          log of the block size minus two
  * @param [in]     beta        per-band activity masking beta param
- * @param [in]     nodesync    stream is robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [out]    flags       bitmask of the per band skip and noref flags
  * @param [in]     ac_dc_coded skip flag for the block (range 0-3)
@@ -301,7 +294,6 @@ void od_pvq_decode(daala_dec_ctx *dec,
                    int pli,
                    int bs,
                    const od_val16 *beta,
-                   int nodesync,
                    int is_keyframe,
                    unsigned int *flags,
                    PVQ_SKIP_TYPE ac_dc_coded,
@@ -362,7 +354,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
 
       pvq_decode_partition(dec->r, q, size[i],
        model, dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
-       &noref[i], beta[i], nodesync, is_keyframe, pli,
+       &noref[i], beta[i], is_keyframe, pli,
        (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
        &cfl, i == 0 && (i < nb_bands - 1), skip_rest, i, &skip[i],
        qm + off[i], qm_inv + off[i]);

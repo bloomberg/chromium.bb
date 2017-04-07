@@ -86,7 +86,7 @@ int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
  *
  * @retval decoded variable x
  */
-int generic_decode_(aom_reader *r, generic_encoder *model, int max,
+int generic_decode_(aom_reader *r, generic_encoder *model,
  int *ex_q16, int integration ACCT_STR_PARAM) {
   int lg_q1;
   int shift;
@@ -95,9 +95,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   int xs;
   int lsb;
   int x;
-  int ms;
   lsb = 0;
-  if (max == 0) return 0;
   lg_q1 = log_ex(*ex_q16);
   /* If expectation is too large, shift x to ensure that
      all we have past xs=15 is the exponentially decaying tail
@@ -106,9 +104,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   /* Choose the cdf to use: we have two per "octave" of ExQ16. */
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
-  ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = aom_read_symbol_pvq(r, cdf, 16, ACCT_STR_NAME);
-  else xs = aom_read_symbol_pvq(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR_NAME);
+  xs = aom_read_symbol_pvq(r, cdf, 16, ACCT_STR_NAME);
   if (xs == 15) {
     int e;
     unsigned decay;
@@ -119,7 +115,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     OD_ASSERT(*ex_q16 < INT_MAX >> 1);
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
-    xs += aom_laplace_decode_special(r, decay, (max == -1) ? -1 : ms - 15, ACCT_STR_NAME);
+    xs += aom_laplace_decode_special(r, decay, ACCT_STR_NAME);
   }
   if (shift != 0) {
     int special;

@@ -303,12 +303,10 @@ int items_compare(pvq_search_item *a, pvq_search_item *b) {
  * @param [in]     q0          quantization step size
  * @param [out]    y           pulse vector (i.e. selected PVQ codevector)
  * @param [out]    itheta      angle between input and reference (-1 if noref)
- * @param [out]    max_theta   maximum value of itheta that could have been
  * @param [out]    vk          total number of pulses
  * @param [in]     beta        per-band activity masking beta param
  * @param [out]    skip_diff   distortion cost of skipping this block
  *                             (accumulated)
- * @param [in]     nodesync    make stream robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [in]     pli         plane index
  * @param [in]     adapt       probability adaptation context
@@ -319,8 +317,8 @@ int items_compare(pvq_search_item *a, pvq_search_item *b) {
  * @return         gain        index of the quatized gain
 */
 static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
-    int n, int q0, od_coeff *y, int *itheta, int *max_theta, int *vk,
-    od_val16 beta, double *skip_diff, int nodesync, int is_keyframe, int pli,
+    int n, int q0, od_coeff *y, int *itheta, int *vk,
+    od_val16 beta, double *skip_diff, int is_keyframe, int pli,
     const od_adapt_ctx *adapt, const int16_t *qm, const int16_t *qm_inv,
     double pvq_norm_lambda, int speed) {
   od_val32 g;
@@ -409,7 +407,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
   noref = 1;
   best_k = 0;
   *itheta = -1;
-  *max_theta = 0;
   OD_CLEAR(y, n);
   best_qtheta = 0;
   m = 0;
@@ -435,7 +432,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
      NULL, 0, n, speed);
     best_qtheta = 0;
     *itheta = 0;
-    *max_theta = 0;
     noref = 0;
   }
   dist0 = best_dist;
@@ -474,7 +470,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
       for (j = theta_lower; j <= theta_upper; j++) {
         od_val32 qtheta;
         qtheta = od_pvq_compute_theta(j, ts);
-        k = od_pvq_compute_k(qcg, j, qtheta, 0, n, beta, nodesync);
+        k = od_pvq_compute_k(qcg, j, 0, n, beta);
         items[idx].gain = i;
         items[idx].theta = j;
         items[idx].k = k;
@@ -546,7 +542,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
         best_k = k;
         best_qtheta = qtheta;
         *itheta = j;
-        *max_theta = ts;
         noref = 0;
         OD_COPY(y, y_tmp, n - 1);
       }
@@ -566,7 +561,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
       double cost;
       od_val32 qcg;
       qcg = OD_SHL(i, OD_CGAIN_SHIFT);
-      k = od_pvq_compute_k(qcg, -1, -1, 1, n, beta, nodesync);
+      k = od_pvq_compute_k(qcg, -1, 1, n, beta);
       /* Compute the minimal possible distortion by not taking the PVQ
          cos_dist into account. */
       dist = gain_weight*(qcg - cg)*(qcg - cg);
@@ -589,7 +584,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
         noref = 1;
         best_k = k;
         *itheta = -1;
-        *max_theta = 0;
         OD_COPY(y, y_tmp, n);
       }
     }
@@ -632,7 +626,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
  * @param [in,out] w          multi-symbol entropy encoder
  * @param [in]     qg         quantized gain
  * @param [in]     theta      quantized post-prediction theta
- * @param [in]     max_theta  maximum possible quantized theta value
  * @param [in]     in         coefficient vector to code
  * @param [in]     n          number of coefficients in partition
  * @param [in]     k          number of pulses in partition
@@ -640,7 +633,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
  * @param [in,out] adapt      adaptation context
  * @param [in,out] exg        ExQ16 expectation of gain value
  * @param [in,out] ext        ExQ16 expectation of theta value
- * @param [in]     nodesync   do not use info that depend on the reference
  * @param [in]     cdf_ctx    selects which cdf context to use
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [in]     code_skip  whether the "skip rest" flag is allowed
@@ -651,7 +643,6 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
 void pvq_encode_partition(aom_writer *w,
                                  int qg,
                                  int theta,
-                                 int max_theta,
                                  const od_coeff *in,
                                  int n,
                                  int k,
@@ -659,7 +650,6 @@ void pvq_encode_partition(aom_writer *w,
                                  od_adapt_ctx *adapt,
                                  int *exg,
                                  int *ext,
-                                 int nodesync,
                                  int cdf_ctx,
                                  int is_keyframe,
                                  int code_skip,
@@ -692,14 +682,13 @@ void pvq_encode_partition(aom_writer *w,
   if (qg > 0) {
     int tmp;
     tmp = *exg;
-    generic_encode(w, &model[!noref], qg - 1, -1, &tmp, 2);
+    generic_encode(w, &model[!noref], qg - 1, &tmp, 2);
     OD_IIR_DIADIC(*exg, qg << 16, 2);
   }
-  if (theta > 1 && (nodesync || max_theta > 3)) {
+  if (theta > 1) {
     int tmp;
     tmp = *ext;
-    generic_encode(w, &model[2], theta - 2, nodesync ? -1 : max_theta - 3,
-     &tmp, 2);
+    generic_encode(w, &model[2], theta - 2, &tmp, 2);
     OD_IIR_DIADIC(*ext, theta << 16, 2);
   }
   aom_encode_pvq_codeword(w, &adapt->pvq.pvq_codeword_ctx, in,
@@ -736,7 +725,6 @@ int od_rdo_quant(od_coeff x, int q, double delta0, double pvq_norm_lambda) {
  * @param [in]     pli     plane index
  * @param [in]     bs      log of the block size minus two
  * @param [in]     beta    per-band activity masking beta param
- * @param [in]     nodesync  make stream robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [in]     qm      QM with magnitude compensation
  * @param [in]     qm_inv  Inverse of QM with magnitude compensation
@@ -755,14 +743,12 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
                    int pli,
                    int bs,
                    const od_val16 *beta,
-                   int nodesync,
                    int is_keyframe,
                    const int16_t *qm,
                    const int16_t *qm_inv,
                    int speed,
                    PVQ_INFO *pvq_info){
   int theta[PVQ_MAX_PARTITIONS];
-  int max_theta[PVQ_MAX_PARTITIONS];
   int qg[PVQ_MAX_PARTITIONS];
   int k[PVQ_MAX_PARTITIONS];
   od_coeff y[OD_TXSIZE_MAX*OD_TXSIZE_MAX];
@@ -846,9 +832,9 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
       q = OD_MAXI(1, q_ac);
 
     qg[i] = pvq_theta(out + off[i], in + off[i], ref + off[i], size[i],
-     q, y + off[i], &theta[i], &max_theta[i],
-     &k[i], beta[i], &skip_diff, nodesync, is_keyframe, pli, enc->state.adapt,
-     qm + off[i], qm_inv + off[i], enc->pvq_norm_lambda, speed);
+     q, y + off[i], &theta[i], &k[i], beta[i], &skip_diff, is_keyframe,
+     pli, enc->state.adapt, qm + off[i], qm_inv + off[i],
+     enc->pvq_norm_lambda, speed);
   }
   od_encode_checkpoint(enc, &buf);
   if (is_keyframe) out[0] = 0;
@@ -872,7 +858,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 #endif
       od_encode_checkpoint(enc, &dc_buf);
       generic_encode(&enc->w, &enc->state.adapt->model_dc[pli],
-       n - 1, -1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
+       n - 1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
 #if CONFIG_DAALA_EC
       tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else
@@ -916,8 +902,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 
   /* NOTE: There was no other better place to put this function. */
   if (pvq_info)
-    av1_store_pvq_enc_info(pvq_info, qg, theta, max_theta, k,
-      y, nb_bands, off, size,
+    av1_store_pvq_enc_info(pvq_info, qg, theta, k, y, nb_bands, off, size,
       skip_rest, skip_dir, bs);
 
   for (i = 0; i < nb_bands; i++) {
@@ -925,11 +910,10 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
     /* Encode CFL flip bit just after the first time it's used. */
     encode_flip = pli != 0 && is_keyframe && theta[i] != -1 && !cfl_encoded;
     if (i == 0 || (!skip_rest && !(skip_dir & (1 << ((i - 1)%3))))) {
-      pvq_encode_partition(&enc->w, qg[i], theta[i], max_theta[i], y + off[i],
+      pvq_encode_partition(&enc->w, qg[i], theta[i], y + off[i],
        size[i], k[i], model, enc->state.adapt, exg + i, ext + i,
-       nodesync, (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS
-       + bs*PVQ_MAX_PARTITIONS + i, is_keyframe, i == 0 && (i < nb_bands - 1),
-       skip_rest, encode_flip, flip);
+       (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
+       is_keyframe, i == 0 && (i < nb_bands - 1), skip_rest, encode_flip, flip);
     }
     if (i == 0 && !skip_rest && bs > 0) {
       aom_write_symbol(&enc->w, skip_dir,
@@ -978,7 +962,7 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
 #endif
         od_encode_checkpoint(enc, &dc_buf);
         generic_encode(&enc->w, &enc->state.adapt->model_dc[pli],
-         n - 1, -1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
+         n - 1, &enc->state.adapt->ex_dc[pli][bs][0], 2);
 #if CONFIG_DAALA_EC
         tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else

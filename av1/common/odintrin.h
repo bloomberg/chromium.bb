@@ -84,8 +84,6 @@ extern "C" {
 # define OD_LIMIT_BSIZE_MIN (OD_BLOCK_4X4)
 # define OD_LIMIT_BSIZE_MAX (OD_BLOCK_32X32)
 
-# define OD_ROBUST_STREAM (1)
-
 typedef int od_coeff;
 
 #define OD_DIVU_DMAX (1024)
