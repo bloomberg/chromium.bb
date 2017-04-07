@@ -15,16 +15,13 @@
         </intent>
     </shortcut>
 
-    <!-- The "New incognito tab" shortcut is now provided as a dynamic shortcut.
-         See crbug.com/707446.
-         TODO(twellington): Either remove this XML shorcut or add a disabled
-                            message. -->
     <shortcut
         android:shortcutId="new-incognito-tab-shortcut"
         android:enabled="false"
         android:icon="@drawable/shortcut_incognito"
         android:shortcutShortLabel="@string/accessibility_tabstrip_incognito_identifier"
-        android:shortcutLongLabel="@string/menu_new_incognito_tab" >
+        android:shortcutLongLabel="@string/menu_new_incognito_tab"
+        android:shortcutDisabledMessage="@string/disabled_incognito_launcher_shortcut_message" >
         <intent
             android:action="chromium.shortcut.action.OPEN_NEW_INCOGNITO_TAB"
             android:targetPackage="{{manifest_package}}"

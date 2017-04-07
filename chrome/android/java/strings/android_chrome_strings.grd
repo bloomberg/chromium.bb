@@ -2852,11 +2852,16 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       </message>
 
       <!-- Search Widget strings -->
-      <message name="IDS_SEARCH_WIDGET_DEFAULT" desc= "Default text for the search widget">
+      <message name="IDS_SEARCH_WIDGET_DEFAULT" desc="Default text for the search widget">
         Search
       </message>
-      <message name="IDS_SEARCH_WITH_PRODUCT" desc= "Text for search widget with a search engine name">
+      <message name="IDS_SEARCH_WITH_PRODUCT" desc="Text for search widget with a search engine name">
         Search with <ph name="PRODUCT_NAME">%1$s<ex>Google</ex></ph>
+      </message>
+
+      <!-- Launcher Shortcuts -->
+      <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">
+        Remove and recreate this shortcut
       </message>
     </messages>
   </release>
