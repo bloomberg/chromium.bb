@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
@@ -23,12 +24,16 @@ namespace exo {
 WMHelperAsh::WMHelperAsh() {
   ash::Shell::Get()->AddShellObserver(this);
   ash::Shell::Get()->activation_client()->AddObserver(this);
-  ash::Shell::Get()->cursor_manager()->AddObserver(this);
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::WmShell::Get()->GetAshConfig() != ash::Config::MUS)
+    ash::Shell::Get()->cursor_manager()->AddObserver(this);
   ash::WmShell::Get()->AddDisplayObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+  // TODO(crbug.com/709225): Mushrome doesn't have a DeviceDataManager.
+  if (ash::WmShell::Get()->GetAshConfig() != ash::Config::MUS)
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
   ash::Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
@@ -39,10 +44,14 @@ WMHelperAsh::~WMHelperAsh() {
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
   ash::WmShell::Get()->RemoveDisplayObserver(this);
-  ash::Shell::Get()->cursor_manager()->RemoveObserver(this);
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::WmShell::Get()->GetAshConfig() != ash::Config::MUS)
+    ash::Shell::Get()->cursor_manager()->RemoveObserver(this);
   ash::Shell::Get()->activation_client()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
-  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  // TODO(crbug.com/709225): Mushrome doesn't have a DeviceDataManager.
+  if (ash::WmShell::Get()->GetAshConfig() != ash::Config::MUS)
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   ash::Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
@@ -70,6 +79,9 @@ aura::Window* WMHelperAsh::GetFocusedWindow() const {
 }
 
 ui::CursorSetType WMHelperAsh::GetCursorSet() const {
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::WmShell::Get()->GetAshConfig() == ash::Config::MUS)
+    return ui::CURSOR_SET_NORMAL;
   return ash::Shell::Get()->cursor_manager()->GetCursorSet();
 }
 

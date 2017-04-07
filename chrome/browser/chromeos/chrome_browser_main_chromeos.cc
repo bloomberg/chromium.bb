@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
@@ -215,9 +216,19 @@ class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
     // Under mash, some D-Bus clients are owned by other processes.
-    DBusThreadManager::ProcessMask process_mask =
-        ash_util::IsRunningInMash() ? DBusThreadManager::PROCESS_BROWSER
-                                    : DBusThreadManager::PROCESS_ALL;
+    DBusThreadManager::ProcessMask process_mask;
+    switch (GetAshConfig()) {
+      case ash::Config::CLASSIC:
+        process_mask = DBusThreadManager::PROCESS_ALL;
+        break;
+      case ash::Config::MUS:
+        // TODO(jamescook|derat): We need another category for mushrome.
+        process_mask = DBusThreadManager::PROCESS_ALL;
+        break;
+      case ash::Config::MASH:
+        process_mask = DBusThreadManager::PROCESS_BROWSER;
+        break;
+    }
 
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
@@ -234,19 +245,19 @@ class DBusServices {
     service_providers.push_back(
         base::MakeUnique<ProxyResolutionServiceProvider>(
             base::MakeUnique<ChromeProxyResolutionServiceProviderDelegate>()));
-    if (!ash_util::IsRunningInMash()) {
+    if (GetAshConfig() == ash::Config::CLASSIC) {
       // TODO(crbug.com/629707): revisit this with mustash dbus work.
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
           base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
     service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    if (ash_util::IsRunningInMash()) {
-      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-          base::MakeUnique<MusConsoleServiceProviderDelegate>()));
-    } else {
+    if (GetAshConfig() == ash::Config::CLASSIC) {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
+    } else {
+      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
+          base::MakeUnique<MusConsoleServiceProviderDelegate>()));
     }
     service_providers.push_back(base::MakeUnique<KioskInfoService>(
         kLibCrosServiceInterface,

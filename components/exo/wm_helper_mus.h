@@ -20,6 +20,7 @@ class ActivationClient;
 namespace exo {
 
 // A helper class for accessing WindowManager related features.
+// This is only used for mash. Mushrome uses WMHelperAsh.
 class WMHelperMus : public WMHelper,
                     public ui::InputDeviceEventObserver,
                     public aura::FocusSynchronizerObserver,
