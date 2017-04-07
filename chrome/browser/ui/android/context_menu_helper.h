@@ -10,12 +10,10 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
-#include "base/callback.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace content {
 struct ContextMenuParams;
@@ -37,17 +35,19 @@ class ContextMenuHelper
   void SetPopulator(jobject jpopulator);
 
   // Methods called from Java via JNI ------------------------------------------
+  base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void OnStartDownload(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        jboolean jis_link,
                        jboolean jis_data_reduction_proxy_enabled);
+  void RetrieveImage(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jobject>& jcallback,
+                     jint max_dimen_px);
   void SearchForImage(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  void ShareImage(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-
-  void RetrieveHeaderThumbnail(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               jint j_max_size_px);
 
  private:
   explicit ContextMenuHelper(content::WebContents* web_contents);
@@ -56,23 +56,12 @@ class ContextMenuHelper
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaContextMenuParams(
       const content::ContextMenuParams& params);
 
-  void OnShareImage(chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
-                    const std::vector<uint8_t>& thumbnail_data,
-                    const gfx::Size& original_size);
-
-  void OnHeaderThumbnailReceived(
-      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
-      const std::vector<uint8_t>& thumbnail_data,
-      const gfx::Size& original_size);
-
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;
 
   content::ContextMenuParams context_menu_params_;
   int render_frame_id_;
   int render_process_id_;
-
-  base::WeakPtrFactory<ContextMenuHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuHelper);
 };

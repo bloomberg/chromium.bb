@@ -28,10 +28,14 @@ import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * A helper class that handles generating context menus for {@link ContentViewCore}s.
  */
 public class ContextMenuHelper implements OnCreateContextMenuListener {
+    private static final int MAX_SHARE_DIMEN_PX = 2048;
+
     private long mNativeContextMenuHelper;
 
     private ContextMenuPopulator mPopulator;
@@ -40,8 +44,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private Callback<Integer> mCallback;
     private Runnable mOnMenuShown;
     private Runnable mOnMenuClosed;
-    private Callback<Bitmap> mOnThumbnailReceivedCallback;
-    private ComponentName mComponentName;
 
     private ContextMenuHelper(long nativeContextMenuHelper) {
         mNativeContextMenuHelper = nativeContextMenuHelper;
@@ -169,50 +171,47 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * Share the image that triggered the current context menu.
      */
     public void shareImage() {
-        if (mNativeContextMenuHelper == 0) return;
-        nativeShareImage(mNativeContextMenuHelper);
-    }
-
-    @CalledByNative
-    private void onShareImageReceived(
-            WindowAndroid windowAndroid, byte[] jpegImageData) {
-        Activity activity = windowAndroid.getActivity().get();
-        if (activity == null) return;
-
-        ShareHelper.shareImage(activity, jpegImageData, mComponentName);
-        // This needs to be reset to null after a share. This way the next time a user shares an
-        // image it won't share with the last shared app unless explicitly told.
-        mComponentName = null;
+        shareImageDirectly(null);
     }
 
     /**
      * Share image triggered with the current context menu directly with a specific app.
      * @param name The {@link ComponentName} of the app to share the image directly with.
      */
-    public void shareImageDirectly(ComponentName name) {
-        mComponentName = name;
-        shareImage();
+    public void shareImageDirectly(@Nullable final ComponentName name) {
+        if (mNativeContextMenuHelper == 0) return;
+        Callback<byte[]> callback = new Callback<byte[]>() {
+            @Override
+            public void onResult(byte[] result) {
+                WebContents webContents = nativeGetJavaWebContents(mNativeContextMenuHelper);
+                WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
+
+                Activity activity = windowAndroid.getActivity().get();
+                if (activity == null) return;
+
+                ShareHelper.shareImage(activity, result, name);
+            }
+        };
+        nativeRetrieveImage(mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX);
     }
 
     /**
      * Gets the thumbnail of the current image that triggered the context menu.
      * @param callback Called once the the thumbnail is received.
      */
-    private void getThumbnail(Callback<Bitmap> callback) {
-        mOnThumbnailReceivedCallback = callback;
+    private void getThumbnail(final Callback<Bitmap> callback) {
         if (mNativeContextMenuHelper == 0) return;
         int maxSizePx = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.context_menu_header_image_max_size);
-        nativeRetrieveHeaderThumbnail(mNativeContextMenuHelper, maxSizePx);
-    }
-
-    @CalledByNative
-    private void onHeaderThumbnailReceived(WindowAndroid windowAndroid, byte[] jpegImageData) {
-        // TODO(tedchoc): Decode in separate process before launch.
-        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegImageData, 0, jpegImageData.length);
-        if (mOnThumbnailReceivedCallback != null) {
-            mOnThumbnailReceivedCallback.onResult(bitmap);
-        }
+        Callback<byte[]> rawDataCallback = new Callback<byte[]>() {
+            @Override
+            public void onResult(byte[] result) {
+                // TODO(tedchoc): Decode in separate process before launch.
+                Bitmap bitmap = BitmapFactory.decodeByteArray(result, 0, result.length);
+                callback.onResult(bitmap);
+            }
+        };
+        nativeRetrieveImage(mNativeContextMenuHelper, rawDataCallback, maxSizePx);
     }
 
     @Override
@@ -232,10 +231,11 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         return mPopulator;
     }
 
+    private native WebContents nativeGetJavaWebContents(long nativeContextMenuHelper);
     private native void nativeOnStartDownload(
             long nativeContextMenuHelper, boolean isLink, boolean isDataReductionProxyEnabled);
     private native void nativeSearchForImage(long nativeContextMenuHelper);
-    private native void nativeShareImage(long nativeContextMenuHelper);
+    private native void nativeRetrieveImage(
+            long nativeContextMenuHelper, Callback<byte[]> callback, int maxSizePx);
     private native void nativeOnContextMenuClosed(long nativeContextMenuHelper);
-    private native void nativeRetrieveHeaderThumbnail(long nativeContextMenuHelper, int maxSizePx);
 }
