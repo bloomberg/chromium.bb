@@ -662,8 +662,6 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Basic) {
       kVideoMP4MimeType, video_mp4_codecs(), kWidevine));
   EXPECT_WV_PROPRIETARY(AreCodecsSupportedByKeySystem(
       kAudioMP4MimeType, audio_mp4_codecs(), kWidevine));
-  EXPECT_WV_PROPRIETARY(AreCodecsSupportedByKeySystem(
-      kAudioMP4MimeType, video_common_codecs(), kWidevine));
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, NoCodecs) {
