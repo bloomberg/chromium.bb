@@ -2342,6 +2342,9 @@ Color FrameView::baseBackgroundColor() const {
 }
 
 void FrameView::setBaseBackgroundColor(const Color& backgroundColor) {
+  if (m_baseBackgroundColor == backgroundColor)
+    return;
+
   m_baseBackgroundColor = backgroundColor;
 
   if (!layoutViewItem().isNull() &&

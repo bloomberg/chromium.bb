@@ -3581,6 +3581,11 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color) {
 }
 
 void WebViewImpl::setBaseBackgroundColorOverride(WebColor color) {
+  if (m_baseBackgroundColorOverrideEnabled &&
+      m_baseBackgroundColorOverride == color) {
+    return;
+  }
+
   m_baseBackgroundColorOverrideEnabled = true;
   m_baseBackgroundColorOverride = color;
   if (mainFrameImpl()) {
@@ -3595,6 +3600,9 @@ void WebViewImpl::setBaseBackgroundColorOverride(WebColor color) {
 }
 
 void WebViewImpl::clearBaseBackgroundColorOverride() {
+  if (!m_baseBackgroundColorOverrideEnabled)
+    return;
+
   m_baseBackgroundColorOverrideEnabled = false;
   if (mainFrameImpl()) {
     // Force lifecycle update to ensure we're good to call

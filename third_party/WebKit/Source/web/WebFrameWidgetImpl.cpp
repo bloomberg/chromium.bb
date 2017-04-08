@@ -304,13 +304,27 @@ void WebFrameWidgetImpl::clearBackgroundColorOverride() {
 }
 
 void WebFrameWidgetImpl::setBaseBackgroundColorOverride(WebColor color) {
+  if (m_baseBackgroundColorOverrideEnabled &&
+      m_baseBackgroundColorOverride == color) {
+    return;
+  }
+
   m_baseBackgroundColorOverrideEnabled = true;
   m_baseBackgroundColorOverride = color;
+  // Force lifecycle update to ensure we're good to call
+  // FrameView::setBaseBackgroundColor().
+  m_localRoot->frameView()->updateLifecycleToCompositingCleanPlusScrolling();
   updateBaseBackgroundColor();
 }
 
 void WebFrameWidgetImpl::clearBaseBackgroundColorOverride() {
+  if (!m_baseBackgroundColorOverrideEnabled)
+    return;
+
   m_baseBackgroundColorOverrideEnabled = false;
+  // Force lifecycle update to ensure we're good to call
+  // FrameView::setBaseBackgroundColor().
+  m_localRoot->frameView()->updateLifecycleToCompositingCleanPlusScrolling();
   updateBaseBackgroundColor();
 }
 
