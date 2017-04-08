@@ -425,9 +425,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   const mojom::PhotoCapabilities* capabilities =
       image_capture_client_->capabilities();
   ASSERT_TRUE(capabilities);
-  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->white_balance_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->exposure_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->focus_mode);
+  EXPECT_EQ(mojom::MeteringMode::NONE,
+            capabilities->current_white_balance_mode);
+  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->current_exposure_mode);
+  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->current_focus_mode);
 
   EXPECT_EQ(0, capabilities->exposure_compensation->min);
   EXPECT_EQ(0, capabilities->exposure_compensation->max);

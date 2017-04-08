@@ -13,29 +13,46 @@ let mockImageCaptureReady = define(
           imageCapture.ImageCapture.name,
           handle => this.bindingSet_.addBinding(this, handle));
 
-      this.state_ = { capabilities : {
-          iso : { min : 100.0, max : 12000.0, current : 400.0, step : 1.0 },
-          height : { min : 240.0, max : 2448.0, current : 240.0, step : 2.0 },
-          width : { min : 320.0, max : 3264.0, current : 320.0, step : 3.0 },
-          zoom : { min : 0.0, max : 10.0, current : 5.0, step : 5.0 },
-          focus_mode : imageCapture.MeteringMode.MANUAL,
-          exposure_mode : imageCapture.MeteringMode.SINGLE_SHOT,
-          exposure_compensation :
-              { min : -200.0, max : 200.0, current : 33.0, step : 33.0},
-          white_balance_mode : imageCapture.MeteringMode.CONTINUOUS,
-          fill_light_mode : [ imageCapture.FillLightMode.AUTO,
-                              imageCapture.FillLightMode.FLASH],
-          red_eye_reduction : imageCapture.RedEyeReduction.CONTROLLABLE,
-          supports_torch : true,
-          torch : false,
-          color_temperature :
-              { min : 2500.0, max : 6500.0, current : 6000.0, step : 1000.0 },
-          brightness : { min : 1.0, max : 10.0, current : 5.0, step : 1.0 },
-          contrast : { min : 2.0, max : 9.0, current : 5.0, step : 1.0 },
-          saturation : { min : 3.0, max : 8.0, current : 6.0, step : 1.0 },
-          sharpness : { min : 4.0, max : 7.0, current : 7.0, step : 1.0 },
-          points_of_interest : [{x : 0.4, y : 0.6}],
-      }};
+      this.state_ = {
+        capabilities: {
+          supported_white_balance_modes: [
+            imageCapture.MeteringMode.SINGLE_SHOT,
+            imageCapture.MeteringMode.CONTINUOUS
+          ],
+          current_white_balance_mode: imageCapture.MeteringMode.CONTINUOUS,
+          supported_exposure_modes: [
+            imageCapture.MeteringMode.SINGLE_SHOT,
+            imageCapture.MeteringMode.CONTINUOUS
+          ],
+          current_exposure_mode: imageCapture.MeteringMode.SINGLE_SHOT,
+          supported_focus_modes: [imageCapture.MeteringMode.MANUAL],
+          current_focus_mode: imageCapture.MeteringMode.MANUAL,
+          points_of_interest: [{x: 0.4, y: 0.6}],
+
+          exposure_compensation:
+              {min: -200.0, max: 200.0, current: 33.0, step: 33.0},
+          color_temperature:
+              {min: 2500.0, max: 6500.0, current: 6000.0, step: 1000.0},
+          iso: {min: 100.0, max: 12000.0, current: 400.0, step: 1.0},
+
+          brightness: {min: 1.0, max: 10.0, current: 5.0, step: 1.0},
+          contrast: {min: 2.0, max: 9.0, current: 5.0, step: 1.0},
+          saturation: {min: 3.0, max: 8.0, current: 6.0, step: 1.0},
+          sharpness: {min: 4.0, max: 7.0, current: 7.0, step: 1.0},
+
+          zoom: {min: 0.0, max: 10.0, current: 5.0, step: 5.0},
+
+          supports_torch: true,
+          torch: false,
+
+          red_eye_reduction: imageCapture.RedEyeReduction.CONTROLLABLE,
+          height: {min: 240.0, max: 2448.0, current: 240.0, step: 2.0},
+          width: {min: 320.0, max: 3264.0, current: 320.0, step: 3.0},
+          fill_light_mode: [
+            imageCapture.FillLightMode.AUTO, imageCapture.FillLightMode.FLASH
+          ],
+        }
+      };
       this.settings_ = null;
       this.bindingSet_ = new bindings.BindingSet(imageCapture.ImageCapture);
     }
@@ -55,7 +72,7 @@ let mockImageCaptureReady = define(
       if (settings.has_zoom)
         this.state_.capabilities.zoom.current = settings.zoom;
       if (settings.has_focus_mode)
-        this.state_.capabilities.focus_mode = settings.focus_mode;
+        this.state_.capabilities.current_focus_mode = settings.focus_mode;
 
       if (settings.points_of_interest.length > 0) {
         this.state_.capabilities.points_of_interest =
@@ -63,14 +80,14 @@ let mockImageCaptureReady = define(
       }
 
       if (settings.has_exposure_mode)
-        this.state_.capabilities.exposure_mode = settings.exposure_mode;
+        this.state_.capabilities.current_exposure_mode = settings.exposure_mode;
 
       if (settings.has_exposure_compensation) {
         this.state_.capabilities.exposure_compensation.current =
             settings.exposure_compensation;
       }
       if (settings.has_white_balance_mode) {
-        this.state_.capabilities.white_balance_mode =
+        this.state_.capabilities.current_white_balance_mode =
             settings.white_balance_mode;
       }
       if (settings.has_fill_light_mode)

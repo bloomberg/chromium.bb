@@ -21,6 +21,8 @@
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
+using media::mojom::MeteringMode;
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 // 16 bit depth, Realsense F200.
 #define V4L2_PIX_FMT_Z16 v4l2_fourcc('Z', '1', '6', ' ')
@@ -550,39 +552,71 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
   photo_capabilities->zoom =
       RetrieveUserControlRange(device_fd_.get(), V4L2_CID_ZOOM_ABSOLUTE);
 
-  photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
+  v4l2_queryctrl manual_focus_ctrl = {};
+  manual_focus_ctrl.id = V4L2_CID_FOCUS_ABSOLUTE;
+  if (RunIoctl(device_fd_.get(), VIDIOC_QUERYCTRL, &manual_focus_ctrl))
+    photo_capabilities->supported_focus_modes.push_back(MeteringMode::MANUAL);
+
+  v4l2_queryctrl auto_focus_ctrl = {};
+  auto_focus_ctrl.id = V4L2_CID_FOCUS_AUTO;
+  if (RunIoctl(device_fd_.get(), VIDIOC_QUERYCTRL, &auto_focus_ctrl)) {
+    photo_capabilities->supported_focus_modes.push_back(
+        MeteringMode::CONTINUOUS);
+  }
+
+  photo_capabilities->current_focus_mode = MeteringMode::NONE;
   v4l2_control auto_focus_current = {};
   auto_focus_current.id = V4L2_CID_FOCUS_AUTO;
   if (HANDLE_EINTR(
           ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_focus_current)) >= 0) {
-    photo_capabilities->focus_mode = auto_focus_current.value
-                                         ? mojom::MeteringMode::CONTINUOUS
-                                         : mojom::MeteringMode::MANUAL;
+    photo_capabilities->current_focus_mode = auto_focus_current.value
+                                                 ? MeteringMode::CONTINUOUS
+                                                 : MeteringMode::MANUAL;
   }
 
-  photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
+  v4l2_queryctrl auto_exposure_ctrl = {};
+  auto_exposure_ctrl.id = V4L2_CID_EXPOSURE_AUTO;
+  if (RunIoctl(device_fd_.get(), VIDIOC_QUERYCTRL, &auto_exposure_ctrl)) {
+    photo_capabilities->supported_exposure_modes.push_back(
+        MeteringMode::MANUAL);
+    photo_capabilities->supported_exposure_modes.push_back(
+        MeteringMode::CONTINUOUS);
+  }
+
+  photo_capabilities->current_exposure_mode = MeteringMode::NONE;
   v4l2_control exposure_current = {};
   exposure_current.id = V4L2_CID_EXPOSURE_AUTO;
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL, &exposure_current)) >=
       0) {
-    photo_capabilities->exposure_mode =
+    photo_capabilities->current_exposure_mode =
         exposure_current.value == V4L2_EXPOSURE_MANUAL
-            ? mojom::MeteringMode::MANUAL
-            : mojom::MeteringMode::CONTINUOUS;
-  }
-
-  photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
-  v4l2_control white_balance_current = {};
-  white_balance_current.id = V4L2_CID_AUTO_WHITE_BALANCE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL,
-                         &white_balance_current)) >= 0) {
-    photo_capabilities->white_balance_mode =
-        white_balance_current.value ? mojom::MeteringMode::CONTINUOUS
-                                    : mojom::MeteringMode::MANUAL;
+            ? MeteringMode::MANUAL
+            : MeteringMode::CONTINUOUS;
   }
 
   photo_capabilities->color_temperature = RetrieveUserControlRange(
       device_fd_.get(), V4L2_CID_WHITE_BALANCE_TEMPERATURE);
+  if (photo_capabilities->color_temperature) {
+    photo_capabilities->supported_white_balance_modes.push_back(
+        MeteringMode::MANUAL);
+  }
+
+  v4l2_queryctrl white_balance_ctrl = {};
+  white_balance_ctrl.id = V4L2_CID_AUTO_WHITE_BALANCE;
+  if (RunIoctl(device_fd_.get(), VIDIOC_QUERYCTRL, &white_balance_ctrl)) {
+    photo_capabilities->supported_white_balance_modes.push_back(
+        MeteringMode::CONTINUOUS);
+  }
+
+  photo_capabilities->current_white_balance_mode = MeteringMode::NONE;
+  v4l2_control white_balance_current = {};
+  white_balance_current.id = V4L2_CID_AUTO_WHITE_BALANCE;
+  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL,
+                         &white_balance_current)) >= 0) {
+    photo_capabilities->current_white_balance_mode =
+        white_balance_current.value ? MeteringMode::CONTINUOUS
+                                    : MeteringMode::MANUAL;
+  }
 
   photo_capabilities->iso = mojom::Range::New();
   photo_capabilities->height = mojom::Range::New();

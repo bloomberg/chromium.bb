@@ -504,11 +504,14 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
 
-  photo_capabilities->white_balance_mode =
+  // TODO(mcasas): Update |supported_{white_balance,exposure,focus}_modes| as
+  // well, https://crbug.com/700607.
+  photo_capabilities->current_white_balance_mode =
       ToMojomMeteringMode(caps.getWhiteBalanceMode());
-  photo_capabilities->exposure_mode =
+  photo_capabilities->current_exposure_mode =
       ToMojomMeteringMode(caps.getExposureMode());
-  photo_capabilities->focus_mode = ToMojomMeteringMode(caps.getFocusMode());
+  photo_capabilities->current_focus_mode =
+      ToMojomMeteringMode(caps.getFocusMode());
 
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->exposure_compensation->current =

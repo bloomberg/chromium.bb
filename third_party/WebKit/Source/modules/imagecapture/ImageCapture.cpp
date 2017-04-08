@@ -527,20 +527,36 @@ void ImageCapture::onCapabilitiesUpdate(
 
 void ImageCapture::onCapabilitiesUpdateInternal(
     const media::mojom::blink::PhotoCapabilities& capabilities) {
-  // TODO(mcasas): adapt the mojo interface to return a list of supported Modes
-  // when moving these out of PhotoCapabilities, https://crbug.com/700607.
-  m_capabilities.setWhiteBalanceMode(
-      WTF::Vector<WTF::String>({toString(capabilities.white_balance_mode)}));
-  if (m_capabilities.hasWhiteBalanceMode())
-    m_settings.setWhiteBalanceMode(m_capabilities.whiteBalanceMode()[0]);
-  m_capabilities.setExposureMode(
-      WTF::Vector<WTF::String>({toString(capabilities.exposure_mode)}));
-  if (m_capabilities.hasExposureMode())
-    m_settings.setExposureMode(m_capabilities.exposureMode()[0]);
-  m_capabilities.setFocusMode(
-      WTF::Vector<WTF::String>({toString(capabilities.focus_mode)}));
-  if (m_capabilities.hasFocusMode())
-    m_settings.setFocusMode(m_capabilities.focusMode()[0]);
+  WTF::Vector<WTF::String> supportedWhiteBalanceModes;
+  supportedWhiteBalanceModes.reserveInitialCapacity(
+      capabilities.supported_white_balance_modes.size());
+  for (const auto& supported_mode : capabilities.supported_white_balance_modes)
+    supportedWhiteBalanceModes.push_back(toString(supported_mode));
+  if (!supportedWhiteBalanceModes.isEmpty()) {
+    m_capabilities.setWhiteBalanceMode(std::move(supportedWhiteBalanceModes));
+    m_settings.setWhiteBalanceMode(
+        toString(capabilities.current_white_balance_mode));
+  }
+
+  WTF::Vector<WTF::String> supportedExposureModes;
+  supportedExposureModes.reserveInitialCapacity(
+      capabilities.supported_exposure_modes.size());
+  for (const auto& supported_mode : capabilities.supported_exposure_modes)
+    supportedExposureModes.push_back(toString(supported_mode));
+  if (!supportedExposureModes.isEmpty()) {
+    m_capabilities.setExposureMode(std::move(supportedExposureModes));
+    m_settings.setExposureMode(toString(capabilities.current_exposure_mode));
+  }
+
+  WTF::Vector<WTF::String> supportedFocusModes;
+  supportedFocusModes.reserveInitialCapacity(
+      capabilities.supported_focus_modes.size());
+  for (const auto& supported_mode : capabilities.supported_focus_modes)
+    supportedFocusModes.push_back(toString(supported_mode));
+  if (!supportedFocusModes.isEmpty()) {
+    m_capabilities.setFocusMode(std::move(supportedFocusModes));
+    m_settings.setFocusMode(toString(capabilities.current_focus_mode));
+  }
 
   HeapVector<Point2D> currentPointsOfInterest;
   if (!capabilities.points_of_interest.isEmpty()) {

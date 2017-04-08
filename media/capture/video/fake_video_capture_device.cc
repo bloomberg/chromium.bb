@@ -449,9 +449,9 @@ void FakePhotoDevice::GetPhotoCapabilities(
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
 
-  photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
+  photo_capabilities->current_white_balance_mode = mojom::MeteringMode::NONE;
+  photo_capabilities->current_exposure_mode = mojom::MeteringMode::NONE;
+  photo_capabilities->current_focus_mode = mojom::MeteringMode::NONE;
 
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->color_temperature = mojom::Range::New();

@@ -14,7 +14,7 @@ struct Range {
   double step;
 };
 
-// https://w3c.github.io/mediacapture-image/#mediasettingsrange-section
+// https://w3c.github.io/mediacapture-image/#meteringmode-section
 enum MeteringMode { NONE, MANUAL, SINGLE_SHOT, CONTINUOUS };
 
 // https://w3c.github.io/mediacapture-image/#redeyereduction-section
@@ -26,9 +26,12 @@ enum FillLightMode { OFF, AUTO, FLASH };
 // Equivalent to idl's MediaTrackCapabilities plus PhotoCapabilities.
 struct PhotoCapabilities {
   // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
-  MeteringMode white_balance_mode;
-  MeteringMode exposure_mode;
-  MeteringMode focus_mode;
+  array<MeteringMode> supported_white_balance_modes;
+  MeteringMode current_white_balance_mode;
+  array<MeteringMode> supported_exposure_modes;
+  MeteringMode current_exposure_mode;
+  array<MeteringMode> supported_focus_modes;
+  MeteringMode current_focus_mode;
   array<Point2D> points_of_interest;
 
   Range exposure_compensation;

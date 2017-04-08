@@ -37,13 +37,16 @@ async_test(function(t) {
         settings = videoTrack.getSettings();
         assert_equals(typeof settings, 'object');
 
-        assert_equals(settings.whiteBalanceMode,
-            meteringModeNames[mock_settings.white_balance_mode],
+        assert_equals(
+            settings.whiteBalanceMode,
+            meteringModeNames[mock_settings.current_white_balance_mode],
             'whiteBalanceMode');
         assert_equals(settings.exposureMode,
-            meteringModeNames[mock_settings.exposure_mode], 'exposureMode;');
+                      meteringModeNames[mock_settings.current_exposure_mode],
+                      'exposureMode;');
         assert_equals(settings.focusMode,
-            meteringModeNames[mock_settings.focus_mode], 'focusMode');
+                      meteringModeNames[mock_settings.current_focus_mode],
+                      'focusMode');
 
         assert_equals(settings.pointsOfInterest.length,
                       mock_settings.points_of_interest.length,

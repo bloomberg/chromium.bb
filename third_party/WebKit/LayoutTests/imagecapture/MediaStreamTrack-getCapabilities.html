@@ -40,17 +40,36 @@ async_test(function(t) {
         capabilities = videoTrack.getCapabilities();
         assert_equals(typeof capabilities, 'object');
 
-        // TODO(mcasas): Change the following checks when the supported modes
-        // are changed to a list: https://crbug.com/700607.
-        assert_equals(capabilities.focusMode[0],
-            meteringModeNames[mock_capabilities.focus_mode], 'focusMode');
+        assert_equals(capabilities.whiteBalanceMode.length,
+                      mock_capabilities.supported_white_balance_modes.length,
+                      'whiteBalanceMode');
+        for (i = 0; i < capabilities.whiteBalanceMode.length; ++i) {
+          assert_equals(
+              capabilities.whiteBalanceMode[i],
+              meteringModeNames[mock_capabilities
+                                    .supported_white_balance_modes[i]],
+              'whiteBalanceMode');
+        }
 
-        assert_equals(capabilities.exposureMode[0],
-            meteringModeNames[mock_capabilities.exposure_mode], 'exposureMode;');
+        assert_equals(capabilities.exposureMode.length,
+                      mock_capabilities.supported_exposure_modes.length,
+                      'exposureMode');
+        for (i = 0; i < capabilities.exposureMode.length; ++i) {
+          assert_equals(
+              capabilities.exposureMode[i],
+              meteringModeNames[mock_capabilities.supported_exposure_modes[i]],
+              'exposureMode');
+        }
 
-        assert_equals(capabilities.whiteBalanceMode[0],
-            meteringModeNames[mock_capabilities.white_balance_mode],
-            'whiteBalanceMode');
+        assert_equals(capabilities.focusMode.length,
+                      mock_capabilities.supported_focus_modes.length,
+                      'focusMode');
+        for (i = 0; i < capabilities.focusMode.length; ++i) {
+          assert_equals(
+              capabilities.focusMode[i],
+              meteringModeNames[mock_capabilities.supported_focus_modes[i]],
+              'focusMode');
+        }
 
         assert_true(capabilities.exposureCompensation instanceof
                     MediaSettingsRange);
@@ -61,7 +80,8 @@ async_test(function(t) {
         assert_equals(capabilities.exposureCompensation.step,
                       mock_capabilities.exposure_compensation.step);
 
-        assert_true(capabilities.colorTemperature instanceof MediaSettingsRange);
+        assert_true(capabilities.colorTemperature instanceof
+                    MediaSettingsRange);
         assert_equals(capabilities.colorTemperature.max,
                       mock_capabilities.color_temperature.max);
         assert_equals(capabilities.colorTemperature.min,
@@ -83,8 +103,10 @@ async_test(function(t) {
                       mock_capabilities.brightness.step);
 
         assert_true(capabilities.contrast instanceof MediaSettingsRange);
-        assert_equals(capabilities.contrast.max, mock_capabilities.contrast.max);
-        assert_equals(capabilities.contrast.min, mock_capabilities.contrast.min);
+        assert_equals(capabilities.contrast.max,
+                      mock_capabilities.contrast.max);
+        assert_equals(capabilities.contrast.min,
+                      mock_capabilities.contrast.min);
         assert_equals(capabilities.contrast.step,
                       mock_capabilities.contrast.step);
 
@@ -109,7 +131,8 @@ async_test(function(t) {
         assert_equals(capabilities.zoom.min, mock_capabilities.zoom.min);
         assert_equals(capabilities.zoom.step, mock_capabilities.zoom.step);
 
-        assert_equals(capabilities.torch, mock_capabilities.supports_torch, 'torch');
+        assert_equals(capabilities.torch, mock_capabilities.supports_torch,
+                      'torch');
 
         t.done();
       }, 100);
