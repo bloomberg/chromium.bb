@@ -72,6 +72,8 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   html->AddLocalizedString("logTypeLoginText", IDS_DEVICE_LOG_TYPE_LOGIN);
   html->AddLocalizedString("logTypeNetworkText", IDS_DEVICE_LOG_TYPE_NETWORK);
   html->AddLocalizedString("logTypePowerText", IDS_DEVICE_LOG_TYPE_POWER);
+  html->AddLocalizedString("logTypeBluetoothText",
+                           IDS_DEVICE_LOG_TYPE_BLUETOOTH);
   html->AddLocalizedString("logTypeUsbText", IDS_DEVICE_LOG_TYPE_USB);
   html->AddLocalizedString("logTypeHidText", IDS_DEVICE_LOG_TYPE_HID);
 

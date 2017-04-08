@@ -30,6 +30,8 @@
 // Examples:
 //  NET_LOG(EVENT) << "NetworkState Changed " << name << ": " << state;
 //  POWER_LOG(USER) << "Suspend requested";
+//
+// See also the README.md in this directory.
 
 #define NET_LOG(level)                             \
   DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, \
@@ -39,6 +41,9 @@
              ::device_event_log::LOG_LEVEL_##level)
 #define LOGIN_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_LOGIN, \
+             ::device_event_log::LOG_LEVEL_##level)
+#define BLUETOOTH_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_BLUETOOTH, \
              ::device_event_log::LOG_LEVEL_##level)
 #define USB_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_USB, \
@@ -76,22 +81,23 @@
 
 namespace device_event_log {
 
-// Used to specify the type of event. NOTE: Be sure to update LogTypeFromString
-// and GetLogTypeString when adding entries to this enum. Also consider
-// updating chrome://device-log (see device_log_ui.cc).
+// Used to specify the type of event. Consider updating chrome://device-log
+// when adding new types (see device_log_ui.cc).
 enum LogType {
   // Shill / network configuration related events.
-  LOG_TYPE_NETWORK,
+  LOG_TYPE_NETWORK = 0,
   // Power manager related events.
-  LOG_TYPE_POWER,
+  LOG_TYPE_POWER = 1,
   // Login related events.
-  LOG_TYPE_LOGIN,
+  LOG_TYPE_LOGIN = 2,
+  // Bluetooth device related events (i.e. device/bluetooth).
+  LOG_TYPE_BLUETOOTH = 3,
   // USB device related events (i.e. device/usb).
-  LOG_TYPE_USB,
+  LOG_TYPE_USB = 4,
   // Human-interface device related events (i.e. device/hid).
-  LOG_TYPE_HID,
-  // Used internally
-  LOG_TYPE_UNKNOWN
+  LOG_TYPE_HID = 5,
+  // Used internally, must be the last type (may be changed).
+  LOG_TYPE_UNKNOWN = 6
 };
 
 // Used to specify the detail level for logging. In GetAsString, used to

@@ -29,6 +29,7 @@ const char* kLogLevelName[] = {"Error", "User", "Event", "Debug"};
 const char* kLogTypeNetworkDesc = "Network";
 const char* kLogTypePowerDesc = "Power";
 const char* kLogTypeLoginDesc = "Login";
+const char* kLogTypeBluetoothDesc = "Bluetooth";
 const char* kLogTypeUsbDesc = "USB";
 const char* kLogTypeHidDesc = "HID";
 
@@ -40,14 +41,29 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypePowerDesc;
     case LOG_TYPE_LOGIN:
       return kLogTypeLoginDesc;
+    case LOG_TYPE_BLUETOOTH:
+      return kLogTypeBluetoothDesc;
     case LOG_TYPE_USB:
       return kLogTypeUsbDesc;
     case LOG_TYPE_HID:
       return kLogTypeHidDesc;
-    default:
-      NOTREACHED();
-      return "Unknown";
+    case LOG_TYPE_UNKNOWN:
+      break;
   }
+  NOTREACHED();
+  return "Unknown";
+}
+
+LogType GetLogTypeFromString(const std::string& desc) {
+  std::string desc_lc = base::ToLowerASCII(desc);
+  for (int i = 0; i < LOG_TYPE_UNKNOWN; ++i) {
+    auto type = static_cast<LogType>(i);
+    std::string log_desc_lc = base::ToLowerASCII(GetLogTypeString(type));
+    if (desc_lc == log_desc_lc)
+      return type;
+  }
+  NOTREACHED() << "Unrecogized LogType: " << desc;
+  return LOG_TYPE_UNKNOWN;
 }
 
 std::string DateAndTimeWithMicroseconds(const base::Time& time) {
@@ -185,18 +201,6 @@ void GetFormat(const std::string& format_string,
   }
 }
 
-LogType LogTypeFromString(const std::string& desc) {
-  std::string desc_lc = base::ToLowerASCII(desc);
-  if (desc_lc == "network")
-    return LOG_TYPE_NETWORK;
-  if (desc_lc == "power")
-    return LOG_TYPE_POWER;
-  if (desc_lc == "login")
-    return LOG_TYPE_LOGIN;
-  NOTREACHED() << "Unrecogized LogType: " << desc;
-  return LOG_TYPE_UNKNOWN;
-}
-
 void GetLogTypes(const std::string& types,
                  std::set<LogType>* include_types,
                  std::set<LogType>* exclude_types) {
@@ -204,11 +208,11 @@ void GetLogTypes(const std::string& types,
   while (tokens.GetNext()) {
     std::string tok(tokens.token());
     if (tok.substr(0, 4) == "non-") {
-      LogType type = LogTypeFromString(tok.substr(4));
+      LogType type = GetLogTypeFromString(tok.substr(4));
       if (type != LOG_TYPE_UNKNOWN)
         exclude_types->insert(type);
     } else {
-      LogType type = LogTypeFromString(tok);
+      LogType type = GetLogTypeFromString(tok);
       if (type != LOG_TYPE_UNKNOWN)
         include_types->insert(type);
     }

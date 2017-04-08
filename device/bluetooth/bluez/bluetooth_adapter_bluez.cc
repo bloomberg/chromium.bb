@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
@@ -72,8 +73,8 @@ void OnUnregisterAgentError(const std::string& error_name,
   if (error_name == bluetooth_agent_manager::kErrorDoesNotExist)
     return;
 
-  LOG(WARNING) << "Failed to unregister pairing agent: " << error_name << ": "
-               << error_message;
+  BLUETOOTH_LOG(ERROR) << "Failed to unregister pairing agent: " << error_name
+                       << ": " << error_message;
 }
 
 UMABluetoothDiscoverySessionOutcome TranslateDiscoveryErrorToUMA(
@@ -91,7 +92,7 @@ UMABluetoothDiscoverySessionOutcome TranslateDiscoveryErrorToUMA(
   } else if (error_name == bluetooth_device::kErrorFailed) {
     return UMABluetoothDiscoverySessionOutcome::FAILED;
   } else {
-    LOG(WARNING) << "Can't histogram DBus error " << error_name;
+    BLUETOOTH_LOG(ERROR) << "Unrecognized DBus error " << error_name;
     return UMABluetoothDiscoverySessionOutcome::UNKNOWN;
   }
 }
@@ -118,11 +119,11 @@ void OnRegisterationErrorCallback(
     const std::string& error_name,
     const std::string& error_message) {
   if (is_register_callback) {
-    VLOG(1) << "Failed to Register service: " << error_name << ", "
-            << error_message;
+    BLUETOOTH_LOG(ERROR) << "Failed to Register service: " << error_name << ", "
+                         << error_message;
   } else {
-    VLOG(1) << "Failed to Unregister service: " << error_name << ", "
-            << error_message;
+    BLUETOOTH_LOG(ERROR) << "Failed to Unregister service: " << error_name
+                         << ", " << error_message;
   }
   error_callback.Run(
       BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
@@ -137,8 +138,8 @@ void SetIntervalErrorCallbackConnector(
     const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(ERROR) << "Error while registering advertisement. error_name = "
-             << error_name << ", error_message = " << error_message;
+  BLUETOOTH_LOG(ERROR) << "Error while registering advertisement. error_name = "
+                       << error_name << ", error_message = " << error_message;
 
   device::BluetoothAdvertisement::ErrorCode code = device::
       BluetoothAdvertisement::ErrorCode::INVALID_ADVERTISEMENT_ERROR_CODE;
@@ -161,6 +162,9 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
 void BluetoothAdapterBlueZ::Shutdown() {
   if (dbus_is_shutdown_)
     return;
+
+  BLUETOOTH_LOG(EVENT) << "BluetoothAdapterBlueZ::Shutdown";
+
   DCHECK(bluez::BluezDBusManager::IsInitialized())
       << "Call BluetoothAdapterFactory::Shutdown() before "
          "BluezDBusManager::Shutdown().";
@@ -207,7 +211,7 @@ void BluetoothAdapterBlueZ::Shutdown() {
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->RemoveObserver(
       this);
 
-  VLOG(1) << "Unregistering pairing agent";
+  BLUETOOTH_LOG(EVENT) << "Unregistering pairing agent";
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
       ->UnregisterAgent(dbus::ObjectPath(kAgentPath),
@@ -266,8 +270,9 @@ void BluetoothAdapterBlueZ::Init() {
                                                    ->GetBluetoothAdapterClient()
                                                    ->GetAdapters();
 
+  BLUETOOTH_LOG(EVENT) << "BlueZ Adapter Initialized.";
   if (!object_paths.empty()) {
-    VLOG(1) << object_paths.size() << " Bluetooth adapter(s) available.";
+    BLUETOOTH_LOG(EVENT) << "BlueZ Adapters available: " << object_paths.size();
     SetAdapter(object_paths[0]);
   }
   initialized_ = true;
@@ -345,9 +350,12 @@ void BluetoothAdapterBlueZ::SetPowered(bool powered,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
   if (!IsPresent()) {
+    BLUETOOTH_LOG(ERROR) << "SetPowered: " << powered << ". Not Present!";
     error_callback.Run();
     return;
   }
+
+  BLUETOOTH_LOG(EVENT) << "SetPowered: " << powered;
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAdapterClient()
@@ -378,6 +386,8 @@ void BluetoothAdapterBlueZ::SetDiscoverable(
     error_callback.Run();
     return;
   }
+
+  BLUETOOTH_LOG(EVENT) << "SetDiscoverable: " << discoverable;
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAdapterClient()
@@ -459,8 +469,8 @@ void BluetoothAdapterBlueZ::CreateRfcommService(
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   DCHECK(!dbus_is_shutdown_);
-  VLOG(1) << object_path_.value()
-          << ": Creating RFCOMM service: " << uuid.canonical_value();
+  BLUETOOTH_LOG(DEBUG) << object_path_.value() << ": Creating RFCOMM service: "
+                       << uuid.canonical_value();
   scoped_refptr<BluetoothSocketBlueZ> socket =
       BluetoothSocketBlueZ::CreateBluetoothSocket(ui_task_runner_,
                                                   socket_thread_);
@@ -474,8 +484,8 @@ void BluetoothAdapterBlueZ::CreateL2capService(
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
   DCHECK(!dbus_is_shutdown_);
-  VLOG(1) << object_path_.value()
-          << ": Creating L2CAP service: " << uuid.canonical_value();
+  BLUETOOTH_LOG(DEBUG) << object_path_.value() << ": Creating L2CAP service: "
+                       << uuid.canonical_value();
   scoped_refptr<BluetoothSocketBlueZ> socket =
       BluetoothSocketBlueZ::CreateBluetoothSocket(ui_task_runner_,
                                                   socket_thread_);
@@ -615,8 +625,8 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     for (auto iter = devices_.begin(); iter != devices_.end(); ++iter) {
       if (iter->second->GetAddress() == device_bluez->GetAddress()) {
         std::string old_address = iter->first;
-        VLOG(1) << "Device changed address, old: " << old_address
-                << " new: " << device_bluez->GetAddress();
+        BLUETOOTH_LOG(EVENT) << "Device changed address, old: " << old_address
+                             << " new: " << device_bluez->GetAddress();
         std::unique_ptr<BluetoothDevice> scoped_device =
             std::move(iter->second);
         devices_.erase(iter);
@@ -700,7 +710,7 @@ void BluetoothAdapterBlueZ::InputPropertyChanged(
 }
 
 void BluetoothAdapterBlueZ::Released() {
-  VLOG(1) << "Release";
+  BLUETOOTH_LOG(EVENT) << "Released";
   if (!IsPresent())
     return;
   DCHECK(agent_.get());
@@ -713,7 +723,7 @@ void BluetoothAdapterBlueZ::RequestPinCode(const dbus::ObjectPath& device_path,
                                            const PinCodeCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": RequestPinCode";
+  BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestPinCode";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
@@ -728,7 +738,8 @@ void BluetoothAdapterBlueZ::DisplayPinCode(const dbus::ObjectPath& device_path,
                                            const std::string& pincode) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": DisplayPinCode: " << pincode;
+  BLUETOOTH_LOG(EVENT) << device_path.value()
+                       << ": DisplayPinCode: " << pincode;
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing)
@@ -741,7 +752,7 @@ void BluetoothAdapterBlueZ::RequestPasskey(const dbus::ObjectPath& device_path,
                                            const PasskeyCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": RequestPasskey";
+  BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestPasskey";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
@@ -757,8 +768,8 @@ void BluetoothAdapterBlueZ::DisplayPasskey(const dbus::ObjectPath& device_path,
                                            uint16_t entered) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": DisplayPasskey: " << passkey << " ("
-          << entered << " entered)";
+  BLUETOOTH_LOG(EVENT) << device_path.value() << ": DisplayPasskey: " << passkey
+                       << " (" << entered << " entered)";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing)
@@ -776,7 +787,8 @@ void BluetoothAdapterBlueZ::RequestConfirmation(
     const ConfirmationCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": RequestConfirmation: " << passkey;
+  BLUETOOTH_LOG(EVENT) << device_path.value()
+                       << ": RequestConfirmation: " << passkey;
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
@@ -792,7 +804,7 @@ void BluetoothAdapterBlueZ::RequestAuthorization(
     const ConfirmationCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": RequestAuthorization";
+  BLUETOOTH_LOG(EVENT) << device_path.value() << ": RequestAuthorization";
 
   BluetoothPairingBlueZ* pairing = GetPairing(device_path);
   if (!pairing) {
@@ -809,7 +821,7 @@ void BluetoothAdapterBlueZ::AuthorizeService(
     const ConfirmationCallback& callback) {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << device_path.value() << ": AuthorizeService: " << uuid;
+  BLUETOOTH_LOG(EVENT) << device_path.value() << ": AuthorizeService: " << uuid;
 
   BluetoothDeviceBlueZ* device_bluez = GetDeviceWithPath(device_path);
   if (!device_bluez) {
@@ -828,19 +840,20 @@ void BluetoothAdapterBlueZ::AuthorizeService(
 
   // TODO(keybuk): reject service authorizations when not paired, determine
   // whether this is acceptable long-term.
-  LOG(WARNING) << "Rejecting service connection from unpaired device "
-               << device_bluez->GetAddress() << " for UUID " << uuid;
+  BLUETOOTH_LOG(ERROR) << "Rejecting service connection from unpaired device "
+                       << device_bluez->GetAddress() << " for UUID " << uuid;
   callback.Run(REJECTED);
 }
 
 void BluetoothAdapterBlueZ::Cancel() {
   DCHECK(IsPresent());
   DCHECK(agent_.get());
-  VLOG(1) << "Cancel";
+  BLUETOOTH_LOG(EVENT) << "Cancel";
 }
 
 void BluetoothAdapterBlueZ::OnRegisterAgent() {
-  VLOG(1) << "Pairing agent registered, requesting to be made default";
+  BLUETOOTH_LOG(EVENT)
+      << "Pairing agent registered, requesting to be made default";
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
@@ -859,19 +872,19 @@ void BluetoothAdapterBlueZ::OnRegisterAgentError(
   if (error_name == bluetooth_agent_manager::kErrorAlreadyExists)
     return;
 
-  LOG(WARNING) << ": Failed to register pairing agent: " << error_name << ": "
-               << error_message;
+  BLUETOOTH_LOG(ERROR) << "Failed to register pairing agent: " << error_name
+                       << ": " << error_message;
 }
 
 void BluetoothAdapterBlueZ::OnRequestDefaultAgent() {
-  VLOG(1) << "Pairing agent now default";
+  BLUETOOTH_LOG(EVENT) << "Pairing agent now default";
 }
 
 void BluetoothAdapterBlueZ::OnRequestDefaultAgentError(
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << ": Failed to make pairing agent default: " << error_name
-               << ": " << error_message;
+  BLUETOOTH_LOG(ERROR) << "Failed to make pairing agent default: " << error_name
+                       << ": " << error_message;
 }
 
 void BluetoothAdapterBlueZ::CreateServiceRecord(
@@ -918,8 +931,8 @@ BluetoothPairingBlueZ* BluetoothAdapterBlueZ::GetPairing(
   DCHECK(IsPresent());
   BluetoothDeviceBlueZ* device_bluez = GetDeviceWithPath(object_path);
   if (!device_bluez) {
-    LOG(WARNING) << "Pairing Agent request for unknown device: "
-                 << object_path.value();
+    BLUETOOTH_LOG(ERROR) << "Pairing Agent request for unknown device: "
+                         << object_path.value();
     return nullptr;
   }
 
@@ -941,9 +954,9 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   DCHECK(!dbus_is_shutdown_);
   object_path_ = object_path;
 
-  VLOG(1) << object_path_.value() << ": using adapter.";
+  BLUETOOTH_LOG(EVENT) << object_path_.value() << ": using adapter.";
 
-  VLOG(1) << "Registering pairing agent";
+  BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
       ->RegisterAgent(dbus::ObjectPath(kAgentPath),
@@ -1016,7 +1029,7 @@ void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
 
 void BluetoothAdapterBlueZ::RemoveAdapter() {
   DCHECK(IsPresent());
-  VLOG(1) << object_path_.value() << ": adapter removed.";
+  BLUETOOTH_LOG(EVENT) << object_path_.value() << ": adapter removed.";
 
   bluez::BluetoothAdapterClient::Properties* properties =
       bluez::BluezDBusManager::Get()
@@ -1054,10 +1067,10 @@ void BluetoothAdapterBlueZ::DiscoverableChanged(bool discoverable) {
 void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
   // If the adapter stopped discovery due to a reason other than a request by
   // us, reset the count to 0.
-  VLOG(1) << "Discovering changed: " << discovering;
+  BLUETOOTH_LOG(EVENT) << "Discovering changed: " << discovering;
   if (!discovering && !discovery_request_pending_ &&
       num_discovery_sessions_ > 0) {
-    VLOG(1) << "Marking sessions as inactive.";
+    BLUETOOTH_LOG(DEBUG) << "Marking sessions as inactive.";
     num_discovery_sessions_ = 0;
     MarkDiscoverySessionsAsInactive();
   }
@@ -1089,7 +1102,7 @@ void BluetoothAdapterBlueZ::UseProfile(
   DCHECK(delegate);
 
   if (!IsPresent()) {
-    VLOG(2) << "Adapter not present, erroring out";
+    BLUETOOTH_LOG(DEBUG) << "Adapter not present, erroring out";
     error_callback.Run("Adapter not present");
     return;
   }
@@ -1120,12 +1133,13 @@ void BluetoothAdapterBlueZ::UseProfile(
 void BluetoothAdapterBlueZ::ReleaseProfile(
     const dbus::ObjectPath& device_path,
     BluetoothAdapterProfileBlueZ* profile) {
-  VLOG(2) << "Releasing Profile: " << profile->uuid().canonical_value()
-          << " from " << device_path.value();
+  BLUETOOTH_LOG(EVENT) << "Releasing Profile: "
+                       << profile->uuid().canonical_value() << " from "
+                       << device_path.value();
   BluetoothUUID uuid = profile->uuid();
   auto iter = profiles_.find(uuid);
   if (iter == profiles_.end()) {
-    LOG(ERROR) << "Profile not found for: " << uuid.canonical_value();
+    BLUETOOTH_LOG(ERROR) << "Profile not found for: " << uuid.canonical_value();
     return;
   }
   released_profiles_[uuid] = iter->second;
@@ -1136,11 +1150,12 @@ void BluetoothAdapterBlueZ::ReleaseProfile(
 }
 
 void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {
-  VLOG(2) << "Remove Profile: " << uuid.canonical_value();
+  BLUETOOTH_LOG(EVENT) << "Remove Profile: " << uuid.canonical_value();
 
   auto iter = released_profiles_.find(uuid);
   if (iter == released_profiles_.end()) {
-    LOG(ERROR) << "Released Profile not found: " << uuid.canonical_value();
+    BLUETOOTH_LOG(ERROR) << "Released Profile not found: "
+                         << uuid.canonical_value();
     return;
   }
   delete iter->second;
@@ -1156,10 +1171,10 @@ void BluetoothAdapterBlueZ::RemoveLocalGattService(
     BluetoothLocalGattServiceBlueZ* service) {
   auto service_iter = owned_gatt_services_.find(service->object_path());
   if (service_iter == owned_gatt_services_.end()) {
-    LOG(WARNING) << "Trying to remove service: "
-                 << service->object_path().value()
-                 << " from adapter: " << object_path_.value()
-                 << " that doesn't own it.";
+    BLUETOOTH_LOG(ERROR) << "Trying to remove service: "
+                         << service->object_path().value()
+                         << " from adapter: " << object_path_.value()
+                         << " that doesn't own it.";
     return;
   }
 
@@ -1177,7 +1192,8 @@ void BluetoothAdapterBlueZ::RegisterGattService(
     const base::Closure& callback,
     const device::BluetoothGattService::ErrorCallback& error_callback) {
   if (registered_gatt_services_.count(service->object_path()) > 0) {
-    LOG(WARNING) << "Re-registering a service that is already registered!";
+    BLUETOOTH_LOG(ERROR)
+        << "Re-registering a service that is already registered!";
     error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
@@ -1199,8 +1215,9 @@ void BluetoothAdapterBlueZ::UnregisterGattService(
   DCHECK(bluez::BluezDBusManager::Get());
 
   if (registered_gatt_services_.count(service->object_path()) == 0) {
-    LOG(WARNING) << "Unregistering a service that isn't registered! path: "
-                 << service->object_path().value();
+    BLUETOOTH_LOG(ERROR)
+        << "Unregistering a service that isn't registered! path: "
+        << service->object_path().value();
     error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
@@ -1268,9 +1285,9 @@ void BluetoothAdapterBlueZ::OnRegisterProfileError(
     const BluetoothUUID& uuid,
     const std::string& error_name,
     const std::string& error_message) {
-  VLOG(2) << object_path_.value()
-          << ": Failed to register profile: " << error_name << ": "
-          << error_message;
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to register profile: " << error_name << ": "
+                       << error_message;
   if (profile_queues_.find(uuid) == profile_queues_.end())
     return;
 
@@ -1321,13 +1338,14 @@ void BluetoothAdapterBlueZ::AddDiscoverySession(
         UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT);
     return;
   }
-  VLOG(1) << __func__;
+  BLUETOOTH_LOG(EVENT) << __func__;
   if (discovery_request_pending_) {
     // The pending request is either to stop a previous session or to start a
     // new one. Either way, queue this one.
     DCHECK(num_discovery_sessions_ == 1 || num_discovery_sessions_ == 0);
-    VLOG(1) << "Pending request to start/stop device discovery. Queueing "
-            << "request to start a new discovery session.";
+    BLUETOOTH_LOG(DEBUG)
+        << "Pending request to start/stop device discovery. Queueing "
+        << "request to start a new discovery session.";
     discovery_request_queue_.push(
         std::make_tuple(discovery_filter, callback, error_callback));
     return;
@@ -1384,7 +1402,7 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
     return;
   }
 
-  VLOG(1) << __func__;
+  BLUETOOTH_LOG(EVENT) << __func__;
   // There are active sessions other than the one currently being removed.
   if (num_discovery_sessions_ > 1) {
     DCHECK(IsDiscovering());
@@ -1398,8 +1416,9 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
 
   // If there is a pending request to BlueZ, then queue this request.
   if (discovery_request_pending_) {
-    VLOG(1) << "Pending request to start/stop device discovery. Queueing "
-            << "request to stop discovery session.";
+    BLUETOOTH_LOG(DEBUG)
+        << "Pending request to start/stop device discovery. Queueing "
+        << "request to stop discovery session.";
     error_callback.Run(
         UMABluetoothDiscoverySessionOutcome::REMOVE_WITH_PENDING_REQUEST);
     return;
@@ -1410,7 +1429,7 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
     // TODO(armansito): This should never happen once we have the
     // DiscoverySession API. Replace this case with an assert once it's
     // the deprecated methods have been removed. (See crbug.com/3445008).
-    VLOG(1) << "No active discovery sessions. Returning error.";
+    BLUETOOTH_LOG(DEBUG) << "No active discovery sessions. Returning error.";
     error_callback.Run(
         UMABluetoothDiscoverySessionOutcome::ACTIVE_SESSION_NOT_IN_ADAPTER);
     return;
@@ -1500,7 +1519,7 @@ void BluetoothAdapterBlueZ::OnStartDiscovery(
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   // Report success on the original request and increment the count.
-  VLOG(1) << __func__;
+  BLUETOOTH_LOG(EVENT) << __func__;
   DCHECK(discovery_request_pending_);
   DCHECK_EQ(num_discovery_sessions_, 0);
   discovery_request_pending_ = false;
@@ -1520,9 +1539,9 @@ void BluetoothAdapterBlueZ::OnStartDiscoveryError(
     const DiscoverySessionErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << object_path_.value()
-               << ": Failed to start discovery: " << error_name << ": "
-               << error_message;
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to start discovery: " << error_name << ": "
+                       << error_message;
 
   // Failed to start discovery. This can only happen if the count is at 0.
   DCHECK_EQ(num_discovery_sessions_, 0);
@@ -1534,7 +1553,8 @@ void BluetoothAdapterBlueZ::OnStartDiscoveryError(
   // changing to false and then back to true. In this case, report success.
   if (IsPresent() && error_name == bluetooth_device::kErrorInProgress &&
       IsDiscovering()) {
-    VLOG(1) << "Discovery previously initiated. Reporting success.";
+    BLUETOOTH_LOG(DEBUG)
+        << "Discovery previously initiated. Reporting success.";
     num_discovery_sessions_++;
     callback.Run();
   } else {
@@ -1547,7 +1567,7 @@ void BluetoothAdapterBlueZ::OnStartDiscoveryError(
 
 void BluetoothAdapterBlueZ::OnStopDiscovery(const base::Closure& callback) {
   // Report success on the original request and decrement the count.
-  VLOG(1) << __func__;
+  BLUETOOTH_LOG(EVENT) << __func__;
   DCHECK(discovery_request_pending_);
   DCHECK_EQ(num_discovery_sessions_, 1);
   discovery_request_pending_ = false;
@@ -1564,9 +1584,9 @@ void BluetoothAdapterBlueZ::OnStopDiscoveryError(
     const DiscoverySessionErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << object_path_.value()
-               << ": Failed to stop discovery: " << error_name << ": "
-               << error_message;
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to stop discovery: " << error_name << ": "
+                       << error_message;
 
   // Failed to stop discovery. This can only happen if the count is at 1.
   DCHECK(discovery_request_pending_);
@@ -1597,8 +1617,8 @@ void BluetoothAdapterBlueZ::OnPreSetDiscoveryFilterError(
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback,
     UMABluetoothDiscoverySessionOutcome outcome) {
-  LOG(WARNING) << object_path_.value()
-               << ": Failed to pre set discovery filter.";
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to pre set discovery filter.";
 
   // Failed to start discovery. This can only happen if the count is at 0.
   DCHECK_EQ(num_discovery_sessions_, 0);
@@ -1615,7 +1635,7 @@ void BluetoothAdapterBlueZ::OnSetDiscoveryFilter(
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
   // Report success on the original request and increment the count.
-  VLOG(1) << __func__;
+  BLUETOOTH_LOG(EVENT) << __func__;
   if (IsPresent()) {
     callback.Run();
   } else {
@@ -1628,9 +1648,9 @@ void BluetoothAdapterBlueZ::OnSetDiscoveryFilterError(
     const DiscoverySessionErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << object_path_.value()
-               << ": Failed to set discovery filter: " << error_name << ": "
-               << error_message;
+  BLUETOOTH_LOG(ERROR) << object_path_.value()
+                       << ": Failed to set discovery filter: " << error_name
+                       << ": " << error_message;
 
   UMABluetoothDiscoverySessionOutcome outcome =
       TranslateDiscoveryErrorToUMA(error_name);
@@ -1649,7 +1669,7 @@ void BluetoothAdapterBlueZ::OnSetDiscoveryFilterError(
 
 void BluetoothAdapterBlueZ::ProcessQueuedDiscoveryRequests() {
   while (!discovery_request_queue_.empty()) {
-    VLOG(1) << "Process queued discovery request.";
+    BLUETOOTH_LOG(EVENT) << "Process queued discovery request.";
     DiscoveryParamTuple params = discovery_request_queue_.front();
     discovery_request_queue_.pop();
     AddDiscoverySession(std::get<0>(params), std::get<1>(params),
@@ -1721,8 +1741,8 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
     const ServiceRecordErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  VLOG(1) << "Creating service record failed: error: " << error_name << " - "
-          << error_message;
+  BLUETOOTH_LOG(EVENT) << "Creating service record failed: error: "
+                       << error_name << " - " << error_message;
 
   BluetoothServiceRecordBlueZ::ErrorCode code =
       BluetoothServiceRecordBlueZ::ErrorCode::UNKNOWN;
