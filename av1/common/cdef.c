@@ -323,12 +323,12 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             cm,
             &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER + cstart],
             OD_FILT_BSTRIDE, xd->plane[pli].dst.buf,
-            (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr, coffset + cstart,
+            (MAX_MIB_SIZE << mi_high_l2[pli]) * sbr, coffset + cstart,
             xd->plane[pli].dst.stride, rend, cend - cstart);
         if (!prev_row_dering[sbc]) {
           copy_sb8_16(cm, &src[OD_FILT_HBORDER], OD_FILT_BSTRIDE,
                       xd->plane[pli].dst.buf,
-                      (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr - OD_FILT_VBORDER,
+                      (MAX_MIB_SIZE << mi_high_l2[pli]) * sbr - OD_FILT_VBORDER,
                       coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
                       hsize);
         } else if (sbr > 0) {
@@ -340,7 +340,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         }
         if (!prev_row_dering[sbc - 1]) {
           copy_sb8_16(cm, src, OD_FILT_BSTRIDE, xd->plane[pli].dst.buf,
-                      (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr - OD_FILT_VBORDER,
+                      (MAX_MIB_SIZE << mi_high_l2[pli]) * sbr - OD_FILT_VBORDER,
                       coffset - OD_FILT_HBORDER, xd->plane[pli].dst.stride,
                       OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else if (sbr > 0 && sbc > 0) {
@@ -352,9 +352,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     OD_DERING_VERY_LARGE);
         }
         if (!prev_row_dering[sbc + 1]) {
-          copy_sb8_16(cm, &src[OD_FILT_HBORDER + (nhb << mi_high_l2[pli])],
+          copy_sb8_16(cm, &src[OD_FILT_HBORDER + (nhb << mi_wide_l2[pli])],
                       OD_FILT_BSTRIDE, xd->plane[pli].dst.buf,
-                      (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr - OD_FILT_VBORDER,
+                      (MAX_MIB_SIZE << mi_high_l2[pli]) * sbr - OD_FILT_VBORDER,
                       coffset + hsize, xd->plane[pli].dst.stride,
                       OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else if (sbr > 0 && sbc < nhsb - 1) {
@@ -377,7 +377,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                   rend + OD_FILT_VBORDER, OD_FILT_HBORDER);
         copy_sb8_16(
             cm, &linebuf[pli][coffset], stride, xd->plane[pli].dst.buf,
-            (MAX_MIB_SIZE << mi_wide_l2[pli]) * (sbr + 1) - OD_FILT_VBORDER,
+            (MAX_MIB_SIZE << mi_high_l2[pli]) * (sbr + 1) - OD_FILT_VBORDER,
             coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER, hsize);
 
         if (level == 0 && clpf_strength == 0) continue;
@@ -405,7 +405,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               (uint8_t *)&CONVERT_TO_SHORTPTR(
                   xd->plane[pli]
                       .dst.buf)[xd->plane[pli].dst.stride *
-                                    (MAX_MIB_SIZE * sbr << mi_wide_l2[pli]) +
+                                    (MAX_MIB_SIZE * sbr << mi_high_l2[pli]) +
                                 (sbc * MAX_MIB_SIZE << mi_wide_l2[pli])],
               xd->plane[pli].dst.stride, dst,
               &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
@@ -415,7 +415,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #endif
           od_dering(&xd->plane[pli]
                          .dst.buf[xd->plane[pli].dst.stride *
-                                      (MAX_MIB_SIZE * sbr << mi_wide_l2[pli]) +
+                                      (MAX_MIB_SIZE * sbr << mi_high_l2[pli]) +
                                   (sbc * MAX_MIB_SIZE << mi_wide_l2[pli])],
                     xd->plane[pli].dst.stride, dst,
                     &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
