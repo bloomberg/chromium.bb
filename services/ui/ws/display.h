@@ -50,8 +50,7 @@ class DisplayTestApi;
 
 // Displays manages the state associated with a single display. Display has a
 // single root window whose children are the roots for a per-user
-// WindowManager. Display is configured in two distinct
-// ways:
+// WindowManager. Display is configured in two distinct ways:
 // . with a DisplayBinding. In this mode there is only ever one WindowManager
 //   for the display, which comes from the client that created the
 //   Display.
@@ -145,6 +144,10 @@ class Display : public PlatformDisplayDelegate,
 
   // Called just before |tree| is destroyed.
   void OnWillDestroyTree(WindowTree* tree);
+
+  // Removes |display_root| from internal maps. This called prior to
+  // |display_root| being destroyed.
+  void RemoveWindowManagerDisplayRoot(WindowManagerDisplayRoot* display_root);
 
   void UpdateNativeCursor(mojom::CursorType cursor_id);
 

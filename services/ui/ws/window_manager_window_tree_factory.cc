@@ -26,14 +26,21 @@ WindowManagerWindowTreeFactory::~WindowManagerWindowTreeFactory() {}
 
 void WindowManagerWindowTreeFactory::CreateWindowTree(
     mojom::WindowTreeRequest window_tree_request,
-    mojom::WindowTreeClientPtr window_tree_client) {
+    mojom::WindowTreeClientPtr window_tree_client,
+    bool automatically_create_display_roots) {
+  if (window_tree_) {
+    DVLOG(1) << "CreateWindowTree() called more than once.";
+    return;
+  }
+
   // CreateWindowTree() can only be called once, so there is no reason to keep
   // the binding around.
   if (binding_.is_bound())
     binding_.Close();
 
   SetWindowTree(GetWindowServer()->CreateTreeForWindowManager(
-      user_id_, std::move(window_tree_request), std::move(window_tree_client)));
+      user_id_, std::move(window_tree_request), std::move(window_tree_client),
+      automatically_create_display_roots));
 }
 
 WindowManagerWindowTreeFactory::WindowManagerWindowTreeFactory(
@@ -42,8 +49,7 @@ WindowManagerWindowTreeFactory::WindowManagerWindowTreeFactory(
     : window_manager_window_tree_factory_set_(
           window_manager_window_tree_factory_set),
       user_id_(user_id),
-      binding_(this),
-      window_tree_(nullptr) {}
+      binding_(this) {}
 
 WindowServer* WindowManagerWindowTreeFactory::GetWindowServer() {
   return window_manager_window_tree_factory_set_->window_server();

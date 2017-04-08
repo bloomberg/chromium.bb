@@ -186,6 +186,18 @@ void Display::OnWillDestroyTree(WindowTree* tree) {
   }
 }
 
+void Display::RemoveWindowManagerDisplayRoot(
+    WindowManagerDisplayRoot* display_root) {
+  for (auto it = window_manager_display_root_map_.begin();
+       it != window_manager_display_root_map_.end(); ++it) {
+    if (it->second == display_root) {
+      window_manager_display_root_map_.erase(it);
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
 void Display::UpdateNativeCursor(mojom::CursorType cursor_id) {
   if (cursor_id != last_cursor_) {
     platform_display_->SetCursorById(cursor_id);

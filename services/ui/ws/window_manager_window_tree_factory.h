@@ -34,7 +34,8 @@ class WindowManagerWindowTreeFactory
 
   // mojom::WindowManagerWindowTreeFactory:
   void CreateWindowTree(mojom::WindowTreeRequest window_tree_request,
-                        mojom::WindowTreeClientPtr window_tree_client) override;
+                        mojom::WindowTreeClientPtr window_tree_client,
+                        bool window_manager_creates_roots) override;
 
  private:
   // Used by tests.
@@ -50,7 +51,7 @@ class WindowManagerWindowTreeFactory
   mojo::Binding<mojom::WindowManagerWindowTreeFactory> binding_;
 
   // Owned by WindowServer.
-  WindowTree* window_tree_;
+  WindowTree* window_tree_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactory);
 };

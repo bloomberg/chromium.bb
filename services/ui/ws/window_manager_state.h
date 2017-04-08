@@ -78,6 +78,9 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   void AddSystemModalWindow(ServerWindow* window);
 
+  // Deletes the WindowManagerDisplayRoot whose root is |display_root|.
+  void DeleteWindowManagerDisplayRoot(ServerWindow* display_root);
+
   // Returns the ServerWindow corresponding to an orphaned root with the
   // specified id. See |orphaned_window_manager_display_roots_| for details on
   // what on orphaned root is.

@@ -127,6 +127,11 @@ class WindowTreeTestApi {
   void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
+  bool ProcessSetDisplayRoot(int64_t display_id,
+                             const ClientWindowId& client_window_id) {
+    return tree_->ProcessSetDisplayRoot(display_id, client_window_id);
+  }
+
  private:
   WindowTree* tree_;
 
@@ -227,6 +232,11 @@ class WindowManagerStateTestApi {
                                           : nullptr;
   }
 
+  const std::vector<std::unique_ptr<WindowManagerDisplayRoot>>&
+  window_manager_display_roots() const {
+    return wms_->window_manager_display_roots_;
+  }
+
  private:
   WindowManagerState* wms_;
 
@@ -257,8 +267,11 @@ class DragControllerTestApi {
 // Factory that always embeds the new WindowTree as the root user id.
 class TestDisplayBinding : public DisplayBinding {
  public:
-  explicit TestDisplayBinding(WindowServer* window_server)
-      : window_server_(window_server) {}
+  explicit TestDisplayBinding(WindowServer* window_server,
+                              bool automatically_create_display_roots = true)
+      : window_server_(window_server),
+        automatically_create_display_roots_(
+            automatically_create_display_roots) {}
   ~TestDisplayBinding() override {}
 
  private:
@@ -266,6 +279,7 @@ class TestDisplayBinding : public DisplayBinding {
   WindowTree* CreateWindowTree(ServerWindow* root) override;
 
   WindowServer* window_server_;
+  const bool automatically_create_display_roots_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayBinding);
 };
@@ -293,12 +307,8 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 
 class TestWindowManager : public mojom::WindowManager {
  public:
-  TestWindowManager()
-      : got_create_top_level_window_(false),
-        change_id_(0u),
-        on_accelerator_called_(false),
-        on_accelerator_id_(0u) {}
-  ~TestWindowManager() override {}
+  TestWindowManager();
+  ~TestWindowManager() override;
 
   bool did_call_create_top_level_window(uint32_t* change_id) {
     if (!got_create_top_level_window_)
@@ -320,16 +330,18 @@ class TestWindowManager : public mojom::WindowManager {
   bool got_display_removed() const { return got_display_removed_; }
   int64_t display_removed_id() const { return display_removed_id_; }
   bool on_set_modal_type_called() { return on_set_modal_type_called_; }
+  int connect_count() const { return connect_count_; }
+  int display_added_count() const { return display_added_count_; }
 
  private:
   // WindowManager:
-  void OnConnect(uint16_t client_id) override {}
+  void OnConnect(uint16_t client_id) override;
   void WmNewDisplayAdded(
       const display::Display& display,
       ui::mojom::WindowDataPtr root,
       bool drawn,
       const cc::FrameSinkId& frame_sink_id,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {}
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override {}
   void WmSetBounds(uint32_t change_id,
@@ -372,14 +384,17 @@ class TestWindowManager : public mojom::WindowManager {
   bool on_perform_move_loop_called_ = false;
   bool on_set_modal_type_called_ = false;
 
-  bool got_create_top_level_window_;
-  uint32_t change_id_;
+  bool got_create_top_level_window_ = false;
+  uint32_t change_id_ = 0u;
 
-  bool on_accelerator_called_;
-  uint32_t on_accelerator_id_;
+  bool on_accelerator_called_ = false;
+  uint32_t on_accelerator_id_ = 0u;
 
   bool got_display_removed_ = false;
   int64_t display_removed_id_ = 0;
+
+  int connect_count_ = 0;
+  int display_added_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };
@@ -618,7 +633,8 @@ class WindowServerTestHelper {
 // of ServerWindow objects.
 class WindowEventTargetingHelper {
  public:
-  WindowEventTargetingHelper();
+  explicit WindowEventTargetingHelper(
+      bool automatically_create_display_roots = true);
   ~WindowEventTargetingHelper();
 
   // Creates |window| as an embeded window of the primary tree. This window is a
@@ -667,7 +683,9 @@ class WindowEventTargetingHelper {
 
 // Adds a new WM to |window_server| for |user_id|. Creates
 // WindowManagerWindowTreeFactory and associated WindowTree for the WM.
-void AddWindowManager(WindowServer* window_server, const UserId& user_id);
+void AddWindowManager(WindowServer* window_server,
+                      const UserId& user_id,
+                      bool automatically_create_display_roots = true);
 
 // Create a new Display object with specified origin, pixel size and device
 // scale factor. The bounds size is computed based on the pixel size and device
@@ -692,7 +710,8 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
 
 // Creates a new visible window as a child of the single root of |tree|.
 // |client_id| is set to the ClientWindowId of the new window.
-ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id);
+ServerWindow* NewWindowInTree(WindowTree* tree,
+                              ClientWindowId* client_id = nullptr);
 ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
                                         ServerWindow* parent,
                                         ClientWindowId* client_id = nullptr);

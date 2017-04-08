@@ -203,11 +203,28 @@ WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
       root, service_manager::mojom::kRootUserID,
       ui::mojom::WindowTreeClientPtr(), embed_flags,
       base::WrapUnique(new WindowManagerAccessPolicy));
-  tree->ConfigureWindowManager();
+  tree->ConfigureWindowManager(automatically_create_display_roots_);
   return tree;
 }
 
 // TestWindowManager ----------------------------------------------------------
+
+TestWindowManager::TestWindowManager() {}
+
+TestWindowManager::~TestWindowManager() {}
+
+void TestWindowManager::OnConnect(uint16_t client_id) {
+  connect_count_++;
+}
+
+void TestWindowManager::WmNewDisplayAdded(
+    const display::Display& display,
+    ui::mojom::WindowDataPtr root,
+    bool drawn,
+    const cc::FrameSinkId& frame_sink_id,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+  display_added_count_++;
+}
 
 void TestWindowManager::WmDisplayRemoved(int64_t display_id) {
   got_display_removed_ = true;
@@ -526,9 +543,11 @@ WindowServerTestHelper::~WindowServerTestHelper() {
 
 // WindowEventTargetingHelper ------------------------------------------------
 
-WindowEventTargetingHelper::WindowEventTargetingHelper() {
+WindowEventTargetingHelper::WindowEventTargetingHelper(
+    bool automatically_create_display_roots) {
   display_ = new Display(window_server());
-  display_binding_ = new TestDisplayBinding(window_server());
+  display_binding_ = new TestDisplayBinding(window_server(),
+                                            automatically_create_display_roots);
   display_->Init(display::ViewportMetrics(),
                  base::WrapUnique(display_binding_));
   wm_client_ = ws_test_helper_.window_server_delegate()->last_client();
@@ -603,10 +622,12 @@ void WindowEventTargetingHelper::SetTaskRunner(
 
 // ----------------------------------------------------------------------------
 
-void AddWindowManager(WindowServer* window_server, const UserId& user_id) {
+void AddWindowManager(WindowServer* window_server,
+                      const UserId& user_id,
+                      bool automatically_create_display_roots) {
   window_server->window_manager_window_tree_factory_set()
       ->Add(user_id, nullptr)
-      ->CreateWindowTree(nullptr, nullptr);
+      ->CreateWindowTree(nullptr, nullptr, automatically_create_display_roots);
 }
 
 display::Display MakeDisplay(int origin_x,

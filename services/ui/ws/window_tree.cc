@@ -101,8 +101,10 @@ WindowTree::~WindowTree() {
   // We alert the WindowManagerState that we're destroying this state here
   // because WindowManagerState would attempt to use things that wouldn't have
   // been cleaned up by OnWindowDestroyingTreeImpl().
-  if (window_manager_state_)
+  if (window_manager_state_) {
     window_manager_state_->OnWillDestroyTree(this);
+    window_manager_state_.reset();
+  }
 }
 
 void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
@@ -134,7 +136,8 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
                     root->frame_sink_id(), root->current_local_surface_id());
 }
 
-void WindowTree::ConfigureWindowManager() {
+void WindowTree::ConfigureWindowManager(
+    bool automatically_create_display_roots) {
   // ConfigureWindowManager() should be called early on, before anything
   // else. |waiting_for_top_level_window_info_| must be null as if
   // |waiting_for_top_level_window_info_| is non-null it means we're about to
@@ -142,6 +145,7 @@ void WindowTree::ConfigureWindowManager() {
   // TODO(sky): DCHECK temporary until 626869 is sorted out.
   DCHECK(!waiting_for_top_level_window_info_);
   DCHECK(!window_manager_internal_);
+  automatically_create_display_roots_ = automatically_create_display_roots;
   window_manager_internal_ = binding_->GetWindowManager();
   window_manager_internal_->OnConnect(id_);
   window_manager_state_ = base::MakeUnique<WindowManagerState>(this);
@@ -204,6 +208,10 @@ void WindowTree::PrepareForWindowServerShutdown() {
 }
 
 void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
+  if (!automatically_create_display_roots_)
+    return;
+
+  DCHECK(automatically_create_display_roots_);
   DCHECK(window_manager_internal_);
   const ClientWindowId client_window_id(WindowIdToTransportId(root->id()));
   DCHECK_EQ(0u, client_id_to_window_id_map_.count(client_window_id));
@@ -253,6 +261,52 @@ void WindowTree::OnWmMoveDragImageAck() {
   } else {
     drag_move_state_.reset();
   }
+}
+
+bool WindowTree::ProcessSetDisplayRoot(int64_t display_id,
+                                       const ClientWindowId& client_window_id) {
+  DCHECK(window_manager_state_);  // Only called for window manager.
+  Display* display =
+      window_server_->display_manager()->GetDisplayById(display_id);
+  if (!display) {
+    DVLOG(1) << "SetDisplayRoot called with unknown display " << display_id;
+    return false;
+  }
+
+  if (automatically_create_display_roots_) {
+    DVLOG(1) << "SetDisplayRoot is only applicable when "
+             << "automatically_create_display_roots is false";
+    return false;
+  }
+
+  ServerWindow* window = GetWindowByClientId(client_window_id);
+  // The window must not have a parent.
+  if (!window || window->parent()) {
+    DVLOG(1) << "SetDisplayRoot called with invalid window id "
+             << client_window_id.id;
+    return false;
+  }
+
+  WindowManagerDisplayRoot* display_root =
+      display->GetWindowManagerDisplayRootForUser(
+          window_manager_state_->user_id());
+  DCHECK(display_root);
+  if (!display_root->root()->children().empty()) {
+    DVLOG(1) << "SetDisplayRoot called more than once";
+    return false;
+  }
+
+  if (base::ContainsValue(roots_, window)) {
+    DVLOG(1) << "SetDisplayRoot called with existing root";
+    return false;
+  }
+
+  // NOTE: this doesn't resize the window in anyway. We assume the client takes
+  // care of any modifications it needs to do.
+  roots_.insert(window);
+  Operation op(this, window_server_, OperationType::ADD_WINDOW);
+  display_root->root()->Add(window);
+  return true;
 }
 
 bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
@@ -596,7 +650,9 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
 
 void WindowTree::OnDisplayDestroying(int64_t display_id) {
   DCHECK(window_manager_internal_);
-  window_manager_internal_->WmDisplayRemoved(display_id);
+  if (automatically_create_display_roots_)
+    window_manager_internal_->WmDisplayRemoved(display_id);
+  // For the else case the client should detect removal directly.
 }
 
 void WindowTree::ClientJankinessChanged(WindowTree* tree) {
@@ -1044,11 +1100,19 @@ void WindowTree::RemoveRoot(ServerWindow* window, RemoveRootReason reason) {
   DCHECK(roots_.count(window) > 0);
   roots_.erase(window);
 
-  const ClientWindowId client_window_id(ClientWindowIdForWindow(window));
-
-  // No need to do anything if we created the window.
-  if (window->id().client_id == id_)
+  if (window->id().client_id == id_) {
+    // This cllient created the window. If this client is the window manager and
+    // display roots are manually created, then |window| is a display root and
+    // needs be cleaned.
+    if (window_manager_state_ && !automatically_create_display_roots_) {
+      // The window manager is asking to delete the root it created.
+      window_manager_state_->DeleteWindowManagerDisplayRoot(window->parent());
+      DeleteWindowImpl(this, window);
+    }
     return;
+  }
+
+  const ClientWindowId client_window_id(ClientWindowIdForWindow(window));
 
   if (reason == RemoveRootReason::EMBED) {
     client()->OnUnembed(client_window_id.id);
@@ -2039,6 +2103,12 @@ void WindowTree::SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) {
     return;
   }
   window->set_extended_hit_test_region(hit_area);
+}
+
+void WindowTree::SetDisplayRoot(int64_t display_id,
+                                Id window_id,
+                                const SetDisplayRootCallback& callback) {
+  callback.Run(ProcessSetDisplayRoot(display_id, ClientWindowId(window_id)));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

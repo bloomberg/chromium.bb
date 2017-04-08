@@ -278,14 +278,16 @@ void WindowTreeClient::ConnectViaWindowTreeFactory() {
   SetWindowTree(std::move(window_tree));
 }
 
-void WindowTreeClient::ConnectAsWindowManager() {
+void WindowTreeClient::ConnectAsWindowManager(
+    bool automatically_create_display_roots) {
   DCHECK(window_manager_delegate_);
 
   ui::mojom::WindowManagerWindowTreeFactoryPtr factory;
   connector_->BindInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(MakeRequest(&window_tree),
-                            binding_.CreateInterfacePtrAndBind());
+                            binding_.CreateInterfacePtrAndBind(),
+                            automatically_create_display_roots);
   SetWindowTree(std::move(window_tree));
 }
 

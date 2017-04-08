@@ -1505,6 +1505,85 @@ TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
   EXPECT_TRUE(client->tracker()->changes()->empty());
 }
 
+// Used to test the window manager configured to manually create displays roots.
+class WindowTreeManualDisplayTest : public testing::Test {
+ public:
+  WindowTreeManualDisplayTest() {}
+  ~WindowTreeManualDisplayTest() override {}
+
+  WindowServer* window_server() { return ws_test_helper_.window_server(); }
+  DisplayManager* display_manager() {
+    return window_server()->display_manager();
+  }
+  TestWindowServerDelegate* window_server_delegate() {
+    return ws_test_helper_.window_server_delegate();
+  }
+  TestScreenManager& screen_manager() { return screen_manager_; }
+
+ protected:
+  // testing::Test:
+  void SetUp() override {
+    screen_manager_.Init(window_server()->display_manager());
+    window_server()->user_id_tracker()->AddUserId(kTestUserId1);
+  }
+
+ private:
+  WindowServerTestHelper ws_test_helper_;
+  TestScreenManager screen_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeManualDisplayTest);
+};
+
+TEST_F(WindowTreeManualDisplayTest, ClientCreatesDisplayRoot) {
+  const bool automatically_create_display_roots = false;
+  AddWindowManager(window_server(), kTestUserId1,
+                   automatically_create_display_roots);
+  const int64_t display_id =
+      screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
+  WindowManagerState* window_manager_state =
+      window_server()->GetWindowManagerStateForUser(kTestUserId1);
+  ASSERT_TRUE(window_manager_state);
+  WindowTree* window_manager_tree = window_manager_state->window_tree();
+  EXPECT_TRUE(window_manager_tree->roots().empty());
+  TestWindowManager* test_window_manager =
+      window_server_delegate()->last_binding()->window_manager();
+  EXPECT_EQ(1, test_window_manager->connect_count());
+  EXPECT_EQ(0, test_window_manager->display_added_count());
+
+  // Add another display and make sure WindowManager is not updated.
+  screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
+  EXPECT_EQ(0, test_window_manager->display_added_count());
+
+  // Create a window for the windowmanager and set it as the root.
+  ClientWindowId display_root_id = BuildClientWindowId(window_manager_tree, 10);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root =
+      window_manager_tree->GetWindowByClientId(display_root_id);
+  ASSERT_TRUE(display_root);
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display_id, display_root_id));
+  EXPECT_TRUE(display_root->parent());
+  EXPECT_TRUE(window_server_delegate()
+                  ->last_binding()
+                  ->client()
+                  ->tracker()
+                  ->changes()
+                  ->empty());
+  ASSERT_EQ(1u, window_manager_tree->roots().size());
+  EXPECT_EQ(display_root, *window_manager_tree->roots().begin());
+  ASSERT_EQ(2u, WindowManagerStateTestApi(window_manager_state)
+                    .window_manager_display_roots()
+                    .size());
+
+  // Delete the root, which should delete the WindowManagerDisplayRoot.
+  EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id));
+  ASSERT_TRUE(window_manager_tree->roots().empty());
+  ASSERT_EQ(1u, WindowManagerStateTestApi(window_manager_state)
+                    .window_manager_display_roots()
+                    .size());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

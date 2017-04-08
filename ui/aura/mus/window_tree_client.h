@@ -113,7 +113,8 @@ class AURA_EXPORT WindowTreeClient
   void ConnectViaWindowTreeFactory();
 
   // Establishes the connection by way of WindowManagerWindowTreeFactory.
-  void ConnectAsWindowManager();
+  // See mojom for details on |automatically_create_display_roots|.
+  void ConnectAsWindowManager(bool automatically_create_display_roots = true);
 
   service_manager::Connector* connector() { return connector_; }
   ui::Gpu* gpu() { return gpu_.get(); }

@@ -29,7 +29,7 @@ class WindowManagerDisplayRoot;
 class WindowServer;
 
 // DisplayManager manages the set of Displays. DisplayManager distinguishes
-// between displays that do yet have an accelerated widget (pending), vs
+// between displays that do not yet have an accelerated widget (pending), vs
 // those that do.
 class DisplayManager : public UserIdTrackerObserver,
                        public display::ScreenManagerDelegate {

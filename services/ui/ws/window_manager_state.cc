@@ -137,8 +137,10 @@ WindowManagerState::~WindowManagerState() {
   for (auto& display_root : window_manager_display_roots_)
     display_root->display()->OnWillDestroyTree(window_tree_);
 
-  for (auto& display_root : orphaned_window_manager_display_roots_)
-    display_root->root()->RemoveObserver(this);
+  if (window_tree_->automatically_create_display_roots()) {
+    for (auto& display_root : orphaned_window_manager_display_roots_)
+      display_root->root()->RemoveObserver(this);
+  }
 }
 
 void WindowManagerState::SetFrameDecorationValues(
@@ -210,6 +212,28 @@ void WindowManagerState::EndDragDrop() {
 
 void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
   event_dispatcher_.AddSystemModalWindow(window);
+}
+
+void WindowManagerState::DeleteWindowManagerDisplayRoot(
+    ServerWindow* display_root) {
+  for (auto iter = orphaned_window_manager_display_roots_.begin();
+       iter != orphaned_window_manager_display_roots_.end(); ++iter) {
+    if ((*iter)->root() == display_root) {
+      orphaned_window_manager_display_roots_.erase(iter);
+      return;
+    }
+  }
+
+  for (auto iter = window_manager_display_roots_.begin();
+       iter != window_manager_display_roots_.end(); ++iter) {
+    if ((*iter)->root() == display_root) {
+      (*iter)->display()->RemoveWindowManagerDisplayRoot((*iter).get());
+      window_manager_display_roots_.erase(iter);
+      return;
+    }
+  }
+
+  NOTREACHED();
 }
 
 const UserId& WindowManagerState::user_id() const {
@@ -356,14 +380,15 @@ void WindowManagerState::OnDisplayDestroying(Display* display) {
   for (auto iter = window_manager_display_roots_.begin();
        iter != window_manager_display_roots_.end(); ++iter) {
     if ((*iter)->display() == display) {
-      (*iter)->root()->AddObserver(this);
+      if (window_tree_->automatically_create_display_roots())
+        (*iter)->root()->AddObserver(this);
       orphaned_window_manager_display_roots_.push_back(std::move(*iter));
       window_manager_display_roots_.erase(iter);
       window_tree_->OnDisplayDestroying(display->GetId());
+      orphaned_window_manager_display_roots_.back()->display_ = nullptr;
       return;
     }
   }
-  NOTREACHED();
 }
 
 void WindowManagerState::SetAllRootWindowsVisible(bool value) {

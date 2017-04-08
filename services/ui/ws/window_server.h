@@ -91,7 +91,8 @@ class WindowServer : public ServerWindowDelegate,
   WindowTree* CreateTreeForWindowManager(
       const UserId& user_id,
       mojom::WindowTreeRequest window_tree_request,
-      mojom::WindowTreeClientPtr window_tree_client);
+      mojom::WindowTreeClientPtr window_tree_client,
+      bool automatically_create_display_roots);
   // Invoked when a WindowTree's connection encounters an error.
   void DestroyTree(WindowTree* tree);
 

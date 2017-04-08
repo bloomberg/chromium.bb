@@ -78,8 +78,13 @@ class WindowTree : public mojom::WindowTree,
   void Init(std::unique_ptr<WindowTreeBinding> binding,
             mojom::WindowTreePtr tree);
 
-  // Called if this WindowTree hosts a WindowManager.
-  void ConfigureWindowManager();
+  // Called if this WindowTree hosts a WindowManager. See mojom for details
+  // on |automatically_create_display_roots|.
+  void ConfigureWindowManager(bool automatically_create_display_roots);
+
+  bool automatically_create_display_roots() const {
+    return automatically_create_display_roots_;
+  }
 
   ClientSpecificId id() const { return id_; }
 
@@ -378,6 +383,10 @@ class WindowTree : public mojom::WindowTree,
   // waiting for the last move to be acknowledged.
   void OnWmMoveDragImageAck();
 
+  // Called from SetDisplayRoot(), see mojom for details.
+  bool ProcessSetDisplayRoot(int64_t display_id,
+                             const ClientWindowId& client_window_id);
+
   // WindowTree:
   void NewWindow(uint32_t change_id,
                  Id transport_window_id,
@@ -487,6 +496,9 @@ class WindowTree : public mojom::WindowTree,
   void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;
   void SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) override;
+  void SetDisplayRoot(int64_t display_id,
+                      Id window_id,
+                      const SetDisplayRootCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;
@@ -589,10 +601,14 @@ class WindowTree : public mojom::WindowTree,
 
   std::queue<std::unique_ptr<TargetedEvent>> event_queue_;
 
+  // TODO(sky): move all window manager specific state into struct to make it
+  // clear what applies only to the window manager.
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManagerClient>>
       window_manager_internal_client_binding_;
   mojom::WindowManager* window_manager_internal_;
   std::unique_ptr<WindowManagerState> window_manager_state_;
+  // See mojom for details.
+  bool automatically_create_display_roots_ = true;
 
   std::unique_ptr<WaitingForTopLevelWindowInfo>
       waiting_for_top_level_window_info_;

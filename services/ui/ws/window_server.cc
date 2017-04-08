@@ -133,7 +133,8 @@ void WindowServer::AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
 WindowTree* WindowServer::CreateTreeForWindowManager(
     const UserId& user_id,
     mojom::WindowTreeRequest window_tree_request,
-    mojom::WindowTreeClientPtr window_tree_client) {
+    mojom::WindowTreeClientPtr window_tree_client,
+    bool automatically_create_display_roots) {
   std::unique_ptr<WindowTree> window_tree(new WindowTree(
       this, user_id, nullptr, base::WrapUnique(new WindowManagerAccessPolicy)));
   std::unique_ptr<WindowTreeBinding> window_tree_binding =
@@ -147,7 +148,7 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
   }
   WindowTree* window_tree_ptr = window_tree.get();
   AddTree(std::move(window_tree), std::move(window_tree_binding), nullptr);
-  window_tree_ptr->ConfigureWindowManager();
+  window_tree_ptr->ConfigureWindowManager(automatically_create_display_roots);
   return window_tree_ptr;
 }
 
