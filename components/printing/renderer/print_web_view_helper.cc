@@ -596,8 +596,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
-  std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue());
-  options.reset(new base::DictionaryValue());
+  auto options = base::MakeUnique<base::DictionaryValue>();
   options->SetDouble(kSettingHeaderFooterDate, base::Time::Now().ToJsTime());
   options->SetDouble("width", page_size.width);
   options->SetDouble("height", page_size.height);
@@ -1202,9 +1201,9 @@ void PrintWebViewHelper::PrepareFrameForPreviewDocument() {
   }
 
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
-  prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
+  prep_frame_view_ = base::MakeUnique<PrepareFrameAndViewForPrint>(
       print_params, print_preview_context_.source_frame(),
-      print_preview_context_.source_node(), ignore_css_margins_));
+      print_preview_context_.source_node(), ignore_css_margins_);
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
       base::Bind(&PrintWebViewHelper::OnFramePreparedForPreviewDocument,
@@ -1341,7 +1340,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
   std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new PdfMetafileSkia(PDF_SKIA_DOCUMENT_TYPE));
+    draft_metafile = base::MakeUnique<PdfMetafileSkia>(PDF_SKIA_DOCUMENT_TYPE);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -1830,8 +1829,8 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
-  prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
-      print_params, frame, node, ignore_css_margins_));
+  prep_frame_view_ = base::MakeUnique<PrepareFrameAndViewForPrint>(
+      print_params, frame, node, ignore_css_margins_);
   DCHECK(!print_pages_params_->params.selection_only ||
          print_pages_params_->pages.empty());
   prep_frame_view_->CopySelectionIfNeeded(
@@ -2141,7 +2140,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_.reset(new PdfMetafileSkia(PDF_SKIA_DOCUMENT_TYPE));
+  metafile_ = base::MakeUnique<PdfMetafileSkia>(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile_->Init());
 
   current_page_index_ = 0;
@@ -2323,7 +2322,7 @@ void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
 
 void PrintWebViewHelper::SetPrintPagesParams(
     const PrintMsg_PrintPages_Params& settings) {
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  print_pages_params_ = base::MakeUnique<PrintMsg_PrintPages_Params>(settings);
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
 }
