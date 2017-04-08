@@ -110,7 +110,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 106
+TOTAL_TESTS = 108
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 22 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
@@ -266,6 +266,7 @@ layer at (0,0) size 800x34
     tests.add('passes/test-virtual-passes.html')
     tests.add('passes/virtual_passes/test-virtual-passes.html')
 
+    tests.add('passes_two/test-virtual-passes.html')
     return tests
 
 
@@ -533,6 +534,7 @@ class TestPort(Port):
     def virtual_test_suites(self):
         return [
             VirtualTestSuite(prefix='virtual_passes', base='passes', args=['--virtual-arg']),
+            VirtualTestSuite(prefix='virtual_passes', base='passes_two', args=['--virtual-arg']),
             VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
             VirtualTestSuite(prefix='references_use_default_args', base='passes/reftest.html',
                              args=['--virtual-arg'], references_use_default_args=True),

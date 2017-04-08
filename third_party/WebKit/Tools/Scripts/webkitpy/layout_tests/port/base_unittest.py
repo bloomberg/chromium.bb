@@ -443,9 +443,15 @@ class PortTest(unittest.TestCase):
         self.assertIn('passes/virtual_passes/test-virtual-passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/text.html', tests)
 
+        tests = port.tests(['virtual/virtual_passes/'])
+        self.assertIn('virtual/virtual_passes/passes/test-virtual-passes.html', tests)
+        self.assertIn('virtual/virtual_passes/passes_two/test-virtual-passes.html', tests)
+
         tests = port.tests(['virtual/virtual_passes/passes'])
         self.assertNotIn('passes/text.html', tests)
         self.assertIn('virtual/virtual_passes/passes/test-virtual-passes.html', tests)
+        self.assertNotIn('virtual/virtual_passes/passes_two/test-virtual-passes.html', tests)
+
         self.assertNotIn('passes/test-virtual-passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/test-virtual-virtual/passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/virtual_passes/passes/test-virtual-passes.html', tests)

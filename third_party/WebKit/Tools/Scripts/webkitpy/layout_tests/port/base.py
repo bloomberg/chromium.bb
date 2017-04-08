@@ -38,6 +38,7 @@ import functools
 import json
 import logging
 import optparse
+import os
 import re
 import sys
 
@@ -1492,7 +1493,7 @@ class Port(object):
     def _virtual_tests_matching_paths(self, paths, suites):
         tests = []
         for suite in suites:
-            if any(p.startswith(suite.name) for p in paths):
+            if any(p.startswith(suite.name) for p in paths) or any(suite.name.startswith(os.path.join(p, '')) for p in paths):
                 self._populate_virtual_suite(suite)
             for test in suite.tests:
                 if any(test.startswith(p) for p in paths):
