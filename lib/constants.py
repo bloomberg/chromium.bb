@@ -618,11 +618,12 @@ VALID_BUILD_TYPES = (
 
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
-    'caroline-pre-cq',                # skylake      kernel 3.18      vmtest
+    # TODO(ihf): Make caroline or newer vmtest once crbug.com/708715 is fixed.
+    'caroline-no-vmtest-pre-cq',      # skylake      kernel 3.18
     'daisy_spring-no-vmtest-pre-cq',  # arm          kernel 3.8
     'lumpy-no-vmtest-pre-cq',         # sandybridge  kernel 3.8
     'rambi-no-vmtest-pre-cq',         # baytrail     kernel 4.4
-    'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
+    'samus-pre-cq',                   # broadwell    kernel 3.14      vmtest
     'whirlwind-no-vmtest-pre-cq',     # brillo
     'x86-alex-no-vmtest-pre-cq',      # x86          kernel 3.8
 ]
