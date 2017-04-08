@@ -50,11 +50,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    # TODO(jbauman): Times out on Linux NVIDIA.
-    self.Fail('Pixel_Video_VP9', ['linux', 'nvidia'], bug=704389)
-    # TODO(jbauman): Times out on Pixel C.
-    self.Fail('Pixel_Video_VP9', ['android', 'nvidia'], bug=704389)
-
     # TODO(jbauman): Re-enable when references images created.
     self.Fail('Pixel_DirectComposition_Video_*', ['win'], bug=704389)
 
