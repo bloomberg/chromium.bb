@@ -123,18 +123,18 @@ public class ImeAdapter {
     private boolean mIsConnected;
 
     /**
-     * @param initialConfiguration The initial configuration of the embedder's attached view.
      * @param webContents WebContents instance with which this ImeAdapter is associated.
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
      * @param embedder The view that is used for callbacks from ImeAdapter.
      */
-    public ImeAdapter(Configuration initialConfiguration, WebContents webContents,
-            InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
+    public ImeAdapter(WebContents webContents, InputMethodManagerWrapper wrapper,
+            ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
         // Deep copy newConfig so that we can notice the difference.
-        mCurrentConfig = new Configuration(initialConfiguration);
+        mCurrentConfig = new Configuration(
+                mViewEmbedder.getAttachedView().getResources().getConfiguration());
         // CursorAnchroInfo is supported only after L.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mCursorAnchorInfoController = CursorAnchorInfoController.create(wrapper,

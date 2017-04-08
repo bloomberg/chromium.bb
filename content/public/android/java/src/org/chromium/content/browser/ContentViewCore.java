@@ -482,9 +482,9 @@ public class ContentViewCore
         return mImeAdapter;
     }
 
-    private ImeAdapter createImeAdapter(ViewGroup containerView) {
-        return new ImeAdapter(containerView.getResources().getConfiguration(), mWebContents,
-                new InputMethodManagerWrapper(mContext), new ImeAdapter.ImeAdapterDelegate() {
+    private ImeAdapter createImeAdapter() {
+        return new ImeAdapter(mWebContents, new InputMethodManagerWrapper(mContext),
+                new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent() {
                         mPopupZoomer.hide(true);
@@ -552,6 +552,7 @@ public class ContentViewCore
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             WindowAndroid windowAndroid) {
         mViewAndroidDelegate = viewDelegate;
+        setContainerView(viewDelegate.getContainerView());
         long windowNativePointer = windowAndroid.getNativePointer();
         assert windowNativePointer != 0;
 
@@ -566,20 +567,18 @@ public class ContentViewCore
 
         setContainerViewInternals(internalDispatcher);
 
-        initPopupZoomer(mContext, viewDelegate.getContainerView());
-        mImeAdapter = createImeAdapter(viewDelegate.getContainerView());
+        initPopupZoomer(mContext);
+        mImeAdapter = createImeAdapter();
 
         mSelectionPopupController = new SelectionPopupController(mContext, windowAndroid,
                 webContents, viewDelegate.getContainerView(), mRenderCoordinates);
         mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
-        mSelectionPopupController.setContainerView(viewDelegate.getContainerView());
+        mSelectionPopupController.setContainerView(getContainerView());
 
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
         mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH);
-
-        setContainerView(viewDelegate.getContainerView());
     }
 
     /**
@@ -665,8 +664,6 @@ public class ContentViewCore
             }
 
             mContainerView = containerView;
-            onWindowFocusChanged(mContainerView.hasWindowFocus());
-            onFocusChanged(mContainerView.hasFocus(), true /* hideKeyboardOnBlur */);
             mContainerView.setClickable(true);
             if (mSelectionPopupController != null) {
                 mSelectionPopupController.setContainerView(containerView);
@@ -698,12 +695,12 @@ public class ContentViewCore
     }
 
     @VisibleForTesting
-    void initPopupZoomer(Context context, final ViewGroup containerView) {
+    void initPopupZoomer(Context context) {
         mPopupZoomer = new PopupZoomer(context);
         mPopupZoomer.setOnVisibilityChangedListener(new PopupZoomer.OnVisibilityChangedListener() {
             // mContainerView can change, but this OnVisibilityChangedListener can only be used
             // to add and remove views from the mContainerViewAtCreation.
-            private final ViewGroup mContainerViewAtCreation = containerView;
+            private final ViewGroup mContainerViewAtCreation = mContainerView;
 
             @Override
             public void onPopupZoomerShown(final PopupZoomer zoomer) {
@@ -733,7 +730,7 @@ public class ContentViewCore
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             // mContainerView can change, but this OnTapListener can only be used
             // with the mContainerViewAtCreation.
-            private final ViewGroup mContainerViewAtCreation = containerView;
+            private final ViewGroup mContainerViewAtCreation = mContainerView;
 
             @Override
             public void onResolveTapDisambiguation(
