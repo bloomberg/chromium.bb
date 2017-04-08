@@ -151,9 +151,12 @@ bool MediaQueryEvaluator::eval(
 
   // Iterate over queries, stop if any of them eval to true (OR semantics).
   bool result = false;
-  for (size_t i = 0; i < queries.size() && !result; ++i)
+  for (size_t i = 0; i < queries.size() && !result; ++i) {
+    // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
+    CHECK_EQ(queries.data(), querySet->queryVector().data());
     result = eval(queries[i].get(), viewportDependentMediaQueryResults,
                   deviceDependentMediaQueryResults);
+  }
 
   return result;
 }

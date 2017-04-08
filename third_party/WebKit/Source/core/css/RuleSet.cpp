@@ -329,6 +329,8 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet,
   const HeapVector<Member<StyleRuleImport>>& importRules = sheet->importRules();
   for (unsigned i = 0; i < importRules.size(); ++i) {
     StyleRuleImport* importRule = importRules[i].get();
+    // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
+    CHECK_EQ(importRules.data(), sheet->importRules().data());
     if (importRule->styleSheet() &&
         (!importRule->mediaQueries() ||
          medium.eval(importRule->mediaQueries(),
