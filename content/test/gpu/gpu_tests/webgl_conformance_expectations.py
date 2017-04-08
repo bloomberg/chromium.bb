@@ -596,6 +596,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=678850)
     self.Fail('conformance/attribs/gl-vertexattribpointer.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=678850)
+    self.Fail('conformance/glsl/bugs/' +
+              'varying-arrays-should-not-be-reversed.html',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
 
     # Nexus 5X
     # This one is causing intermittent timeouts on the device, and it
