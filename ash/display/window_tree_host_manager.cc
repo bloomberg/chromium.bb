@@ -771,10 +771,11 @@ void WindowTreeHostManager::PostDisplayConfigurationChange(
        display_manager->active_display_list()) {
     bool output_is_secure =
         !display_manager->IsInMirrorMode() && display.IsInternal();
-    GetAshWindowTreeHostForDisplayId(display.id())
-        ->AsWindowTreeHost()
-        ->compositor()
-        ->SetOutputIsSecure(output_is_secure);
+    ui::Compositor* compositor = GetAshWindowTreeHostForDisplayId(display.id())
+                                     ->AsWindowTreeHost()
+                                     ->compositor();
+    compositor->SetOutputIsSecure(output_is_secure);
+    compositor->ScheduleFullRedraw();
   }
 
   for (auto& observer : observers_)
