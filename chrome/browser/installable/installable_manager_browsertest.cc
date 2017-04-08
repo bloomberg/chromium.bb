@@ -234,9 +234,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckNoManifest) {
   EXPECT_TRUE(tester->manifest_url().is_empty());
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NO_MANIFEST, tester->error_code());
   EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
 }
@@ -258,9 +258,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifest404) {
   EXPECT_FALSE(tester->manifest_url().is_empty());
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(MANIFEST_EMPTY, tester->error_code());
   EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
 }
@@ -280,9 +280,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestOnly) {
 
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
 }
@@ -305,9 +305,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
 }
@@ -331,9 +331,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -354,9 +354,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -378,24 +378,22 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
     EXPECT_EQ(GetStatus(),
               InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
   }
 
-  // Ask for a different size primary icon. This should fail with
-  // START_URL_NOT_VALID since we won't have a cached icon error.
+  // Do not ask for primary icon. This should fail with START_URL_NOT_VALID.
   {
     base::RunLoop run_loop;
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
     InstallableParams params = GetWebAppParams();
-    params.ideal_primary_icon_size_in_px = 96;
-    params.minimum_primary_icon_size_in_px = 96;
+    params.fetch_valid_primary_icon = false;
     RunInstallableManager(tester.get(), params);
     run_loop.Run();
 
@@ -430,9 +428,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestAndIcon) {
 
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -451,9 +449,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestAndIcon) {
 
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_FALSE(tester->badge_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -476,9 +474,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestAndIcon) {
 
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -497,9 +495,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_FALSE(tester->manifest_url().is_empty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
@@ -533,9 +531,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_FALSE(tester->manifest_url().is_empty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
@@ -587,9 +585,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebappInIframe) {
   EXPECT_TRUE(tester->manifest_url().is_empty());
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NO_MANIFEST, tester->error_code());
   EXPECT_EQ(GetStatus(),
             InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
@@ -613,9 +611,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
@@ -632,11 +630,11 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_FALSE(tester->manifest_url().is_empty());
 
-    EXPECT_TRUE(tester->primary_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->primary_icon_url().is_empty());
+    EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_FALSE(tester->is_installable());
     EXPECT_EQ(NO_MATCHING_SERVICE_WORKER, tester->error_code());
     EXPECT_EQ(GetStatus(),
               InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
@@ -659,11 +657,11 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(tester->manifest().IsEmpty());
   EXPECT_FALSE(tester->manifest_url().is_empty());
 
-  EXPECT_TRUE(tester->primary_icon_url().is_empty());
-  EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
   EXPECT_EQ(GetStatus(),
             InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
@@ -686,9 +684,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
   EXPECT_FALSE(tester->primary_icon_url().is_empty());
   EXPECT_NE(nullptr, tester->primary_icon());
   EXPECT_EQ(144, tester->primary_icon()->width());
+  EXPECT_TRUE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_TRUE(tester->is_installable());
   EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   EXPECT_EQ(GetStatus(),
             InstallabilityCheckStatus::COMPLETE_PROGRESSIVE_WEB_APP);
@@ -711,9 +709,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(tester->manifest_url().is_empty());
   EXPECT_TRUE(tester->primary_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->is_installable());
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
-  EXPECT_FALSE(tester->is_installable());
   EXPECT_EQ(NO_ICON_AVAILABLE, tester->error_code());
   EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
 }
@@ -733,9 +731,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_FALSE(tester->manifest_url().is_empty());
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
@@ -756,9 +754,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_FALSE(tester->manifest_url().is_empty());
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
@@ -781,9 +779,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_FALSE(tester->manifest_url().is_empty());
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->primary_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
@@ -800,9 +798,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     // The smaller primary icon requirements should allow this to pass.
     EXPECT_FALSE(tester->manifest_url().is_empty());
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->is_installable());
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->is_installable());
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());

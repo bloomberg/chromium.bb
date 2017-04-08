@@ -373,11 +373,11 @@ void InstallableManager::WorkOnTask() {
 
   if (!manifest_->fetched) {
     FetchManifest();
-  } else if (params.check_installable && !installable_->fetched) {
-    CheckInstallable();
   } else if (params.fetch_valid_primary_icon &&
              !IsIconFetched(ParamsForPrimaryIcon(params))) {
     CheckAndFetchBestIcon(ParamsForPrimaryIcon(params));
+  } else if (params.check_installable && !installable_->fetched) {
+    CheckInstallable();
   } else if (params.fetch_valid_badge_icon &&
              !IsIconFetched(ParamsForBadgeIcon(params))) {
     CheckAndFetchBestIcon(ParamsForBadgeIcon(params));
