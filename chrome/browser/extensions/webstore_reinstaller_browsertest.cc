@@ -76,6 +76,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ASSERT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 
+  // WebstoreReinstaller expects corrupted extension.
+  extension_service()->DisableExtension(kTestExtensionId,
+                                        Extension::DISABLE_CORRUPTED);
+
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_web_contents);
@@ -97,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
 
   // We should have failed, and the old extension should still be present.
   EXPECT_FALSE(last_install_result());
-  extension = registry->enabled_extensions().GetByID(kTestExtensionId);
+  extension = registry->disabled_extensions().GetByID(kTestExtensionId);
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(kExtensionName, extension->name());
 

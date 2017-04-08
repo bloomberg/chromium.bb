@@ -111,6 +111,7 @@
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/mock_external_provider.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -177,6 +178,7 @@ using extensions::ExternalProviderInterface;
 using extensions::FakeSafeBrowsingDatabaseManager;
 using extensions::FeatureSwitch;
 using extensions::Manifest;
+using extensions::MockExternalProvider;
 using extensions::PermissionSet;
 using extensions::TestExtensionSystem;
 using extensions::UnloadedExtensionInfo;
@@ -273,88 +275,6 @@ scoped_refptr<Extension> CreateExtension(const base::string16& name,
 }
 
 }  // namespace
-
-class MockExtensionProvider : public extensions::ExternalProviderInterface {
- public:
-  MockExtensionProvider(
-      VisitorInterface* visitor,
-      Manifest::Location location)
-    : location_(location), visitor_(visitor), visit_count_(0) {
-  }
-
-  ~MockExtensionProvider() override {}
-
-  void UpdateOrAddExtension(const std::string& id,
-                            const std::string& version,
-                            const base::FilePath& path) {
-    extension_map_[id] = std::make_pair(version, path);
-  }
-
-  void RemoveExtension(const std::string& id) {
-    extension_map_.erase(id);
-  }
-
-  // ExternalProvider implementation:
-  void VisitRegisteredExtension() override {
-    visit_count_++;
-    for (DataMap::const_iterator i = extension_map_.begin();
-         i != extension_map_.end(); ++i) {
-      std::unique_ptr<base::Version> version(
-          new base::Version(i->second.first));
-
-      std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
-          i->first, std::move(version), i->second.second, location_,
-          Extension::NO_FLAGS, false, false));
-      visitor_->OnExternalExtensionFileFound(*info);
-    }
-    visitor_->OnExternalProviderReady(this);
-  }
-
-  bool HasExtension(const std::string& id) const override {
-    return extension_map_.find(id) != extension_map_.end();
-  }
-
-  bool GetExtensionDetails(
-      const std::string& id,
-      Manifest::Location* location,
-      std::unique_ptr<base::Version>* version) const override {
-    DataMap::const_iterator it = extension_map_.find(id);
-    if (it == extension_map_.end())
-      return false;
-
-    if (version)
-      version->reset(new base::Version(it->second.first));
-
-    if (location)
-      *location = location_;
-
-    return true;
-  }
-
-  bool IsReady() const override { return true; }
-
-  void ServiceShutdown() override {}
-
-  int visit_count() const { return visit_count_; }
-  void set_visit_count(int visit_count) {
-    visit_count_ = visit_count;
-  }
-
- private:
-  typedef std::map< std::string, std::pair<std::string, base::FilePath> >
-      DataMap;
-  DataMap extension_map_;
-  Manifest::Location location_;
-  VisitorInterface* visitor_;
-
-  // visit_count_ tracks the number of calls to VisitRegisteredExtension().
-  // Mutable because it must be incremented on each call to
-  // VisitRegisteredExtension(), which must be a const method to inherit
-  // from the class being mocked.
-  mutable int visit_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockExtensionProvider);
-};
 
 class MockProviderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
@@ -635,7 +555,7 @@ class ExtensionServiceTest
         .AppendASCII("1.0");
   }
 
-  void TestExternalProvider(MockExtensionProvider* provider,
+  void TestExternalProvider(MockExternalProvider* provider,
                             Manifest::Location location);
 
   // Grants all optional permissions stated in manifest to active permission
@@ -1276,7 +1196,7 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
   // If we don't check whether the extension is loaded before we uninstall it
   // in CheckExternalUninstall, a crash will happen here because we will get or
   // dereference a NULL pointer (extension) inside UninstallExtension.
-  MockExtensionProvider provider(NULL, Manifest::EXTERNAL_REGISTRY);
+  MockExternalProvider provider(NULL, Manifest::EXTERNAL_REGISTRY);
   service()->OnExternalProviderReady(&provider);
 }
 
@@ -3529,8 +3449,8 @@ TEST_F(ExtensionServiceTest, BlockAndUnblockPolicyExtension) {
   }
 
   // Have policy force-install an extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(
       good_crx, "1.0.0.0", data_dir().AppendASCII("good_crx"));
@@ -3744,8 +3664,8 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   }
 
   // Have policy force-install an extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(
       good_crx, "1.0.0.0", data_dir().AppendASCII("good.crx"));
@@ -4000,9 +3920,9 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionConflictsWithForceInstall) {
     pref.AddBlockedPermission("*", "tabs");
   }
 
-  // Use MockExtensionProvider to simulate force installing extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  // Use MockExternalProvider to simulate force installing extension.
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(permissions_blocklist, "1.0", crx_path);
 
@@ -4103,8 +4023,8 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
 
   // Force install another extension with known id and same manifest as 'ext2'.
   std::string ext2_forced = permissions_blocklist;
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(ext2_forced, "2.0", crx_path);
 
@@ -4166,16 +4086,16 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalExtensionAutoAcknowledgement) {
 
   {
     // Register and install an external extension.
-    MockExtensionProvider* provider =
-        new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+    MockExternalProvider* provider =
+        new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
     AddMockExternalProvider(provider);
     provider->UpdateOrAddExtension(
         good_crx, "1.0.0.0", data_dir().AppendASCII("good.crx"));
   }
   {
     // Have policy force-install an extension.
-    MockExtensionProvider* provider = new MockExtensionProvider(
-        service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+    MockExternalProvider* provider =
+        new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
     AddMockExternalProvider(provider);
     provider->UpdateOrAddExtension(
         page_action, "1.0.0.0", data_dir().AppendASCII("page_action.crx"));
@@ -4206,8 +4126,8 @@ TEST_F(ExtensionServiceTest, ExternalExtensionDisabledOnInstallation) {
   InitializeEmptyExtensionService();
 
   // Register and install an external extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);  // Takes ownership.
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
                                  data_dir().AppendASCII("good.crx"));
@@ -4246,8 +4166,8 @@ TEST_F(ExtensionServiceTest, ExternalExtensionIsNotDisabledOnUpdate) {
   InitializeEmptyExtensionService();
 
   // Register and install an external extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
                                  data_dir().AppendASCII("good.crx"));
@@ -5002,8 +4922,8 @@ TEST_F(ExtensionServiceTest, UnpackedValidatesLocales) {
   ASSERT_EQ(0u, loaded_.size());
 }
 
-void ExtensionServiceTest::TestExternalProvider(
-    MockExtensionProvider* provider, Manifest::Location location) {
+void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
+                                                Manifest::Location location) {
   // Verify that starting with no providers loads no extensions.
   service()->Init();
   ASSERT_EQ(0u, loaded_.size());
@@ -5160,8 +5080,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallRegistry) {
   InitializeExtensionServiceWithExtensionsDisabled();
 
   // Now add providers. Extension system takes ownership of the objects.
-  MockExtensionProvider* reg_provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_REGISTRY);
+  MockExternalProvider* reg_provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_REGISTRY);
   AddMockExternalProvider(reg_provider);
   TestExternalProvider(reg_provider, Manifest::EXTERNAL_REGISTRY);
 }
@@ -5171,8 +5091,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallPref) {
   InitializeEmptyExtensionService();
 
   // Now add providers. Extension system takes ownership of the objects.
-  MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* pref_provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
 
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Manifest::EXTERNAL_PREF);
@@ -5189,8 +5109,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
   // browser test ExtensionManagementTest.ExternalUrlUpdate tests that
   // what the visitor does results in an extension being downloaded and
   // installed.
-  MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF_DOWNLOAD);
+  MockExternalProvider* pref_provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Manifest::EXTERNAL_PREF_DOWNLOAD);
 }
@@ -5206,8 +5126,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
   // browser test ExtensionManagementTest.ExternalUrlUpdate tests that
   // what the visitor does results in an extension being downloaded and
   // installed.
-  MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  MockExternalProvider* pref_provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Manifest::EXTERNAL_POLICY_DOWNLOAD);
 }
@@ -5234,8 +5154,8 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
 TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   InitializeEmptyExtensionService();
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   // Verify that starting with no providers loads no extensions.
@@ -6299,8 +6219,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
       FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   service()->external_install_manager()->UpdateExternalExtensionAlert();
@@ -6349,8 +6269,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
       FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   provider->UpdateOrAddExtension(
@@ -6418,8 +6338,8 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalInstallMultiple) {
       FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   provider->UpdateOrAddExtension(
@@ -6467,8 +6387,8 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
       FeatureSwitch::prompt_for_external_extensions(), true);
   InitializeEmptyExtensionService();
 
-  MockExtensionProvider* reg_provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_REGISTRY);
+  MockExternalProvider* reg_provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_REGISTRY);
   AddMockExternalProvider(reg_provider);
 
   std::string extension_info[][3] = {
@@ -6535,8 +6455,8 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   params.is_first_run = false;
   InitializeExtensionService(params);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   std::vector<BubbleErrorsTestData> data;
@@ -6654,8 +6574,8 @@ TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
   params.is_first_run = false;
   InitializeExtensionService(params);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   std::vector<BubbleErrorsTestData> data;
@@ -6758,8 +6678,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
 
@@ -6787,8 +6707,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
 
@@ -6819,8 +6739,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service_, Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
 
@@ -6862,8 +6782,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
           data_dir().AppendASCII("update_from_webstore.pem"),
           crx_path);
 
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service_, Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
 
@@ -6904,8 +6824,8 @@ TEST_F(ExtensionServiceTest,
   InitializeEmptyExtensionService();
 
   // Register and install an external extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  MockExternalProvider* provider =
+      new MockExternalProvider(service(), Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
                                  data_dir().AppendASCII("good.crx"));

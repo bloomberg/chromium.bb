@@ -27,6 +27,8 @@ WebstoreReinstaller::WebstoreReinstaller(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           callback),
       content::WebContentsObserver(web_contents) {
+  DCHECK(ExtensionPrefs::Get(web_contents->GetBrowserContext())
+             ->HasDisableReason(extension_id, Extension::DISABLE_CORRUPTED));
 }
 
 WebstoreReinstaller::~WebstoreReinstaller() {

@@ -60,6 +60,7 @@
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
@@ -75,6 +76,7 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -109,6 +111,10 @@ const char kCannotUpdateSupervisedProfileSettingsError[] =
     "Cannot change settings for a supervised profile.";
 const char kNoOptionsPageForExtensionError[] =
     "Extension does not have an options page.";
+const char kCannotRepairHealthyExtension[] =
+    "Cannot repair a healthy extension.";
+const char kCannotRepairPolicyExtension[] =
+    "Cannot repair a policy-installed extension.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
@@ -151,8 +157,8 @@ void PerformVerificationCheck(content::BrowserContext* context) {
   bool should_do_verification_check = false;
   for (const scoped_refptr<const Extension>& extension : *extensions) {
     if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), context) &&
-        ((prefs->GetDisableReasons(extension->id()) &
-             Extension::DISABLE_NOT_VERIFIED) != 0)) {
+        prefs->HasDisableReason(extension->id(),
+                                Extension::DISABLE_NOT_VERIFIED)) {
       should_do_verification_check = true;
       break;
     }
@@ -1460,6 +1466,21 @@ DeveloperPrivateRepairExtensionFunction::Run() {
   const Extension* extension = GetExtensionById(params->extension_id);
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
+
+  if (!ExtensionPrefs::Get(browser_context())
+           ->HasDisableReason(extension->id(), Extension::DISABLE_CORRUPTED)) {
+    return RespondNow(Error(kCannotRepairHealthyExtension));
+  }
+
+  ManagementPolicy* management_policy =
+      ExtensionSystem::Get(browser_context())->management_policy();
+  // If content verifier would repair this extension independently, then don't
+  // allow repair from here. This applies to policy extensions.
+  // Also note that if we let |reinstaller| continue with the repair, this would
+  // have uninstalled the extension but then we would have failed to reinstall
+  // it for policy check (see PolicyCheck::Start()).
+  if (ContentVerifier::ShouldRepairIfCorrupted(management_policy, extension))
+    return RespondNow(Error(kCannotRepairPolicyExtension));
 
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents)

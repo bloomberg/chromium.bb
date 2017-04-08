@@ -19,6 +19,7 @@
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verifier_io_data.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
 
@@ -54,6 +55,14 @@ base::FilePath NormalizeRelativePath(const base::FilePath& path) {
 }
 
 }  // namespace
+
+// static
+bool ContentVerifier::ShouldRepairIfCorrupted(
+    const ManagementPolicy* management_policy,
+    const Extension* extension) {
+  return management_policy->MustRemainEnabled(extension, nullptr) ||
+         management_policy->MustRemainInstalled(extension, nullptr);
+}
 
 // static
 void ContentVerifier::SetObserverForTests(TestObserver* observer) {

@@ -11,10 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
@@ -32,6 +33,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router_factory.h"
@@ -40,6 +42,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/mock_external_provider.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -55,6 +58,8 @@ using testing::_;
 namespace extensions {
 
 namespace {
+
+const char kGoodCrx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 
 std::unique_ptr<KeyedService> BuildAPI(content::BrowserContext* context) {
   return base::MakeUnique<DeveloperPrivateAPI>(context);
@@ -79,10 +84,15 @@ bool HasPrefsPermission(bool (*has_pref)(const std::string&,
 
 }  // namespace
 
-class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
+class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
  protected:
   DeveloperPrivateApiUnitTest() {}
   ~DeveloperPrivateApiUnitTest() override {}
+
+  void AddMockExternalProvider(
+      std::unique_ptr<ExternalProviderInterface> provider) {
+    service()->AddProviderForTesting(std::move(provider));
+  }
 
   // A wrapper around extension_function_test_utils::RunFunction that runs with
   // the associated browser, no flags, and can take stack-allocated arguments.
@@ -852,6 +862,61 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
   // No more errors!
   EXPECT_TRUE(error_console->GetErrorsForExtension(extension->id()).empty());
+}
+
+// Tests that developerPrivate.repair does not succeed for a non-corrupted
+// extension.
+TEST_F(DeveloperPrivateApiUnitTest, RepairNotBrokenExtension) {
+  base::FilePath extension_path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(extension_path, INSTALL_NEW);
+
+  // Attempt to repair the good extension, expect failure.
+  std::unique_ptr<base::ListValue> args =
+      ListBuilder().Append(extension->id()).Build();
+  scoped_refptr<UIThreadExtensionFunction> function =
+      new api::DeveloperPrivateRepairExtensionFunction();
+  EXPECT_FALSE(RunFunction(function, *args));
+  EXPECT_EQ("Cannot repair a healthy extension.", function->GetError());
+}
+
+// Tests that developerPrivate.private cannot repair a policy-installed
+// extension.
+// Regression test for https://crbug.com/577959.
+TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
+  std::string extension_id(kGoodCrx);
+
+  // Set up a mock provider with a policy extension.
+  std::unique_ptr<MockExternalProvider> mock_provider =
+      base::MakeUnique<MockExternalProvider>(
+          service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  MockExternalProvider* mock_provider_ptr = mock_provider.get();
+  AddMockExternalProvider(std::move(mock_provider));
+  mock_provider_ptr->UpdateOrAddExtension(extension_id, "1.0.0.0",
+                                          data_dir().AppendASCII("good.crx"));
+  // Reloading extensions should find our externally registered extension
+  // and install it.
+  content::WindowedNotificationObserver observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+  service()->CheckForExternalUpdates();
+  observer.Wait();
+
+  // Attempt to repair the good extension, expect failure.
+  std::unique_ptr<base::ListValue> args =
+      ListBuilder().Append(extension_id).Build();
+  scoped_refptr<UIThreadExtensionFunction> function =
+      new api::DeveloperPrivateRepairExtensionFunction();
+  EXPECT_FALSE(RunFunction(function, *args));
+  EXPECT_EQ("Cannot repair a healthy extension.", function->GetError());
+
+  // Corrupt the extension , still expect repair failure because this is a
+  // policy extension.
+  service()->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+  args = ListBuilder().Append(extension_id).Build();
+  function = new api::DeveloperPrivateRepairExtensionFunction();
+  EXPECT_FALSE(RunFunction(function, *args));
+  EXPECT_EQ("Cannot repair a policy-installed extension.",
+            function->GetError());
 }
 
 // Test developerPrivate.updateProfileConfiguration: Try to turn on devMode
