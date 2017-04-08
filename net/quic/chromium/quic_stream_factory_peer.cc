@@ -199,5 +199,11 @@ int QuicStreamFactoryPeer::GetNumPushStreamsCreated(
   return factory->num_push_streams_created_;
 }
 
+void QuicStreamFactoryPeer::SetAlarmFactory(
+    QuicStreamFactory* factory,
+    std::unique_ptr<QuicAlarmFactory> alarm_factory) {
+  factory->alarm_factory_ = std::move(alarm_factory);
+}
+
 }  // namespace test
 }  // namespace net

@@ -34,7 +34,13 @@ class TestTaskRunner : public base::TaskRunner {
 
   const std::vector<PostedTask>& GetPostedTasks() const;
 
+  // Finds the next task to run, advances the time to the correct time
+  // and then runs the task.
   void RunNextTask();
+
+  // While there are posted tasks, finds the next task to run, advances the
+  // time to the correct time and then runs the task.
+  void RunUntilIdle();
 
  protected:
   ~TestTaskRunner() override;

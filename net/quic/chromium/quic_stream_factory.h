@@ -61,7 +61,7 @@ class HttpServerProperties;
 class NetLog;
 class ProxyDelegate;
 class QuicClock;
-class QuicChromiumAlarmFactory;
+class QuicAlarmFactory;
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
@@ -219,6 +219,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool delay_tcp_race,
       int max_server_configs_stored_in_properties,
       bool close_sessions_on_ip_change,
+      bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
       int packet_reader_yield_after_duration_milliseconds,
@@ -270,8 +271,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Called by a session after it shuts down.
   void OnSessionClosed(QuicChromiumClientSession* session);
 
-  // Called by a session when it times out with open streams.
-  void OnTimeoutWithOpenStreams();
+  // Called by a session when it blackholes after the handshake is confirmed.
+  void OnBlackholeAfterHandshakeConfirmed(QuicChromiumClientSession* session);
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
@@ -372,7 +373,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 
-  QuicChromiumAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
+  QuicAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
 
   bool has_quic_server_info_factory() const {
     return quic_server_info_factory_.get() != nullptr;
@@ -400,6 +401,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool migrate_sessions_on_network_change() const {
     return migrate_sessions_on_network_change_;
+  }
+
+  bool mark_quic_broken_when_network_blackholes() const {
+    return mark_quic_broken_when_network_blackholes_;
   }
 
   // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
@@ -535,7 +540,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
 
   // The alarm factory used for all connections.
-  std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
+  std::unique_ptr<QuicAlarmFactory> alarm_factory_;
 
   // Contains owning pointers to all sessions that currently exist.
   SessionIdMap all_sessions_;
@@ -589,6 +594,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if AES-GCM should be preferred, even if there is no hardware support.
   bool prefer_aes_;
+
+  // True if QUIC should be marked as broken when a connection blackholes after
+  // the handshake is confirmed.
+  bool mark_quic_broken_when_network_blackholes_;
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;

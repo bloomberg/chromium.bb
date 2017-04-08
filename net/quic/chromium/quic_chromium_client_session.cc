@@ -962,10 +962,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenOutgoingStreams());
-    // Notify the factory the connection timed out with open streams.
-    if (GetNumOpenOutgoingStreams() > 0 && stream_factory_) {
-      stream_factory_->OnTimeoutWithOpenStreams();
-    }
     if (IsCryptoHandshakeConfirmed()) {
       if (GetNumOpenOutgoingStreams() > 0) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -991,7 +987,18 @@ void QuicChromiumClientSession::OnConnectionClosed(
     }
   }
 
-  if (!IsCryptoHandshakeConfirmed()) {
+  if (IsCryptoHandshakeConfirmed()) {
+    // QUIC connections should not timeout while there are open streams,
+    // since PING frames are sent to prevent timeouts. If, however, the
+    // connection timed out with open streams then QUIC traffic has become
+    // blackholed. Alternatively, if too many retransmission timeouts occur
+    // then QUIC traffic has become blackholed.
+    if (stream_factory_ &&
+        (error == QUIC_TOO_MANY_RTOS || (error == QUIC_NETWORK_IDLE_TIMEOUT &&
+                                         GetNumOpenOutgoingStreams() > 0))) {
+      stream_factory_->OnBlackholeAfterHandshakeConfirmed(this);
+    }
+  } else {
     if (error == QUIC_PUBLIC_RESET) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
     } else if (connection()->GetStats().packets_received == 0) {

@@ -41,8 +41,11 @@
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/mock_network_change_notifier.h"
 #include "net/quic/chromium/mock_quic_data.h"
+#include "net/quic/chromium/quic_chromium_alarm_factory.h"
 #include "net/quic/chromium/quic_http_utils.h"
+#include "net/quic/chromium/quic_stream_factory_peer.h"
 #include "net/quic/chromium/quic_test_packet_maker.h"
+#include "net/quic/chromium/test_task_runner.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_framer.h"
@@ -290,6 +293,16 @@ class QuicNetworkTransactionTest
       QuicPacketNumber least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        least_unacked, least_unacked, true);
+  }
+
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber least_unacked,
+      QuicTime::Delta ack_delay_time) {
+    return client_maker_.MakeAckPacket(packet_number, largest_received,
+                                       least_unacked, least_unacked, true,
+                                       ack_delay_time);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
@@ -649,6 +662,8 @@ class QuicNetworkTransactionTest
         http_server_properties_.GetAlternativeServices(server);
     EXPECT_EQ(1u, alternative_service_vector.size());
     EXPECT_EQ(kProtoQUIC, alternative_service_vector[0].protocol);
+    EXPECT_FALSE(http_server_properties_.IsAlternativeServiceBroken(
+        alternative_service_vector[0]));
   }
 
   void AddHangingNonAlternateProtocolSocketData() {
@@ -1425,6 +1440,768 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   EXPECT_FALSE(details.quic_port_migration_detected);
   trans.PopulateNetErrorDetails(&details);
   EXPECT_TRUE(details.quic_port_migration_detected);
+}
+
+// Verify that if a QUIC connection times out, the QuicHttpStream will
+// return QUIC_PROTOCOL_ERROR.
+TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
+  params_.quic_idle_connection_timeout_seconds = 5;
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(3, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      4, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(5, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      6, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(9, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      10, kHeadersStreamId, true, false, settings_offset, settings_data));
+
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+
+  ExpectQuicAlternateProtocolMapping();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
+// Verify that if a QUIC connection RTOs, the QuicHttpStream will
+// return QUIC_PROTOCOL_ERROR.
+TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
+  params_.quic_connection_options.push_back(k5RTO);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(3, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      4, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(5, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      6, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(9, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      10, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 4
+  quic_data.AddWrite(client_maker_.MakeDataPacket(11, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      12, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 5
+  quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+      13, true, QuicTime::Delta::Infinite(), 0, 1, QUIC_TOO_MANY_RTOS,
+      "5 consecutive retransmission timeouts"));
+
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+
+  ExpectQuicAlternateProtocolMapping();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
+// Verify that if a QUIC connection RTOs, while there are no active streams
+// QUIC will not be marked as broken.
+TEST_P(QuicNetworkTransactionTest,
+       TooManyRtosAfterHandshakeConfirmedAndStreamReset) {
+  params_.quic_connection_options.push_back(k5RTO);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+
+  quic_data.AddWrite(client_maker_.MakeRstPacket(3, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(4, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      5, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeRstPacket(6, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(9, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(10, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      11, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 4
+  quic_data.AddWrite(client_maker_.MakeRstPacket(12, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(13, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // RTO 5
+  quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+      14, true, QuicTime::Delta::Infinite(), 0, 1, QUIC_TOO_MANY_RTOS,
+      "5 consecutive retransmission timeouts"));
+
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  auto trans = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                        session_.get());
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Now cancel the request.
+  trans.reset();
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+
+  ExpectQuicAlternateProtocolMapping();
+
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+// Verify that with mark_quic_broken_when_network_blackholes enabled, if a QUIC
+// connection times out, then QUIC will be marked as broken and the request
+// retried over TCP.
+TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
+  params_.mark_quic_broken_when_network_blackholes = true;
+  params_.quic_idle_connection_timeout_seconds = 5;
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(3, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      4, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(5, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      6, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(9, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      10, kHeadersStreamId, true, false, settings_offset, settings_data));
+
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // After that fails, it will be resent via TCP.
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+  MockRead http_reads[] = {
+      MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, 4, kQuicAlternativeServiceHeader),
+      MockRead(SYNCHRONOUS, 5, "hello world"), MockRead(SYNCHRONOUS, OK, 6)};
+  SequencedSocketData http_data(http_reads, arraysize(http_reads), http_writes,
+                                arraysize(http_writes));
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  // Let the transaction proceed which will result in QUIC being marked
+  // as broken and the request falling back to TCP.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  ExpectBrokenAlternateProtocolMapping();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  ASSERT_FALSE(http_data.AllReadDataConsumed());
+
+  // Read the response body over TCP.
+  CheckResponseData(&trans, "hello world");
+  ASSERT_TRUE(http_data.AllWriteDataConsumed());
+  ASSERT_TRUE(http_data.AllReadDataConsumed());
+}
+
+// Verify that with mark_quic_broken_when_network_blackholes enabled, if a QUIC
+// connection times out, then QUIC will be marked as broken but the request
+// will not be retried over TCP.
+TEST_P(QuicNetworkTransactionTest,
+       TimeoutAfterHandshakeConfirmedAndHeadersThenBrokenNotRetried) {
+  params_.mark_quic_broken_when_network_blackholes = true;
+  params_.quic_idle_connection_timeout_seconds = 5;
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+
+  quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  // quic_data.AddWrite(ConstructClientAckPacket(3, 1, 1));
+  quic_data.AddWrite(
+      ConstructClientAckPacket(3, 1, 1, QuicTime::Delta::FromMilliseconds(25)));
+
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(4, kHeadersStreamId, false,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      5, kHeadersStreamId, false, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(6, kHeadersStreamId, false,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      7, kHeadersStreamId, false, false, settings_offset, settings_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(8, kHeadersStreamId, false,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      9, kHeadersStreamId, false, false, settings_offset, settings_data));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(10, kHeadersStreamId, false,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      11, kHeadersStreamId, false, false, settings_offset, settings_data));
+
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  // Let the transaction proceed which will result in QUIC being marked
+  // as broken and the request falling back to TCP.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  ExpectBrokenAlternateProtocolMapping();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(&trans, &response_data),
+              IsError(ERR_QUIC_PROTOCOL_ERROR));
+}
+
+// Verify that with mark_quic_broken_when_network_blackholes enabled, if a QUIC
+// connection RTOs, then QUIC will be marked as broken and the request retried
+// over TCP.
+TEST_P(QuicNetworkTransactionTest,
+       TooManyRtosAfterHandshakeConfirmedThenBroken) {
+  params_.mark_quic_broken_when_network_blackholes = true;
+  params_.quic_connection_options.push_back(k5RTO);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(3, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      4, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(5, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      6, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(9, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      10, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 4
+  quic_data.AddWrite(client_maker_.MakeDataPacket(11, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      12, kHeadersStreamId, true, false, settings_offset, settings_data));
+
+  quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+      13, true, QuicTime::Delta::Infinite(), 0, 1, QUIC_TOO_MANY_RTOS,
+      "5 consecutive retransmission timeouts"));
+
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // After that fails, it will be resent via TCP.
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+  MockRead http_reads[] = {
+      MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, 4, kQuicAlternativeServiceHeader),
+      MockRead(SYNCHRONOUS, 5, "hello world"), MockRead(SYNCHRONOUS, OK, 6)};
+  SequencedSocketData http_data(http_reads, arraysize(http_reads), http_writes,
+                                arraysize(http_writes));
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  // Let the transaction proceed which will result in QUIC being marked
+  // as broken and the request falling back to TCP.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  ExpectBrokenAlternateProtocolMapping();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  ASSERT_FALSE(http_data.AllReadDataConsumed());
+
+  // Read the response body over TCP.
+  CheckResponseData(&trans, "hello world");
+  ASSERT_TRUE(http_data.AllWriteDataConsumed());
+  ASSERT_TRUE(http_data.AllReadDataConsumed());
+}
+
+// Verify that if a QUIC connection RTOs, while there are no active streams
+// QUIC will be marked as broken.
+TEST_P(QuicNetworkTransactionTest,
+       TooManyRtosAfterHandshakeConfirmedAndStreamResetThenBroken) {
+  params_.mark_quic_broken_when_network_blackholes = true;
+  params_.quic_connection_options.push_back(k5RTO);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+
+  std::string request_data;
+  quic_data.AddWrite(client_maker_.MakeRequestHeadersPacketAndSaveData(
+      1, kClientDataStreamId1, true, true, priority,
+      GetRequestHeaders("GET", "https", "/"), nullptr, &header_stream_offset,
+      &request_data));
+
+  std::string settings_data;
+  QuicStreamOffset settings_offset = header_stream_offset;
+  quic_data.AddWrite(client_maker_.MakeSettingsPacketAndSaveData(
+      2, SETTINGS_MAX_HEADER_LIST_SIZE, kDefaultMaxUncompressedHeaderSize, true,
+      &header_stream_offset, &settings_data));
+
+  quic_data.AddWrite(client_maker_.MakeRstPacket(3, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  // TLP 1
+  quic_data.AddWrite(client_maker_.MakeDataPacket(4, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // TLP 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      5, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 1
+  quic_data.AddWrite(client_maker_.MakeRstPacket(6, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(7, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // RTO 2
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      8, kHeadersStreamId, true, false, settings_offset, settings_data));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(9, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  // RTO 3
+  quic_data.AddWrite(client_maker_.MakeDataPacket(10, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(
+      11, kHeadersStreamId, true, false, settings_offset, settings_data));
+  // RTO 4
+  quic_data.AddWrite(client_maker_.MakeRstPacket(12, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  quic_data.AddWrite(client_maker_.MakeDataPacket(13, kHeadersStreamId, true,
+                                                  false, 0, request_data));
+  // RTO 5
+  quic_data.AddWrite(client_maker_.MakeAckAndConnectionClosePacket(
+      14, true, QuicTime::Delta::Infinite(), 0, 1, QUIC_TOO_MANY_RTOS,
+      "5 consecutive retransmission timeouts"));
+
+  quic_data.AddRead(ASYNC, OK);
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         &request, net_log_.bound());
+
+  CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      session_->quic_stream_factory(),
+      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+                                                 clock_));
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  auto trans = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                        session_.get());
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  // Now cancel the request.
+  trans.reset();
+
+  // Run the QUIC session to completion.
+  quic_task_runner_->RunUntilIdle();
+
+  ExpectBrokenAlternateProtocolMapping();
+
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicNetworkTransactionTest,

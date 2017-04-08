@@ -746,6 +746,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
+    bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
     int packet_reader_yield_after_duration_milliseconds,
@@ -790,6 +791,8 @@ QuicStreamFactory::QuicStreamFactory(
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
       prefer_aes_(prefer_aes),
+      mark_quic_broken_when_network_blackholes_(
+          mark_quic_broken_when_network_blackholes),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
@@ -1174,8 +1177,8 @@ void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
 
 std::unique_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
     QuicChromiumClientSession* session) {
-  return std::unique_ptr<QuicHttpStream>(
-      new QuicHttpStream(session->GetWeakPtr(), http_server_properties_));
+  return base::MakeUnique<QuicHttpStream>(session->GetWeakPtr(),
+                                          http_server_properties_);
 }
 
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
@@ -1214,10 +1217,15 @@ void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   all_sessions_.erase(session);
 }
 
-void QuicStreamFactory::OnTimeoutWithOpenStreams() {
-  // Reduce PING timeout when connection times out with open stream.
-  if (ping_timeout_ > reduced_ping_timeout_) {
+void QuicStreamFactory::OnBlackholeAfterHandshakeConfirmed(
+    QuicChromiumClientSession* session) {
+  // Reduce PING timeout when connection blackholes after the handshake.
+  if (ping_timeout_ > reduced_ping_timeout_)
     ping_timeout_ = reduced_ping_timeout_;
+
+  if (mark_quic_broken_when_network_blackholes_) {
+    http_server_properties_->MarkAlternativeServiceBroken(
+        AlternativeService(kProtoQUIC, session->server_id().host_port_pair()));
   }
 }
 
@@ -1880,6 +1888,10 @@ void QuicStreamFactory::ProcessGoingAwaySession(
                                                server_id.host_port_pair());
   url::SchemeHostPort server("https", server_id.host_port_pair().host(),
                              server_id.host_port_pair().port());
+  // Do nothing if QUIC is currently marked as broken.
+  if (http_server_properties_->IsAlternativeServiceBroken(alternative_service))
+    return;
+
   if (session->IsCryptoHandshakeConfirmed()) {
     http_server_properties_->ConfirmAlternativeService(alternative_service);
     ServerNetworkStats network_stats;
