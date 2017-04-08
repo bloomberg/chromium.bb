@@ -1661,6 +1661,17 @@ EVENT_TYPE(QUIC_STREAM_FACTORY_JOB)
 //  }
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB)
 
+// Measures the time taken to load server information.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_LOAD_SERVER_INFO)
+
+// Measures the time taken to establish a QUIC connection.
+// The event parameters are:
+//  {
+//     "require_confirmation": <True if we require handshake confirmation
+//                              in the connection>
+//  }
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_CONNECT)
+
 // ------------------------------------------------------------------------
 // QuicSession
 // ------------------------------------------------------------------------

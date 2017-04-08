@@ -527,6 +527,9 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfo() {
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB_LOAD_SERVER_INFO);
+
   io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
 
   DCHECK(server_info_);
@@ -564,6 +567,7 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
+  net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB_LOAD_SERVER_INFO);
   UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
                       base::TimeTicks::Now() - dns_resolution_end_time_);
 
@@ -589,6 +593,9 @@ int QuicStreamFactory::Job::DoConnect() {
 
   bool require_confirmation = factory_->require_confirmation() ||
                               was_alternative_service_recently_broken_;
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT,
+      NetLog::BoolCallback("require_confirmation", require_confirmation));
 
   int rv = factory_->CreateSession(
       key_, cert_verify_flags_, std::move(server_info_), require_confirmation,
@@ -619,6 +626,7 @@ int QuicStreamFactory::Job::DoConnect() {
 }
 
 int QuicStreamFactory::Job::DoConnectComplete(int rv) {
+  net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT);
   if (session_ && session_->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
     num_sent_client_hellos_ += session_->GetNumSentClientHellos();
     if (num_sent_client_hellos_ >= QuicCryptoClientStream::kMaxClientHellos)
