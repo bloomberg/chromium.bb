@@ -5,6 +5,7 @@
 #include "extensions/renderer/argument_spec.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/api_type_reference_map.h"
@@ -104,6 +105,8 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
                             &additional_properties_value)) {
       additional_properties_ =
           base::MakeUnique<ArgumentSpec>(*additional_properties_value);
+      // Additional properties are always optional.
+      additional_properties_->optional_ = true;
     }
     std::string instance_of;
     if (dict->GetString("isInstanceOf", &instance_of)) {
@@ -278,77 +281,72 @@ bool ArgumentSpec::ParseArgumentToObject(
   if (out_value)
     result = base::MakeUnique<base::DictionaryValue>();
 
-  gin::Dictionary dictionary(context->GetIsolate(), object);
-  for (const auto& kv : properties_) {
-    v8::Local<v8::Value> subvalue;
-    // See comment in ParseArgumentToArray() about passing in custom crazy
-    // values here.
-    // TODO(devlin): gin::Dictionary::Get() uses Isolate::GetCurrentContext() -
-    // is that always right here, or should we use the v8::Object APIs and
-    // pass in |context|?
-    // TODO(devlin): Hyper-optimization - Dictionary::Get() also creates a new
-    // v8::String for each call. Hypothetically, we could cache these, or at
-    // least use an internalized string.
-    if (!dictionary.Get(kv.first, &subvalue))
+  v8::Local<v8::Array> own_property_names;
+  if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names))
+    return false;
+
+  // Track all properties we see from |properties_| to check if any are missing.
+  // Use ArgumentSpec* instead of std::string for comparison + copy efficiency.
+  std::set<const ArgumentSpec*> seen_properties;
+  uint32_t length = own_property_names->Length();
+  for (uint32_t i = 0; i < length; ++i) {
+    v8::Local<v8::Value> key;
+    if (!own_property_names->Get(context, i).ToLocal(&key))
+      return false;
+    // In JS, all keys are strings or numbers (or symbols, but those are
+    // excluded by GetOwnPropertyNames()). If you try to set anything else
+    // (e.g. an object), it is converted to a string.
+    DCHECK(key->IsString() || key->IsNumber());
+    v8::String::Utf8Value utf8_key(key);
+
+    ArgumentSpec* property_spec = nullptr;
+    auto iter = properties_.find(*utf8_key);
+    if (iter != properties_.end()) {
+      property_spec = iter->second.get();
+      seen_properties.insert(property_spec);
+    } else if (additional_properties_) {
+      property_spec = additional_properties_.get();
+    } else {
+      *error = base::StringPrintf("Unknown property: %s", *utf8_key);
+      return false;
+    }
+
+    v8::Local<v8::Value> prop_value;
+    // Fun: It's possible that a previous getter has removed the property from
+    // the object. This isn't that big of a deal, since it would only manifest
+    // in the case of some reasonably-crazy script objects, and it's probably
+    // not worth optimizing for the uncommon case to the detriment of the
+    // common (and either should be totally safe). We can always add a
+    // HasOwnProperty() check here in the future, if we desire.
+    // See also comment in ParseArgumentToArray() about passing in custom
+    // crazy values here.
+    if (!object->Get(context, key).ToLocal(&prop_value))
       return false;
 
-    if (subvalue.IsEmpty() || subvalue->IsNull() || subvalue->IsUndefined()) {
-      if (!kv.second->optional_) {
-        *error = "Missing key: " + kv.first;
+    // Note: We don't serialize undefined or null values.
+    // TODO(devlin): This matches current behavior, but it is correct?
+    if (prop_value->IsUndefined() || prop_value->IsNull()) {
+      if (!property_spec->optional_) {
+        *error = base::StringPrintf("Missing key: %s", *utf8_key);
         return false;
       }
       continue;
     }
+
     std::unique_ptr<base::Value> property;
-    if (!kv.second->ParseArgument(context, subvalue, refs,
-                                  out_value ? &property : nullptr, error)) {
+    if (!property_spec->ParseArgument(context, prop_value, refs,
+                                      result ? &property : nullptr, error)) {
       return false;
     }
     if (result)
-      result->Set(kv.first, std::move(property));
+      result->SetWithoutPathExpansion(*utf8_key, std::move(property));
   }
 
-  // Check for additional properties.
-  if (additional_properties_) {
-    v8::Local<v8::Array> own_property_names;
-    if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names))
+  for (const auto& pair : properties_) {
+    const ArgumentSpec* spec = pair.second.get();
+    if (!spec->optional_ && seen_properties.count(spec) == 0) {
+      *error = "Missing key: " + pair.first;
       return false;
-    uint32_t length = own_property_names->Length();
-    for (uint32_t i = 0; i < length; ++i) {
-      v8::Local<v8::Value> key;
-      if (!own_property_names->Get(context, i).ToLocal(&key))
-        return false;
-      // In JS, all keys are strings or numbers (or symbols, but those are
-      // excluded by GetOwnPropertyNames()). If you try to set anything else
-      // (e.g. an object), it is converted to a string.
-      DCHECK(key->IsString() || key->IsNumber());
-      v8::String::Utf8Value utf8_key(key);
-      // If the key was one of the specified properties, we've already handled
-      // it. Continue.
-      if (properties_.find(*utf8_key) != properties_.end())
-        continue;
-      v8::Local<v8::Value> subvalue;
-      // Fun: It's possible that a previous getter has removed the property from
-      // the object. This isn't that big of a deal, since it would only manifest
-      // in the case of some reasonably-crazy script objects, and it's probably
-      // not worth optimizing for the uncommon case to the detriment of the
-      // common (and either should be totally safe). We can always add a
-      // HasOwnProperty() check here in the future, if we desire.
-      if (!object->Get(context, key).ToLocal(&subvalue))
-        return false;
-
-      // We don't serialize undefined values.
-      // TODO(devlin): This matches current behavior, but it is correct?
-      if (subvalue->IsUndefined())
-        continue;
-
-      std::unique_ptr<base::Value> property;
-      if (!additional_properties_->ParseArgument(
-              context, subvalue, refs, result ? &property : nullptr, error)) {
-        return false;
-      }
-      if (result)
-        result->SetWithoutPathExpansion(*utf8_key, std::move(property));
     }
   }
 

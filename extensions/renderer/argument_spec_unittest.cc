@@ -232,21 +232,26 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ArgumentSpec spec(*ValueFromString(kObjectSpec));
     ExpectSuccess(spec, "({prop1: 'foo', prop2: 2})",
                   "{'prop1':'foo','prop2':2}");
-    ExpectSuccess(spec, "({prop1: 'foo', prop2: 2, prop3: 'blah'})",
-                  "{'prop1':'foo','prop2':2}");
     ExpectSuccess(spec, "({prop1: 'foo'})", "{'prop1':'foo'}");
     ExpectSuccess(spec, "({prop1: 'foo', prop2: null})", "{'prop1':'foo'}");
     ExpectSuccess(spec, "x = {}; x.prop1 = 'foo'; x;", "{'prop1':'foo'}");
-    ExpectSuccess(
-        spec,
-        "function X() {}\n"
-        "X.prototype = { prop1: 'foo' };\n"
-        "function Y() { this.__proto__ = X.prototype; }\n"
-        "var z = new Y();\n"
-        "z;",
-        "{'prop1':'foo'}");
     ExpectFailure(spec, "({prop1: 'foo', prop2: 'bar'})");
     ExpectFailure(spec, "({prop2: 2})");
+    // Unknown properties are not allowed.
+    ExpectFailure(spec, "({prop1: 'foo', prop2: 2, prop3: 'blah'})");
+    // We only consider properties on the object itself, not its prototype
+    // chain.
+    ExpectFailure(spec,
+                  "function X() {}\n"
+                  "X.prototype = { prop1: 'foo' };\n"
+                  "var x = new X();\n"
+                  "x;");
+    ExpectFailure(spec,
+                  "function X() {}\n"
+                  "X.prototype = { prop1: 'foo' };\n"
+                  "function Y() { this.__proto__ = X.prototype; }\n"
+                  "var z = new Y();\n"
+                  "z;");
     // Self-referential fun. Currently we don't have to worry about these much
     // because the spec won't match at some point (and V8ValueConverter has
     // cycle detection and will fail).
@@ -255,14 +260,25 @@ TEST_F(ArgumentSpecUnitTest, Test) {
         spec,
         "({ get prop1() { throw new Error('Badness'); }});",
         "Uncaught Error: Badness");
-    ExpectThrow(
-        spec,
-        "x = {prop1: 'foo'};\n"
-        "Object.defineProperty(\n"
-        "    x, 'prop2',\n"
-        "    { get: () => { throw new Error('Badness'); } });\n"
-        "x;",
-        "Uncaught Error: Badness");
+    ExpectThrow(spec,
+                "x = {prop1: 'foo'};\n"
+                "Object.defineProperty(\n"
+                "    x, 'prop2',\n"
+                "    {\n"
+                "      get: () => { throw new Error('Badness'); },\n"
+                "      enumerable: true,\n"
+                "});\n"
+                "x;",
+                "Uncaught Error: Badness");
+    // By default, properties from Object.defineProperty() aren't enumerable,
+    // so they will be ignored in our matching.
+    ExpectSuccess(spec,
+                  "x = {prop1: 'foo'};\n"
+                  "Object.defineProperty(\n"
+                  "    x, 'prop2',\n"
+                  "    { get: () => { throw new Error('Badness'); } });\n"
+                  "x;",
+                  "{'prop1':'foo'}");
   }
 
   {
