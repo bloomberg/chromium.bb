@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -31,6 +32,7 @@ class ChromeDevToolsManagerDelegate :
 
  private:
   class HostData;
+  friend class DevToolsManagerDelegateTest;
   using RemoteLocations = std::set<net::HostPortPair>;
 
   // content::DevToolsManagerDelegate implementation.
@@ -58,6 +60,20 @@ class ChromeDevToolsManagerDelegate :
   std::unique_ptr<base::DictionaryValue> SetRemoteLocations(
       content::DevToolsAgentHost* agent_host,
       int command_id,
+      base::DictionaryValue* params);
+
+  std::unique_ptr<base::DictionaryValue> HandleBrowserCommand(
+      int id,
+      std::string method,
+      base::DictionaryValue* params);
+  static std::unique_ptr<base::DictionaryValue> GetWindowForTarget(
+      int id,
+      base::DictionaryValue* params);
+  static std::unique_ptr<base::DictionaryValue> GetWindowBounds(
+      int id,
+      base::DictionaryValue* params);
+  static std::unique_ptr<base::DictionaryValue> SetWindowBounds(
+      int id,
       base::DictionaryValue* params);
 
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;

@@ -19,9 +19,7 @@ const char kParamsParam[] = "params";
 const char kResultParam[] = "result";
 
 // JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
-enum Error {
-  kErrorInvalidParams = -32602
-};
+enum Error { kErrorInvalidParams = -32602, kErrorServerError = -32000 };
 
 }  // namespace
 
@@ -46,12 +44,26 @@ std::unique_ptr<base::DictionaryValue>
 DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
                                               const std::string& param) {
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->SetInteger(kIdParam, command_id);
   base::DictionaryValue* error_object = new base::DictionaryValue();
   response->Set(kErrorParam, error_object);
   error_object->SetInteger(kErrorCodeParam, kErrorInvalidParams);
   error_object->SetString(kErrorMessageParam,
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 
+  return response;
+}
+
+// static
+std::unique_ptr<base::DictionaryValue> DevToolsProtocol::CreateErrorResponse(
+    int command_id,
+    const std::string& error_message) {
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->SetInteger(kIdParam, command_id);
+  base::DictionaryValue* error_object = new base::DictionaryValue();
+  response->Set(kErrorParam, error_object);
+  error_object->SetInteger(kErrorCodeParam, kErrorServerError);
+  error_object->SetString(kErrorMessageParam, error_message);
   return response;
 }
 
