@@ -4,6 +4,8 @@
 
 #include "headless/lib/headless_content_main_delegate.h"
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -20,6 +22,7 @@
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
+#include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -269,8 +272,15 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
 
 content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new HeadlessContentBrowserClient(browser_.get()));
+  browser_client_ =
+      base::MakeUnique<HeadlessContentBrowserClient>(browser_.get());
   return browser_client_.get();
+}
+
+content::ContentRendererClient*
+HeadlessContentMainDelegate::CreateContentRendererClient() {
+  renderer_client_ = base::MakeUnique<HeadlessContentRendererClient>();
+  return renderer_client_.get();
 }
 
 }  // namespace headless

@@ -14,6 +14,7 @@
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_print_manager.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/target.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,9 +38,9 @@ std::unique_ptr<base::DictionaryValue> CreateSuccessResponse(
     int command_id,
     std::unique_ptr<base::Value> result) {
   if (!result)
-    result.reset(new base::DictionaryValue());
+    result = base::MakeUnique<base::DictionaryValue>();
 
-  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  auto response = base::MakeUnique<base::DictionaryValue>();
   response->SetInteger(kIdParam, command_id);
   response->Set(kResultParam, std::move(result));
   return response;
@@ -49,12 +50,12 @@ std::unique_ptr<base::DictionaryValue> CreateErrorResponse(
     int command_id,
     int error_code,
     const std::string& error_message) {
-  std::unique_ptr<base::DictionaryValue> error_object(
-      new base::DictionaryValue());
+  auto error_object = base::MakeUnique<base::DictionaryValue>();
   error_object->SetInteger(kErrorCodeParam, error_code);
   error_object->SetString(kErrorMessageParam, error_message);
 
-  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  auto response = base::MakeUnique<base::DictionaryValue>();
+  response->SetInteger(kIdParam, command_id);
   response->Set(kErrorParam, std::move(error_object));
   return response;
 }
@@ -66,6 +67,25 @@ std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
       command_id, kErrorInvalidParam,
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 }
+
+void PDFCreated(
+    const content::DevToolsManagerDelegate::CommandCallback& callback,
+    int command_id,
+    printing::HeadlessPrintManager::PrintResult print_result,
+    const std::string& data) {
+  std::unique_ptr<base::DictionaryValue> response;
+  if (print_result == printing::HeadlessPrintManager::PRINT_SUCCESS) {
+    response = CreateSuccessResponse(
+        command_id,
+        printing::HeadlessPrintManager::PDFContentsToDictionaryValue(data));
+  } else {
+    response = CreateErrorResponse(
+        command_id, kErrorServerError,
+        printing::HeadlessPrintManager::PrintResultToString(print_result));
+  }
+  callback.Run(std::move(response));
+}
+
 }  // namespace
 
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
@@ -81,6 +101,9 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
   command_map_["Target.disposeBrowserContext"] =
       base::Bind(&HeadlessDevToolsManagerDelegate::DisposeBrowserContext,
                  base::Unretained(this));
+
+  async_command_map_["Page.printToPDF"] = base::Bind(
+      &HeadlessDevToolsManagerDelegate::PrintToPDF, base::Unretained(this));
 }
 
 HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() {}
@@ -108,6 +131,30 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return cmd_result.release();
 }
 
+bool HeadlessDevToolsManagerDelegate::HandleAsyncCommand(
+    content::DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command,
+    const CommandCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!browser_)
+    return false;
+
+  int id;
+  std::string method;
+  if (!command->GetInteger("id", &id) || !command->GetString("method", &method))
+    return false;
+
+  auto find_it = async_command_map_.find(method);
+  if (find_it == async_command_map_.end())
+    return false;
+
+  const base::DictionaryValue* params = nullptr;
+  command->GetDictionary("params", &params);
+  find_it->second.Run(agent_host, id, params, callback);
+  return true;
+}
+
 scoped_refptr<content::DevToolsAgentHost>
 HeadlessDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   HeadlessBrowserContext* context = browser_->GetDefaultBrowserContext();
@@ -129,6 +176,18 @@ std::string HeadlessDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 std::string HeadlessDevToolsManagerDelegate::GetFrontendResource(
     const std::string& path) {
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
+}
+
+void HeadlessDevToolsManagerDelegate::PrintToPDF(
+    content::DevToolsAgentHost* agent_host,
+    int command_id,
+    const base::DictionaryValue* params,
+    const CommandCallback& callback) {
+  content::WebContents* web_contents = agent_host->GetWebContents();
+  content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+
+  printing::HeadlessPrintManager::FromWebContents(web_contents)
+      ->GetPDFContents(rfh, base::Bind(&PDFCreated, callback, command_id));
 }
 
 std::unique_ptr<base::DictionaryValue>

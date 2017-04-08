@@ -894,6 +894,12 @@ bool PrintWebViewHelper::Delegate::IsScriptedPrintEnabled() {
   return true;
 }
 
+#if defined(OS_MACOSX)
+bool PrintWebViewHelper::Delegate::UseSingleMetafile() {
+  return false;
+}
+#endif
+
 PrintWebViewHelper::PrintWebViewHelper(content::RenderFrame* render_frame,
                                        std::unique_ptr<Delegate> delegate)
     : content::RenderFrameObserver(render_frame),

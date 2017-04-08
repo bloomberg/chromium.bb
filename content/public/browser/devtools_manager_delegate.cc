@@ -39,9 +39,10 @@ base::DictionaryValue* DevToolsManagerDelegate::HandleCommand(
   return nullptr;
 }
 
-bool DevToolsManagerDelegate::HandleAsyncCommand(DevToolsAgentHost* agent_host,
-                                                 base::DictionaryValue* command,
-                                                 CommandCallback callback) {
+bool DevToolsManagerDelegate::HandleAsyncCommand(
+    DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command,
+    const CommandCallback& callback) {
   return false;
 }
 

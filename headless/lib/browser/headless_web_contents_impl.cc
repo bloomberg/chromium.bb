@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -30,6 +31,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_client_impl.h"
+#include "headless/lib/browser/headless_print_manager.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace headless {
@@ -172,6 +174,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       browser_context_(browser_context),
       render_process_host_(web_contents->GetRenderProcessHost()) {
+  printing::HeadlessPrintManager::CreateForWebContents(web_contents);
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);
 }

@@ -30,30 +30,35 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
-  for (int page_number : printed_pages) {
-    page_params.page_number = page_number;
-    PrintPageInternal(page_params, frame);
+
+  if (delegate_->UseSingleMetafile()) {
+    PrintPagesInternal(page_params, frame, printed_pages);
+    return true;
   }
+
+  for (int page_number : printed_pages)
+    PrintPagesInternal(page_params, frame, std::vector<int>{page_number});
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-void PrintWebViewHelper::PrintPageInternal(
+void PrintWebViewHelper::PrintPagesInternal(
     const PrintMsg_PrintPage_Params& params,
-    blink::WebLocalFrame* frame) {
+    blink::WebLocalFrame* frame,
+    const std::vector<int>& printed_pages) {
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
-  int page_number = params.page_number;
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;
-  RenderPage(print_pages_params_->params, page_number, frame, false, &metafile,
-             &page_size_in_dpi, &content_area_in_dpi);
+  for (int page_number : printed_pages) {
+    RenderPage(params.params, page_number, frame, false, &metafile,
+               &page_size_in_dpi, &content_area_in_dpi);
+  }
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile.GetDataSize();
-  page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
   page_params.page_size = page_size_in_dpi;
   page_params.content_area = content_area_in_dpi;
@@ -65,7 +70,11 @@ void PrintWebViewHelper::PrintPageInternal(
     page_params.data_size = 0;
   }
 
-  Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
+  for (int page_number : printed_pages) {
+    page_params.page_number = page_number;
+    Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
+    page_params.metafile_data_handle = base::SharedMemoryHandle();
+  }
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

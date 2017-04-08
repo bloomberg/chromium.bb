@@ -108,6 +108,15 @@ class PrintWebViewHelper
     // Returns true if printing is overridden and the default behavior should be
     // skipped for |frame|.
     virtual bool OverridePrint(blink::WebLocalFrame* frame) = 0;
+
+#if defined(OS_MACOSX)
+    // If true, all the printed pages are returned in the first
+    // PrintHostMsg_DidPrintPage metafile, like on Linux and Windows.
+    // NOTE: PrintHostMsg_DidPrintPage messages for all pages contain the same
+    // page and content area, which may lead to bug when these two parameters
+    // are different per page.
+    virtual bool UseSingleMetafile();
+#endif
   };
 
   PrintWebViewHelper(content::RenderFrame* render_frame,
@@ -283,8 +292,9 @@ class PrintWebViewHelper
 
   // Prints the page listed in |params|.
 #if defined(OS_MACOSX)
-  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         blink::WebLocalFrame* frame);
+  void PrintPagesInternal(const PrintMsg_PrintPage_Params& params,
+                          blink::WebLocalFrame* frame,
+                          const std::vector<int>& printed_pages);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          blink::WebLocalFrame* frame,

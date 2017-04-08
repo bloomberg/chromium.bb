@@ -21,6 +21,9 @@ const char kDumpDom[] = "dump-dom";
 // Hide scrollbars from screenshots.
 const char kHideScrollbars[] = "hide-scrollbars";
 
+// Save a pdf file of the loaded page.
+const char kPrintToPDF[] = "print-to-pdf";
+
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";

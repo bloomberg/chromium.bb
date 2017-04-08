@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef HEADLESS_APP_HEADLESS_SHELL_H_
+#define HEADLESS_APP_HEADLESS_SHELL_H_
+
+#include <memory>
+#include <string>
+
 #include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "headless/app/shell_navigation_request.h"
@@ -26,6 +32,13 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   HeadlessShell();
   ~HeadlessShell() override;
 
+  void OnStart(HeadlessBrowser* browser);
+
+  HeadlessDevToolsClient* devtools_client() const {
+    return devtools_client_.get();
+  }
+
+ private:
   // HeadlessWebContents::Observer implementation:
   void DevToolsTargetReady() override;
   void OnTargetCrashed(const inspector::TargetCrashedParams& params) override;
@@ -39,7 +52,6 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void OnNavigationRequested(
       const headless::page::NavigationRequestedParams& params) override;
 
-  void OnStart(HeadlessBrowser* browser);
   void Shutdown();
 
   void FetchTimeout();
@@ -63,31 +75,30 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void OnScreenshotCaptured(
       std::unique_ptr<page::CaptureScreenshotResult> result);
 
-  void OnScreenshotFileOpened(
-      std::unique_ptr<page::CaptureScreenshotResult> result,
-      const base::FilePath file_name,
-      base::File::Error error_code);
+  void PrintToPDF();
 
-  void OnScreenshotFileWritten(const base::FilePath file_name,
-                               const int length,
-                               base::File::Error error_code,
-                               int write_result);
+  void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result);
 
-  void OnScreenshotFileClosed(base::File::Error error_code);
+  void WriteFile(const std::string& switch_string,
+                 const std::string& default_file_name,
+                 const std::string& data);
+  void OnFileOpened(const std::string& data,
+                    const base::FilePath file_name,
+                    base::File::Error error_code);
+  void OnFileWritten(const base::FilePath file_name,
+                     const int length,
+                     base::File::Error error_code,
+                     int write_result);
+  void OnFileClosed(base::File::Error error_code);
 
   bool RemoteDebuggingEnabled() const;
 
-  HeadlessDevToolsClient* devtools_client() const {
-    return devtools_client_.get();
-  }
-
- private:
   GURL url_;
   HeadlessBrowser* browser_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   HeadlessWebContents* web_contents_;
   bool processed_page_ready_;
-  std::unique_ptr<base::FileProxy> screenshot_file_proxy_;
+  std::unique_ptr<base::FileProxy> file_proxy_;
   HeadlessBrowserContext* browser_context_;
   std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;
@@ -96,3 +107,5 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 };
 
 }  // namespace headless
+
+#endif  // HEADLESS_APP_HEADLESS_SHELL_H_

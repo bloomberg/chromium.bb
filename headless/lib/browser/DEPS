@@ -1,5 +1,8 @@
 include_rules = [
+  "+components/printing/browser",
+  "+components/printing/common",
   "+components/security_state",
+  "+printing",
   "+storage/browser/quota",
   "+ui/aura",
   "+sandbox/win/src",

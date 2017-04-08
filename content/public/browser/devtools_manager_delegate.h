@@ -51,9 +51,11 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
 
   using CommandCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> response)>;
+  // Handle async command, feed response to CommandCallback when it is ready.
   virtual bool HandleAsyncCommand(DevToolsAgentHost* agent_host,
                                   base::DictionaryValue* command,
-                                  CommandCallback callback);
+                                  const CommandCallback& callback);
+
   // Should return discovery page HTML that should list available tabs
   // and provide attach links.
   virtual std::string GetDiscoveryPageHTML();
