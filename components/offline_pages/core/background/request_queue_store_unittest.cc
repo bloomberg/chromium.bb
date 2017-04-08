@@ -428,16 +428,13 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
 
   base::Time new_creation_time =
       creation_time + base::TimeDelta::FromMinutes(1);
-  base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   // Try updating an existing request.
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
-                                  new_creation_time, activation_time,
-                                  kUserRequested);
+                                  new_creation_time, kUserRequested);
   updated_request.set_original_url(kUrl2);
   // Try to update a non-existing request.
   SavePageRequest updated_request2(kRequestId2, kUrl, kClientId,
-                                   new_creation_time, activation_time,
-                                   kUserRequested);
+                                   new_creation_time, kUserRequested);
   std::vector<SavePageRequest> requests_to_update{updated_request,
                                                   updated_request2};
   store->UpdateRequests(

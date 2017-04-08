@@ -109,8 +109,6 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
   const int64_t id = statement.ColumnInt64(0);
   const base::Time creation_time =
       base::Time::FromInternalValue(statement.ColumnInt64(1));
-  const base::Time activation_time =
-      base::Time::FromInternalValue(statement.ColumnInt64(2));
   const base::Time last_attempt_time =
       base::Time::FromInternalValue(statement.ColumnInt64(3));
   const int64_t started_attempt_count = statement.ColumnInt64(4);
@@ -127,8 +125,8 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
            << " creation time " << creation_time << " user requested "
            << kUserRequested << " original_url " << original_url;
 
-  std::unique_ptr<SavePageRequest> request(new SavePageRequest(
-      id, url, client_id, creation_time, activation_time, kUserRequested));
+  std::unique_ptr<SavePageRequest> request(
+      new SavePageRequest(id, url, client_id, creation_time, kUserRequested));
   request->set_last_attempt_time(last_attempt_time);
   request->set_started_attempt_count(started_attempt_count);
   request->set_completed_attempt_count(completed_attempt_count);
@@ -178,7 +176,7 @@ ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request.request_id());
   statement.BindInt64(1, request.creation_time().ToInternalValue());
-  statement.BindInt64(2, request.activation_time().ToInternalValue());
+  statement.BindInt64(2, 0);
   statement.BindInt64(3, request.last_attempt_time().ToInternalValue());
   statement.BindInt64(4, request.started_attempt_count());
   statement.BindInt64(5, request.completed_attempt_count());
@@ -205,7 +203,7 @@ ItemActionStatus Update(sql::Connection* db, const SavePageRequest& request) {
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request.creation_time().ToInternalValue());
-  statement.BindInt64(1, request.activation_time().ToInternalValue());
+  statement.BindInt64(1, 0);
   statement.BindInt64(2, request.last_attempt_time().ToInternalValue());
   statement.BindInt64(3, request.started_attempt_count());
   statement.BindInt64(4, request.completed_attempt_count());

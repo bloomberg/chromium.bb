@@ -196,11 +196,6 @@ bool PickRequestTask::RequestConditionsSatisfied(
   if (request->request_state() == SavePageRequest::RequestState::PAUSED)
     return false;
 
-  // If this request is not active yet, return false.
-  // TODO(petewil): Remove the concept of activation time.  crbug.com/705103.
-  if (request->activation_time() > base::Time::Now())
-    return false;
-
   return true;
 }
 

@@ -28,12 +28,6 @@ class SavePageRequest {
                   const ClientId& client_id,
                   const base::Time& creation_time,
                   const bool user_requested);
-  SavePageRequest(int64_t request_id,
-                  const GURL& url,
-                  const ClientId& client_id,
-                  const base::Time& creation_time,
-                  const base::Time& activation_time,
-                  const bool user_requested);
   SavePageRequest(const SavePageRequest& other);
   ~SavePageRequest();
 
@@ -63,8 +57,6 @@ class SavePageRequest {
   void set_request_state(RequestState new_state) { state_ = new_state; }
 
   const base::Time& creation_time() const { return creation_time_; }
-
-  const base::Time& activation_time() const { return activation_time_; }
 
   int64_t started_attempt_count() const { return started_attempt_count_; }
   void set_started_attempt_count(int64_t started_attempt_count) {
@@ -105,9 +97,6 @@ class SavePageRequest {
 
   // Time when this request was created. (Alternative 2).
   base::Time creation_time_;
-
-  // Time when this request will become active.
-  base::Time activation_time_;
 
   // Number of attempts started to get the page.  This may be different than the
   // number of attempts completed because we could crash.

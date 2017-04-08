@@ -15,23 +15,6 @@ SavePageRequest::SavePageRequest(int64_t request_id,
       url_(url),
       client_id_(client_id),
       creation_time_(creation_time),
-      activation_time_(creation_time),
-      started_attempt_count_(0),
-      completed_attempt_count_(0),
-      user_requested_(user_requested),
-      state_(RequestState::AVAILABLE) {}
-
-SavePageRequest::SavePageRequest(int64_t request_id,
-                                 const GURL& url,
-                                 const ClientId& client_id,
-                                 const base::Time& creation_time,
-                                 const base::Time& activation_time,
-                                 const bool user_requested)
-    : request_id_(request_id),
-      url_(url),
-      client_id_(client_id),
-      creation_time_(creation_time),
-      activation_time_(activation_time),
       started_attempt_count_(0),
       completed_attempt_count_(0),
       user_requested_(user_requested),
@@ -42,7 +25,6 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
       url_(other.url_),
       client_id_(other.client_id_),
       creation_time_(other.creation_time_),
-      activation_time_(other.activation_time_),
       started_attempt_count_(other.started_attempt_count_),
       completed_attempt_count_(other.completed_attempt_count_),
       last_attempt_time_(other.last_attempt_time_),
@@ -56,7 +38,6 @@ bool SavePageRequest::operator==(const SavePageRequest& other) const {
   return request_id_ == other.request_id_ && url_ == other.url_ &&
          client_id_ == other.client_id_ &&
          creation_time_ == other.creation_time_ &&
-         activation_time_ == other.activation_time_ &&
          started_attempt_count_ == other.started_attempt_count_ &&
          completed_attempt_count_ == other.completed_attempt_count_ &&
          last_attempt_time_ == other.last_attempt_time_ &&
@@ -64,7 +45,6 @@ bool SavePageRequest::operator==(const SavePageRequest& other) const {
 }
 
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {
-  DCHECK_LE(activation_time_, start_time);
   last_attempt_time_ = start_time;
   ++started_attempt_count_;
   state_ = RequestState::OFFLINING;

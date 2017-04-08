@@ -32,7 +32,6 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
-  EXPECT_EQ(creation_time, request.activation_time());
   EXPECT_EQ(base::Time(), request.last_attempt_time());
   EXPECT_EQ(0, request.completed_attempt_count());
   EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, request.request_state());
@@ -43,11 +42,10 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
 
 TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   base::Time creation_time = base::Time::Now();
-  base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
-                          activation_time, kUserRequested);
+                          kUserRequested);
 
-  base::Time start_time = activation_time + base::TimeDelta::FromHours(3);
+  base::Time start_time = creation_time + base::TimeDelta::FromHours(3);
   request.MarkAttemptStarted(start_time);
 
   // Most things don't change about the request.
@@ -55,7 +53,6 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
-  EXPECT_EQ(activation_time, request.activation_time());
 
   // Attempt time, attempt count and status will though.
   EXPECT_EQ(start_time, request.last_attempt_time());
@@ -69,7 +66,6 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
-  EXPECT_EQ(activation_time, request.activation_time());
 
   // Last attempt time and status are updated.
   EXPECT_EQ(1, request.completed_attempt_count());
