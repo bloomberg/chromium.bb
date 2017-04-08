@@ -31,6 +31,7 @@ from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import locking
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
@@ -1906,7 +1907,7 @@ def _UploadPathToGS(local_path, upload_urls, debug, timeout, acl=None):
 
 @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
 def ExportToGCloud(build_root, creds_file, filename, namespace=None,
-                   parent_key=None, project_id=None):
+                   parent_key=None, project_id=None, caller=None):
   """Export the given file to gCloud Datastore using export_to_gcloud
 
   Args:
@@ -1918,6 +1919,8 @@ def ExportToGCloud(build_root, creds_file, filename, namespace=None,
     parent_key: Optional, Key of parent entity to insert into, expects tuple.
     project_id: Optional, project_id of datastore to write to. Defaults to
                 datastore credentials
+    caller: Optional, name of the caller. We emit a metric for each run with
+            this value in the metric:caller field.
 
   Returns:
     If command was successfully run or not
@@ -1937,10 +1940,16 @@ def ExportToGCloud(build_root, creds_file, filename, namespace=None,
 
   try:
     cros_build_lib.RunCommand(cmd)
+    success = True
   except cros_build_lib.RunCommandError as e:
     logging.warn('Unable to export to datastore: %s', e)
-    return False
-  return True
+    success = False
+
+  metrics.Counter(constants.MON_EXPORT_TO_GCLOUD).increment(
+      fields={'caller': str(caller),
+              'success': success})
+
+  return success
 
 
 @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)

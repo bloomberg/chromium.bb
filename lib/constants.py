@@ -273,6 +273,8 @@ MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
 MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
 
+MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
+
 # Sheriff-o-Matic tree which Chrome OS alerts are posted to.
 SOM_TREE = 'chromeos'
 

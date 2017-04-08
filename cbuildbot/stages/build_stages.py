@@ -445,7 +445,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         commands.ExportToGCloud(self._build_root,
                                 creds_file,
                                 event_file,
-                                parent_key=parent_key)
+                                parent_key=parent_key,
+                                caller=type(self).__name__)
     else:
       logging.info('No build-events.json file to archive')
 

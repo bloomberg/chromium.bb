@@ -1087,7 +1087,8 @@ class ArchivingStageMixin(object):
               logging.debug('Exporting: %s' % d[constants.METADATA_TAGS])
               osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
                                 atomic=True, makedirs=True)
-              commands.ExportToGCloud(self._build_root, c_file, f.name)
+              commands.ExportToGCloud(self._build_root, c_file, f.name,
+                                      caller=type(self).__name__)
           else:
             logging.warn('No datastore credential file found, Skipping Export')
             return False
