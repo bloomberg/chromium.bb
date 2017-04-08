@@ -55,7 +55,8 @@ typedef enum {
   CDEF_LAYER = 1 << 7,
   REFERENCE_FRAME_LAYER = 1 << 8,
   MOTION_VECTORS_LAYER = 1 << 9,
-  ALL_LAYERS = (1 << 10) - 1
+  UV_MODE_LAYER = 1 << 10,
+  ALL_LAYERS = (1 << 11) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -76,6 +77,8 @@ static const arg_def_t dump_transform_size_arg =
 static const arg_def_t dump_transform_type_arg =
     ARG_DEF("tt", "transformType", 0, "Dump Transform Type");
 static const arg_def_t dump_mode_arg = ARG_DEF("m", "mode", 0, "Dump Mode");
+static const arg_def_t dump_uv_mode_arg =
+    ARG_DEF("uvm", "uv_mode", 0, "Dump UV Intra Prediction Modes");
 static const arg_def_t dump_skip_arg = ARG_DEF("s", "skip", 0, "Dump Skip");
 static const arg_def_t dump_filter_arg =
     ARG_DEF("f", "filter", 0, "Dump Filter");
@@ -93,6 +96,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_transform_size_arg,
                                         &dump_transform_type_arg,
                                         &dump_mode_arg,
+                                        &dump_uv_mode_arg,
                                         &dump_skip_arg,
                                         &dump_filter_arg,
 #if CONFIG_CDEF
@@ -429,6 +433,10 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, prediction_mode_map, "mode",
                           offsetof(insp_mi_data, mode));
   }
+  if (layers & UV_MODE_LAYER) {
+    buf += put_block_info(buf, prediction_mode_map, "uv_mode",
+                          offsetof(insp_mi_data, uv_mode));
+  }
   if (layers & SKIP_LAYER) {
     buf += put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip));
   }
@@ -565,6 +573,8 @@ static void parse_args(char **argv) {
       layers |= TRANSFORM_TYPE_LAYER;
     else if (arg_match(&arg, &dump_mode_arg, argi))
       layers |= MODE_LAYER;
+    else if (arg_match(&arg, &dump_uv_mode_arg, argi))
+      layers |= UV_MODE_LAYER;
     else if (arg_match(&arg, &dump_skip_arg, argi))
       layers |= SKIP_LAYER;
     else if (arg_match(&arg, &dump_filter_arg, argi))

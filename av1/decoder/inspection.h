@@ -34,6 +34,7 @@ struct insp_mi_data {
   insp_mv mv[2];
   int8_t ref_frame[2];
   int8_t mode;
+  int8_t uv_mode;
   int8_t sb_type;
   int8_t skip;
   int8_t segment_id;

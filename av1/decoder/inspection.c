@@ -71,6 +71,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->ref_frame[1] = mbmi->ref_frame[1];
       // Prediction Mode
       mi->mode = mbmi->mode;
+      // Prediction Mode for Chromatic planes
+      mi->uv_mode = mbmi->uv_mode;
       // Block Size
       mi->sb_type = mbmi->sb_type;
       // Skip Flag
