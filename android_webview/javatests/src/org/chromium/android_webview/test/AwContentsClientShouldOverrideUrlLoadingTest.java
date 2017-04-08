@@ -65,12 +65,13 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     }
 
     private void standardSetup() throws Throwable {
-        mContentsClient = new TestAwContentsClient();
-        setupWithProvidedContentsClient(mContentsClient);
+        setupWithProvidedContentsClient(new TestAwContentsClient());
         mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
     }
 
-    private void setupWithProvidedContentsClient(AwContentsClient contentsClient) throws Throwable {
+    private void setupWithProvidedContentsClient(TestAwContentsClient contentsClient)
+            throws Throwable {
+        mContentsClient = contentsClient;
         mTestContainerView = createAwTestContainerViewOnMainSync(contentsClient);
         mAwContents = mTestContainerView.getAwContents();
     }
@@ -814,8 +815,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             }
         }
 
-        mContentsClient = new DestroyInCallbackClient();
-        setupWithProvidedContentsClient(mContentsClient);
+        setupWithProvidedContentsClient(new DestroyInCallbackClient());
         mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
 
         OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
@@ -849,19 +849,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             getActivity().setIgnoreStartActivity(true);
             final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
-            setupWithProvidedContentsClient(new NullContentsClient() {
-                @Override
-                public boolean hasWebViewClient() {
-                    return false;
-                }
-            });
-            loadUrlAsync(mAwContents, testUrl);
-            pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mAwContents.getTitle().equals(CommonResources.ABOUT_TITLE);
-                }
-            });
+            setupWithProvidedContentsClient(new TestDefaultContentsClient());
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), testUrl);
 
             assertNull(getActivity().getLastSentIntent());
 
@@ -894,8 +883,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             // Need to temporarily suppress startActivity otherwise there will be a
             // handler selection window and the test can't dismiss that.
             getActivity().setIgnoreStartActivity(true);
-            TestDefaultContentsClient nullClient = new TestDefaultContentsClient();
-            setupWithProvidedContentsClient(nullClient);
+            setupWithProvidedContentsClient(new TestDefaultContentsClient());
             enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
@@ -904,12 +892,12 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             final String urlWithLink = mWebServer.setResponse(
                     "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
 
-            loadUrlSync(mAwContents, nullClient.getOnPageFinishedHelper(), urlWithLink);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), urlWithLink);
 
             // Clicking on an about:blank link should always navigate to the page directly
-            int currentCallCount = nullClient.getOnPageFinishedHelper().getCallCount();
+            int currentCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
             DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
-            nullClient.getOnPageFinishedHelper().waitForCallback(
+            mContentsClient.getOnPageFinishedHelper().waitForCallback(
                     currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
             assertEquals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL, mAwContents.getUrl());
@@ -928,8 +916,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             getActivity().setIgnoreStartActivity(true);
             final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
-            TestDefaultContentsClient nullClient = new TestDefaultContentsClient();
-            setupWithProvidedContentsClient(nullClient);
+            setupWithProvidedContentsClient(new TestDefaultContentsClient());
             enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
@@ -937,7 +924,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             final String urlWithLink = mWebServer.setResponse(
                     "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
 
-            loadUrlSync(mAwContents, nullClient.getOnPageFinishedHelper(), urlWithLink);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), urlWithLink);
             // Executing JS code that tries to navigate somewhere should not create an intent.
             assertEquals("\"" + testUrl + "\"", JSUtils.executeJavaScriptAndWaitForResult(
                             this, mAwContents, new OnEvaluateJavaScriptResultHelper(),
