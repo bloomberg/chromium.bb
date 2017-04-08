@@ -26,7 +26,7 @@ void BatteryDispatcher::queryNextStatus() {
 }
 
 void BatteryDispatcher::onDidChange(
-    device::blink::BatteryStatusPtr batteryStatus) {
+    device::mojom::blink::BatteryStatusPtr batteryStatus) {
   queryNextStatus();
 
   DCHECK(batteryStatus);

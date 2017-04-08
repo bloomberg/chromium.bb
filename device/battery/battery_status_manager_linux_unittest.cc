@@ -367,7 +367,9 @@ class BatteryStatusManagerLinuxTest : public testing::Test {
   void StartBatteryStatusManagerLinux();
 
   int count_battery_updates() const { return count_battery_updates_; }
-  const BatteryStatus& last_battery_status() const { return last_status_; }
+  const mojom::BatteryStatus& last_battery_status() const {
+    return last_status_;
+  }
 
  protected:
   scoped_refptr<dbus::MockBus> mock_bus_;
@@ -379,12 +381,12 @@ class BatteryStatusManagerLinuxTest : public testing::Test {
   std::unique_ptr<MockBatteryObject> CreateMockBatteryObject(
       const std::string& object_path,
       MockBatteryProperties* properties);
-  void BatteryUpdateCallback(const BatteryStatus& status);
+  void BatteryUpdateCallback(const mojom::BatteryStatus& status);
   void SyncWithNotifierThread();
 
   std::unique_ptr<BatteryStatusManagerLinux> manager_;
   int count_battery_updates_ = 0;
-  BatteryStatus last_status_;
+  mojom::BatteryStatus last_status_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerLinuxTest);
 };
@@ -519,7 +521,7 @@ BatteryStatusManagerLinuxTest::CreateMockBatteryObject(
 }
 
 void BatteryStatusManagerLinuxTest::BatteryUpdateCallback(
-    const BatteryStatus& status) {
+    const mojom::BatteryStatus& status) {
   ++count_battery_updates_;
   last_status_ = status;
 }
@@ -535,9 +537,9 @@ void BatteryStatusManagerLinuxTest::SyncWithNotifierThread() {
 }
 
 TEST_F(BatteryStatusManagerLinuxTest, NoBattery) {
-  BatteryStatus default_status;
+  mojom::BatteryStatus default_status;
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_EQ(default_status.charging, status.charging);
@@ -556,7 +558,7 @@ TEST_F(BatteryStatusManagerLinuxTest, ChargingHalfFull) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -575,7 +577,7 @@ TEST_F(BatteryStatusManagerLinuxTest, ChargingTimeToFull) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -594,7 +596,7 @@ TEST_F(BatteryStatusManagerLinuxTest, FullyCharged) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -614,7 +616,7 @@ TEST_F(BatteryStatusManagerLinuxTest, Discharging) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -634,7 +636,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DischargingTimeToEmptyUnknown) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -654,7 +656,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DeviceStateUnknown) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -673,7 +675,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DeviceStateEmpty) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -691,7 +693,7 @@ TEST_F(BatteryStatusManagerLinuxTest, LevelRoundedToThreeSignificantDigits) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -719,7 +721,7 @@ TEST_F(BatteryStatusManagerLinuxTest, UsingFirstBatteryDevice) {
   AddDeviceProxy(kUPowerDeviceBattery1Path, &battery_bat1_properties);
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -744,7 +746,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SkipNonBatteryDevice) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -765,7 +767,7 @@ TEST_F(BatteryStatusManagerLinuxTest, UpdateDevicePropertyState) {
           .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -798,7 +800,7 @@ TEST_F(BatteryStatusManagerLinuxTest, UpdateDevicePropertyPercentage) {
           .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -830,7 +832,7 @@ TEST_F(BatteryStatusManagerLinuxTest, UpdateDevicePropertyTimeToEmpty) {
           .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -862,7 +864,7 @@ TEST_F(BatteryStatusManagerLinuxTest, UpdateDevicePropertyTimeToFull) {
           .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_TRUE(status.charging);
@@ -897,7 +899,7 @@ TEST_F(BatteryStatusManagerLinuxTest, OldDaemonDeviceSignalChanged) {
           .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -932,7 +934,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DisplayDeviceNoBattery) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -952,7 +954,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DisplayDeviceBattery) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -976,7 +978,7 @@ TEST_F(BatteryStatusManagerLinuxTest, DisplayDeviceBatterySkipsEnumerate) {
   AddDevicePath(kUPowerDeviceBattery1Path);
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -998,7 +1000,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceAddedDisplayDevice) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -1038,7 +1040,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceAddedBatteryAtFront) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -1077,7 +1079,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceAddedBatteryAtBack) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -1115,7 +1117,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceAddedNoBattery) {
       .ExpectConnectToSignalPropertyChanged();
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -1158,7 +1160,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceRemovedBattery) {
       AddDeviceProxy(kUPowerDeviceBattery1Path, &battery_bat1_properties);
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);
@@ -1198,7 +1200,7 @@ TEST_F(BatteryStatusManagerLinuxTest, SignalDeviceRemovedOther) {
   AddDeviceProxy(kUPowerDeviceACLinePath, &line_power_AC_properties);
 
   StartBatteryStatusManagerLinux();
-  BatteryStatus status = last_battery_status();
+  mojom::BatteryStatus status = last_battery_status();
   EXPECT_LE(1, count_battery_updates());
 
   EXPECT_FALSE(status.charging);

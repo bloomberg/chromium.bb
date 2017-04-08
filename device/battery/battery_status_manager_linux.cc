@@ -264,8 +264,8 @@ bool BatteryObject::IsValid() {
          properties_->type() == UPOWER_DEVICE_TYPE_BATTERY;
 }
 
-BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
-  BatteryStatus status;
+mojom::BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
+  mojom::BatteryStatus status;
   uint32_t state = properties->state();
   status.charging = state != UPOWER_DEVICE_STATE_DISCHARGING &&
                     state != UPOWER_DEVICE_STATE_EMPTY;
@@ -437,7 +437,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
       battery_->properties()->ConnectSignals();
       NotifyBatteryStatus();
     } else {
-      callback_.Run(BatteryStatus());
+      callback_.Run(mojom::BatteryStatus());
       return;
     }
 

@@ -30,14 +30,14 @@ class MODULES_EXPORT BatteryDispatcher final
   BatteryDispatcher();
 
   void queryNextStatus();
-  void onDidChange(device::blink::BatteryStatusPtr);
+  void onDidChange(device::mojom::blink::BatteryStatusPtr);
   void updateBatteryStatus(const BatteryStatus&);
 
   // Inherited from PlatformEventDispatcher.
   void startListening() override;
   void stopListening() override;
 
-  device::blink::BatteryMonitorPtr m_monitor;
+  device::mojom::blink::BatteryMonitorPtr m_monitor;
   BatteryStatus m_batteryStatus;
   bool m_hasLatestData;
 };

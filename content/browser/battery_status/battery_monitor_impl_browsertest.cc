@@ -47,7 +47,7 @@ class FakeBatteryManager : public device::BatteryStatusManager {
         FROM_HERE, base::Bind(callback_, status_));
   }
 
-  void set_battery_status(const device::BatteryStatus& status) {
+  void set_battery_status(const device::mojom::BatteryStatus& status) {
     status_ = status;
   }
 
@@ -61,7 +61,7 @@ class FakeBatteryManager : public device::BatteryStatusManager {
   device::BatteryStatusService::BatteryUpdateCallback callback_;
   bool battery_status_available_;
   bool started_;
-  device::BatteryStatus status_;
+  device::mojom::BatteryStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBatteryManager);
 };
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(BatteryMonitorImplTest, BatteryManagerResolvePromise) {
   // Set the fake battery manager to return predefined battery status values.
   // From JavaScript request a promise for the battery status information and
   // once it resolves check the values and navigate to #pass.
-  device::BatteryStatus status;
+  device::mojom::BatteryStatus status;
   status.charging = true;
   status.charging_time = 100;
   status.discharging_time = std::numeric_limits<double>::infinity();
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(BatteryMonitorImplTest,
   // Once it resolves add an event listener for battery level change. Set
   // battery level to 0.6 and invoke update. Check that the event listener
   // is invoked with the correct value for level and navigate to #pass.
-  device::BatteryStatus status;
+  device::mojom::BatteryStatus status;
   battery_manager()->set_battery_status(status);
 
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);

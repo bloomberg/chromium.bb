@@ -14,7 +14,7 @@
 namespace device {
 
 // static
-void BatteryMonitorImpl::Create(BatteryMonitorRequest request) {
+void BatteryMonitorImpl::Create(mojom::BatteryMonitorRequest request) {
   auto* impl = new BatteryMonitorImpl;
   auto binding =
       mojo::MakeStrongBinding(base::WrapUnique(impl), std::move(request));
@@ -47,7 +47,7 @@ void BatteryMonitorImpl::QueryNextStatus(
 void BatteryMonitorImpl::RegisterSubscription() {
 }
 
-void BatteryMonitorImpl::DidChange(const BatteryStatus& battery_status) {
+void BatteryMonitorImpl::DidChange(const mojom::BatteryStatus& battery_status) {
   status_ = battery_status;
   status_to_report_ = true;
 

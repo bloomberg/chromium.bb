@@ -81,7 +81,7 @@ class PowerManagerObserver
   // chromeos::PowerManagerClient::Observer:
   void PowerChanged(
       const power_manager::PowerSupplyProperties& proto) override {
-    BatteryStatus status;
+    mojom::BatteryStatus status;
 
     // Use the default values if there is no battery in the system.
     if (IsBatteryPresent(proto)) {

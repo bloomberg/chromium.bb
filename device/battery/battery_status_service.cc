@@ -47,7 +47,7 @@ BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
     bool success = battery_fetcher_->StartListeningBatteryChange();
     // On failure pass the default values back.
     if (!success)
-      callback.Run(BatteryStatus());
+      callback.Run(mojom::BatteryStatus());
   }
 
   if (status_updated_) {
@@ -68,7 +68,7 @@ void BatteryStatusService::ConsumersChanged() {
   }
 }
 
-void BatteryStatusService::NotifyConsumers(const BatteryStatus& status) {
+void BatteryStatusService::NotifyConsumers(const mojom::BatteryStatus& status) {
   DCHECK(!is_shutdown_);
 
   main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
@@ -78,7 +78,7 @@ void BatteryStatusService::NotifyConsumers(const BatteryStatus& status) {
 }
 
 void BatteryStatusService::NotifyConsumersOnMainThread(
-    const BatteryStatus& status) {
+    const mojom::BatteryStatus& status) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (callback_list_.empty())
     return;
@@ -103,7 +103,7 @@ BatteryStatusService::GetUpdateCallbackForTesting() const {
 void BatteryStatusService::SetBatteryManagerForTesting(
     std::unique_ptr<BatteryStatusManager> test_battery_manager) {
   battery_fetcher_ = std::move(test_battery_manager);
-  status_ = BatteryStatus();
+  status_ = mojom::BatteryStatus();
   status_updated_ = false;
 }
 

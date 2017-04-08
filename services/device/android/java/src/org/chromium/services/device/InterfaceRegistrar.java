@@ -8,8 +8,8 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.device.BatteryMonitor;
 import org.chromium.device.battery.BatteryMonitorFactory;
+import org.chromium.device.mojom.BatteryMonitor;
 import org.chromium.device.mojom.VibrationManager;
 import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojo.system.impl.CoreImpl;

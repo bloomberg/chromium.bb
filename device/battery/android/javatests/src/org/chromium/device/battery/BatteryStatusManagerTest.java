@@ -10,7 +10,7 @@ import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.test.AndroidTestCase;
 
-import org.chromium.device.BatteryStatus;
+import org.chromium.device.mojom.BatteryStatus;
 
 /**
  * Test suite for BatteryStatusManager.

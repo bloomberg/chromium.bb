@@ -22,8 +22,9 @@ class BatteryStatusManager;
 
 class DEVICE_BATTERY_EXPORT BatteryStatusService {
  public:
-  typedef base::Callback<void(const BatteryStatus&)> BatteryUpdateCallback;
-  typedef base::CallbackList<void(const BatteryStatus&)>
+  typedef base::Callback<void(const mojom::BatteryStatus&)>
+      BatteryUpdateCallback;
+  typedef base::CallbackList<void(const mojom::BatteryStatus&)>
       BatteryUpdateCallbackList;
   typedef BatteryUpdateCallbackList::Subscription BatteryUpdateSubscription;
 
@@ -55,15 +56,15 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
 
   // Updates current battery status and sends new status to interested
   // render processes. Can be called on any thread via a callback.
-  void NotifyConsumers(const BatteryStatus& status);
-  void NotifyConsumersOnMainThread(const BatteryStatus& status);
+  void NotifyConsumers(const mojom::BatteryStatus& status);
+  void NotifyConsumersOnMainThread(const mojom::BatteryStatus& status);
   void ConsumersChanged();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<BatteryStatusManager> battery_fetcher_;
   BatteryUpdateCallbackList callback_list_;
   BatteryUpdateCallback update_callback_;
-  BatteryStatus status_;
+  mojom::BatteryStatus status_;
   bool status_updated_;
   bool is_shutdown_;
 

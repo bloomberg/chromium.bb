@@ -33,7 +33,7 @@ class FakeBatteryManager : public BatteryStatusManager {
 
   void StopListeningBatteryChange() override { stop_invoked_count_++; }
 
-  void InvokeUpdateCallback(const BatteryStatus& status) {
+  void InvokeUpdateCallback(const mojom::BatteryStatus& status) {
     callback_.Run(status);
   }
 
@@ -97,9 +97,7 @@ class BatteryStatusServiceTest : public testing::Test {
     return callback2_invoked_count_;
   }
 
-  const BatteryStatus& battery_status() const {
-    return battery_status_;
-  }
+  const mojom::BatteryStatus& battery_status() const { return battery_status_; }
 
   const BatteryStatusService::BatteryUpdateCallback& callback1() const {
     return callback1_;
@@ -110,12 +108,12 @@ class BatteryStatusServiceTest : public testing::Test {
   }
 
  private:
-  void Callback1(const BatteryStatus& status) {
+  void Callback1(const mojom::BatteryStatus& status) {
     callback1_invoked_count_++;
     battery_status_ = status;
   }
 
-  void Callback2(const BatteryStatus& status) {
+  void Callback2(const mojom::BatteryStatus& status) {
     callback2_invoked_count_++;
     battery_status_ = status;
   }
@@ -127,7 +125,7 @@ class BatteryStatusServiceTest : public testing::Test {
   BatteryStatusService::BatteryUpdateCallback callback2_;
   int callback1_invoked_count_;
   int callback2_invoked_count_;
-  BatteryStatus battery_status_;
+  mojom::BatteryStatus battery_status_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusServiceTest);
 };
@@ -143,7 +141,7 @@ TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
 
 TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
   std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
-  BatteryStatus status;
+  mojom::BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback1_invoked_count());
@@ -158,7 +156,7 @@ TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
   std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   std::unique_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
-  BatteryStatus status;
+  mojom::BatteryStatus status;
   status.charging = true;
   status.charging_time = 100;
   status.discharging_time = 200;
@@ -178,7 +176,7 @@ TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
   std::unique_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   std::unique_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
-  BatteryStatus status;
+  mojom::BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback1_invoked_count());

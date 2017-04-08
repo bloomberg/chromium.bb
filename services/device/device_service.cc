@@ -95,13 +95,13 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::WakeLockContextProvider>(this);
 
 #if defined(OS_ANDROID)
-  registry_.AddInterface(
-      GetJavaInterfaceProvider()->CreateInterfaceFactory<BatteryMonitor>());
+  registry_.AddInterface(GetJavaInterfaceProvider()
+                             ->CreateInterfaceFactory<mojom::BatteryMonitor>());
   registry_.AddInterface(
       GetJavaInterfaceProvider()
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
-  registry_.AddInterface<BatteryMonitor>(this);
+  registry_.AddInterface<mojom::BatteryMonitor>(this);
   registry_.AddInterface<mojom::VibrationManager>(this);
 #endif
 }
@@ -116,8 +116,8 @@ void DeviceService::OnBindInterface(
 
 #if !defined(OS_ANDROID)
 void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           BatteryMonitorRequest request) {
-  device::BatteryMonitorImpl::Create(std::move(request));
+                           mojom::BatteryMonitorRequest request) {
+  BatteryMonitorImpl::Create(std::move(request));
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,

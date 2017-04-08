@@ -53,7 +53,7 @@ class DeviceService
           mojom::OrientationAbsoluteSensor>,
 #if !defined(OS_ANDROID)
       // On Android the Device Service provides BatteryMonitor via Java.
-      public service_manager::InterfaceFactory<BatteryMonitor>,
+      public service_manager::InterfaceFactory<mojom::BatteryMonitor>,
       // On Android the Device Service provides VibrationManager via Java.
       public service_manager::InterfaceFactory<mojom::VibrationManager>,
 #endif
@@ -101,9 +101,9 @@ class DeviceService
               mojom::OrientationAbsoluteSensorRequest request) override;
 
 #if !defined(OS_ANDROID)
-  // InterfaceFactory<BatteryMonitor>:
+  // InterfaceFactory<mojom::BatteryMonitor>:
   void Create(const service_manager::Identity& remote_identity,
-              BatteryMonitorRequest request) override;
+              mojom::BatteryMonitorRequest request) override;
   // InterfaceFactory<mojom::VibrationManager>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::VibrationManagerRequest request) override;

@@ -59,7 +59,8 @@ void UpdateNumberBatteriesHistogram(int count) {
       "BatteryStatus.NumberBatteriesMac", count, 1, 5, 6);
 }
 
-void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
+void FetchBatteryStatus(CFDictionaryRef description,
+                        mojom::BatteryStatus* status) {
   CFStringRef current_state =
       base::mac::GetValueFromDictionary<CFStringRef>(description,
           CFSTR(kIOPSPowerSourceStateKey));
@@ -114,8 +115,8 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
   }
 }
 
-std::vector<BatteryStatus> GetInternalBatteriesStates() {
-  std::vector<BatteryStatus> internal_sources;
+std::vector<mojom::BatteryStatus> GetInternalBatteriesStates() {
+  std::vector<mojom::BatteryStatus> internal_sources;
 
   base::ScopedCFTypeRef<CFTypeRef> info(IOPSCopyPowerSourcesInfo());
   base::ScopedCFTypeRef<CFArrayRef> power_sources_list(
@@ -139,7 +140,7 @@ std::vector<BatteryStatus> GetInternalBatteriesStates() {
         GetValueAsBoolean(description, CFSTR(kIOPSIsPresentKey), false);
 
     if (internal_source && source_present) {
-      BatteryStatus status;
+      mojom::BatteryStatus status;
       FetchBatteryStatus(description, &status);
       internal_sources.push_back(status);
     }
@@ -149,10 +150,10 @@ std::vector<BatteryStatus> GetInternalBatteriesStates() {
 }
 
 void OnBatteryStatusChanged(const BatteryCallback& callback) {
-  std::vector<BatteryStatus> batteries(GetInternalBatteriesStates());
+  std::vector<mojom::BatteryStatus> batteries(GetInternalBatteriesStates());
 
   if (batteries.empty()) {
-    callback.Run(BatteryStatus());
+    callback.Run(mojom::BatteryStatus());
     return;
   }
 
@@ -180,7 +181,7 @@ class BatteryStatusObserver {
     if (!notifier_run_loop_source_) {
       LOG(ERROR) << "Failed to create battery status notification run loop";
       // Make sure to execute to callback with the default values.
-      callback_.Run(BatteryStatus());
+      callback_.Run(mojom::BatteryStatus());
       return;
     }
 

@@ -18,7 +18,7 @@ enum WinACLineStatus {
 };
 
 // Returns WebBatteryStatus corresponding to the given SYSTEM_POWER_STATUS.
-DEVICE_BATTERY_EXPORT BatteryStatus ComputeWebBatteryStatus(
+DEVICE_BATTERY_EXPORT mojom::BatteryStatus ComputeWebBatteryStatus(
     const SYSTEM_POWER_STATUS& win_status);
 
 }  // namespace device

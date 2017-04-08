@@ -78,7 +78,7 @@ class BatteryStatusObserver {
     } else {
       // Could not create a message window, execute callback with the default
       // values.
-      callback_.Run(BatteryStatus());
+      callback_.Run(mojom::BatteryStatus());
     }
 
     UpdateNumberBatteriesHistogram();
@@ -102,7 +102,7 @@ class BatteryStatusObserver {
     if (GetSystemPowerStatus(&win_status))
       callback_.Run(ComputeWebBatteryStatus(win_status));
     else
-      callback_.Run(BatteryStatus());
+      callback_.Run(mojom::BatteryStatus());
   }
 
   bool HandleMessage(UINT message,
@@ -181,8 +181,9 @@ class BatteryStatusManagerWin : public BatteryStatusManager {
 
 }  // namespace
 
-BatteryStatus ComputeWebBatteryStatus(const SYSTEM_POWER_STATUS& win_status) {
-  BatteryStatus status;
+mojom::BatteryStatus ComputeWebBatteryStatus(
+    const SYSTEM_POWER_STATUS& win_status) {
+  mojom::BatteryStatus status;
   status.charging = win_status.ACLineStatus != WIN_AC_LINE_STATUS_OFFLINE;
 
   // Set level if available. Otherwise keep the default value which is 1.

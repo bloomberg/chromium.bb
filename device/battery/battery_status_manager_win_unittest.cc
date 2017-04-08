@@ -16,7 +16,7 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOffline) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  mojom::BatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_FALSE(status.charging);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
   EXPECT_EQ(200, status.discharging_time);
@@ -29,7 +29,7 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOfflineDischargingTimeUnknown) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = (DWORD)-1;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  mojom::BatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_FALSE(status.charging);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
@@ -42,7 +42,7 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOnline) {
   win_status.BatteryLifePercent = 50;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  mojom::BatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
@@ -55,7 +55,7 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOnlineFullBattery) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  mojom::BatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
   EXPECT_EQ(0, status.charging_time);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
@@ -68,7 +68,7 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusUnknown) {
   win_status.BatteryLifePercent = 50;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  mojom::BatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
