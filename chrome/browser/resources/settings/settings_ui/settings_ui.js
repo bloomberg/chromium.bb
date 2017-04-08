@@ -268,7 +268,13 @@ Polymer({
 
   /** @private */
   onMenuClosed_: function() {
+    // Add tab index so that the container can be focused.
+    this.$.container.setAttribute('tabindex', '-1');
     this.$.container.focus();
+
+    listenOnce(this.$.container, ['blur', 'pointerdown'], function() {
+      this.$.container.removeAttribute('tabindex');
+    }.bind(this));
   },
 
   /** @private */
