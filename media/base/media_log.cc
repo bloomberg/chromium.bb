@@ -61,36 +61,37 @@ const char MediaLog::kWatchTimeFinalize[] = "FinalizeWatchTime";
 const char MediaLog::kWatchTimeFinalizePower[] = "FinalizePowerWatchTime";
 
 base::flat_set<base::StringPiece> MediaLog::GetWatchTimeKeys() {
-  return {kWatchTimeAudioAll,
-          kWatchTimeAudioMse,
-          kWatchTimeAudioEme,
-          kWatchTimeAudioSrc,
-          kWatchTimeAudioBattery,
-          kWatchTimeAudioAc,
-          kWatchTimeAudioEmbeddedExperience,
-          kWatchTimeAudioVideoAll,
-          kWatchTimeAudioVideoMse,
-          kWatchTimeAudioVideoEme,
-          kWatchTimeAudioVideoSrc,
-          kWatchTimeAudioVideoBattery,
-          kWatchTimeAudioVideoAc,
-          kWatchTimeAudioVideoEmbeddedExperience,
-          kWatchTimeAudioVideoBackgroundAll,
-          kWatchTimeAudioVideoBackgroundMse,
-          kWatchTimeAudioVideoBackgroundEme,
-          kWatchTimeAudioVideoBackgroundSrc,
-          kWatchTimeAudioVideoBackgroundBattery,
-          kWatchTimeAudioVideoBackgroundAc,
-          kWatchTimeAudioVideoBackgroundEmbeddedExperience};
+  return base::flat_set<base::StringPiece>(
+      {kWatchTimeAudioAll,
+       kWatchTimeAudioMse,
+       kWatchTimeAudioEme,
+       kWatchTimeAudioSrc,
+       kWatchTimeAudioBattery,
+       kWatchTimeAudioAc,
+       kWatchTimeAudioEmbeddedExperience,
+       kWatchTimeAudioVideoAll,
+       kWatchTimeAudioVideoMse,
+       kWatchTimeAudioVideoEme,
+       kWatchTimeAudioVideoSrc,
+       kWatchTimeAudioVideoBattery,
+       kWatchTimeAudioVideoAc,
+       kWatchTimeAudioVideoEmbeddedExperience,
+       kWatchTimeAudioVideoBackgroundAll,
+       kWatchTimeAudioVideoBackgroundMse,
+       kWatchTimeAudioVideoBackgroundEme,
+       kWatchTimeAudioVideoBackgroundSrc,
+       kWatchTimeAudioVideoBackgroundBattery,
+       kWatchTimeAudioVideoBackgroundAc,
+       kWatchTimeAudioVideoBackgroundEmbeddedExperience},
+      base::KEEP_FIRST_OF_DUPES);
 }
 
 base::flat_set<base::StringPiece> MediaLog::GetWatchTimePowerKeys() {
-  return {kWatchTimeAudioBattery,
-          kWatchTimeAudioAc,
-          kWatchTimeAudioVideoBattery,
-          kWatchTimeAudioVideoAc,
-          kWatchTimeAudioVideoBackgroundBattery,
-          kWatchTimeAudioVideoBackgroundAc};
+  return base::flat_set<base::StringPiece>(
+      {kWatchTimeAudioBattery, kWatchTimeAudioAc, kWatchTimeAudioVideoBattery,
+       kWatchTimeAudioVideoAc, kWatchTimeAudioVideoBackgroundBattery,
+       kWatchTimeAudioVideoBackgroundAc},
+      base::KEEP_FIRST_OF_DUPES);
 }
 
 std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
