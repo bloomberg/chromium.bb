@@ -4920,10 +4920,14 @@
     },
     "cave-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "cave"
         ],
         "description": "Commit Queue (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": true,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+        ],
         "important": false,
         "internal": true,
         "manifest": "official.xml",
@@ -14575,6 +14579,7 @@
             "auron-paladin",
             "beaglebone-paladin",
             "butterfly-paladin",
+            "cave-paladin",
             "chell-paladin",
             "cyan-paladin",
             "daisy-paladin",

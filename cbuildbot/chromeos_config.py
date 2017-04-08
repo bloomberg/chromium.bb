@@ -2134,6 +2134,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_experimental_boards = frozenset([
+      'cave',
       'fizz',
       'gale',
       'kip',
@@ -2169,6 +2170,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_hwtest_boards = frozenset([
+      'cave',
       'elm',
       'kevin',
       'kip',
@@ -2479,6 +2481,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ShardHWTestsBetweenBuilders('winky-paladin', 'kip-paladin')
   ShardHWTestsBetweenBuilders('elm-paladin', None)
   ShardHWTestsBetweenBuilders('kevin-paladin', None)
+  ShardHWTestsBetweenBuilders('cave-paladin', None)
 
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
