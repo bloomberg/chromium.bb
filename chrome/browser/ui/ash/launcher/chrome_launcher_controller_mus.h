@@ -22,6 +22,9 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
+  void SetShelfItemDelegate(
+      ash::ShelfID id,
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
   void SetV1AppStatus(const std::string& app_id,
@@ -59,6 +62,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
+  ash::ShelfItemDelegate* GetShelfItemDelegate(const ash::ShelfID id) override;
   bool ShelfBoundsChangesProbablyWithUser(
       ash::WmShelf* shelf,
       const AccountId& account_id) const override;

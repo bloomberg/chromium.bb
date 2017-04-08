@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -195,8 +194,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
         item_controller->set_image_set_by_controller(true);
       }
     } else {
-      ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-      shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
+      owner()->SetShelfItemDelegate(shelf_id, std::move(controller));
     }
 
     // We need to change the controller associated with app_shelf_id.

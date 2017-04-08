@@ -1591,6 +1591,8 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
+void ShelfView::OnSetShelfItemDelegate(ShelfID, ShelfItemDelegate*) {}
+
 void ShelfView::AfterItemSelected(
     const ShelfItem& item,
     views::Button* sender,

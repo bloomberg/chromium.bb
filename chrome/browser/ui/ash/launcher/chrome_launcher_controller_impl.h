@@ -67,6 +67,9 @@ class ChromeLauncherControllerImpl
   const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
+  void SetShelfItemDelegate(
+      ash::ShelfID id,
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
   void SetV1AppStatus(const std::string& app_id,
@@ -104,6 +107,7 @@ class ChromeLauncherControllerImpl
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
+  ash::ShelfItemDelegate* GetShelfItemDelegate(const ash::ShelfID id) override;
   bool ShelfBoundsChangesProbablyWithUser(
       ash::WmShelf* shelf,
       const AccountId& account_id) const override;
@@ -157,6 +161,7 @@ class ChromeLauncherControllerImpl
   friend class TestChromeLauncherControllerImpl;
   FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, AppPanels);
 
+  typedef std::map<ash::ShelfID, ash::ShelfItemDelegate*> IDToItemControllerMap;
   typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
 
   // Remembers / restores list of running applications.
@@ -166,7 +171,7 @@ class ChromeLauncherControllerImpl
   void RestoreUnpinnedRunningApplicationOrder(const std::string& user_id);
 
   // Invoked when the associated browser or app is closed.
-  void RemoveShelfItem(ash::ShelfID id);
+  void LauncherItemClosed(ash::ShelfID id);
 
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
@@ -232,6 +237,8 @@ class ChromeLauncherControllerImpl
   void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override;
 
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -253,6 +260,9 @@ class ChromeLauncherControllerImpl
   void UnpinShelfItemInternal(ash::ShelfID id);
 
   ash::ShelfModel* model_;
+
+  // Controller items in this map are owned by |ShelfModel|.
+  IDToItemControllerMap id_to_item_controller_map_;
 
   // Direct access to app_id for a web contents.
   WebContentsToAppIDMap web_contents_to_app_id_;

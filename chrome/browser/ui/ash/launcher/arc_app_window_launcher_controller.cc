@@ -6,7 +6,6 @@
 #include <string>
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
@@ -660,8 +659,7 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   if (!shelf_id) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-    shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
+    owner()->SetShelfItemDelegate(shelf_id, std::move(controller));
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
   item_controller->AddTaskId(task_id);
