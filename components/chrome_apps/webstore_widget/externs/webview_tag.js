@@ -188,12 +188,12 @@ var SelectionRect;
 
 /**
  * @constructor
- * @see https://developer.chrome.com/apps/tags/webview#type-WebRequestEventInteface
+ * @see https://developer.chrome.com/apps/tags/webview#type-WebRequestEventInterface
  */
-function WebRequestEventInteface() {}
+function WebRequestEventInterface() {}
 
-/** @type {!WebRequestEvent} */
-WebRequestEventInteface.prototype.onBeforeSendHeaders;
+/** @type {!WebRequestOptionallySynchronousEvent} */
+WebRequestEventInterface.prototype.onBeforeSendHeaders;
 
 /**
  * @constructor
@@ -208,7 +208,7 @@ function WebView() {}
 WebView.prototype.contentWindow;
 
 /**
- * @type {!WebRequestEventInteface}
+ * @type {!WebRequestEventInterface}
  * @see https://developer.chrome.com/apps/tags/webview#property-request
  */
 WebView.prototype.request;

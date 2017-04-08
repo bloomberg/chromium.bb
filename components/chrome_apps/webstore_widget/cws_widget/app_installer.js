@@ -6,13 +6,13 @@
  * Manage the installation of apps.
  *
  * @param {string} itemId Item id to be installed.
- * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ * @param {!CWSWidgetContainerPlatformDelegate} delegate Delegate for accessing
  *     Chrome platform APIs.
  * @constructor
  * @struct
  */
 function AppInstaller(itemId, delegate) {
-  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  /** @private {!CWSWidgetContainerPlatformDelegate} */
   this.delegate_ = delegate;
   this.itemId_ = itemId;
   this.callback_ = null;

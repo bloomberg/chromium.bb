@@ -45,7 +45,7 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
  *
  * @param {!HTMLDocument} document The document to contain this container.
  * @param {!HTMLElement} parentNode Node to be parent for this container.
- * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ * @param {!CWSWidgetContainerPlatformDelegate} delegate Delegate for accessing
  *     Chrome platform APIs.
  * @param {!{
  *   overrideCwsContainerUrlForTest: (string|undefined),
@@ -54,7 +54,7 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
  * @constructor
  */
 function CWSWidgetContainer(document, parentNode, delegate, params) {
-  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  /** @private {!CWSWidgetContainerPlatformDelegate} */
   this.delegate_ = delegate;
 
   /** @private {!CWSWidgetContainer.MetricsRecorder} */
@@ -215,42 +215,6 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
    */
   this.errorDialog_ = new CWSWidgetContainerErrorDialog(parentNode);
 }
-
-/**
- * Strings required by the widget container.
- * @typedef {{
- *   UI_LOCALE: string,
- *   LINK_TO_WEBSTORE: string,
- *   INSTALLATION_FAILED_MESSAGE: string,
- *   LOADING_SPINNER_ALT: string,
- *   INSTALLING_SPINNER_ALT: string
- * }}
- */
-CWSWidgetContainer.Strings;
-
-/**
- * Functions for reporting metrics for the widget.
- * @typedef {{
- *   recordEnum: function(string, number, number),
- *   recordUserAction: function(string),
- *   startInterval: function(string),
- *   recordInterval: function(string)
- * }}
- */
-CWSWidgetContainer.MetricsImpl;
-
-/**
- * Type for delegate used by CWSWidgetContainer component to access Chrome
- * platform APIs.
- * @typedef {{
- *   strings: !CWSWidgetContainer.Strings,
- *   metricsImpl: !CWSWidgetContainer.MetricsImpl,
- *   installWebstoreItem: function(string, function(?string)),
- *   getInstalledItems: function(function(?Array<!string>)),
- *   requestWebstoreAccessToken: function(function(?string))
- * }}
- */
-CWSWidgetContainer.PlatformDelegate;
 
 /**
  * @enum {string}
@@ -878,11 +842,11 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
 
 /**
  * Utility methods and constants to record histograms.
- * @param {!CWSWidgetContainer.MetricsImpl} metricsImpl
+ * @param {!CWSWidgetContainerMetricsImpl} metricsImpl
  * @constructor
  */
 CWSWidgetContainer.MetricsRecorder = function(metricsImpl) {
-  /** @private {!CWSWidgetContainer.MetricsImpl} */
+  /** @private {!CWSWidgetContainerMetricsImpl} */
   this.metricsImpl_ = metricsImpl;
 };
 

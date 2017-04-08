@@ -206,9 +206,22 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'suggest_apps_dialog',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'suggest_apps_dialog',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:chrome_webstore_widget_private',
+        '../../../common/js/compiled_resources2.gyp:metrics',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '../compiled_resources2.gyp:constants',
+        '../compiled_resources2.gyp:launch_param',
+        '../compiled_resources2.gyp:providers_model',
+        '../compiled_resources2.gyp:web_store_utils',
+        '<(DEPTH)/components/chrome_apps/webstore_widget/cws_widget/compiled_resources2.gyp:cws_widget_container',
+        '<(EXTERNS_GYP):file_manager_private',
+        'file_manager_dialog_base',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
   ],
 }

@@ -69,24 +69,6 @@ function FileTasks(volumeManager, metadataModel, directoryModel, ui, entries,
 };
 
 /**
- * Location of the Chrome Web Store.
- *
- * @const
- * @type {string}
- */
-FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
-
-/**
- * Base URL of apps list in the Chrome Web Store. This constant is used in
- * FileTasks.createWebStoreLink().
- *
- * @const
- * @type {string}
- */
-FileTasks.WEB_STORE_HANDLER_BASE_URL =
-    'https://chrome.google.com/webstore/category/collection/file_handlers';
-
-/**
  * The app ID of the video player app.
  * @const
  * @type {string}
@@ -149,32 +131,6 @@ FileTasks.create = function(volumeManager, metadataModel, directoryModel, ui,
         return new FileTasks(volumeManager, metadataModel, directoryModel, ui,
             entries, mimeTypes, args[0], args[1]);
       });
-};
-
-/**
- * Returns URL of the Chrome Web Store which show apps supporting the given
- * file-extension and mime-type.
- *
- * @param {?string} extension Extension of the file (with the first dot).
- * @param {?string} mimeType Mime type of the file.
- * @return {string} URL
- */
-FileTasks.createWebStoreLink = function(extension, mimeType) {
-  if (!extension || FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1)
-    return FileTasks.CHROME_WEB_STORE_URL;
-
-  if (extension[0] === '.')
-    extension = extension.substr(1);
-  else
-    console.warn('Please pass an extension with a dot to createWebStoreLink.');
-
-  var url = FileTasks.WEB_STORE_HANDLER_BASE_URL;
-  url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
-
-  // If a mime is given, add it into the URL.
-  if (mimeType)
-    url += '&_fmt=' + mimeType.replace(/[^-\w\/]/g, '');
-  return url;
 };
 
 /**
@@ -244,16 +200,6 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm', '.webp',
   '.wma', '.wmv', '.xls', '.xlsx', '.crdownload', '.crx', '.dmg', '.exe',
   '.html', 'htm', '.jar', '.ps', '.torrent', '.txt', '.zip',
-]);
-
-/**
- * The list of executable file extensions.
- *
- * @const
- * @type {Array<string>}
- */
-FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
-  '.exe', '.lnk', '.deb', '.dmg', '.jar', '.msi',
 ]);
 
 /**
@@ -452,7 +398,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
         textMessageId = 'NO_TASK_FOR_FILE';
     }
 
-    var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
+    var webStoreUrl = webStoreUtils.createWebStoreLink(extension, mimeType);
     var text = strf(textMessageId, webStoreUrl, str('NO_TASK_FOR_FILE_URL'));
     var title = titleMessageId ? str(titleMessageId) : filename;
     this.ui_.alertDialog.showHtml(title, text, null, null, null);
@@ -461,9 +407,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
 
   var onViewFilesFailure = function() {
     if (extension &&
-        (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension)
-             !== -1 ||
-         FileTasks.EXECUTABLE_EXTENSIONS.indexOf(assert(extension)) !== -1)) {
+        (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1 ||
+         constants.EXECUTABLE_EXTENSIONS.indexOf(assert(extension)) !== -1)) {
       showAlert();
       return;
     }

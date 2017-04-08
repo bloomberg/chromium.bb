@@ -13,6 +13,7 @@
       '<(WIDGET_ROOT)/cws_webview_client.js',
       '<(WIDGET_ROOT)/cws_widget_container.js',
       '<(WIDGET_ROOT)/cws_widget_container_error_dialog.js',
+      '<(WIDGET_ROOT)/cws_widget_container_platform_delegate.js',
     ]
   }
 }

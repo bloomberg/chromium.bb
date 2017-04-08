@@ -100,10 +100,8 @@ SuggestAppsDialog.prototype.showByExtensionAndMime =
   if (mime)
     options.mime_type = mime;
   this.showInternal_(
-      options,
-      str('SUGGEST_DIALOG_TITLE'),
-      FileTasks.createWebStoreLink(extension, mime),
-      onDialogClosed);
+      options, str('SUGGEST_DIALOG_TITLE'),
+      webStoreUtils.createWebStoreLink(extension, mime), onDialogClosed);
 };
 
 /**
@@ -124,7 +122,7 @@ SuggestAppsDialog.prototype.showProviders = function(onDialogClosed) {
 
 /**
  * Creates platform delegate for CWSWidgetContainer.
- * @return {!CWSWidgetContainer.PlatformDelegate}
+ * @return {!CWSWidgetContainerPlatformDelegate}
  * @private
  */
 SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {

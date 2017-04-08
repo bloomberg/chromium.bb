@@ -54,7 +54,7 @@ function getString(id) {
 
 /**
  * @param {Object<string>} strings Localized strings used by the container.
- * @return {!CWSWidgetContainer.PlatformDelegate}
+ * @return {!CWSWidgetContainerPlatformDelegate}
  */
 function createPlatformDelegate(strings) {
   return {
@@ -208,7 +208,7 @@ window.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    /** @type {!CWSWidgetContainer.PlatformDelegate} */
+    /** @type {!CWSWidgetContainerPlatformDelegate} */
     var platformDelegate = createPlatformDelegate(strings);
 
     var root = $('widget-container-root');

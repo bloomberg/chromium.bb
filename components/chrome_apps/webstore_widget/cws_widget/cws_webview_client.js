@@ -9,14 +9,14 @@
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
  * @param {Object<*>} options Options to be sent to the dialog host.
- * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ * @param {!CWSWidgetContainerPlatformDelegate} delegate Delegate for accessing
  *     Chrome platform APIs.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function CWSContainerClient(webView, width, height, url, target, options,
                             delegate) {
-  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  /** @private {!CWSWidgetContainerPlatformDelegate} */
   this.delegate_ = delegate;
   this.webView_ = webView;
   this.width_ = width;

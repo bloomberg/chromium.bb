@@ -33,6 +33,10 @@
 #      'target_name': 'column_visibility_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
+    {
+      'target_name': 'constants',
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'dialog_action_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -268,6 +272,13 @@
       'target_name': 'volume_manager_wrapper',
       'dependencies': [
         '../../background/js/compiled_resources2.gyp:volume_manager_factory',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'web_store_utils',
+      'dependencies': [
+        'constants',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
