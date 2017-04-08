@@ -19,11 +19,6 @@
 
 // Tests launching TabGridViewController and tapping a cell.
 - (void)testLaunchAndTappingCell {
-// TODO(crbug.com/687865): enable the test. It was flaky on device.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(
-      @"Disabled for devices because it is flaky on iPhone");
-#endif
   showcase_utils::Open(@"TabGridViewController");
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Tab 0_button")]
       performAction:grey_tap()];
