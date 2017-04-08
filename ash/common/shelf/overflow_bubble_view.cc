@@ -29,7 +29,7 @@ const int kEndPadding = 16;
 // Distance between overflow bubble and the main shelf.
 const int kDistanceToMainShelf = 4;
 
-const SkColor kBackgroundColor =
+constexpr SkColor kBackgroundColor =
     SkColorSetA(kShelfDefaultBaseColor, kShelfTranslucentAlpha);
 
 }  // namespace

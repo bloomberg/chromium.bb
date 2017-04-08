@@ -21,63 +21,64 @@ enum ShelfConstant {
 
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.
-extern const int kWorkspaceAreaVisibleInset;
+constexpr int kWorkspaceAreaVisibleInset = 2;
 
 // When autohidden we extend the touch hit target onto the screen so that the
 // user can drag the shelf out.
-extern const int kWorkspaceAreaAutoHideInset;
+constexpr int kWorkspaceAreaAutoHideInset = 5;
 
 // Size of the shelf when auto-hidden.
-ASH_EXPORT extern const int kShelfAutoHideSize;
+ASH_EXPORT constexpr int kShelfAutoHideSize = 3;
 
 // Animation duration for switching black shelf and dock background on and off.
-ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
+ASH_EXPORT constexpr int kTimeToSwitchBackgroundMs = 1000;
 
 // The default base color of the shelf to which different alpha values are
 // applied based on the desired shelf opacity level.
-ASH_EXPORT extern const SkColor kShelfDefaultBaseColor;
+ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
 
 // Size allocated for each app button on the shelf.
-ASH_EXPORT extern const int kShelfButtonSize;
+ASH_EXPORT constexpr int kShelfButtonSize = 48;
 
 // Size of the space between buttons on the shelf.
-ASH_EXPORT extern const int kShelfButtonSpacing;
+ASH_EXPORT constexpr int kShelfButtonSpacing = 16;
 
 // Highlight color used for shelf button activated states.
 // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active state
 // using the material design ripple animation.
-ASH_EXPORT extern const SkColor kShelfButtonActivatedHighlightColor;
+ASH_EXPORT constexpr SkColor kShelfButtonActivatedHighlightColor =
+    SkColorSetA(SK_ColorWHITE, 100);
 
 // Ink drop color for shelf items.
-extern const SkColor kShelfInkDropBaseColor;
+constexpr SkColor kShelfInkDropBaseColor = SK_ColorWHITE;
 
 // Opacity of the ink drop ripple for shelf items when the ripple is visible.
-extern const float kShelfInkDropVisibleOpacity;
+constexpr float kShelfInkDropVisibleOpacity = 0.2f;
 
 // The foreground color of the icons used in the shelf (launcher,
 // notifications, etc).
-ASH_EXPORT extern const SkColor kShelfIconColor;
+ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
 // The alpha value for the shelf background when a window is overlapping.
-ASH_EXPORT extern const int kShelfTranslucentAlpha;
+ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;
 
 // The alpha value used to darken a colorized shelf when the shelf is
 // translucent.
-extern const int kShelfTranslucentColorDarkenAlpha;
+constexpr int kShelfTranslucentColorDarkenAlpha = 128;
 
 // The alpha vlaue usesd to darken a colorized shelf when the shelf is opaque.
-extern const int kShelfOpaqueColorDarkenAlpha;
+constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 
 // The width and height of the material design overflow button.
 // TODO(tdanderson): Refactor constants which are common between the shelf
 // and the tray. See crbug.com/623987.
-extern const int kOverflowButtonSize;
+constexpr int kOverflowButtonSize = 32;
 
 // The radius of the rounded corners of the overflow button.
-extern const int kOverflowButtonCornerRadius;
+constexpr int kOverflowButtonCornerRadius = 2;
 
 // The radius of the circular material design app list button.
-extern const int kAppListButtonRadius;
+constexpr int kAppListButtonRadius = kOverflowButtonSize / 2;
 
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
