@@ -53,6 +53,8 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   }
   UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL",
                         !matches_.empty());
+  UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
+                               clipboard_content_->GetClipboardContentAge());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
