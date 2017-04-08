@@ -250,6 +250,19 @@
       </div>
 
       <div class="settings-box two-line" actionable
+          on-tap="onActivityControlsTap_">
+        <div class="start">
+          $i18n{personalizeGoogleServicesTitle}
+          <div class="secondary" id="activityControlsSecondary">
+            $i18n{personalizeGoogleServicesText}
+          </div>
+        </div>
+        <button class="icon-external" is="paper-icon-button-light"
+            aria-label="$i18n{personalizeGoogleServicesTitle}"
+            aria-describedby="activityControlsSecondary"></button>
+      </div>
+
+      <div class="settings-box two-line" actionable
           on-tap="onManageSyncedDataTap_">
         <div class="start">
           $i18n{manageSyncedDataTitle}

@@ -270,6 +270,11 @@ Polymer({
   },
 
   /** @private */
+  onActivityControlsTap_: function() {
+    this.browserProxy_.openActivityControlsUrl();
+  },
+
+  /** @private */
   onManageSyncedDataTap_: function() {
     window.open(loadTimeData.getString('syncDashboardUrl'));
   },

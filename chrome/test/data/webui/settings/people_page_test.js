@@ -329,22 +329,6 @@ cr.define('settings_people_page', function() {
         });
       });
 
-      test('ActivityControlsLink', function() {
-        return browserProxy.whenCalled('getSyncStatus').then(function() {
-          Polymer.dom.flush();
-
-          var activityControls = peoplePage.$$('#activity-controls');
-          assertTrue(!!activityControls);
-          assertFalse(activityControls.hidden);
-
-          cr.webUIListenerCallback('sync-status-changed', {
-            signedIn: false,
-          });
-
-          assertTrue(activityControls.hidden);
-        });
-      });
-
       test('syncStatusNotActionableForManagedAccounts', function() {
         assertFalse(!!peoplePage.$$('#sync-status'));
 

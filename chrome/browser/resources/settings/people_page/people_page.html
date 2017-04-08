@@ -84,18 +84,6 @@
         width: 40px;
       }
 
-      /* Avoid orphaned english text (as requested by bettes@) */
-      #activity-controls .secondary {
-        max-width: 90%;
-      }
-
-      #googleg-logo {
-        background-image: url(../../../../../ui/webui/resources/images/200-logo_googleg.png);
-        background-size: cover;
-        height: 16px;
-        width: 16px;
-      }
-
       #disconnectDialog .footer .settings-box {
         --settings-box-row-padding: 0;
       }
@@ -204,23 +192,6 @@
                 aria-describedby="syncSecondary"></button>
           </div>
         </template>
-
-        <div class="settings-box three-line" id="activity-controls"
-            on-tap="onActivityControlsTap_" actionable
-            hidden="[[!syncStatus.signedIn]]">
-          <div class="icon-container">
-            <div id="googleg-logo"></div>
-          </div>
-          <div class="middle">
-            $i18n{personalizeGoogleServicesTitle}
-            <div class="secondary" id="personalizeGoogleServicesSecondary">
-              $i18n{personalizeGoogleServicesText}
-            </div>
-          </div>
-          <button class="icon-external" is="paper-icon-button-light"
-              aria-label="$i18n{personalizeGoogleServicesTitle}"
-              aria-describedby="personalizeGoogleServicesSecondary"></button>
-        </div>
 
 <if expr="chromeos">
         <template is="dom-if" if="[[!quickUnlockEnabled_]]">

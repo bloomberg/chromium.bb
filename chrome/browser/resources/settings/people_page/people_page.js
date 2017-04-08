@@ -296,11 +296,6 @@ Polymer({
 // </if>
 
   /** @private */
-  onActivityControlsTap_: function() {
-    this.syncBrowserProxy_.openActivityControlsUrl();
-  },
-
-  /** @private */
   onSigninTap_: function() {
     this.syncBrowserProxy_.startSignIn();
   },
