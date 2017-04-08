@@ -16,6 +16,7 @@ public interface PhotoPickerListener {
      * The action the user took in the picker.
      */
     enum Action {
+        CANCEL,
         PHOTOS_SELECTED,
         LAUNCH_CAMERA,
         LAUNCH_GALLERY,

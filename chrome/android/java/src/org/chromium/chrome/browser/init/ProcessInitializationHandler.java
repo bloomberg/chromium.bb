@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerat
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AccountsChangedReceiver;
@@ -42,7 +43,6 @@ import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.widget.Toast;
 
 /**
  * Handles the initialization dependences of the browser process.  This is meant to handle the
@@ -159,15 +159,20 @@ public class ProcessInitializationHandler {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
             UiUtils.setPhotoPickerDelegate(new UiUtils.PhotoPickerDelegate() {
+                private PhotoPickerDialog mDialog;
+
                 @Override
                 public void showPhotoPicker(
                         Context context, PhotoPickerListener listener, boolean allowMultiple) {
-                    Toast toast = Toast.makeText(context, "Not implemented!", Toast.LENGTH_SHORT);
-                    toast.show();
+                    mDialog = new PhotoPickerDialog(context, listener, allowMultiple);
+                    mDialog.show();
                 }
 
                 @Override
-                public void dismissPhotoPicker() {}
+                public void dismissPhotoPicker() {
+                    mDialog.dismiss();
+                    mDialog = null;
+                }
             });
         }
     }

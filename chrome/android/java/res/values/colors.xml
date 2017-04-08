@@ -29,6 +29,7 @@
     <color name="google_grey_600">#757575</color>
     <color name="toolbar_shadow_color">#1d000000</color>
     <color name="white_alpha_50">#80ffffff</color>
+    <color name="black_alpha_30">#4d000000</color>
     <color name="black_alpha_40">#66000000</color>
     <color name="toolbar_light_tint">#A3000000</color>
     <color name="light_grey">#ccc</color>
@@ -131,7 +132,7 @@
     <color name="progress_bar_foreground_white">@android:color/white</color>
     <color name="progress_bar_secondary">@color/google_grey_600</color>
     <color name="progress_bar_background">#3d4386f7</color>
-    <color name="progress_bar_background_white">#4d000000</color>
+    <color name="progress_bar_background_white">@color/black_alpha_30</color>
 
     <!-- Theme colors. Also used for toolbar background -->
     <color name="incognito_primary_color">#505050</color>
@@ -179,6 +180,13 @@
 
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#ff787878</color>
+
+    <!-- Photo Picker colors -->
+    <color name="photo_picker_tile_bg_color">@color/google_grey_200</color>
+    <color name="photo_picker_special_tile_bg_color">@color/dark_action_bar_color</color>
+    <color name="photo_picker_special_tile_color">@android:color/white</color>
+    <color name="photo_picker_special_tile_disabled_bg_color">@color/google_grey_300</color>
+    <color name="photo_picker_special_tile_disabled_color">@color/google_grey_400</color>
 
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">#1D000000</color>

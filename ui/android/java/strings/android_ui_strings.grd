@@ -177,6 +177,17 @@
         Clear
       </message>
 
+      <!-- Photo picker -->
+      <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">
+        Select images
+      </message>
+      <message name="IDS_PHOTO_PICKER_CAMERA" desc="The label for the Camera action in the Photo Picker (opening the camera system intent).">
+        Camera
+      </message>
+      <message name="IDS_PHOTO_PICKER_BROWSE" desc="The label for the Browse action in the Photo Picker (browsing for photos).">
+        Browse
+      </message>
+
       <!-- Accessibility content description -->
       <message name="IDS_AUTOFILL_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill popup is shown.">
         Showing autofill popup
@@ -187,7 +198,7 @@
       <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
         Suggestions available
       </message>
-      
+
       <!-- Migration strings -->
       <message name="IDS_UPDATING_CHROME" desc="String that indicates that Chrome is updating">
         Updating Chrome...
