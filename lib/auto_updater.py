@@ -168,7 +168,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
                original_payload_dir=None, do_rootfs_update=True,
                do_stateful_update=True, reboot=True, disable_verification=False,
-               clobber_stateful=False, yes=False):
+               clobber_stateful=False, yes=False, payload_filename=None):
     """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
 
     Args:
@@ -196,6 +196,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       yes: Assume "yes" (True) for any prompt. The default is False. However,
           it should be set as True if we want to disable all the prompts for
           auto-update.
+      payload_filename: Filename of exact payload file to use for
+          update instead of the default: update.gz. Defaults to None. Use
+          only if you staged a payload by filename (i.e not artifact) first.
     """
     super(ChromiumOSFlashUpdater, self).__init__(device, payload_dir)
     if tempdir is not None:
@@ -220,6 +223,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.device_static_dir = os.path.join(self.device.work_dir, 'static')
     self.device_restore_dir = os.path.join(self.device.work_dir, 'old')
     self.stateful_update_bin = None
+    # Auto-update by specifying exact payload filename you staged
+    self.payload_filename = payload_filename
 
 
   def CheckPayloads(self):
@@ -227,7 +232,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     logging.debug('Checking if payloads have been stored in directory %s...',
                   self.payload_dir)
     filenames = []
-    filenames += [ds_wrapper.ROOTFS_FILENAME] if self._do_rootfs_update else []
+    payload_name = self._GetRootFsPayloadFileName()
+    filenames += [payload_name] if self._do_rootfs_update else []
     if self._do_stateful_update:
       filenames += [ds_wrapper.STATEFUL_FILENAME]
 
@@ -485,6 +491,17 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """
     self.device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
 
+  def _GetRootFsPayloadFileName(self):
+    """Get the correct RootFs payload filename.
+
+    Returns:
+      The payload filename. (update.gz or a custom payload filename).
+    """
+    if self.payload_filename:
+      return self.payload_filename
+    else:
+      return ds_wrapper.ROOTFS_FILENAME
+
   def TransferDevServerPackage(self):
     """Transfer devserver package to work directory of the remote device."""
     logging.info('Copying devserver package to device...')
@@ -509,12 +526,22 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     device_payload_dir = os.path.join(self.device_static_dir, 'pregenerated')
     self._EnsureDeviceDirectory(device_payload_dir)
     logging.info('Copying rootfs payload to device...')
-    payload = os.path.join(self.payload_dir, ds_wrapper.ROOTFS_FILENAME)
+    payload_name = self._GetRootFsPayloadFileName()
+    payload = os.path.join(self.payload_dir, payload_name)
     # ROOTFS_FILENAME=update.gz is an already compressed file, can't use rsync.
     # TODO(ihf): Expand update.gz after download to devserver and get rid of
     # this scp below (use rsync probably without --compress).
     self.device.CopyToDevice(payload, device_payload_dir, mode='scp',
                              log_output=True, **self._cmd_kwargs)
+
+    # If Rootfs was staged by Google Storage URI rather than build_name
+    if self.payload_filename:
+      expected_path = os.path.join(device_payload_dir,
+                                   ds_wrapper.ROOTFS_FILENAME)
+      current_path = os.path.join(device_payload_dir, payload_name)
+      # Rename the payload on the DUT so we don't break the current
+      # devserver staging. Rename to update.gz so DUTs devserver can respond.
+      self.device.RunCommand(['mv', current_path, expected_path])
 
   def TransferStatefulUpdate(self):
     """Transfer files for stateful update.
@@ -792,7 +819,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
 
   def __init__(self, device, build_name, payload_dir, dev_dir='',
                log_file=None, tempdir=None, original_payload_dir=None,
-               clobber_stateful=True, local_devserver=False, yes=False):
+               clobber_stateful=True, local_devserver=False, yes=False,
+               payload_filename=None):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -812,16 +840,19 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           stateful.tgz.
       clobber_stateful: whether to do a clean stateful update. The default is
           True for CrOS update.
-      local_devserver: Indecate whether users use their local devserver.
+      local_devserver: Indicate whether users use their local devserver.
           Default: False.
       yes: Assume "yes" (True) for any prompt. The default is False. However,
           it should be set as True if we want to disable all the prompts for
           auto-update.
+      payload_filename: Filename of exact payload file to use for
+          update instead of the default: update.gz.
     """
     super(ChromiumOSUpdater, self).__init__(
         device, payload_dir, dev_dir=dev_dir, tempdir=tempdir,
         original_payload_dir=original_payload_dir,
-        clobber_stateful=clobber_stateful, yes=yes)
+        clobber_stateful=clobber_stateful, yes=yes,
+        payload_filename=payload_filename)
 
     if log_file:
       self._cmd_kwargs['log_stdout_to_file'] = log_file
