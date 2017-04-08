@@ -19,7 +19,8 @@ namespace device {
 
 class HidServiceLinux : public HidService {
  public:
-  HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  HidServiceLinux(
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~HidServiceLinux() override;
 
   // HidService:
@@ -48,8 +49,8 @@ class HidServiceLinux : public HidService {
   static void FinishOpen(std::unique_ptr<ConnectParams> params);
   static void CreateConnection(std::unique_ptr<ConnectParams> params);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The helper lives on the FILE thread and holds a weak reference back to the
   // service that owns it.
