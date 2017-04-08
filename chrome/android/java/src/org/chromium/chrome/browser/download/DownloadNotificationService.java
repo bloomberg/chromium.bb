@@ -166,14 +166,16 @@ public class DownloadNotificationService extends Service {
      * notification thinks it's in the foreground, this will start the service with the goal of
      * shutting it down.  That is because if the service is in the foreground it's not possible to
      * stop it through the notification manager.
+     * @param removedNotificationId The id of the notification that was just removed or {@code -1}
+     *                              if this does not apply.
      */
     @TargetApi(Build.VERSION_CODES.M)
-    public static void hideDanglingSummaryNotification(Context context) {
+    public static void hideDanglingSummaryNotification(Context context, int removedNotificationId) {
         if (!useForegroundService()) return;
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (hasDownloadNotifications(manager, -1)) return;
+        if (hasDownloadNotifications(manager, removedNotificationId)) return;
 
         StatusBarNotification summary = getSummaryNotification(manager);
         if (summary == null) return;
@@ -695,8 +697,13 @@ public class DownloadNotificationService extends Service {
             }
         } else {
             // If we don't have a valid summary, just guarantee that we aren't in the foreground for
-            // safety.
-            stopForegroundInternal(false);
+            // safety.  Still try to remove the summary notification to make sure it's gone.  This
+            // is because querying for it might fail if we have just recently started up and began
+            // showing it.  This might leave us in a bad state if the cancel request fails inside
+            // the framework.
+            // TODO(dtrainor): Add a way to attempt to automatically clean up the notification
+            // shortly after this.
+            stopForegroundInternal(true);
         }
 
         // Stop the service which should start the destruction process.  At this point we should be
@@ -977,6 +984,7 @@ public class DownloadNotificationService extends Service {
                 intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
                 intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id.id);
                 intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id.namespace);
+                intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
             } else {
                 intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, id, false);
             }

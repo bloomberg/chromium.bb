@@ -29,7 +29,7 @@ public class NotificationConstants {
      * When adding a new extra, as well as setting it on the intent in NotificationPlatformBridge,
      * it *must* also be set in {@link NotificationJobService#getJobExtrasFromIntent(Intent)}
      */
-    static final String EXTRA_NOTIFICATION_ID = "notification_id";
+    public static final String EXTRA_NOTIFICATION_ID = "notification_id";
     static final String EXTRA_NOTIFICATION_INFO_ORIGIN = "notification_info_origin";
     static final String EXTRA_NOTIFICATION_INFO_PROFILE_ID = "notification_info_profile_id";
     static final String EXTRA_NOTIFICATION_INFO_PROFILE_INCOGNITO =

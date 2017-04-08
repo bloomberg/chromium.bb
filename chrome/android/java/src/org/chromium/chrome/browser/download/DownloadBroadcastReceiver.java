@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 
@@ -46,7 +47,9 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
      * @param intent Intent from the android DownloadManager.
      */
     private void openDownload(final Context context, Intent intent) {
-        DownloadNotificationService.hideDanglingSummaryNotification(context);
+        int notificationId = IntentUtils.safeGetIntExtra(
+                intent, NotificationConstants.EXTRA_NOTIFICATION_ID, -1);
+        DownloadNotificationService.hideDanglingSummaryNotification(context, notificationId);
 
         long ids[] =
                 intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
