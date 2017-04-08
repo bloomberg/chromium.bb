@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Supported Number of Channels for ConvolverNode</title>
   </head>
 
@@ -13,7 +13,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("channel-count-test", function (done) {
+      audit.define("channel-count-test", (task, should) => {
         // Just need a context to create nodes on, so any allowed length and rate is ok.
         var context = new OfflineAudioContext(1, 1, 48000);
 
@@ -26,27 +26,18 @@
 
           if (count == 1 || count == 2 || count == 4) {
             // These are the only valid channel counts for the buffer.
-            success = Should(message, function () {
-              convolver.buffer = buffer;
-            }).notThrow() && success;
+            should(() => convolver.buffer = buffer, message)
+              .notThrow();
           } else {
-            success = Should(message, function () {
-              convolver.buffer = buffer;
-            }).throw("NotSupportedError") && success;
+            should(() => convolver.buffer = buffer, message)
+              .throw("NotSupportedError");
           }
         }
 
-        Should("Multiple channels for the convolver were handled", success)
-          .summarize("correctly", "incorrectly");
-
-        done();
+        task.done();
       });      
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
