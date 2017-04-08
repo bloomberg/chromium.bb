@@ -324,6 +324,11 @@ bool DrawingBuffer::finishPrepareTextureMailboxSoftware(
                         WTF::passed(std::move(bitmap)), m_size);
   *outReleaseCallback =
       cc::SingleReleaseCallback::Create(convertToBaseCallback(std::move(func)));
+
+  if (m_preserveDrawingBuffer == Discard) {
+    setBufferClearNeeded(true);
+  }
+
   return true;
 }
 
