@@ -1447,6 +1447,9 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux ChromiumOS Ozone (Intel)',
+          'Mac Experimental Retina Release (AMD)',
+          'Mac Experimental Retina Release (NVIDIA)',
+          'Mac Pro Release (AMD)',
         ],
       },
     ],
