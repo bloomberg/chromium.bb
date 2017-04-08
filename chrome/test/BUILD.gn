@@ -248,14 +248,6 @@ static_library("test_support") {
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
   }
-
-  if (enable_extensions) {
-    public_deps += [
-      "//apps:test_support",
-      "//chrome/common/extensions/api",
-      "//extensions:test_support",
-    ]
-  }
 }
 
 # TODO(GYP_GONE): Delete this after we've converted everything to GN.
