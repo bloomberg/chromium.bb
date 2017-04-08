@@ -33,7 +33,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video/video_capture_system.h"
 #include "media/capture/video_capture_types.h"
@@ -162,24 +161,6 @@ class CONTENT_EXPORT VideoCaptureManager
   // UI for the given session.
   void SetDesktopCaptureWindowId(media::VideoCaptureSessionId session_id,
                                  gfx::NativeViewId window_id);
-
-  // Gets a weak reference to the device factory, used for tests.
-  media::VideoCaptureDeviceFactory* video_capture_device_factory() const {
-    return video_capture_system_->video_capture_device_factory();
-  }
-
-#if defined(OS_WIN)
-  void set_device_task_runner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
-    device_task_runner_ = device_task_runner;
-  }
-#endif
-
-  // Returns the SingleThreadTaskRunner where devices are enumerated on and
-  // started.
-  scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner() {
-    return device_task_runner_;
-  }
 
   void GetPhotoCapabilities(
       int session_id,

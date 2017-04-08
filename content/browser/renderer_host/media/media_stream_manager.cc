@@ -49,7 +49,8 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
-#include "media/capture/video/video_capture_system.h"
+#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system_impl.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -393,6 +394,12 @@ void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
 }
 
 MediaStreamManager::MediaStreamManager(media::AudioSystem* audio_system)
+    : MediaStreamManager(audio_system, nullptr, nullptr) {}
+
+MediaStreamManager::MediaStreamManager(
+    media::AudioSystem* audio_system,
+    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
     : audio_system_(audio_system),
 #if defined(OS_WIN)
       video_capture_thread_("VideoCaptureThread"),
@@ -401,16 +408,23 @@ MediaStreamManager::MediaStreamManager(media::AudioSystem* audio_system)
           switches::kUseFakeUIForMediaStream)) {
   DCHECK(audio_system_);
 
-  // Some unit tests create the MSM in the IO thread and assumes the
-  // initialization is done synchronously.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    InitializeDeviceManagersOnIOThread();
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaStreamManager::InitializeDeviceManagersOnIOThread,
-                   base::Unretained(this)));
+  if (!video_capture_system) {
+    video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+        media::VideoCaptureDeviceFactory::CreateFactory(
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
+  if (!device_task_runner) {
+    device_task_runner = audio_system_->GetTaskRunner();
+#if defined(OS_WIN)
+    // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
+    // buggy third party Direct Show modules, http://crbug.com/428958.
+    video_capture_thread_.init_com_with_mta(false);
+    CHECK(video_capture_thread_.Start());
+    device_task_runner = video_capture_thread_.task_runner();
+#endif
+  }
+  InitializeMaybeAsync(std::move(video_capture_system),
+                       std::move(device_task_runner));
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // BrowserMainLoop always creates the PowerMonitor instance before creating
@@ -1214,8 +1228,21 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
   DeleteRequest(label);
 }
 
-void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void MediaStreamManager::InitializeMaybeAsync(
+    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner) {
+  // Some unit tests initialize the MSM in the IO thread and assume the
+  // initialization is done synchronously. Other clients call this from a
+  // different thread and expect initialization to run asynchronously.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaStreamManager::InitializeMaybeAsync,
+                   base::Unretained(this), base::Passed(&video_capture_system),
+                   std::move(device_task_runner)));
+    return;
+  }
+
   // Store a pointer to |this| on the IO thread to avoid having to jump to the
   // UI thread to fetch a pointer to the MSM. In particular on Android, it can
   // be problematic to post to a UI thread from arbitrary worker threads since
@@ -1228,7 +1255,6 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 1"));
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
   // fixed.
@@ -1253,21 +1279,9 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   tracked_objects::ScopedTracker tracking_profile4(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
-  auto video_capture_system = base::MakeUnique<media::VideoCaptureSystem>(
-      media::VideoCaptureDeviceFactory::CreateFactory(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-#if defined(OS_WIN)
-  // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
-  // buggy third party Direct Show modules, http://crbug.com/428958.
-  video_capture_thread_.init_com_with_mta(false);
-  CHECK(video_capture_thread_.Start());
-  video_capture_manager_ = new VideoCaptureManager(
-      std::move(video_capture_system), video_capture_thread_.task_runner());
-#else
-  video_capture_manager_ = new VideoCaptureManager(
-      std::move(video_capture_system), audio_system_->GetTaskRunner());
-#endif
 
+  video_capture_manager_ = new VideoCaptureManager(
+      std::move(video_capture_system), std::move(device_task_runner));
   video_capture_manager_->RegisterListener(this);
 
   media_devices_manager_.reset(

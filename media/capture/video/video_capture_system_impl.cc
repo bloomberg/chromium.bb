@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/video/video_capture_system.h"
+#include "media/capture/video/video_capture_system_impl.h"
 
 #include "media/base/bind_to_current_loop.h"
 
@@ -57,26 +57,26 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
 
 namespace media {
 
-VideoCaptureSystem::VideoCaptureSystem(
+VideoCaptureSystemImpl::VideoCaptureSystemImpl(
     std::unique_ptr<VideoCaptureDeviceFactory> factory)
     : factory_(std::move(factory)) {
   thread_checker_.DetachFromThread();
 }
 
-VideoCaptureSystem::~VideoCaptureSystem() = default;
+VideoCaptureSystemImpl::~VideoCaptureSystemImpl() = default;
 
-void VideoCaptureSystem::GetDeviceInfosAsync(
+void VideoCaptureSystemImpl::GetDeviceInfosAsync(
     const DeviceInfoCallback& result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Use of Unretained() is safe assuming that |result_callback| has ownership
   // of |this|.
   factory_->EnumerateDeviceDescriptors(media::BindToCurrentLoop(
-      base::Bind(&VideoCaptureSystem::OnDescriptorsReceived,
+      base::Bind(&VideoCaptureSystemImpl::OnDescriptorsReceived,
                  base::Unretained(this), result_callback)));
 }
 
 // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
-std::unique_ptr<VideoCaptureDevice> VideoCaptureSystem::CreateDevice(
+std::unique_ptr<VideoCaptureDevice> VideoCaptureSystemImpl::CreateDevice(
     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const VideoCaptureDeviceInfo* device_info = LookupDeviceInfoFromId(device_id);
@@ -85,7 +85,7 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureSystem::CreateDevice(
   return factory_->CreateDevice(device_info->descriptor);
 }
 
-void VideoCaptureSystem::OnDescriptorsReceived(
+void VideoCaptureSystemImpl::OnDescriptorsReceived(
     const DeviceInfoCallback& result_callback,
     std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -110,7 +110,7 @@ void VideoCaptureSystem::OnDescriptorsReceived(
   result_callback.Run(devices_info_cache_);
 }
 
-const VideoCaptureDeviceInfo* VideoCaptureSystem::LookupDeviceInfoFromId(
+const VideoCaptureDeviceInfo* VideoCaptureSystemImpl::LookupDeviceInfoFromId(
     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto iter = std::find_if(

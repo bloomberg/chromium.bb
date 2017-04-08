@@ -20,6 +20,7 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,13 +143,13 @@ class MediaDevicesManagerTest : public ::testing::Test {
   void SetUp() override {
     audio_manager_.reset(new MockAudioManager());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    auto video_capture_device_factory =
+        base::MakeUnique<MockVideoCaptureDeviceFactory>();
+    video_capture_device_factory_ = video_capture_device_factory.get();
+    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+        std::move(video_capture_device_factory));
     video_capture_manager_ = new VideoCaptureManager(
-        base::MakeUnique<media::VideoCaptureSystem>(
-            std::unique_ptr<media::VideoCaptureDeviceFactory>(
-                new MockVideoCaptureDeviceFactory())),
-        base::ThreadTaskRunnerHandle::Get());
-    video_capture_device_factory_ = static_cast<MockVideoCaptureDeviceFactory*>(
-        video_capture_manager_->video_capture_device_factory());
+        std::move(video_capture_system), base::ThreadTaskRunnerHandle::Get());
     media_devices_manager_.reset(new MediaDevicesManager(
         audio_system_.get(), video_capture_manager_, nullptr));
   }

@@ -24,7 +24,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
-#include "media/capture/video/video_capture_system.h"
+#include "media/capture/video/video_capture_system_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -200,7 +200,7 @@ class VideoCaptureManagerTest : public testing::Test {
     auto video_capture_device_factory =
         base::MakeUnique<WrappedDeviceFactory>();
     video_capture_device_factory_ = video_capture_device_factory.get();
-    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystem>(
+    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
     vcm_ = new VideoCaptureManager(std::move(video_capture_system),
                                    base::ThreadTaskRunnerHandle::Get());

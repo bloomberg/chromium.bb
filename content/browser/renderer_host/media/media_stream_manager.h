@@ -49,6 +49,7 @@
 
 namespace media {
 class AudioSystem;
+class VideoCaptureSystem;
 }
 
 namespace url {
@@ -86,6 +87,13 @@ class CONTENT_EXPORT MediaStreamManager
   static void SendMessageToNativeLog(const std::string& message);
 
   explicit MediaStreamManager(media::AudioSystem* audio_system);
+
+  // |audio_system| is required but defaults will be used if either
+  // |video_capture_system| or |device_task_runner| are null.
+  explicit MediaStreamManager(
+      media::AudioSystem* audio_system,
+      std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
 
   ~MediaStreamManager() override;
 
@@ -273,9 +281,9 @@ class CONTENT_EXPORT MediaStreamManager
   using LabeledDeviceRequest = std::pair<std::string, DeviceRequest*>;
   using DeviceRequests = std::list<LabeledDeviceRequest>;
 
-  // Initializes the device managers on IO thread.  Auto-starts the device
-  // thread and registers this as a listener with the device managers.
-  void InitializeDeviceManagersOnIOThread();
+  void InitializeMaybeAsync(
+      std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
 
   // |output_parameters| contains real values only if the request requires it.
   void HandleAccessRequestResponse(
