@@ -61,6 +61,7 @@ class TestProxyResolver : public net::ProxyResolver {
   net::ProxyInfo* mutable_proxy_info() { return &proxy_info_; }
 
   void set_async(bool async) { async_ = async; }
+  void set_result(net::Error result) { result_ = result; }
 
   // net::ProxyResolver:
   int GetProxyForURL(const GURL& url,
@@ -71,10 +72,10 @@ class TestProxyResolver : public net::ProxyResolver {
     CHECK(network_task_runner_->BelongsToCurrentThread());
     results->Use(proxy_info_);
     if (!async_)
-      return net::OK;
+      return result_;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, net::OK));
+        FROM_HERE, base::Bind(callback, result_));
     return net::ERR_IO_PENDING;
   }
 
@@ -86,6 +87,9 @@ class TestProxyResolver : public net::ProxyResolver {
 
   // If true, GetProxyForURL() replies asynchronously rather than synchronously.
   bool async_ = false;
+
+  // Final result for GetProxyForURL() to return.
+  net::Error result_ = net::OK;
 
   DISALLOW_COPY_AND_ASSIGN(TestProxyResolver);
 };
@@ -150,9 +154,12 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
   void CreateProxyServiceOnNetworkThread() {
     CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
 
-    // The config's autodetect property needs to be set in order for
-    // net::ProxyService to send requests to our resolver.
-    net::ProxyConfig config = net::ProxyConfig::CreateAutoDetect();
+    // Setting a mandatory PAC URL makes |proxy_service_| query
+    // |proxy_resolver_| and also lets us generate
+    // net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED errors.
+    net::ProxyConfig config;
+    config.set_pac_url(GURL("http://www.example.com"));
+    config.set_pac_mandatory(true);
     proxy_service_ = base::MakeUnique<net::ProxyService>(
         base::MakeUnique<net::ProxyConfigServiceFixed>(config),
         base::MakeUnique<TestProxyResolverFactory>(proxy_resolver_),
@@ -377,6 +384,28 @@ TEST_F(ProxyResolutionServiceProviderTest, ResponseAsync) {
   EXPECT_TRUE(reader.PopString(&error));
   EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), proxy_info);
   EXPECT_EQ("", error);
+
+  // No signal should've been emitted.
+  EXPECT_FALSE(signal);
+}
+
+TEST_F(ProxyResolutionServiceProviderTest, ResponseError) {
+  const char kSourceURL[] = "http://www.gmail.com/";
+  proxy_resolver_->set_result(net::ERR_FAILED);
+  std::unique_ptr<dbus::Response> response;
+  std::unique_ptr<SignalInfo> signal;
+  CallMethod(kSourceURL, false /* request_signal */, &response, &signal);
+
+  // The response should contain empty proxy info and a "mandatory proxy config
+  // failed" error (which the error from the resolver will be mapped to).
+  ASSERT_TRUE(response);
+  dbus::MessageReader reader(response.get());
+  std::string proxy_info, error;
+  EXPECT_TRUE(reader.PopString(&proxy_info));
+  EXPECT_TRUE(reader.PopString(&error));
+  EXPECT_EQ("DIRECT", proxy_info);
+  EXPECT_EQ(net::ErrorToString(net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED),
+            error);
 
   // No signal should've been emitted.
   EXPECT_FALSE(signal);
