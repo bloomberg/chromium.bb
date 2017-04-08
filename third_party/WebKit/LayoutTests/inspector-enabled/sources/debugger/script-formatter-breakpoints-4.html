@@ -61,7 +61,7 @@ var test = function()
                 var formattedSourceFrame = panel.visibleView;
                 InspectorTest.removeBreakpoint(formattedSourceFrame, 13);
                 InspectorTest.addResult("Unformatting.");
-                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode(), true);
+                Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
                 var breakpoints = Bindings.breakpointManager._storage._setting.get();
                 InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
                 next();
