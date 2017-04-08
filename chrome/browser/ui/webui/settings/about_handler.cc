@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_POWER_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_POWER_HANDLER_H_
 
-#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"

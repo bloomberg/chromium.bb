@@ -330,7 +330,7 @@
                   'ui/chromeos/network/',
     },
     'chromeos_power': {
-      'filepath': 'ash/system/chromeos/power/|'\
+      'filepath': 'ash/system/power/|'\
                   'chromeos/dbus/power_.*|'\
                   'chrome/browser/chromeos/power/',
     },
@@ -1155,7 +1155,7 @@
       'filepath': 'ui/keyboard/'\
                   '|chrome/test/data/chromeos/virtual_keyboard/'\
                   '|extensions/browser/api/virtual_keyboard_private/'\
-                  '|ash/common/system/chromeos/virtual_keyboard/'\
+                  '|ash/system/virtual_keyboard/'\
                   '|ash/virtual_keyboard',
     },
     'virtual_reality': {

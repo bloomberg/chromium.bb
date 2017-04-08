@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <utility>
 
-#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/shell.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"

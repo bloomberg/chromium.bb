@@ -5,7 +5,7 @@
 cr.exportPath('options');
 
 /**
- * Copied from ash/system/chromeos/power/power_status.h.
+ * Copied from ash/system/power/power_status.h.
  * @enum {number}
  */
 options.PowerStatusDeviceType = {

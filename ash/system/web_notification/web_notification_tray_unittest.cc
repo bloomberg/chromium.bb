@@ -19,7 +19,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/screen_layout_observer.h"
+#include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/memory/ptr_util.h"

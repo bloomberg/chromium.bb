@@ -1,3 +1,0 @@
-include_rules = [
-  "+grit/ui_chromeos_strings.h",
-]

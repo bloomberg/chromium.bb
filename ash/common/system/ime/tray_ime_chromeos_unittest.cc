@@ -6,10 +6,10 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/devices/device_data_manager.h"

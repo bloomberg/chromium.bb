@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include "ash/common/system/accessibility_observer.h"
-#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
-#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/system/ime_menu/ime_list_view.h"
+#include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
 
 namespace ash {

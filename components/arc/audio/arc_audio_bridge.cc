@@ -4,7 +4,7 @@
 
 #include "components/arc/audio/arc_audio_bridge.h"
 
-#include "ash/common/system/chromeos/audio/tray_audio.h"
+#include "ash/system/audio/tray_audio.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_device.h"
 #include "components/arc/arc_bridge_service.h"

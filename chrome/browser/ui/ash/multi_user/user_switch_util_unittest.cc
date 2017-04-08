@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 
-#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/shell.h"
+#include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"

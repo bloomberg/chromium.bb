@@ -5,9 +5,9 @@
 #include "ash/laser/laser_pointer_controller.h"
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
+#include "ash/system/palette/palette_utils.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/display/screen.h"

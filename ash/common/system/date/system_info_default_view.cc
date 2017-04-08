@@ -4,12 +4,12 @@
 
 #include "ash/common/system/date/system_info_default_view.h"
 
-#include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
+#include "ash/system/power/power_status.h"
+#include "ash/system/power/power_status_view.h"
 #include "base/memory/ptr_util.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
