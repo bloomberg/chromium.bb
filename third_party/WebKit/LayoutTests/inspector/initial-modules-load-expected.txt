@@ -15,7 +15,6 @@ Loaded modules:
     main
     network_conditions
     network_log
-    object_ui
     persistence
     platform
     protocol

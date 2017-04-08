@@ -3,6 +3,10 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
+function initialize_TestObject() {
+    InspectorTest.preloadModule("object_ui");
+}
+
 function test()
 {
     var d = [];
