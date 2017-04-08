@@ -9,6 +9,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
@@ -42,7 +43,7 @@ void FocusCycler::RemoveWidget(views::Widget* widget) {
 void FocusCycler::RotateFocus(Direction direction) {
   WmWindow* window = WmWindow::Get(wm::GetActiveWindow());
   if (window) {
-    views::Widget* widget = window->GetInternalWidget();
+    views::Widget* widget = GetInternalWidgetForWindow(window->aura_window());
     // First try to rotate focus within the active widget. If that succeeds,
     // we're done.
     if (widget &&
@@ -87,7 +88,7 @@ void FocusCycler::RotateFocus(Direction direction) {
         break;
       WmWindow* window = mru_windows.front();
       window->GetWindowState()->Activate();
-      views::Widget* widget = window->GetInternalWidget();
+      views::Widget* widget = GetInternalWidgetForWindow(window->aura_window());
       if (!widget)
         break;
       views::FocusManager* focus_manager = widget->GetFocusManager();

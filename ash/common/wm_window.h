@@ -38,7 +38,6 @@ class Layer;
 
 namespace views {
 class View;
-class Widget;
 }
 
 namespace ash {
@@ -279,11 +278,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   void Hide();
   void Show();
 
-  // Returns the widget associated with this window, or null if not associated
-  // with a widget. Only ash system UI widgets are returned, not widgets created
-  // by the mus window manager code to show a non-client frame.
-  views::Widget* GetInternalWidget();
-
   // Requests the window to close and destroy itself. This is intended to
   // forward to an associated widget.
   void CloseWidget();
@@ -336,7 +330,8 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   // Adds or removes a handler to receive events targeted at this window, before
   // this window handles the events itself; the handler does not recieve events
   // from embedded windows. This only supports windows with internal widgets;
-  // see GetInternalWidget(). Ownership of the handler is not transferred.
+  // see ash::GetInternalWidgetForWindow(). Ownership of the handler is not
+  // transferred.
   //
   // Also note that the target of these events is always an aura::Window.
   void AddLimitedPreTargetHandler(ui::EventHandler* handler);

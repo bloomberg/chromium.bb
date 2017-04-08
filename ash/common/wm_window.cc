@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_properties.h"
@@ -578,13 +579,6 @@ void WmWindow::Show() {
   window_->Show();
 }
 
-views::Widget* WmWindow::GetInternalWidget() {
-  return window_->GetProperty(kWidgetCreationTypeKey) ==
-                 WidgetCreationType::INTERNAL
-             ? views::Widget::GetWidgetForNativeView(window_)
-             : nullptr;
-}
-
 void WmWindow::CloseWidget() {
   if (WmShell::Get()->IsRunningInMash() &&
       aura_window()->GetProperty(kWidgetCreationTypeKey) ==
@@ -596,8 +590,9 @@ void WmWindow::CloseWidget() {
     Shell::window_manager_client()->RequestClose(aura_window());
     return;
   }
-  DCHECK(GetInternalWidget());
-  GetInternalWidget()->Close();
+  views::Widget* widget = GetInternalWidgetForWindow(window_);
+  DCHECK(widget);
+  widget->Close();
 }
 
 void WmWindow::SetFocused() {

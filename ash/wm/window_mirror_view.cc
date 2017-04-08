@@ -6,6 +6,7 @@
 
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -111,9 +112,10 @@ gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
     return bounds;
   }
   // The target window may not have a widget in unit tests.
-  if (!target_->GetInternalWidget())
+  views::Widget* widget = GetInternalWidgetForWindow(target_->aura_window());
+  if (!widget)
     return gfx::Rect();
-  views::View* client_view = target_->GetInternalWidget()->client_view();
+  views::View* client_view = widget->client_view();
   return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
 }
 

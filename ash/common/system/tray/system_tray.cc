@@ -48,6 +48,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/widget_finder.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -189,7 +190,7 @@ class SystemTray::ActivationObserver
         tray_->GetSystemBubble()->bubble_view()->GetWidget();
     // Don't close the bubble if a transient child is gaining or losing
     // activation.
-    if (bubble_widget == wm_gained_active->GetInternalWidget() ||
+    if (bubble_widget == GetInternalWidgetForWindow(gained_active) ||
         ::wm::HasTransientAncestor(gained_active,
                                    bubble_widget->GetNativeWindow()) ||
         (lost_active && ::wm::HasTransientAncestor(

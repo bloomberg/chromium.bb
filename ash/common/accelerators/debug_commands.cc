@@ -13,9 +13,9 @@
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -48,7 +48,7 @@ void HandlePrintViewHierarchy() {
   aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return;
-  views::Widget* widget = WmWindow::Get(active_window)->GetInternalWidget();
+  views::Widget* widget = GetInternalWidgetForWindow(active_window);
   if (!widget)
     return;
   views::PrintViewHierarchy(widget->GetRootView());

@@ -794,6 +794,8 @@ component("ash") {
     "wm/toplevel_window_event_handler.h",
     "wm/video_detector.cc",
     "wm/video_detector.h",
+    "wm/widget_finder.cc",
+    "wm/widget_finder.h",
     "wm/window_animations.cc",
     "wm/window_animations.h",
     "wm/window_cycle_event_filter_aura.cc",

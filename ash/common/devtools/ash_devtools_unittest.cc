@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/widget_finder.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
@@ -80,7 +81,7 @@ std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
 
 bool Equals(WmWindow* window, DOM::Node* node) {
   int children_count = static_cast<int>(window->GetChildren().size());
-  if (window->GetInternalWidget())
+  if (GetInternalWidgetForWindow(window->aura_window()))
     children_count++;
   return "Window" == node->getNodeName() &&
          window->aura_window()->GetName() == GetAttributeValue("name", node) &&
@@ -169,10 +170,11 @@ void ExpectHighlighted(const gfx::Rect& bounds, int root_window_index) {
   WmWindow* highlighting_window = GetHighlightingWindow(root_window_index);
   EXPECT_TRUE(highlighting_window->IsVisible());
   EXPECT_EQ(bounds, highlighting_window->GetBoundsInScreen());
-  EXPECT_EQ(kBackgroundColor, highlighting_window->GetInternalWidget()
-                                  ->GetRootView()
-                                  ->background()
-                                  ->get_color());
+  EXPECT_EQ(kBackgroundColor,
+            GetInternalWidgetForWindow(highlighting_window->aura_window())
+                ->GetRootView()
+                ->background()
+                ->get_color());
 }
 
 }  // namespace
