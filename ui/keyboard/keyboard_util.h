@@ -95,6 +95,9 @@ KEYBOARD_EXPORT std::string GetKeyboardLayout();
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
+// Returns true if the virtual keyboard is currently visible.
+KEYBOARD_EXPORT bool IsKeyboardVisible();
+
 // Returns true if smart deployment of the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsSmartDeployEnabled();
 

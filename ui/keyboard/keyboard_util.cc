@@ -28,6 +28,8 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/scoped_keyboard_disabler.h"
 
+namespace keyboard {
+
 namespace {
 
 const char kKeyDown[] ="keydown";
@@ -56,18 +58,14 @@ bool g_touch_keyboard_enabled = false;
 
 bool g_overscroll_enabled_with_accessibility_keyboard = false;
 
-keyboard::KeyboardState g_requested_keyboard_state =
-    keyboard::KEYBOARD_STATE_AUTO;
+KeyboardState g_requested_keyboard_state = KEYBOARD_STATE_AUTO;
 
-keyboard::KeyboardOverscrolOverride g_keyboard_overscroll_override =
-    keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
+KeyboardOverscrolOverride g_keyboard_overscroll_override =
+    KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
 
-keyboard::KeyboardShowOverride g_keyboard_show_override =
-    keyboard::KEYBOARD_SHOW_OVERRIDE_NONE;
+KeyboardShowOverride g_keyboard_show_override = KEYBOARD_SHOW_OVERRIDE_NONE;
 
 }  // namespace
-
-namespace keyboard {
 
 gfx::Rect FullWidthKeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                                 int keyboard_height) {
@@ -124,21 +122,26 @@ bool IsKeyboardEnabled() {
   if (g_accessibility_keyboard_enabled)
     return true;
   // Policy strictly disables showing a virtual keyboard.
-  if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED)
+  if (g_keyboard_show_override == KEYBOARD_SHOW_OVERRIDE_DISABLED)
     return false;
   // Policy strictly enables the keyboard.
-  if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED)
+  if (g_keyboard_show_override == KEYBOARD_SHOW_OVERRIDE_ENABLED)
     return true;
   // Run-time flag to enable keyboard has been included.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVirtualKeyboard))
     return true;
   // Requested state from the application layer.
-  if (g_requested_keyboard_state == keyboard::KEYBOARD_STATE_DISABLED)
+  if (g_requested_keyboard_state == KEYBOARD_STATE_DISABLED)
     return false;
   // Check if any of the other flags are enabled.
   return g_touch_keyboard_enabled ||
-         g_requested_keyboard_state == keyboard::KEYBOARD_STATE_ENABLED;
+         g_requested_keyboard_state == KEYBOARD_STATE_ENABLED;
+}
+
+bool IsKeyboardVisible() {
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  return keyboard_controller && keyboard_controller->keyboard_visible();
 }
 
 bool IsKeyboardOverscrollEnabled() {
@@ -219,7 +222,7 @@ bool IsVoiceInputEnabled() {
 }
 
 bool InsertText(const base::string16& text) {
-  keyboard::KeyboardController* controller = KeyboardController::GetInstance();
+  KeyboardController* controller = KeyboardController::GetInstance();
   if (!controller)
     return false;
 
@@ -391,10 +394,8 @@ void MarkKeyboardLoadFinished() {
 }
 
 void LogKeyboardControlEvent(KeyboardControlEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "VirtualKeyboard.KeyboardControlEvent",
-      event,
-      keyboard::KEYBOARD_CONTROL_MAX);
+  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event,
+                            KEYBOARD_CONTROL_MAX);
 }
 
 void SetOverscrollEnabledWithAccessibilityKeyboard(bool enabled) {
