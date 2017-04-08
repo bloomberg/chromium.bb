@@ -837,9 +837,10 @@ void BlinkTestController::OnShowDevTools(const std::string& settings,
     devtools_window_.reset(content::Shell::CreateNewWindow(
         browser_context, GURL(), nullptr, initial_size_));
   }
-  devtools_bindings_.reset(new LayoutTestDevToolsBindings(
-      devtools_window_->web_contents(), main_window_->web_contents()));
-  devtools_bindings_->LoadDevTools(settings, frontend_url);
+
+  devtools_bindings_.reset(LayoutTestDevToolsBindings::LoadDevTools(
+      devtools_window_->web_contents(), main_window_->web_contents(), settings,
+      frontend_url));
   devtools_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
   devtools_window_->web_contents()->Focus();
 }

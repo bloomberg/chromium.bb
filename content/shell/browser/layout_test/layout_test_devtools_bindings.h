@@ -15,20 +15,23 @@ class WebContents;
 
 class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
  public:
-  LayoutTestDevToolsBindings(WebContents* devtools_contents,
-                             WebContents* inspected_contents);
-
   static GURL GetDevToolsPathAsURL(const std::string& frontend_url);
 
   static GURL MapJSTestURL(const GURL& test_url);
 
-  void LoadDevTools(const std::string& settings,
-                    const std::string& frontend_url);
+  static LayoutTestDevToolsBindings* LoadDevTools(
+      WebContents* devtools_contents_,
+      WebContents* inspected_contents_,
+      const std::string& settings,
+      const std::string& frontend_url);
   void EvaluateInFrontend(int call_id, const std::string& expression);
 
   ~LayoutTestDevToolsBindings() override;
 
  private:
+  LayoutTestDevToolsBindings(WebContents* devtools_contents,
+                             WebContents* inspected_contents);
+
   // ShellDevToolsBindings overrides.
   void HandleMessageFromDevToolsFrontend(const std::string& message) override;
 

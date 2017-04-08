@@ -68,17 +68,24 @@ GURL LayoutTestDevToolsBindings::MapJSTestURL(const GURL& test_url) {
   return GURL(url_string);
 }
 
-void LayoutTestDevToolsBindings::LoadDevTools(const std::string& settings,
-                                              const std::string& frontend_url) {
-  SetPreferences(settings);
+// static
+LayoutTestDevToolsBindings* LayoutTestDevToolsBindings::LoadDevTools(
+    WebContents* devtools_contents_,
+    WebContents* inspected_contents_,
+    const std::string& settings,
+    const std::string& frontend_url) {
+  LayoutTestDevToolsBindings* bindings =
+      new LayoutTestDevToolsBindings(devtools_contents_, inspected_contents_);
+  bindings->SetPreferences(settings);
   GURL devtools_url =
       LayoutTestDevToolsBindings::GetDevToolsPathAsURL(frontend_url);
   NavigationController::LoadURLParams params(devtools_url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  web_contents()->GetController().LoadURLWithParams(params);
-  web_contents()->Focus();
-  CreateFrontendHost();
+  bindings->web_contents()->GetController().LoadURLWithParams(params);
+  bindings->web_contents()->Focus();
+  bindings->CreateFrontendHost();
+  return bindings;
 }
 
 void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
