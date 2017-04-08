@@ -178,10 +178,10 @@ std::ostream& operator<<(std::ostream& os, const V4Store& store) {
   return os;
 }
 
-V4Store* V4StoreFactory::CreateV4Store(
+std::unique_ptr<V4Store> V4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  V4Store* new_store = new V4Store(task_runner, store_path, 0);
+  auto new_store = base::MakeUnique<V4Store>(task_runner, store_path);
   new_store->Initialize();
   return new_store;
 }

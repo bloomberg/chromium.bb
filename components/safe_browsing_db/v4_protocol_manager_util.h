@@ -8,11 +8,14 @@
 // A class that implements the stateless methods used by the GetHashUpdate and
 // GetFullHash stubby calls made by Chrome using the SafeBrowsing V4 protocol.
 
+#include <memory>
 #include <ostream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/hash.h"
 #include "base/strings/string_piece.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/url_request/url_request_status.h"
@@ -27,7 +30,7 @@ namespace safe_browsing {
 
 // The size of the hash prefix, in bytes. It should be between 4 to 32 (full
 // hash).
-typedef size_t PrefixSize;
+using PrefixSize = size_t;
 
 // The minimum expected size (in bytes) of a hash-prefix.
 const PrefixSize kMinHashPrefixLength = 4;
@@ -37,13 +40,13 @@ const PrefixSize kMinHashPrefixLength = 4;
 const PrefixSize kMaxHashPrefixLength = 32;
 
 // A hash prefix sent by the SafeBrowsing PVer4 service.
-typedef std::string HashPrefix;
+using HashPrefix = std::string;
 
 // A full SHA256 hash.
-typedef HashPrefix FullHash;
+using FullHash = HashPrefix;
 
-typedef FetchThreatListUpdatesRequest::ListUpdateRequest ListUpdateRequest;
-typedef FetchThreatListUpdatesResponse::ListUpdateResponse ListUpdateResponse;
+using ListUpdateRequest = FetchThreatListUpdatesRequest::ListUpdateRequest;
+using ListUpdateResponse = FetchThreatListUpdatesResponse::ListUpdateResponse;
 
 // Config passed to the constructor of a V4 protocol manager.
 struct V4ProtocolConfig {
@@ -67,7 +70,7 @@ struct V4ProtocolConfig {
   ~V4ProtocolConfig();
 
  private:
-  V4ProtocolConfig();
+  V4ProtocolConfig() = delete;
 };
 
 // Different types of threats that SafeBrowsing protects against. This is the
@@ -120,9 +123,11 @@ enum SBThreatType {
 // platform_type = WINDOWS,
 // threat_entry_type = EXECUTABLE,
 // threat_type = MALWARE
-struct ListIdentifier {
+class ListIdentifier {
  public:
-  ListIdentifier(PlatformType, ThreatEntryType, ThreatType);
+  ListIdentifier(PlatformType platform_type,
+                 ThreatEntryType threat_entry_type,
+                 ThreatType threat_type);
   explicit ListIdentifier(const ListUpdateResponse&);
 
   bool operator==(const ListIdentifier& other) const;
@@ -138,31 +143,31 @@ struct ListIdentifier {
   ThreatEntryType threat_entry_type_;
   ThreatType threat_type_;
 
-  ListIdentifier();
+  ListIdentifier() = delete;
 };
 
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
-const ListIdentifier GetCertCsdDownloadWhitelistId();
-const ListIdentifier GetChromeExtMalwareId();
-const ListIdentifier GetChromeFilenameClientIncidentId();
-const ListIdentifier GetChromeUrlApiId();
-const ListIdentifier GetChromeUrlClientIncidentId();
-const ListIdentifier GetIpMalwareId();
-const ListIdentifier GetUrlCsdDownloadWhitelistId();
-const ListIdentifier GetUrlCsdWhitelistId();
-const ListIdentifier GetUrlMalBinId();
-const ListIdentifier GetUrlMalwareId();
-const ListIdentifier GetUrlSocEngId();
-const ListIdentifier GetUrlSubresourceFilterId();
-const ListIdentifier GetUrlUwsId();
+ListIdentifier GetCertCsdDownloadWhitelistId();
+ListIdentifier GetChromeExtMalwareId();
+ListIdentifier GetChromeFilenameClientIncidentId();
+ListIdentifier GetChromeUrlApiId();
+ListIdentifier GetChromeUrlClientIncidentId();
+ListIdentifier GetIpMalwareId();
+ListIdentifier GetUrlCsdDownloadWhitelistId();
+ListIdentifier GetUrlCsdWhitelistId();
+ListIdentifier GetUrlMalBinId();
+ListIdentifier GetUrlMalwareId();
+ListIdentifier GetUrlSocEngId();
+ListIdentifier GetUrlSubresourceFilterId();
+ListIdentifier GetUrlUwsId();
 
 // Represents the state of each store.
-typedef base::hash_map<ListIdentifier, std::string> StoreStateMap;
+using StoreStateMap = std::unordered_map<ListIdentifier, std::string>;
 
 // Sever response, parsed in vector form.
-typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
+using ParsedServerResponse = std::vector<std::unique_ptr<ListUpdateResponse>>;
 
 // Holds the hash prefix and the store that it matched in.
 struct StoreAndHashPrefix {
@@ -170,7 +175,7 @@ struct StoreAndHashPrefix {
   ListIdentifier list_id;
   HashPrefix hash_prefix;
 
-  explicit StoreAndHashPrefix(ListIdentifier, HashPrefix);
+  StoreAndHashPrefix(ListIdentifier list_id, const HashPrefix& hash_prefix);
   ~StoreAndHashPrefix();
 
   bool operator==(const StoreAndHashPrefix& other) const;
@@ -178,12 +183,12 @@ struct StoreAndHashPrefix {
   size_t hash() const;
 
  private:
-  StoreAndHashPrefix();
+  StoreAndHashPrefix() = delete;
 };
 
 // Used to track the hash prefix and the store in which a full hash's prefix
 // matched.
-typedef std::vector<StoreAndHashPrefix> StoreAndHashPrefixes;
+using StoreAndHashPrefixes = std::vector<StoreAndHashPrefix>;
 
 // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
 // ORDERING OF THESE VALUES.
@@ -257,6 +262,8 @@ class V4ProtocolManagerUtil {
   // Worker function for calculating the backoff times.
   // |multiplier| is doubled for each consecutive error after the
   // first, and |error_count| is incremented with each call.
+  // Backoff interval is MIN(((2^(n-1))*15 minutes) * (RAND + 1), 24 hours)
+  // where n is the number of consecutive errors.
   static base::TimeDelta GetNextBackOffInterval(size_t* error_count,
                                                 size_t* multiplier);
 
@@ -297,7 +304,8 @@ class V4ProtocolManagerUtil {
                                          FullHash* hashed_encoded_ip);
 
  private:
-  V4ProtocolManagerUtil(){};
+  V4ProtocolManagerUtil() {}
+
   FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, TestBackOffLogic);
   FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest,
                            TestGetRequestUrlAndUpdateHeaders);
@@ -330,11 +338,12 @@ class V4ProtocolManagerUtil {
   DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerUtil);
 };
 
-typedef std::unordered_set<ListIdentifier> StoresToCheck;
+using StoresToCheck = std::unordered_set<ListIdentifier>;
 
 }  // namespace safe_browsing
 
 namespace std {
+
 template <>
 struct hash<safe_browsing::PlatformType> {
   std::size_t operator()(const safe_browsing::PlatformType& p) const {
@@ -362,6 +371,7 @@ struct hash<safe_browsing::ListIdentifier> {
     return id.hash();
   }
 };
-}
+
+}  // namespace std
 
 #endif  // COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_UTIL_H_

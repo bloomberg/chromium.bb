@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_V4_STORE_H_
 #define COMPONENTS_SAFE_BROWSING_DB_V4_STORE_H_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -15,21 +19,22 @@ namespace safe_browsing {
 
 class V4Store;
 
-typedef base::Callback<void(std::unique_ptr<V4Store> new_store)>
-    UpdatedStoreReadyCallback;
+using UpdatedStoreReadyCallback =
+    base::Callback<void(std::unique_ptr<V4Store> new_store)>;
 
 // The sorted list of hash prefixes.
-typedef std::string HashPrefixes;
+using HashPrefixes = std::string;
 
 // Stores the list of sorted hash prefixes, by size.
 // For instance: {4: ["abcd", "bcde", "cdef", "gggg"], 5: ["fffff"]}
-typedef base::hash_map<PrefixSize, HashPrefixes> HashPrefixMap;
+using HashPrefixMap = std::unordered_map<PrefixSize, HashPrefixes>;
 
 // Stores the iterator to the last element merged from the HashPrefixMap for a
 // given prefix size.
 // For instance: {4:iter(3), 5:iter(1)} means that we have already merged
 // 3 hash prefixes of length 4, and 1 hash prefix of length 5.
-typedef base::hash_map<PrefixSize, HashPrefixes::const_iterator> IteratorMap;
+using IteratorMap =
+    std::unordered_map<PrefixSize, HashPrefixes::const_iterator>;
 
 // Enumerate different failure events while parsing the file read from disk for
 // histogramming purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -148,7 +153,8 @@ enum ApplyUpdateResult {
 class V4StoreFactory {
  public:
   virtual ~V4StoreFactory() {}
-  virtual V4Store* CreateV4Store(
+
+  virtual std::unique_ptr<V4Store> CreateV4Store(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const base::FilePath& store_path);
 };
@@ -165,8 +171,20 @@ class V4Store {
   // applying an update.
   V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
           const base::FilePath& store_path,
-          const int64_t old_file_size = 0);
+          int64_t old_file_size = 0);
   virtual ~V4Store();
+
+  // Schedules the destruction of the V4Store object pointed to by |v4_store|,
+  // on the task runner.
+  static void Destroy(std::unique_ptr<V4Store> v4_store);
+
+  // If a hash prefix in this store matches |full_hash|, returns that hash
+  // prefix; otherwise returns an empty hash prefix.
+  virtual HashPrefix GetMatchingHashPrefix(const FullHash& full_hash);
+
+  // True if this store has valid contents, either from a successful read
+  // from disk or a full update.  This does not mean the checksum was verified.
+  virtual bool HasValidData() const;
 
   const std::string& state() const { return state_; }
 
@@ -180,23 +198,11 @@ class V4Store {
   // store using |base_metric| as prefix and the filename as suffix.
   int64_t RecordAndReturnFileSize(const std::string& base_metric);
 
-  // If a hash prefix in this store matches |full_hash|, returns that hash
-  // prefix; otherwise returns an empty hash prefix.
-  virtual HashPrefix GetMatchingHashPrefix(const FullHash& full_hash);
-
   std::string DebugString() const;
-
-  // Schedules the destruction of the V4Store object pointed to by |v4_store|,
-  // on the task runner.
-  static void Destroy(std::unique_ptr<V4Store> v4_store);
 
   // Reads the store file from disk and populates the in-memory representation
   // of the hash prefixes.
   void Initialize();
-
-  // True if this store has valid contents, either from a successful read
-  // from disk or a full update.  This does not mean the checksum was verified.
-  virtual bool HasValidData() const;
 
   // Reset internal state.
   void Reset();
@@ -208,6 +214,9 @@ class V4Store {
   // so it is performed outside of the hotpath of loading SafeBrowsing database,
   // which blocks resource loads.
   bool VerifyChecksum();
+
+ protected:
+  HashPrefixMap hash_prefix_map_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestReadFromEmptyFile);
@@ -391,10 +400,6 @@ class V4Store {
   // |checksum| is used to set the |checksum| field in the final proto.
   StoreWriteResult WriteToDisk(const Checksum& checksum);
 
- protected:
-  HashPrefixMap hash_prefix_map_;
-
- private:
   // The checksum value as read from the disk, until it is verified. Once
   // verified, it is cleared.
   std::string expected_checksum_;

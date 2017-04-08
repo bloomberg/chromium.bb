@@ -5,6 +5,11 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_V4_DATABASE_H_
 #define COMPONENTS_SAFE_BROWSING_DB_V4_DATABASE_H_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -24,35 +29,36 @@ class V4Database;
 
 // Scheduled when the database has been read from disk and is ready to process
 // resource reputation requests.
-typedef base::Callback<void(std::unique_ptr<V4Database>)>
-    NewDatabaseReadyCallback;
+using NewDatabaseReadyCallback =
+    base::Callback<void(std::unique_ptr<V4Database>)>;
 
 // Scheduled when the checksum for all the stores in the database has been
 // verified to match the expected value. Stores for which the checksum did not
 // match are passed as the argument and need to be reset.
-typedef base::Callback<void(const std::vector<ListIdentifier>&)>
-    DatabaseReadyForUpdatesCallback;
+using DatabaseReadyForUpdatesCallback =
+    base::Callback<void(const std::vector<ListIdentifier>&)>;
 
 // This callback is scheduled once the database has finished processing the
 // update requests for all stores and is ready to process the next set of update
 // requests.
-typedef base::Callback<void()> DatabaseUpdatedCallback;
+using DatabaseUpdatedCallback = base::Closure;
 
 // Maps the ListIdentifiers to their corresponding in-memory stores, which
 // contain the hash prefixes for that ListIdentifier as well as manage their
 // storage on disk.
-typedef base::hash_map<ListIdentifier, std::unique_ptr<V4Store>> StoreMap;
+using StoreMap = std::unordered_map<ListIdentifier, std::unique_ptr<V4Store>>;
 
 // Associates metadata for a list with its ListIdentifier.
-struct ListInfo {
+class ListInfo {
+ public:
   ListInfo(const bool fetch_updates,
            const std::string& filename,
            const ListIdentifier& list_id,
            const SBThreatType sb_threat_type);
   ~ListInfo();
 
-  ListIdentifier list_id() const { return list_id_; }
-  std::string filename() const { return filename_; }
+  const ListIdentifier& list_id() const { return list_id_; }
+  const std::string& filename() const { return filename_; }
   SBThreatType sb_threat_type() const { return sb_threat_type_; }
   bool fetch_updates() const { return fetch_updates_; }
 
@@ -72,10 +78,10 @@ struct ListInfo {
   // The threat type enum value for this store.
   SBThreatType sb_threat_type_;
 
-  ListInfo();
+  ListInfo() = delete;
 };
 
-typedef std::vector<ListInfo> ListInfos;
+using ListInfos = std::vector<ListInfo>;
 
 // Factory for creating V4Database. Tests implement this factory to create fake
 // databases for testing.
@@ -155,6 +161,9 @@ class V4Database {
   V4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
              std::unique_ptr<StoreMap> store_map);
 
+  // Map of ListIdentifier to the V4Store.
+  const std::unique_ptr<StoreMap> store_map_;
+
  private:
   friend class subresource_filter::SubresourceFilterBrowserTestImpl;
   friend class V4DatabaseFactory;
@@ -200,20 +209,9 @@ class V4Database {
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       DatabaseReadyForUpdatesCallback db_ready_for_updates_callback);
 
- protected:
-  // Map of ListIdentifier to the V4Store.
-  const std::unique_ptr<StoreMap> store_map_;
-
- private:
   const scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   DatabaseUpdatedCallback db_updated_callback_;
-
-  // The factory that controls the creation of the V4Database object.
-  static V4DatabaseFactory* db_factory_;
-
-  // The factory that controls the creation of V4Store objects.
-  static V4StoreFactory* store_factory_;
 
   // The number of stores for which the update request is pending. When this
   // goes down to 0, that indicates that the database has updated all the stores

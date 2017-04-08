@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,13 +22,15 @@ namespace {
 
 const char kV4DatabaseSizeMetric[] = "SafeBrowsing.V4Database.Size";
 
+// The factory that controls the creation of the V4Database object.
+base::LazyInstance<std::unique_ptr<V4DatabaseFactory>>::Leaky g_db_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
+// The factory that controls the creation of V4Store objects.
+base::LazyInstance<std::unique_ptr<V4StoreFactory>>::Leaky g_store_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
-
-// static
-V4DatabaseFactory* V4Database::db_factory_ = NULL;
-
-// static
-V4StoreFactory* V4Database::store_factory_ = NULL;
 
 std::unique_ptr<V4Database> V4DatabaseFactory::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
@@ -65,14 +67,11 @@ void V4Database::CreateOnTaskRunner(
     const TimeTicks create_start_time) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
 
-  if (!store_factory_) {
-    store_factory_ = new V4StoreFactory();
-    ANNOTATE_LEAKING_OBJECT_PTR(store_factory_);
-  }
+  if (!g_store_factory.Get())
+    g_store_factory.Get() = base::MakeUnique<V4StoreFactory>();
 
-  if (!base::CreateDirectory(base_path)) {
+  if (!base::CreateDirectory(base_path))
     NOTREACHED();
-  }
 
   std::unique_ptr<StoreMap> store_map = base::MakeUnique<StoreMap>();
   for (const auto& it : list_infos) {
@@ -82,16 +81,15 @@ void V4Database::CreateOnTaskRunner(
     }
 
     const base::FilePath store_path = base_path.AppendASCII(it.filename());
-    (*store_map)[it.list_id()].reset(
-        store_factory_->CreateV4Store(db_task_runner, store_path));
+    (*store_map)[it.list_id()] =
+        g_store_factory.Get()->CreateV4Store(db_task_runner, store_path);
   }
 
-  if (!db_factory_) {
-    db_factory_ = new V4DatabaseFactory();
-    ANNOTATE_LEAKING_OBJECT_PTR(db_factory_);
-  }
-  std::unique_ptr<V4Database> v4_database(
-      db_factory_->Create(db_task_runner, std::move(store_map)));
+  if (!g_db_factory.Get())
+    g_db_factory.Get() = base::MakeUnique<V4DatabaseFactory>();
+
+  std::unique_ptr<V4Database> v4_database =
+      g_db_factory.Get()->Create(db_task_runner, std::move(store_map));
 
   // Database is done loading, pass it to the new_db_callback on the caller's
   // thread. This would unblock resource loads.
@@ -105,19 +103,13 @@ void V4Database::CreateOnTaskRunner(
 // static
 void V4Database::RegisterDatabaseFactoryForTest(
     std::unique_ptr<V4DatabaseFactory> factory) {
-  if (db_factory_) {
-    delete db_factory_;
-  }
-  db_factory_ = factory.release();
+  g_db_factory.Get() = std::move(factory);
 }
 
 // static
 void V4Database::RegisterStoreFactoryForTest(
     std::unique_ptr<V4StoreFactory> factory) {
-  if (store_factory_) {
-    delete store_factory_;
-  }
-  store_factory_ = factory.release();
+  g_store_factory.Get() = std::move(factory);
 }
 
 V4Database::V4Database(

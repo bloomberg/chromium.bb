@@ -78,65 +78,65 @@ PlatformType GetCurrentPlatformType() {
 #elif defined(OS_MACOSX)
   return OSX_PLATFORM;
 #else
-// This should ideally never compile but it is getting compiled on Android.
-// See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
-// TODO(vakh): Once that bug is fixed, this should be removed. If we leave
-// the platform_type empty, the server won't recognize the request and
-// return an error response which will pollute our UMA metrics.
-return LINUX_PLATFORM;
+  // This should ideally never compile but it is getting compiled on Android.
+  // See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
+  // TODO(vakh): Once that bug is fixed, this should be removed. If we leave
+  // the platform_type empty, the server won't recognize the request and
+  // return an error response which will pollute our UMA metrics.
+  return LINUX_PLATFORM;
 #endif
 }
 
-const ListIdentifier GetCertCsdDownloadWhitelistId() {
+ListIdentifier GetCertCsdDownloadWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), CERT, CSD_DOWNLOAD_WHITELIST);
 }
 
-const ListIdentifier GetChromeExtMalwareId() {
+ListIdentifier GetChromeExtMalwareId() {
   return ListIdentifier(CHROME_PLATFORM, CHROME_EXTENSION, MALWARE_THREAT);
 }
 
-const ListIdentifier GetChromeUrlApiId() {
+ListIdentifier GetChromeUrlApiId() {
   return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
-const ListIdentifier GetChromeFilenameClientIncidentId() {
+ListIdentifier GetChromeFilenameClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, FILENAME, CLIENT_INCIDENT);
 }
 
-const ListIdentifier GetChromeUrlClientIncidentId() {
+ListIdentifier GetChromeUrlClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
 }
 
-const ListIdentifier GetIpMalwareId() {
+ListIdentifier GetIpMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), IP_RANGE, MALWARE_THREAT);
 }
 
-const ListIdentifier GetUrlCsdDownloadWhitelistId() {
+ListIdentifier GetUrlCsdDownloadWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, CSD_DOWNLOAD_WHITELIST);
 }
 
-const ListIdentifier GetUrlCsdWhitelistId() {
+ListIdentifier GetUrlCsdWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, CSD_WHITELIST);
 }
 
-const ListIdentifier GetUrlMalwareId() {
+ListIdentifier GetUrlMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
 
-const ListIdentifier GetUrlMalBinId() {
+ListIdentifier GetUrlMalBinId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALICIOUS_BINARY);
 }
 
-const ListIdentifier GetUrlSocEngId() {
+ListIdentifier GetUrlSocEngId() {
   return ListIdentifier(GetCurrentPlatformType(), URL,
                         SOCIAL_ENGINEERING_PUBLIC);
 }
 
-const ListIdentifier GetUrlSubresourceFilterId() {
+ListIdentifier GetUrlSubresourceFilterId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, SUBRESOURCE_FILTER);
 }
 
-const ListIdentifier GetUrlUwsId() {
+ListIdentifier GetUrlUwsId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, UNWANTED_SOFTWARE);
 }
 
@@ -144,7 +144,7 @@ const ListIdentifier GetUrlUwsId() {
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
 StoreAndHashPrefix::StoreAndHashPrefix(ListIdentifier list_id,
-                                       HashPrefix hash_prefix)
+                                       const HashPrefix& hash_prefix)
     : list_id(list_id), hash_prefix(hash_prefix) {}
 
 StoreAndHashPrefix::~StoreAndHashPrefix() {}
@@ -183,8 +183,6 @@ size_t ListIdentifier::hash() const {
   return base::HashInts(interim, third);
 }
 
-ListIdentifier::ListIdentifier() {}
-
 ListIdentifier::ListIdentifier(PlatformType platform_type,
                                ThreatEntryType threat_entry_type,
                                ThreatType threat_type)
@@ -215,8 +213,6 @@ V4ProtocolConfig::V4ProtocolConfig(const V4ProtocolConfig& other) = default;
 V4ProtocolConfig::~V4ProtocolConfig() {}
 
 // static
-// Backoff interval is MIN(((2^(n-1))*15 minutes) * (RAND + 1), 24 hours) where
-// n is the number of consecutive errors.
 base::TimeDelta V4ProtocolManagerUtil::GetNextBackOffInterval(
     size_t* error_count,
     size_t* multiplier) {
@@ -229,13 +225,8 @@ base::TimeDelta V4ProtocolManagerUtil::GetNextBackOffInterval(
   }
   base::TimeDelta next =
       base::TimeDelta::FromMinutes(*multiplier * (1 + base::RandDouble()) * 15);
-
   base::TimeDelta day = base::TimeDelta::FromHours(24);
-
-  if (next < day)
-    return next;
-  else
-    return day;
+  return next < day ? next : day;
 }
 
 // static
