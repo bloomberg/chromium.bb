@@ -13,6 +13,7 @@ import android.text.Selection;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -40,15 +41,16 @@ public class LocationBarPhone extends LocationBarLayout {
 
     private View mFirstVisibleFocusedView;
     private View mIncognitoBadge;
-    private View mGoogleGContainer;
-    private View mGoogleG;
     private View mUrlActionsContainer;
     private int mIncognitoBadgePadding;
-    private int mGoogleGWidth;
-    private int mGoogleGMargin;
     private float mUrlFocusChangePercent;
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
+
+    private ViewStub mGoogleGContainer;
+    private View mGoogleG;
+    private int mGoogleGWidth;
+    private int mGoogleGMargin;
 
     /**
      * Constructor used to inflate from XML.
@@ -66,8 +68,7 @@ public class LocationBarPhone extends LocationBarLayout {
         mIncognitoBadgePadding =
                 getResources().getDimensionPixelSize(R.dimen.location_bar_incognito_badge_padding);
 
-        mGoogleGContainer = findViewById(R.id.google_g_container);
-        mGoogleG = findViewById(R.id.google_g);
+        mGoogleGContainer = (ViewStub) findViewById(R.id.google_g_container_stub);
         mGoogleGWidth = getResources().getDimensionPixelSize(R.dimen.location_bar_google_g_width);
         mGoogleGMargin = getResources().getDimensionPixelSize(R.dimen.location_bar_google_g_margin);
 
@@ -236,11 +237,15 @@ public class LocationBarPhone extends LocationBarLayout {
         // If the default search engine is not Google, isLocationBarShownInNTP() will return false.
         if (ntp == null || !ntp.isLocationBarShownInNTP()
                 || !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
-            mGoogleGContainer.setVisibility(View.GONE);
             return;
         }
 
-        mGoogleGContainer.setVisibility(View.VISIBLE);
+        // Inflate the resource if it hasn't been done yet.
+        if (mGoogleG == null) {
+            mGoogleGContainer.inflate();
+            mGoogleG = findViewById(R.id.google_g);
+        }
+
         float animationProgress =
                 GOOGLE_G_FADE_INTERPOLATOR.getInterpolation(mUrlFocusChangePercent);
 

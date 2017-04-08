@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
@@ -26,8 +24,6 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        View gContainer = findViewById(R.id.google_g_container);
-        if (gContainer != null) gContainer.setVisibility(View.GONE);
     }
 
     /** Set the {@link Delegate}. */
