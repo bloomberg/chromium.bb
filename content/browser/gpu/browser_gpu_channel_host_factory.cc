@@ -39,32 +39,27 @@ class BrowserGpuChannelHostFactory::EstablishRequest
     : public base::RefCountedThreadSafe<EstablishRequest> {
  public:
   static scoped_refptr<EstablishRequest> Create(int gpu_client_id,
-                                                uint64_t gpu_client_tracing_id,
-                                                int gpu_host_id);
+                                                uint64_t gpu_client_tracing_id);
   void Wait();
   void Cancel();
 
-  int gpu_host_id() { return gpu_host_id_; }
   IPC::ChannelHandle& channel_handle() { return channel_handle_; }
   gpu::GPUInfo gpu_info() { return gpu_info_; }
 
  private:
   friend class base::RefCountedThreadSafe<EstablishRequest>;
-  explicit EstablishRequest(int gpu_client_id,
-                            uint64_t gpu_client_tracing_id,
-                            int gpu_host_id);
+  explicit EstablishRequest(int gpu_client_id, uint64_t gpu_client_tracing_id);
   ~EstablishRequest() {}
   void EstablishOnIO();
   void OnEstablishedOnIO(const IPC::ChannelHandle& channel_handle,
-                         const gpu::GPUInfo& gpu_info);
+                         const gpu::GPUInfo& gpu_info,
+                         GpuProcessHost::EstablishChannelStatus status);
   void FinishOnIO();
   void FinishOnMain();
 
   base::WaitableEvent event_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
-  int gpu_host_id_;
-  bool reused_gpu_process_;
   IPC::ChannelHandle channel_handle_;
   gpu::GPUInfo gpu_info_;
   bool finished_;
@@ -74,10 +69,9 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
 BrowserGpuChannelHostFactory::EstablishRequest::Create(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id,
-    int gpu_host_id) {
+    uint64_t gpu_client_tracing_id) {
   scoped_refptr<EstablishRequest> establish_request =
-      new EstablishRequest(gpu_client_id, gpu_client_tracing_id, gpu_host_id);
+      new EstablishRequest(gpu_client_id, gpu_client_tracing_id);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   // PostTask outside the constructor to ensure at least one reference exists.
@@ -90,14 +84,11 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
 
 BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id,
-    int gpu_host_id)
+    uint64_t gpu_client_tracing_id)
     : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
              base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
-      gpu_host_id_(gpu_host_id),
-      reused_gpu_process_(false),
       finished_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -107,27 +98,12 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "477117 "
           "BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO"));
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
+  GpuProcessHost* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!host) {
-    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
-    if (!host) {
-      LOG(ERROR) << "Failed to launch GPU process.";
-      FinishOnIO();
-      return;
-    }
-    gpu_host_id_ = host->host_id();
-    reused_gpu_process_ = false;
-  } else {
-    if (reused_gpu_process_) {
-      // We come here if we retried to establish the channel because of a
-      // failure in ChannelEstablishedOnIO, but we ended up with the same
-      // process ID, meaning the failure was not because of a channel error,
-      // but another reason. So fail now.
-      LOG(ERROR) << "Failed to create channel.";
-      FinishOnIO();
-      return;
-    }
-    reused_gpu_process_ = true;
+    LOG(ERROR) << "Failed to launch GPU process.";
+    FinishOnIO();
+    return;
   }
 
   bool preempts = true;
@@ -143,18 +119,18 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
 
 void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
     const IPC::ChannelHandle& channel_handle,
-    const gpu::GPUInfo& gpu_info) {
-  if (!channel_handle.mojo_handle.is_valid() && reused_gpu_process_) {
-    // We failed after re-using the GPU process, but it may have died in the
-    // mean time. Retry to have a chance to create a fresh GPU process.
+    const gpu::GPUInfo& gpu_info,
+    GpuProcessHost::EstablishChannelStatus status) {
+  if (!channel_handle.mojo_handle.is_valid() &&
+      status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID) {
     DVLOG(1) << "Failed to create channel on existing GPU process. Trying to "
                 "restart GPU process.";
     EstablishOnIO();
-  } else {
-    channel_handle_ = channel_handle;
-    gpu_info_ = gpu_info;
-    FinishOnIO();
+    return;
   }
+  channel_handle_ = channel_handle;
+  gpu_info_ = gpu_info;
+  FinishOnIO();
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnIO() {
@@ -234,8 +210,7 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
           base::WaitableEvent::InitialState::NOT_SIGNALED)),
       gpu_memory_buffer_manager_(
           new BrowserGpuMemoryBufferManager(gpu_client_id_,
-                                            gpu_client_tracing_id_)),
-      gpu_host_id_(0) {
+                                            gpu_client_tracing_id_)) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
     DCHECK(GetContentClient());
@@ -291,8 +266,8 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
 
   if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
-    pending_request_ = EstablishRequest::Create(
-        gpu_client_id_, gpu_client_tracing_id_, gpu_host_id_);
+    pending_request_ =
+        EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_);
   }
 
   if (!callback.is_null()) {
@@ -349,7 +324,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
         pending_request_->channel_handle(), shutdown_event_.get(),
         gpu_memory_buffer_manager_.get());
   }
-  gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866 is

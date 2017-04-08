@@ -66,8 +66,18 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     GPU_PROCESS_KIND_COUNT
   };
 
-  typedef base::Callback<void(const IPC::ChannelHandle&, const gpu::GPUInfo&)>
-      EstablishChannelCallback;
+  enum class EstablishChannelStatus {
+    GPU_ACCESS_DENIED,  // GPU access was not allowed.
+    GPU_HOST_INVALID,   // Request failed because the gpu host became invalid
+                        // while processing the request (e.g. the gpu process
+                        // may have been killed). The caller should normally
+                        // make another request to establish a new channel.
+    SUCCESS
+  };
+  using EstablishChannelCallback =
+      base::Callback<void(const IPC::ChannelHandle&,
+                          const gpu::GPUInfo&,
+                          EstablishChannelStatus status)>;
 
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       CreateGpuMemoryBufferCallback;

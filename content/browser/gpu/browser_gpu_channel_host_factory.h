@@ -36,7 +36,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
 
-  int GpuProcessHostId() { return gpu_host_id_; }
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
 
@@ -72,7 +71,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   std::unique_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks_;
 
