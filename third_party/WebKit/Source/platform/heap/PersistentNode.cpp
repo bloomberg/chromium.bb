@@ -190,7 +190,7 @@ void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
     }
   }
 #if DCHECK_IS_ON()
-  DCHECK_EQ(persistentCount, m_persistentRegion->m_persistentCount);
+  DCHECK_EQ(persistent_count, persistent_region_->persistent_count_);
 #endif
 }
 #endif

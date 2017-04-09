@@ -74,10 +74,10 @@
 // A vector backing store represented by a large object is marked
 // so that when it is finalized, its ASan annotation will be
 // correctly retired.
-#define ASAN_MARK_LARGE_VECTOR_CONTAINER(arena, largeObject)             \
+#define ASAN_MARK_LARGE_VECTOR_CONTAINER(arena, large_object)            \
   if (ThreadState::IsVectorArenaIndex(arena->ArenaIndex())) {            \
-    BasePage* large_page = PageFromObject(largeObject);                  \
-    ASSERT(largePage->isLargeObjectPage());                              \
+    BasePage* large_page = PageFromObject(large_object);                 \
+    ASSERT(large_page->IsLargeObjectPage());                             \
     static_cast<LargeObjectPage*>(large_page)->SetIsVectorBackingPage(); \
   }
 #else
@@ -1502,7 +1502,7 @@ void NormalPage::PoisonUnmarkedObjects() {
   for (Address header_address = Payload(); header_address < PayloadEnd();) {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
-    ASSERT(header->size() < blinkPagePayloadSize());
+    ASSERT(header->size() < BlinkPagePayloadSize());
     // Check if a free list entry first since we cannot call
     // isMarked on a free list entry.
     if (header->IsFree()) {

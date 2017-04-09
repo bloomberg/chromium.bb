@@ -177,60 +177,60 @@ ALWAYS_INLINE void AtomicSetOneToZero(int volatile* ptr) {
 // The definitions below assume an LP64 data model. This is fine because
 // TSan is only supported on x86_64 Linux.
 #if CPU(64BIT) && OS(LINUX)
-ALWAYS_INLINE void releaseStore(volatile int* ptr, int value) {
+ALWAYS_INLINE void ReleaseStore(volatile int* ptr, int value) {
   __tsan_atomic32_store(ptr, value, __tsan_memory_order_release);
 }
-ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value) {
+ALWAYS_INLINE void ReleaseStore(volatile unsigned* ptr, unsigned value) {
   __tsan_atomic32_store(reinterpret_cast<volatile int*>(ptr),
                         static_cast<int>(value), __tsan_memory_order_release);
 }
-ALWAYS_INLINE void releaseStore(volatile long* ptr, long value) {
+ALWAYS_INLINE void ReleaseStore(volatile long* ptr, long value) {
   __tsan_atomic64_store(reinterpret_cast<volatile __tsan_atomic64*>(ptr),
                         static_cast<__tsan_atomic64>(value),
                         __tsan_memory_order_release);
 }
-ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr,
+ALWAYS_INLINE void ReleaseStore(volatile unsigned long* ptr,
                                 unsigned long value) {
   __tsan_atomic64_store(reinterpret_cast<volatile __tsan_atomic64*>(ptr),
                         static_cast<__tsan_atomic64>(value),
                         __tsan_memory_order_release);
 }
-ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr,
+ALWAYS_INLINE void ReleaseStore(volatile unsigned long long* ptr,
                                 unsigned long long value) {
   __tsan_atomic64_store(reinterpret_cast<volatile __tsan_atomic64*>(ptr),
                         static_cast<__tsan_atomic64>(value),
                         __tsan_memory_order_release);
 }
-ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value) {
+ALWAYS_INLINE void ReleaseStore(void* volatile* ptr, void* value) {
   __tsan_atomic64_store(reinterpret_cast<volatile __tsan_atomic64*>(ptr),
                         reinterpret_cast<__tsan_atomic64>(value),
                         __tsan_memory_order_release);
 }
-ALWAYS_INLINE int acquireLoad(volatile const int* ptr) {
+ALWAYS_INLINE int AcquireLoad(volatile const int* ptr) {
   return __tsan_atomic32_load(ptr, __tsan_memory_order_acquire);
 }
-ALWAYS_INLINE unsigned acquireLoad(volatile const unsigned* ptr) {
+ALWAYS_INLINE unsigned AcquireLoad(volatile const unsigned* ptr) {
   return static_cast<unsigned>(__tsan_atomic32_load(
       reinterpret_cast<volatile const int*>(ptr), __tsan_memory_order_acquire));
 }
-ALWAYS_INLINE long acquireLoad(volatile const long* ptr) {
+ALWAYS_INLINE long AcquireLoad(volatile const long* ptr) {
   return static_cast<long>(__tsan_atomic64_load(
       reinterpret_cast<volatile const __tsan_atomic64*>(ptr),
       __tsan_memory_order_acquire));
 }
-ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr) {
+ALWAYS_INLINE unsigned long AcquireLoad(volatile const unsigned long* ptr) {
   return static_cast<unsigned long>(__tsan_atomic64_load(
       reinterpret_cast<volatile const __tsan_atomic64*>(ptr),
       __tsan_memory_order_acquire));
 }
-ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr) {
+ALWAYS_INLINE void* AcquireLoad(void* volatile const* ptr) {
   return reinterpret_cast<void*>(__tsan_atomic64_load(
       reinterpret_cast<volatile const __tsan_atomic64*>(ptr),
       __tsan_memory_order_acquire));
 }
 
-// Do not use noBarrierStore/noBarrierLoad for synchronization.
-ALWAYS_INLINE void noBarrierStore(volatile float* ptr, float value) {
+// Do not use NoBarrierStore/NoBarrierLoad for synchronization.
+ALWAYS_INLINE void NoBarrierStore(volatile float* ptr, float value) {
   static_assert(sizeof(int) == sizeof(float),
                 "int and float are different sizes");
   union {
@@ -242,7 +242,7 @@ ALWAYS_INLINE void noBarrierStore(volatile float* ptr, float value) {
                         u.ivalue, __tsan_memory_order_relaxed);
 }
 
-ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr) {
+ALWAYS_INLINE float NoBarrierLoad(volatile const float* ptr) {
   static_assert(sizeof(int) == sizeof(float),
                 "int and float are different sizes");
   union {

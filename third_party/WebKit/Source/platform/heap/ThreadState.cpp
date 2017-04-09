@@ -1205,7 +1205,7 @@ void ThreadState::CopyStackUntilSafePointScope() {
 #if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // ASan/LSan use more space on the stack and we therefore
   // increase the allowed stack copying for those builds.
-  ASSERT(slotCount < 2048);
+  ASSERT(slot_count < 2048);
 #else
   ASSERT(slot_count < 1024);
 #endif

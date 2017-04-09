@@ -50,7 +50,7 @@ void WebThreadSupportingGC::Initialize() {
 
 void WebThreadSupportingGC::Shutdown() {
 #if defined(LEAK_SANITIZER)
-  ThreadState::current()->releaseStaticPersistentNodes();
+  ThreadState::Current()->ReleaseStaticPersistentNodes();
 #endif
   // Ensure no posted tasks will run from this point on.
   gc_task_runner_.reset();

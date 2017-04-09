@@ -31,7 +31,7 @@ CSSPathValue* CreatePathValue() {
       SVGPathByteStream::Create();
   // Need to be registered as LSan ignored, as it will be reachable and
   // separately referred to by emptyPathValue() callers.
-  LEAK_SANITIZER_IGNORE_OBJECT(pathByteStream.get());
+  LEAK_SANITIZER_IGNORE_OBJECT(path_byte_stream.get());
   return CSSPathValue::Create(std::move(path_byte_stream));
 }
 

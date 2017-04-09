@@ -60,14 +60,14 @@ class LeakSanitizerDisableScope {
  public:
   LeakSanitizerDisableScope() {
     __lsan_disable();
-    if (ThreadState::current())
-      ThreadState::current()->enterStaticReferenceRegistrationDisabledScope();
+    if (ThreadState::Current())
+      ThreadState::Current()->enterStaticReferenceRegistrationDisabledScope();
   }
 
   ~LeakSanitizerDisableScope() {
     __lsan_enable();
-    if (ThreadState::current())
-      ThreadState::current()->leaveStaticReferenceRegistrationDisabledScope();
+    if (ThreadState::Current())
+      ThreadState::Current()->leaveStaticReferenceRegistrationDisabledScope();
   }
 };
 #define LEAK_SANITIZER_DISABLED_SCOPE \

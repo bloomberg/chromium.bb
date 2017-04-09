@@ -151,12 +151,12 @@ class MemberBase {
     //   (a) a pointer to the head of an on-heap object.
     //   (b) a pointer to the head of an on-heap mixin object.
     //
-    // We can check it by calling ThreadHeap::isHeapObjectAlive(m_raw),
+    // We can check it by calling ThreadHeap::isHeapObjectAlive(raw_),
     // but we cannot call it here because it requires to include T.h.
     // So we currently only try to implement the check for (a), but do
     // not insist that T's definition is in scope.
     if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
-      HeapObjectHeader::checkFromPayload(m_raw);
+      HeapObjectHeader::CheckFromPayload(raw_);
 #endif
 #endif
   }
