@@ -650,6 +650,8 @@ class ReportStage(generic_stages.BuilderStage,
                    builder_run.config.name, board_names)
       return
 
+    logging.PrintBuildbotSetBuildProperty('artifact_link', archive.upload_url)
+
     if builder_run.config.internal:
       # Internal builds simply link to pantheon directories, which require
       # authenticated access that most Googlers should have.

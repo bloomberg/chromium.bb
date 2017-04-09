@@ -77,6 +77,11 @@ def PrintBuildbotLink(text, url, handle=None):
   _PrintForBuildbot(handle, _annotations.StepLink, text, url)
 
 
+def PrintBuildbotSetBuildProperty(name, data, handle=None):
+  """Prints out a request to set a build property to a JSON value."""
+  _PrintForBuildbot(handle, _annotations.SetBuildProperty, name, data)
+
+
 def PrintBuildbotStepText(text, handle=None):
   """Prints out stage text to buildbot."""
   _PrintForBuildbot(handle, _annotations.StepText, text)

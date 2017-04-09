@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import abc
 import itertools
+import json
 
 
 class Annotation(object):
@@ -93,6 +94,14 @@ class BuildStep(_NamedAnnotation):
 
   def __init__(self, name):
     super(BuildStep, self).__init__(name)
+
+
+class SetBuildProperty(_NamedAnnotation):
+  """SET_BUILD_PROPERTY annotation."""
+  ANNOTATION_NAME = 'SET_BUILD_PROPERTY'
+
+  def __init__(self, name, value):
+    super(SetBuildProperty, self).__init__(name, json.dumps(value))
 
 
 def _EscapeArgText(text):

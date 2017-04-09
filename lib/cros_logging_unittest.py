@@ -57,6 +57,10 @@ class CrosloggingTest(cros_test_lib.OutputTestCase):
     self.AssertLogContainsMsg('@@@BUILD_STEP',
                               lambda: logging.PrintBuildbotStepName('name'),
                               check_stderr=True, invert=True)
+    self.AssertLogContainsMsg(
+        '@@@SET_BUILD_PROPERTY',
+        lambda: logging.PrintBuildbotSetBuildProperty('name', {'a': 'value'}),
+        check_stderr=True, invert=True)
 
   def testPrintBuildbotFunctionsWithMarker(self):
     """PrintBuildbot* with markers should be recognized by buildbot."""
@@ -76,3 +80,7 @@ class CrosloggingTest(cros_test_lib.OutputTestCase):
     self.AssertLogContainsMsg('@@@BUILD_STEP@name@@@',
                               lambda: logging.PrintBuildbotStepName('name'),
                               check_stderr=True)
+    self.AssertLogContainsMsg(
+        '@@@SET_BUILD_PROPERTY@name@"value"@@@',
+        lambda: logging.PrintBuildbotSetBuildProperty('name', 'value'),
+        check_stderr=True)
