@@ -45,8 +45,6 @@ class PLATFORM_EXPORT TracedValue final
 
   // ConvertableToTraceFormat
 
-  // Hide this method from blink code.
-  using base::trace_event::ConvertableToTraceFormat::ToString;
   void AppendAsTraceFormat(std::string*) const final;
   void EstimateTraceMemoryOverhead(
       base::trace_event::TraceEventMemoryOverhead*) final;

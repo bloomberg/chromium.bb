@@ -8,15 +8,6 @@
 
 namespace blink {
 
-namespace {
-const TextSegmentationMachineState kInvalid =
-    TextSegmentationMachineState::kInvalid;
-const TextSegmentationMachineState kNeedMoreCodeUnit =
-    TextSegmentationMachineState::kNeedMoreCodeUnit;
-const TextSegmentationMachineState kFinished =
-    TextSegmentationMachineState::kFinished;
-}  // namespace
-
 TEST(BackwardCodePointStateMachineTest, DoNothingCase) {
   BackwardCodePointStateMachine machine;
   EXPECT_EQ(0, machine.GetBoundaryOffset());
@@ -24,20 +15,24 @@ TEST(BackwardCodePointStateMachineTest, DoNothingCase) {
 
 TEST(BackwardCodePointStateMachineTest, SingleCharacter) {
   BackwardCodePointStateMachine machine;
-  EXPECT_EQ(kFinished, machine.FeedPrecedingCodeUnit('a'));
+  EXPECT_EQ(TextSegmentationMachineState::kFinished,
+            machine.FeedPrecedingCodeUnit('a'));
   EXPECT_EQ(-1, machine.GetBoundaryOffset());
 
   machine.Reset();
-  EXPECT_EQ(kFinished, machine.FeedPrecedingCodeUnit('-'));
+  EXPECT_EQ(TextSegmentationMachineState::kFinished,
+            machine.FeedPrecedingCodeUnit('-'));
   EXPECT_EQ(-1, machine.GetBoundaryOffset());
 
   machine.Reset();
-  EXPECT_EQ(kFinished, machine.FeedPrecedingCodeUnit('\t'));
+  EXPECT_EQ(TextSegmentationMachineState::kFinished,
+            machine.FeedPrecedingCodeUnit('\t'));
   EXPECT_EQ(-1, machine.GetBoundaryOffset());
 
   machine.Reset();
   // U+3042 HIRAGANA LETTER A.
-  EXPECT_EQ(kFinished, machine.FeedPrecedingCodeUnit(0x3042));
+  EXPECT_EQ(TextSegmentationMachineState::kFinished,
+            machine.FeedPrecedingCodeUnit(0x3042));
   EXPECT_EQ(-1, machine.GetBoundaryOffset());
 }
 
@@ -48,25 +43,32 @@ TEST(BackwardCodePointStateMachineTest, SurrogatePair) {
   const UChar kLeadSurrogate = 0xD842;
   const UChar kTrailSurrogate = 0xDFB7;
 
-  EXPECT_EQ(kNeedMoreCodeUnit, machine.FeedPrecedingCodeUnit(kTrailSurrogate));
-  EXPECT_EQ(kFinished, machine.FeedPrecedingCodeUnit(kLeadSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kNeedMoreCodeUnit,
+            machine.FeedPrecedingCodeUnit(kTrailSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kFinished,
+            machine.FeedPrecedingCodeUnit(kLeadSurrogate));
   EXPECT_EQ(-2, machine.GetBoundaryOffset());
 
   // Edge cases
   // Unpaired trailing surrogate. Nothing to delete.
   machine.Reset();
-  EXPECT_EQ(kNeedMoreCodeUnit, machine.FeedPrecedingCodeUnit(kTrailSurrogate));
-  EXPECT_EQ(kInvalid, machine.FeedPrecedingCodeUnit('a'));
+  EXPECT_EQ(TextSegmentationMachineState::kNeedMoreCodeUnit,
+            machine.FeedPrecedingCodeUnit(kTrailSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kInvalid,
+            machine.FeedPrecedingCodeUnit('a'));
   EXPECT_EQ(0, machine.GetBoundaryOffset());
 
   machine.Reset();
-  EXPECT_EQ(kNeedMoreCodeUnit, machine.FeedPrecedingCodeUnit(kTrailSurrogate));
-  EXPECT_EQ(kInvalid, machine.FeedPrecedingCodeUnit(kTrailSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kNeedMoreCodeUnit,
+            machine.FeedPrecedingCodeUnit(kTrailSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kInvalid,
+            machine.FeedPrecedingCodeUnit(kTrailSurrogate));
   EXPECT_EQ(0, machine.GetBoundaryOffset());
 
   // Unpaired leading surrogate. Nothing to delete.
   machine.Reset();
-  EXPECT_EQ(kInvalid, machine.FeedPrecedingCodeUnit(kLeadSurrogate));
+  EXPECT_EQ(TextSegmentationMachineState::kInvalid,
+            machine.FeedPrecedingCodeUnit(kLeadSurrogate));
   EXPECT_EQ(0, machine.GetBoundaryOffset());
 }
 
