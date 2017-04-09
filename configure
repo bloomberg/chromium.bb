@@ -255,6 +255,7 @@ EXPERIMENT_LIST="
     ext_intra
     intra_interp
     filter_intra
+    intra_edge
     intrabc
     ext_inter
     interintra
@@ -523,6 +524,7 @@ post_process_cmdline() {
     enabled txk_sel && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
     enabled smooth_hv && soft_enable alt_intra
+    enabled intra_edge && enable_feature ext_intra
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"

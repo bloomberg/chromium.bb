@@ -1839,6 +1839,89 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_FILTER_INTRA
 
+#if CONFIG_INTRA_EDGE
+static int intra_edge_filter_strength(int bsz, int delta) {
+  const int d = abs(delta);
+  int strength = 0;
+
+  if (bsz == 8) {
+    if (d < 8) {
+      strength = 0;
+    } else if (d < 32) {
+      strength = 1;
+    } else if (d < 90) {
+      strength = 3;
+    }
+  } else if (bsz == 16) {
+    if (d < 4) {
+      strength = 0;
+    } else if (d < 16) {
+      strength = 1;
+    } else if (d < 90) {
+      strength = 3;
+    }
+  } else if (bsz == 32) {
+    if (d < 16) {
+      strength = 2;
+    } else if (d < 90) {
+      strength = 3;
+    }
+  }
+
+  return strength;
+}
+
+static void filter_intra_edge(uint8_t *p, int sz, int strength) {
+  if (!strength) return;
+
+  const int kernel[2][3] = { { 4, 8, 4 }, { 5, 6, 5 } };
+  const int filt = (strength < 2) ? 0 : 1;
+  const int n_iter = (strength < 3) ? 1 : 2;
+  uint8_t edge[129];
+
+  for (int ii = 0; ii < n_iter; ii++) {
+    memcpy(edge, p, sz * sizeof(*p));
+    for (int i = 1; i < sz - 1; i++) {
+      int s = 0;
+      for (int j = 0; j < 3; j++) {
+        int k = i - 1 + j;
+        k = (k < 0) ? 0 : k;
+        k = (k > sz - 1) ? sz - 1 : k;
+        s += edge[k] * kernel[filt][j];
+      }
+      s = (s + 8) >> 4;
+      p[i] = s;
+    }
+  }
+}
+
+#if CONFIG_HIGHBITDEPTH
+static void filter_intra_edge_high(uint16_t *p, int sz, int strength) {
+  if (!strength) return;
+
+  const int kernel[2][3] = { { 4, 8, 4 }, { 5, 6, 5 } };
+  const int filt = (strength < 2) ? 0 : 1;
+  const int n_iter = (strength < 3) ? 1 : 2;
+  uint16_t edge[129];
+
+  for (int ii = 0; ii < n_iter; ii++) {
+    memcpy(edge, p, sz * sizeof(*p));
+    for (int i = 1; i < sz - 1; i++) {
+      int s = 0;
+      for (int j = 0; j < 3; j++) {
+        int k = i - 1 + j;
+        k = (k < 0) ? 0 : k;
+        k = (k > sz - 1) ? sz - 1 : k;
+        s += edge[k] * kernel[filt][j];
+      }
+      s = (s + 8) >> 4;
+      p[i] = s;
+    }
+  }
+}
+#endif  // CONFIG_INTRA_EDGE
+#endif  // CONFIG_HIGHBITDEPTH
+
 #if CONFIG_HIGHBITDEPTH
 static void build_intra_predictors_high(
     const MACROBLOCKD *xd, const uint8_t *ref8, int ref_stride, uint8_t *dst8,
@@ -1900,7 +1983,16 @@ static void build_intra_predictors_high(
   assert(n_bottomleft_px >= 0);
 
   if ((!need_above && n_left_px == 0) || (!need_left && n_top_px == 0)) {
+#if CONFIG_INTRA_EDGE
+    int val;
+    if (need_left) {
+      val = (n_top_px > 0) ? above_ref[0] : base + 1;
+    } else {
+      val = (n_left_px > 0) ? ref[-1] : base - 1;
+    }
+#else
     const int val = need_left ? base + 1 : base - 1;
+#endif
     for (i = 0; i < bs; ++i) {
       aom_memset16(dst, val, bs);
       dst += dst_stride;
@@ -1933,7 +2025,15 @@ static void build_intra_predictors_high(
       if (i < (bs << need_bottom))
         aom_memset16(&left_col[i], left_col[i - 1], (bs << need_bottom) - i);
     } else {
-      aom_memset16(left_col, base + 1, bs << need_bottom);
+#if CONFIG_INTRA_EDGE
+      if (n_top_px > 0) {
+        aom_memset16(left_col, above_ref[0], bs << need_bottom);
+      } else {
+#endif
+        aom_memset16(left_col, base + 1, bs << need_bottom);
+#if CONFIG_INTRA_EDGE
+      }
+#endif
     }
   }
 
@@ -1963,15 +2063,53 @@ static void build_intra_predictors_high(
       if (i < (bs << need_right))
         aom_memset16(&above_row[i], above_row[i - 1], (bs << need_right) - i);
     } else {
-      aom_memset16(above_row, base - 1, bs << need_right);
+#if CONFIG_INTRA_EDGE
+      if (n_left_px > 0) {
+        aom_memset16(above_row, ref[-1], bs << need_right);
+      } else {
+#endif
+        aom_memset16(above_row, base - 1, bs << need_right);
+#if CONFIG_INTRA_EDGE
+      }
+#endif
     }
   }
 
   if (need_above_left) {
+#if CONFIG_INTRA_EDGE
+    if (n_top_px > 0 && n_left_px > 0) {
+      above_row[-1] = above_ref[-1];
+    } else if (n_top_px > 0) {
+      above_row[-1] = above_ref[0];
+    } else if (n_left_px > 0) {
+      above_row[-1] = ref[-1];
+    } else {
+      above_row[-1] = base;
+    }
+#else
     above_row[-1] =
         n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : base + 1) : base - 1;
+#endif
     left_col[-1] = above_row[-1];
   }
+
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_EDGE
+  if (is_dr_mode && p_angle != 90 && p_angle != 180) {
+    const int ab_le = need_above_left ? 1 : 0;
+    if (need_above && n_top_px > 0) {
+      const int strength = intra_edge_filter_strength(bs, p_angle - 90);
+      const int need_right = p_angle < 90;
+      const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+      filter_intra_edge_high(above_row - ab_le, n_px, strength);
+    }
+    if (need_left && n_left_px > 0) {
+      const int strength = intra_edge_filter_strength(bs, p_angle - 180);
+      const int need_bottom = p_angle > 180;
+      const int n_px = n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+      filter_intra_edge_high(left_col - ab_le, n_px, strength);
+    }
+  }
+#endif
 
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
@@ -2069,7 +2207,16 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   assert(n_bottomleft_px >= 0);
 
   if ((!need_above && n_left_px == 0) || (!need_left && n_top_px == 0)) {
+#if CONFIG_INTRA_EDGE
+    int val;
+    if (need_left) {
+      val = (n_top_px > 0) ? above_ref[0] : 129;
+    } else {
+      val = (n_left_px > 0) ? ref[-1] : 127;
+    }
+#else
     const int val = need_left ? 129 : 127;
+#endif
     for (i = 0; i < bs; ++i) {
       memset(dst, val, bs);
       dst += dst_stride;
@@ -2102,7 +2249,15 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (i < (bs << need_bottom))
         memset(&left_col[i], left_col[i - 1], (bs << need_bottom) - i);
     } else {
-      memset(left_col, 129, bs << need_bottom);
+#if CONFIG_INTRA_EDGE
+      if (n_top_px > 0) {
+        memset(left_col, above_ref[0], bs << need_bottom);
+      } else {
+#endif
+        memset(left_col, 129, bs << need_bottom);
+#if CONFIG_INTRA_EDGE
+      }
+#endif
     }
   }
 
@@ -2131,14 +2286,52 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (i < (bs << need_right))
         memset(&above_row[i], above_row[i - 1], (bs << need_right) - i);
     } else {
-      memset(above_row, 127, bs << need_right);
+#if CONFIG_INTRA_EDGE
+      if (n_left_px > 0) {
+        memset(above_row, ref[-1], bs << need_right);
+      } else {
+#endif
+        memset(above_row, 127, bs << need_right);
+#if CONFIG_INTRA_EDGE
+      }
+#endif
     }
   }
 
   if (need_above_left) {
+#if CONFIG_INTRA_EDGE
+    if (n_top_px > 0 && n_left_px > 0) {
+      above_row[-1] = above_ref[-1];
+    } else if (n_top_px > 0) {
+      above_row[-1] = above_ref[0];
+    } else if (n_left_px > 0) {
+      above_row[-1] = ref[-1];
+    } else {
+      above_row[-1] = 128;
+    }
+#else
     above_row[-1] = n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : 129) : 127;
+#endif
     left_col[-1] = above_row[-1];
   }
+
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_EDGE
+  if (is_dr_mode && p_angle != 90 && p_angle != 180) {
+    const int ab_le = need_above_left ? 1 : 0;
+    if (need_above && n_top_px > 0) {
+      const int strength = intra_edge_filter_strength(bs, p_angle - 90);
+      const int need_right = p_angle < 90;
+      const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+      filter_intra_edge(above_row - ab_le, n_px, strength);
+    }
+    if (need_left && n_left_px > 0) {
+      const int strength = intra_edge_filter_strength(bs, p_angle - 180);
+      const int need_bottom = p_angle > 180;
+      const int n_px = n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+      filter_intra_edge(left_col - ab_le, n_px, strength);
+    }
+  }
+#endif
 
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
